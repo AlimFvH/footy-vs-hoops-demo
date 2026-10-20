@@ -2160,7 +2160,7 @@
     var starsPrice = options.starsPrice || 250;
     var tonPrice = options.tonPrice || 1.5;
     var coinsPrice = options.coinsPrice || 0;
-    var hideTon = options.hideTon || (productId === 'battlepass_premium');
+    var hideTon = true; // Digital goods strictly use Telegram Stars; TON crypto checkout removed from TMA
     var onPurchased = options.onPurchased;
 
     var overlay = document.createElement('div');
@@ -2639,7 +2639,7 @@
           '  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">' +
           '    <span style="font-size:26px;">👑</span>' +
           '    <div>' +
-          '      <div style="font-weight:900;font-size:14px;color:#fef08a;letter-spacing:0.5px;">' + tr('bpUnlockPremium') + ' · 250 ⭐ / 1.5 💎 TON</div>' +
+          '      <div style="font-weight:900;font-size:14px;color:#fef08a;letter-spacing:0.5px;">' + tr('bpUnlockPremium') + ' · 250 ⭐</div>' +
           '      <div style="font-size:12px;color:var(--text-muted);">' + tr('bpLateUnlockNotice') + '</div>' +
           '    </div>' +
           '  </div>' +
@@ -4299,7 +4299,7 @@
         buyBtn.style.fontSize = '13px';
         buyBtn.style.padding = '12px 8px';
         buyBtn.style.lineHeight = '1.3';
-        buyBtn.innerHTML = tr('buyFor') + ' 🪙 ' + bundle.coinsPrice.toLocaleString() + ' &nbsp;·&nbsp; ' + bundle.starsPrice + ' ⭐ &nbsp;·&nbsp; ' + bundle.tonPrice + ' 💎';
+        buyBtn.innerHTML = tr('buyFor') + ' 🪙 ' + bundle.coinsPrice.toLocaleString() + ' &nbsp;·&nbsp; ' + bundle.starsPrice + ' ⭐';
         buyBtn.onclick = function () {
           overlay.remove();
           if (window.__fvhPayments && window.__fvhPayments.openPaymentModal) {
@@ -4645,7 +4645,7 @@
             '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + tr(pkg.id === 'pkg_coins_starter' ? 'pkgStarter' : pkg.id === 'pkg_coins_pro' ? 'pkgPro' : pkg.id === 'pkg_coins_elite' ? 'pkgElite' : pkg.id === 'pkg_coins_champion' ? 'pkgChampion' : 'pkgLegend') + '</div>' +
             '<div class="fvh-card-desc" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.3;">' + pkg.desc + '</div>' +
             '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
-            pkg.starsPrice + ' ⭐ Stars &nbsp;·&nbsp; ' + pkg.tonPrice + ' 💎 TON' +
+            pkg.starsPrice + ' ⭐ Stars' +
             '</div>';
 
           pCard.onclick = function () {
