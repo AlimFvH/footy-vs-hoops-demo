@@ -2173,6 +2173,115 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 200, { ok: true, history });
   }
 
+  // 9. Global Leaderboard / Рейтинг сильнейших атлетов
+  if (pathname === '/api/leaderboard' && req.method === 'GET') {
+    const qCategory = String(parsedUrl.query.category || 'season').toLowerCase();
+    const qPlayerId = String(parsedUrl.query.playerId || '').trim();
+
+    // Thematic pool of simulated global athletes
+    const athletes = [
+      { id: 'ath_apex', name: 'ApexStriker #10', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
+      { id: 'ath_dunk', name: 'DunkPhenom #23', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
+      { id: 'ath_viper', name: 'ViperVolley', char: 'footy', club: 'Rio Electro', wins: 41, goals: 98, baskets: 24, coins: 6800, xp: 2200, badge: 'PRO' },
+      { id: 'ath_rim', name: 'RimCrusher_Pro', char: 'hoops', club: 'Brooklyn Alley', wins: 39, goals: 18, baskets: 136, coins: 6400, xp: 2100, badge: 'ELITE' },
+      { id: 'ath_golden', name: 'GoldenBoot_Alim', char: 'footy', club: 'Emirates Arena', wins: 36, goals: 86, baskets: 30, coins: 9200, xp: 1950, badge: 'CHAMP' },
+      { id: 'ath_orbital', name: 'OrbitalSniper', char: 'hoops', club: 'Apollo Lunar', wins: 34, goals: 22, baskets: 118, coins: 5900, xp: 1800, badge: 'ELITE' },
+      { id: 'ath_shadow', name: 'ShadowStriker', char: 'footy', club: 'Kyoto Ninjas', wins: 31, goals: 74, baskets: 16, coins: 5100, xp: 1650, badge: 'PRO' },
+      { id: 'ath_blaze', name: 'BlazeCrossover', char: 'hoops', club: 'Chicago Fire', wins: 29, goals: 14, baskets: 98, coins: 4800, xp: 1520, badge: 'PRO' },
+      { id: 'ath_frost', name: 'FrostKeeper', char: 'footy', club: 'Nordic Frost', wins: 26, goals: 62, baskets: 12, coins: 4300, xp: 1400, badge: 'VET' },
+      { id: 'ath_air', name: 'AirJordan_99', char: 'hoops', club: 'Skyline Stars', wins: 25, goals: 10, baskets: 88, coins: 4100, xp: 1320, badge: 'PRO' },
+      { id: 'ath_turbo', name: 'TurboWinger', char: 'footy', club: 'Monaco Speed', wins: 23, goals: 55, baskets: 18, coins: 3800, xp: 1210, badge: 'VET' },
+      { id: 'ath_swish', name: 'SwishMaster', char: 'hoops', club: 'L.A. Beach', wins: 21, goals: 8, baskets: 76, coins: 3500, xp: 1100, badge: 'PRO' },
+      { id: 'ath_cyber', name: 'CyberGoalie', char: 'footy', club: 'Neo Seoul', wins: 19, goals: 44, baskets: 14, coins: 3200, xp: 990, badge: 'VET' },
+      { id: 'ath_alley', name: 'AlleyOop_King', char: 'hoops', club: 'Miami Court', wins: 18, goals: 6, baskets: 64, coins: 3000, xp: 910, badge: 'PRO' },
+      { id: 'ath_striker', name: 'RedwoodStriker', char: 'footy', club: 'California Pines', wins: 16, goals: 38, baskets: 10, coins: 2700, xp: 820, badge: 'VET' },
+      { id: 'ath_dunk2', name: 'HalfCourtHero', char: 'hoops', club: 'Rooftop Hoops', wins: 14, goals: 4, baskets: 52, coins: 2400, xp: 740, badge: 'ROOKIE' },
+      { id: 'ath_magma', name: 'MagmaStriker', char: 'footy', club: 'Caldera FC', wins: 13, goals: 32, baskets: 8, coins: 2200, xp: 680, badge: 'ROOKIE' },
+      { id: 'ath_aether', name: 'AetheriaHoops', char: 'hoops', club: 'Sky High Club', wins: 11, goals: 2, baskets: 42, coins: 1900, xp: 590, badge: 'ROOKIE' },
+      { id: 'ath_crystal', name: 'CrystalDribbler', char: 'footy', club: 'Prism United', wins: 9, goals: 22, baskets: 6, coins: 1600, xp: 480, badge: 'ROOKIE' },
+      { id: 'ath_rookie', name: 'RookiePhenom', char: 'hoops', club: 'Street League', wins: 7, goals: 1, baskets: 28, coins: 1300, xp: 390, badge: 'ROOKIE' }
+    ];
+
+    // Merge in real registered players from state.players
+    Object.keys(state.players).forEach(pid => {
+      const p = state.players[pid];
+      const pStats = p.stats || {};
+      const curChar = (p.equipped && p.equipped.skin && p.equipped.skin.includes('hoops')) ? 'hoops' : 'footy';
+      const existing = athletes.find(a => a.id === pid);
+      if (existing) {
+        existing.coins = p.coins || existing.coins;
+        existing.xp = p.xp || existing.xp;
+        existing.wins = pStats.wins || existing.wins;
+        existing.goals = pStats.goals || existing.goals;
+        existing.baskets = pStats.baskets || existing.baskets;
+      } else {
+        athletes.push({
+          id: pid,
+          name: p.playerName || ('Player ' + pid.slice(4, 9).toUpperCase()),
+          char: curChar,
+          club: 'FvH Global Club',
+          wins: pStats.wins || 0,
+          goals: pStats.goals || 0,
+          baskets: pStats.baskets || 0,
+          coins: p.coins || 0,
+          xp: p.xp || 0,
+          badge: 'ACTIVE'
+        });
+      }
+    });
+
+    // Score Calculator
+    function computeScore(ath, cat) {
+      if (cat === 'footy') {
+        return (ath.goals || 0) * 10 + (ath.winsFooty || Math.floor((ath.wins || 0) * 0.5)) * 40;
+      }
+      if (cat === 'hoops') {
+        return (ath.baskets || 0) * 5 + (ath.winsHoops || Math.floor((ath.wins || 0) * 0.35)) * 40;
+      }
+      if (cat === 'coins') {
+        return ath.coins || 0;
+      }
+      // default: season trophy points
+      return (ath.wins || 0) * 35 + (ath.goals || 0) * 6 + (ath.baskets || 0) * 3 + Math.floor((ath.xp || 0) / 8);
+    }
+
+    const ranked = athletes.map(ath => {
+      const score = computeScore(ath, qCategory);
+      return Object.assign({}, ath, { score });
+    });
+
+    ranked.sort((a, b) => b.score - a.score);
+
+    ranked.forEach((ath, idx) => {
+      ath.rank = idx + 1;
+      ath.isCurrentUser = Boolean(qPlayerId && ath.id === qPlayerId);
+    });
+
+    let playerRankInfo = null;
+    if (qPlayerId) {
+      const pIdx = ranked.findIndex(a => a.id === qPlayerId);
+      if (pIdx !== -1) {
+        const myRank = pIdx + 1;
+        const higher = pIdx > 0 ? ranked[pIdx - 1] : null;
+        playerRankInfo = {
+          rank: myRank,
+          score: ranked[pIdx].score,
+          pointsToNext: higher ? Math.max(1, higher.score - ranked[pIdx].score) : 0
+        };
+      }
+    }
+
+    return sendJson(res, 200, {
+      ok: true,
+      category: qCategory,
+      seasonName: 'Season 1: Cyber Arena',
+      seasonDaysLeft: 14,
+      totalAthletes: 14280 + Object.keys(state.players).length,
+      top: ranked.slice(0, 50),
+      player: playerRankInfo
+    });
+  }
+
   // ==========================================
   // API: Economy, Inventory, Battle Pass & Rewards (Prompt 4)
   // ==========================================

@@ -398,7 +398,29 @@
       tonQrCode: 'Scan with TON Wallet (Tonkeeper, Telegram Wallet)',
       tonPending: 'Waiting for on-chain transaction...',
       tonConfirmed: 'TON transaction verified on-chain!',
-      starsRedirect: 'Opening Telegram Stars checkout...'
+      starsRedirect: 'Opening Telegram Stars checkout...',
+      leaderboard: 'Leaderboard',
+      leaderboardTitle: 'LEADERBOARD',
+      leaderboardSubtitle: 'Global ranking of elite athletes in Season 1',
+      tabSeason: '🏆 Season',
+      tabFooty: '⚽ Footy',
+      tabHoops: '🏀 Hoops',
+      tabCoins: '🪙 Coins',
+      rankTrophies: 'Trophies',
+      rankGoals: 'Goals',
+      rankBaskets: 'Points',
+      rankCoins: 'FvH Coin',
+      yourRank: 'Your Rank',
+      pointsToNext: '{n} pts to climb rank',
+      divisionPro: 'Premier League',
+      divisionElite: 'Elite Division',
+      divisionChampion: 'Champions Division',
+      divisionLegend: 'Legend League',
+      seasonEndsIn: 'Season 1 ends in',
+      daysLeft: 'd',
+      podium1st: 'Arena Champion',
+      podium2nd: 'Vice Champion',
+      podium3rd: 'Bronze Medalist'
     },
     ru: {
       playHero: 'ИГРАТЬ',
@@ -737,7 +759,29 @@
       tonQrCode: 'Сканируйте кошельком TON (Tonkeeper, Telegram Кошелёк)',
       tonPending: 'Ожидание транзакции в сети TON...',
       tonConfirmed: 'Транзакция TON успешно подтверждена!',
-      starsRedirect: 'Открытие оплаты Telegram Stars...'
+      starsRedirect: 'Открытие оплаты Telegram Stars...',
+      leaderboard: 'Лидерборд',
+      leaderboardTitle: 'ТАБЛИЦА ЛИДЕРОВ',
+      leaderboardSubtitle: 'Глобальный рейтинг сильнейших атлетов Сезона 1',
+      tabSeason: '🏆 Сезон',
+      tabFooty: '⚽ Футбол',
+      tabHoops: '🏀 Баскетбол',
+      tabCoins: '🪙 Монеты',
+      rankTrophies: 'Трофеи',
+      rankGoals: 'Голы',
+      rankBaskets: 'Очки',
+      rankCoins: 'FvH Coin',
+      yourRank: 'Ваша позиция',
+      pointsToNext: 'До следующего ранга: {n} очков',
+      divisionPro: 'Премьер-Лига',
+      divisionElite: 'Элитный Дивизион',
+      divisionChampion: 'Дивизион Чемпионов',
+      divisionLegend: 'Легендарная Лига',
+      seasonEndsIn: 'Сезон 1 завершится через',
+      daysLeft: 'дн.',
+      podium1st: 'Чемпион Арены',
+      podium2nd: 'Вице-Чемпион',
+      podium3rd: 'Бронзовый Призёр'
     }
   };
 
@@ -6379,6 +6423,312 @@
 
 
 
+  // ==========================================
+  // LEADERBOARD / ТАБЛИЦА ЛИДЕРОВ СЕЗОНА 1
+  // ==========================================
+
+  function getCategoryUnit(cat) {
+    if (cat === 'footy') return '⚽';
+    if (cat === 'hoops') return '🏀';
+    if (cat === 'coins') return getFvhCoinSvg('inline');
+    return '🏆';
+  }
+
+  function createPodiumColHtml(ath, place, cat) {
+    var pClass = 'p' + place;
+    var crownHtml = place === 1 ? '<div class="fvh-podium-crown">👑</div>' : '';
+    var medalEmoji = place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉';
+    var avatarSvg = ath.char === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg();
+    var unit = getCategoryUnit(cat);
+
+    return '<div class="fvh-podium-col ' + pClass + '">' +
+      crownHtml +
+      '<div class="fvh-podium-avatar-box">' + avatarSvg + '</div>' +
+      '<div class="fvh-podium-name" title="' + ath.name + '">' + ath.name + '</div>' +
+      '<div class="fvh-podium-score">' + ath.score.toLocaleString() + ' ' + unit + '</div>' +
+      '<div class="fvh-podium-pedestal">' +
+      '  <span class="fvh-podium-num">#' + place + '</span>' +
+      '  <span class="fvh-podium-medal">' + medalEmoji + '</span>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function fetchLeaderboardData(cat, app, cb) {
+    var pid = getAppPlayerId(app);
+    var url = '/api/leaderboard?category=' + encodeURIComponent(cat) + (pid ? '&playerId=' + encodeURIComponent(pid) : '');
+
+    var handled = false;
+    function finish(d) {
+      if (handled) return;
+      handled = true;
+      cb(d);
+    }
+
+    try {
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timeoutId = setTimeout(function () {
+        if (controller) controller.abort();
+        fallbackClientLeaderboard(cat, app, finish);
+      }, 1800);
+
+      fetch(url, { signal: controller ? controller.signal : undefined })
+        .then(function (res) {
+          clearTimeout(timeoutId);
+          if (res.ok) return res.json();
+          throw new Error('Server status ' + res.status);
+        })
+        .then(function (data) {
+          if (data && data.ok && Array.isArray(data.top)) {
+            finish(data);
+          } else {
+            fallbackClientLeaderboard(cat, app, finish);
+          }
+        })
+        .catch(function () {
+          clearTimeout(timeoutId);
+          fallbackClientLeaderboard(cat, app, finish);
+        });
+    } catch (e) {
+      fallbackClientLeaderboard(cat, app, finish);
+    }
+  }
+
+  function fallbackClientLeaderboard(cat, app, cb) {
+    var myData = (app && app.store && app.store.data) || {};
+    var myStats = myData.stats || {};
+    var myCoins = myData.coins || 0;
+    var myXp = myData.xp || 0;
+    var myChar = myData.selectedCharacter || 'footy';
+
+    var athletes = [
+      { id: 'ath_apex', name: 'ApexStriker #10', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
+      { id: 'ath_dunk', name: 'DunkPhenom #23', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
+      { id: 'ath_viper', name: 'ViperVolley', char: 'footy', club: 'Rio Electro', wins: 41, goals: 98, baskets: 24, coins: 6800, xp: 2200, badge: 'PRO' },
+      { id: 'ath_rim', name: 'RimCrusher_Pro', char: 'hoops', club: 'Brooklyn Alley', wins: 39, goals: 18, baskets: 136, coins: 6400, xp: 2100, badge: 'ELITE' },
+      { id: 'ath_golden', name: 'GoldenBoot_Alim', char: 'footy', club: 'Emirates Arena', wins: 36, goals: 86, baskets: 30, coins: 9200, xp: 1950, badge: 'CHAMP' },
+      { id: 'ath_orbital', name: 'OrbitalSniper', char: 'hoops', club: 'Apollo Lunar', wins: 34, goals: 22, baskets: 118, coins: 5900, xp: 1800, badge: 'ELITE' },
+      { id: 'ath_shadow', name: 'ShadowStriker', char: 'footy', club: 'Kyoto Ninjas', wins: 31, goals: 74, baskets: 16, coins: 5100, xp: 1650, badge: 'PRO' },
+      { id: 'ath_blaze', name: 'BlazeCrossover', char: 'hoops', club: 'Chicago Fire', wins: 29, goals: 14, baskets: 98, coins: 4800, xp: 1520, badge: 'PRO' },
+      { id: 'ath_frost', name: 'FrostKeeper', char: 'footy', club: 'Nordic Frost', wins: 26, goals: 62, baskets: 12, coins: 4300, xp: 1400, badge: 'VET' },
+      { id: 'ath_air', name: 'AirJordan_99', char: 'hoops', club: 'Skyline Stars', wins: 25, goals: 10, baskets: 88, coins: 4100, xp: 1320, badge: 'PRO' },
+      { id: 'ath_turbo', name: 'TurboWinger', char: 'footy', club: 'Monaco Speed', wins: 23, goals: 55, baskets: 18, coins: 3800, xp: 1210, badge: 'VET' },
+      { id: 'ath_swish', name: 'SwishMaster', char: 'hoops', club: 'L.A. Beach', wins: 21, goals: 8, baskets: 76, coins: 3500, xp: 1100, badge: 'PRO' },
+      { id: 'ath_cyber', name: 'CyberGoalie', char: 'footy', club: 'Neo Seoul', wins: 19, goals: 44, baskets: 14, coins: 3200, xp: 990, badge: 'VET' },
+      { id: 'ath_alley', name: 'AlleyOop_King', char: 'hoops', club: 'Miami Court', wins: 18, goals: 6, baskets: 64, coins: 3000, xp: 910, badge: 'PRO' },
+      { id: 'ath_striker', name: 'RedwoodStriker', char: 'footy', club: 'California Pines', wins: 16, goals: 38, baskets: 10, coins: 2700, xp: 820, badge: 'VET' },
+      { id: 'ath_dunk2', name: 'HalfCourtHero', char: 'hoops', club: 'Rooftop Hoops', wins: 14, goals: 4, baskets: 52, coins: 2400, xp: 740, badge: 'ROOKIE' },
+      { id: 'ath_magma', name: 'MagmaStriker', char: 'footy', club: 'Caldera FC', wins: 13, goals: 32, baskets: 8, coins: 2200, xp: 680, badge: 'ROOKIE' },
+      { id: 'ath_aether', name: 'AetheriaHoops', char: 'hoops', club: 'Sky High Club', wins: 11, goals: 2, baskets: 42, coins: 1900, xp: 590, badge: 'ROOKIE' },
+      { id: 'ath_crystal', name: 'CrystalDribbler', char: 'footy', club: 'Prism United', wins: 9, goals: 22, baskets: 6, coins: 1600, xp: 480, badge: 'ROOKIE' },
+      { id: 'ath_rookie', name: 'RookiePhenom', char: 'hoops', club: 'Street League', wins: 7, goals: 1, baskets: 28, coins: 1300, xp: 390, badge: 'ROOKIE' }
+    ];
+
+    var myEntry = {
+      id: 'me',
+      name: myData.playerName || (myChar === 'footy' ? 'STRIKER #10 (ВЫ)' : 'FORWARD #23 (ВЫ)'),
+      char: myChar,
+      club: 'FvH Global Club',
+      wins: myStats.wins || 0,
+      goals: myStats.goals || 0,
+      baskets: myStats.baskets || 0,
+      winsFooty: myStats.winsFooty || Math.floor((myStats.wins || 0) * 0.5),
+      winsHoops: myStats.winsHoops || Math.floor((myStats.wins || 0) * 0.35),
+      coins: myCoins,
+      xp: myXp,
+      badge: 'ACTIVE',
+      isCurrentUser: true
+    };
+    athletes.push(myEntry);
+
+    function computeScore(ath, c) {
+      if (c === 'footy') {
+        return (ath.goals || 0) * 10 + (ath.winsFooty || Math.floor((ath.wins || 0) * 0.5)) * 40;
+      }
+      if (c === 'hoops') {
+        return (ath.baskets || 0) * 5 + (ath.winsHoops || Math.floor((ath.wins || 0) * 0.35)) * 40;
+      }
+      if (c === 'coins') {
+        return ath.coins || 0;
+      }
+      return (ath.wins || 0) * 35 + (ath.goals || 0) * 6 + (ath.baskets || 0) * 3 + Math.floor((ath.xp || 0) / 8);
+    }
+
+    var ranked = athletes.map(function (a) {
+      return Object.assign({}, a, { score: computeScore(a, cat) });
+    });
+    ranked.sort(function (a, b) { return b.score - a.score; });
+    ranked.forEach(function (a, idx) { a.rank = idx + 1; });
+
+    var myIdx = ranked.findIndex(function (a) { return a.isCurrentUser; });
+    var playerRankInfo = null;
+    if (myIdx !== -1) {
+      var higher = myIdx > 0 ? ranked[myIdx - 1] : null;
+      playerRankInfo = {
+        rank: myIdx + 1,
+        score: ranked[myIdx].score,
+        pointsToNext: higher ? Math.max(1, higher.score - ranked[myIdx].score) : 0
+      };
+    }
+
+    cb({
+      ok: true,
+      category: cat,
+      seasonName: 'Season 1: Cyber Arena',
+      seasonDaysLeft: 14,
+      totalAthletes: 14374,
+      top: ranked.slice(0, 50),
+      player: playerRankInfo
+    });
+  }
+
+  function buildLeaderboardPage(app, initialCategory) {
+    var curCategory = initialCategory || 'season';
+    var container = document.createElement('div');
+    container.className = 'screen solid page-screen has-nav fvh-leaderboard-page';
+    container.dataset.id = 'leaderboard';
+
+    var page = document.createElement('div');
+    page.className = 'page';
+
+    // Page Head
+    var head = document.createElement('div');
+    head.className = 'page-head';
+    var backBtn = document.createElement('button');
+    backBtn.className = 'btn icon back';
+    backBtn.textContent = '←';
+    backBtn.onclick = function () {
+      app.audio.play('click');
+      app.showMenu();
+    };
+    var title = document.createElement('h1');
+    title.textContent = tr('leaderboardTitle');
+    head.appendChild(backBtn);
+    head.appendChild(title);
+    page.appendChild(head);
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'page-body fvh-leaderboard-container';
+    page.appendChild(body);
+    container.appendChild(page);
+
+    function renderCategory(cat) {
+      curCategory = cat;
+      body.innerHTML = '';
+
+      // 1. Season Banner with Countdown & Live Pill
+      var banner = document.createElement('div');
+      banner.className = 'fvh-leaderboard-banner';
+      banner.innerHTML =
+        '<div class="fvh-leaderboard-banner-left">' +
+        '  <span class="fvh-live-pulse-badge">🔴 LIVE GLOBAL</span>' +
+        '  <h2 style="margin:4px 0 2px;font-size:18px;font-weight:900;">' + tr('leaderboardSubtitle') + '</h2>' +
+        '  <div style="font-size:12px;color:var(--text-muted);">' + tr('seasonEndsIn') + ' <b>14 ' + tr('daysLeft') + '</b> · 14,370+ атлетов</div>' +
+        '</div>' +
+        '<div class="fvh-leaderboard-banner-icon">🏆</div>';
+      body.appendChild(banner);
+
+      // 2. Segmented Category Tabs
+      var tabsWrap = document.createElement('div');
+      tabsWrap.className = 'fvh-tabs-segmented';
+      var tabs = [
+        { id: 'season', label: tr('tabSeason') },
+        { id: 'footy', label: tr('tabFooty') },
+        { id: 'hoops', label: tr('tabHoops') },
+        { id: 'coins', label: tr('tabCoins') }
+      ];
+      tabs.forEach(function (t) {
+        var tBtn = document.createElement('button');
+        tBtn.className = 'fvh-tab-seg' + (t.id === curCategory ? ' active' : '');
+        tBtn.textContent = t.label;
+        tBtn.onclick = function () {
+          if (curCategory !== t.id) {
+            app.audio.play('click');
+            renderCategory(t.id);
+          }
+        };
+        tabsWrap.appendChild(tBtn);
+      });
+      body.appendChild(tabsWrap);
+
+      // Loading placeholder or fetch
+      var listWrap = document.createElement('div');
+      listWrap.className = 'fvh-leaderboard-content';
+      listWrap.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Загрузка рейтинга...</div>';
+      body.appendChild(listWrap);
+
+      fetchLeaderboardData(cat, app, function (data) {
+        renderLeaderboardList(listWrap, data, cat);
+      });
+    }
+
+    function renderLeaderboardList(wrap, data, cat) {
+      wrap.innerHTML = '';
+      var topAthletes = data.top || [];
+      if (topAthletes.length === 0) {
+        wrap.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">' + tr('emptyCategory') + '</div>';
+        return;
+      }
+
+      var top1 = topAthletes[0];
+      var top2 = topAthletes[1];
+      var top3 = topAthletes[2];
+      var rest = topAthletes.slice(3);
+
+      // Top 3 Podium
+      var podium = document.createElement('div');
+      podium.className = 'fvh-podium-wrap';
+      podium.innerHTML =
+        (top2 ? createPodiumColHtml(top2, 2, cat) : '') +
+        (top1 ? createPodiumColHtml(top1, 1, cat) : '') +
+        (top3 ? createPodiumColHtml(top3, 3, cat) : '');
+      wrap.appendChild(podium);
+
+      // Ranks 4 to 50 List
+      var list = document.createElement('div');
+      list.className = 'fvh-leaderboard-rows';
+      rest.forEach(function (ath) {
+        var row = document.createElement('div');
+        row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '');
+        row.innerHTML =
+          '<div class="fvh-lb-rank">#' + ath.rank + '</div>' +
+          '<div class="fvh-lb-avatar">' + (ath.char === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) + '</div>' +
+          '<div class="fvh-lb-info">' +
+          '  <div class="fvh-lb-name">' + ath.name + (ath.isCurrentUser ? ' <span class="fvh-me-badge">ВЫ</span>' : '') + '</div>' +
+          '  <div class="fvh-lb-club">' + (ath.club || 'FvH Club') + ' · <span class="fvh-badge-tier">' + (ath.badge || 'PRO') + '</span></div>' +
+          '</div>' +
+          '<div class="fvh-lb-score">' +
+          '  <span class="fvh-lb-val">' + ath.score.toLocaleString() + '</span> ' +
+          '  <span class="fvh-lb-unit">' + getCategoryUnit(cat) + '</span>' +
+          '</div>';
+        list.appendChild(row);
+      });
+      wrap.appendChild(list);
+
+      // Sticky Bottom Bar for Current Player
+      if (data.player) {
+        var sticky = document.createElement('div');
+        sticky.className = 'fvh-leaderboard-sticky-player';
+        var myChar = app.store.data.selectedCharacter || 'footy';
+        sticky.innerHTML =
+          '<div class="fvh-lb-sticky-rank">#' + data.player.rank + '</div>' +
+          '<div class="fvh-lb-sticky-avatar">' + (myChar === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) + '</div>' +
+          '<div class="fvh-lb-sticky-info">' +
+          '  <div class="fvh-lb-sticky-title">' + tr('yourRank') + '</div>' +
+          '  <div class="fvh-lb-sticky-sub">' + (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : 'Лидер дивизиона!') + '</div>' +
+          '</div>' +
+          '<div class="fvh-lb-sticky-score">' +
+          '  <b>' + data.player.score.toLocaleString() + '</b> ' + getCategoryUnit(cat) +
+          '</div>';
+        wrap.appendChild(sticky);
+      }
+    }
+
+    renderCategory(curCategory);
+    container.appendChild(createSharedBottomNav('leaderboard', app));
+    return container;
+  }
+
   // Build Profile Screen
   function buildProfilePage(app) {
     var container = document.createElement('div');
@@ -6481,6 +6831,15 @@
       '<div class="fvh-metric-tile"><span>🪙 ' + tr('coinsEarned') + '</span><b>' + (app.store.data.coins || 0) + '</b></div>' +
       '<div class="fvh-metric-tile"><span>👑 ' + tr('bpUnlocks') + '</span><b>' + (bpState.claimed.length) + ' / 30</b></div>' +
       '</div>';
+    var lbBtn = document.createElement('button');
+    lbBtn.className = 'btn primary small block';
+    lbBtn.style.marginTop = '12px';
+    lbBtn.innerHTML = '🏆 ' + tr('leaderboard') + ' ➔';
+    lbBtn.onclick = function () {
+      app.audio.play('click');
+      app.go('leaderboard');
+    };
+    metricsCard.appendChild(lbBtn);
     body.appendChild(metricsCard);
 
     // 4. Mystery Packs Unopened Inventory
@@ -8262,6 +8621,7 @@
       '</div>' +
       '<div class="fvh-topbar-stats">' +
       '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
       '<button class="fvh-pill" id="fvh-btn-profile" title="' + tr('profile') + '">⭐ LVL ' + bpState.level + '</button>' +
       '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
       '</div>';
@@ -8269,6 +8629,7 @@
 
     topbar.querySelector('.fvh-topbar-brand').onclick = function () { app.showMenu(); };
     topbar.querySelector('#fvh-btn-coins').onclick = function () { app.audio.play('click'); app.go('shop'); };
+    topbar.querySelector('#fvh-btn-leaderboard').onclick = function () { app.audio.play('click'); app.go('leaderboard'); };
     topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
 
@@ -8637,6 +8998,10 @@
       } else if (page === 'arenas') {
         app.audio.play('click');
         app.show(buildArenaSelectPage(app), 'arenas');
+      } else if (page === 'leaderboard') {
+        app.audio.play('click');
+        var catTarget = (opts && opts.category) || 'season';
+        app.show(buildLeaderboardPage(app, catTarget), 'leaderboard');
       } else {
         originalGo(page);
       }
@@ -8658,6 +9023,11 @@
     // Dedicated Arena Selection Gallery
     app.showArenas = function () {
       app.show(buildArenaSelectPage(app), 'arenas');
+    };
+
+    // Dedicated Leaderboard Screen
+    app.showLeaderboard = function (cat) {
+      app.show(buildLeaderboardPage(app, cat || 'season'), 'leaderboard');
     };
 
     // Refresh menu on language change
@@ -8682,6 +9052,8 @@
                 app.show(buildCharactersPage(app), 'characters');
               } else if (app.state === 'mode') {
                 app.show(buildModeSelectPage(app), 'mode');
+              } else if (app.state === 'leaderboard') {
+                app.show(buildLeaderboardPage(app), 'leaderboard');
               }
             });
           }
@@ -8722,6 +9094,8 @@
       app.show(buildShopPage(app, targetCat || 'all', targetInspect), 'shop');
     } else if (targetPage === 'arenas') {
       app.show(buildArenaSelectPage(app), 'arenas');
+    } else if (targetPage === 'leaderboard' || (params && (params.get('leaderboard') || params.get('lb')))) {
+      app.show(buildLeaderboardPage(app, targetCat || 'season'), 'leaderboard');
     } else if (targetPage === 'mode') {
       app.show(buildModeSelectPage(app), 'mode');
       if (quicksearch) {
