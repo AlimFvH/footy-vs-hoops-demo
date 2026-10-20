@@ -12329,7 +12329,7 @@ define("services/config", ["require", "exports"], function (require, exports) {
     exports.CONFIG = void 0;
     exports.CONFIG = {
         BACKEND_URL: null,
-        BOT_APP_URL: '',
+        BOT_APP_URL: 'https://t.me/FootyHoopsGameBot',
         TELEGRAM_CHANNEL_URL: '',
         X_URL: '',
         VERSION: '0.3.13-demo',

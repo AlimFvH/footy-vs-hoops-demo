@@ -3594,7 +3594,7 @@
 
       var hashNum = Math.abs(pid.split('').reduce(function (a, b) { return ((a << 5) - a) + b.charCodeAt(0); }, 0) % 90000 + 10000);
       var refCode = 'FVH-' + hashNum;
-      var refLink = 'https://t.me/footy_vs_hoops_bot?start=ref_' + refCode;
+      var refLink = 'https://t.me/FootyHoopsGameBot?start=ref_' + refCode;
 
       // Loading Container
       var hubWrap = document.createElement('div');
