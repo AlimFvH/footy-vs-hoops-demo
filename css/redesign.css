@@ -3240,3 +3240,199 @@ html, body {
   50% { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(0.85); opacity: 0.6; }
 }
+
+/* ========================================================
+   Wardrobe & Match HUD Boost System (v2.0.7)
+   ======================================================== */
+
+.fvh-boost-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  gap: 8px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.fvh-boost-card.is-eq {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+  background: rgba(14, 30, 56, 0.85);
+}
+
+.fvh-boost-type-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.fvh-boost-type-tag.active {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.fvh-boost-type-tag.passive {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.fvh-boost-charges-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.fvh-boost-effect-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin: 4px 0 8px;
+  min-height: 32px;
+}
+
+/* In-Match HUD Boost Widget */
+.fvh-hud-boost-widget {
+  position: absolute;
+  top: calc(var(--sat) + 62px);
+  right: calc(var(--sar) + 10px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: auto !important;
+}
+
+.fvh-hud-boost-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(0, 240, 255, 0.5);
+  border-radius: 24px;
+  padding: 6px 12px;
+  color: #fff;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(0, 240, 255, 0.2);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.fvh-hud-boost-btn:active {
+  transform: scale(0.93);
+}
+
+.fvh-hud-boost-btn.active {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.95), rgba(245, 158, 11, 0.95));
+  border-color: #fef08a;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.7), 0 0 40px rgba(234, 88, 12, 0.4);
+  animation: fvhBoostPulse 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes fvhBoostPulse {
+  0% { transform: scale(1); box-shadow: 0 0 14px rgba(245, 158, 11, 0.5); }
+  100% { transform: scale(1.08); box-shadow: 0 0 26px rgba(245, 158, 11, 0.9); }
+}
+
+.fvh-hud-boost-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.fvh-hud-boost-label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.fvh-hud-boost-charges {
+  font-size: 10px;
+  background: rgba(0, 240, 255, 0.25);
+  color: var(--neon-cyan);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.fvh-hud-boost-charges.empty {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.fvh-hud-boost-kbd {
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #cbd5e1;
+}
+
+.hud.has-touch .fvh-hud-boost-kbd {
+  display: none;
+}
+
+.fvh-hud-boost-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 18px;
+  padding: 5px 12px;
+  color: #34d399;
+  font-size: 11.5px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Mode Select Boost Controls */
+.fvh-ctrl-boost-row {
+  margin-top: 8px;
+}
+
+.fvh-mode-boost-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px 10px;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fvh-mode-boost-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+

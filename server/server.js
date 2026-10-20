@@ -190,7 +190,13 @@ const ITEM_CATALOG = {
   // Mystery Packs
   'pack_footy': { name: 'Footy Striker Pack', category: 'packs', price: 250, type: 'pack', packId: 'footy' },
   'pack_hoops': { name: 'Hoops All-Star Pack', category: 'packs', price: 250, type: 'pack', packId: 'hoops' },
-  'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' }
+  'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' },
+
+  // Boosts (Catalog items with charges and distinct gameplay effects)
+  'boost_turbo': { name: 'Turbo Boots', category: 'boosts', slot: 'boost', price: 60, type: 'active', duration: 12 },
+  'boost_lungs': { name: 'Iron Lungs', category: 'boosts', slot: 'boost', price: 70, type: 'passive', duration: 0 },
+  'boost_power': { name: 'Sharp Shooter', category: 'boosts', slot: 'boost', price: 110, type: 'passive', duration: 0 },
+  'boost_coins': { name: 'Coin Doubler', category: 'boosts', slot: 'boost', price: 150, type: 'passive', duration: 0 }
 };
 
 // Bundles Definition
@@ -409,6 +415,8 @@ function createDefaultPlayer(playerId) {
       trail: 'trail_default',
       frame: 'frame_default'
     },
+    boostCharges: {},
+    armedBoost: null,
     packs: { free: {}, paid: {} },
     battlePass: {
       claimedFree: [],
@@ -2066,6 +2074,8 @@ const server = http.createServer((req, res) => {
       xp: player.xp,
       owned: player.owned,
       equipped: player.equipped,
+      boostCharges: player.boostCharges || {},
+      armedBoost: player.armedBoost || null,
       packs: player.packs,
       battlePass: player.battlePass,
       claimedQuests: player.claimedQuests,
@@ -2095,6 +2105,15 @@ const server = http.createServer((req, res) => {
           }
         });
       }
+      if (data.boostCharges && typeof data.boostCharges === 'object') {
+        if (!player.boostCharges) player.boostCharges = {};
+        Object.keys(data.boostCharges).forEach(bId => {
+          player.boostCharges[bId] = Math.max(player.boostCharges[bId] || 0, Number(data.boostCharges[bId]) || 0);
+        });
+      }
+      if (data.armedBoost !== undefined) {
+        player.armedBoost = data.armedBoost ? String(data.armedBoost) : null;
+      }
       // Security: Do NOT trust client-supplied isPremium!
       // Battle Pass Premium is strictly server-authoritative and can only be unlocked via verified payment.
       void data.isPremium;
@@ -2115,6 +2134,8 @@ const server = http.createServer((req, res) => {
         xp: player.xp,
         owned: player.owned,
         equipped: player.equipped,
+        boostCharges: player.boostCharges || {},
+        armedBoost: player.armedBoost || null,
         battlePass: player.battlePass,
         packs: player.packs
       });
@@ -2208,13 +2229,13 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 200, resp);
       }
 
-      // B. Check if buying a Single Item or Mystery Pack
+      // B. Check if buying a Single Item, Mystery Pack or Boost
       const catItem = ITEM_CATALOG[itemId];
       if (!catItem) {
         return sendJson(res, 404, { ok: false, error: 'item_not_found', message: 'Item does not exist in store catalog' });
       }
 
-      if (catItem.category !== 'packs') {
+      if (catItem.category !== 'packs' && catItem.category !== 'boosts') {
         if (player.owned.includes(itemId)) {
           return sendJson(res, 400, { ok: false, error: 'already_owned', message: 'You already own this cosmetic item' });
         }
@@ -2232,6 +2253,9 @@ const server = http.createServer((req, res) => {
         if (!player.packs) player.packs = { free: {}, paid: {} };
         if (!player.packs.paid) player.packs.paid = {};
         player.packs.paid[packKey] = (player.packs.paid[packKey] || 0) + 1;
+      } else if (catItem.category === 'boosts') {
+        if (!player.boostCharges) player.boostCharges = {};
+        player.boostCharges[itemId] = (player.boostCharges[itemId] || 0) + 1;
       } else {
         player.owned.push(itemId);
       }
@@ -2255,6 +2279,8 @@ const server = http.createServer((req, res) => {
         xp: player.xp,
         owned: player.owned,
         packs: player.packs,
+        boostCharges: player.boostCharges || {},
+        armedBoost: player.armedBoost || null,
         purchasedItem: itemId
       };
 
@@ -2592,6 +2618,44 @@ const server = http.createServer((req, res) => {
       }
 
       const player = getPlayer(playerId);
+
+      // Handle Boost Arming/Disarming
+      if (slot === 'boost' || slot === 'armedBoost') {
+        if (!itemId || itemId === 'none' || itemId === 'disarm') {
+          player.armedBoost = null;
+          player.updatedAt = Date.now();
+          persistState();
+          return sendJson(res, 200, {
+            ok: true,
+            success: true,
+            slot: 'boost',
+            itemId: null,
+            armedBoost: null,
+            equipped: player.equipped
+          });
+        }
+        const hasCharges = (player.boostCharges && (player.boostCharges[itemId] || 0) > 0) || player.owned.includes(itemId);
+        if (!hasCharges) {
+          return sendJson(res, 403, {
+            ok: false,
+            error: 'item_not_owned',
+            message: 'No charges remaining for this boost. Purchase more in Store.'
+          });
+        }
+        player.armedBoost = itemId;
+        player.updatedAt = Date.now();
+        persistState();
+        return sendJson(res, 200, {
+          ok: true,
+          success: true,
+          slot: 'boost',
+          itemId,
+          armedBoost: itemId,
+          equipped: player.equipped,
+          boostCharges: player.boostCharges || {}
+        });
+      }
+
       const isDefault = ITEM_CATALOG[itemId] && ITEM_CATALOG[itemId].isDefault;
       const isOwned = player.owned.includes(itemId) || isDefault;
 

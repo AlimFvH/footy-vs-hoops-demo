@@ -133,6 +133,25 @@
       catCelebrations: 'Celebrations',
       catPacks: 'Packs',
       catBoosts: 'Boosts',
+      boostArmed: 'Armed',
+      boostArm: 'Equip Boost',
+      boostDisarm: 'Unequip',
+      boostActiveType: 'ACTIVE',
+      boostPassiveType: 'PASSIVE',
+      boostActiveDesc: 'Manual on-screen or [B] keyboard trigger for 12s Turbo Overdrive',
+      boostPassiveDesc: 'Automatic permanent buff applied throughout the entire match',
+      boostCharges: '{n} Uses',
+      boostUsesLeft: '{n} Uses Remaining',
+      noBoostEquipped: 'No Boost Equipped',
+      boostsWardrobeTitle: 'Equipped Boost',
+      boostBuyMore: 'Buy +1 Charge',
+      changeBoost: 'Change',
+      selectBoostPrompt: 'Select Boost for Match',
+      emptyBoostsDesc: 'Boosts give you decisive game-changing edges like super-speed, doubled stamina, and multiplied match earnings. Visit the Shop to acquire boosts!',
+      boostTurboDesc: '+15% Turbo Speed Overdrive (Manual In-Match Activation)',
+      boostLungsDesc: '2x Stamina Regeneration and -40% Tackle Stamina Cost',
+      boostPowerDesc: '+12% Shot Power and +25% Aim Accuracy',
+      boostCoinsDesc: '2x Multiplied Coin Rewards on Match Completion',
       coinPackageNotice: 'Official internal game sports currency. Separate from future tokens ($FOOTY / $HOOPS).',
       pkgStarter: 'Starter: 500 FvH Coin',
       pkgPro: 'Pro: 1,200 FvH Coin',
@@ -454,6 +473,25 @@
       catCelebrations: 'Празднования',
       catPacks: 'Пакеты',
       catBoosts: 'Бусты',
+      boostArmed: 'Снаряжён',
+      boostArm: 'Снарядить',
+      boostDisarm: 'Снять',
+      boostActiveType: 'АКТИВНЫЙ',
+      boostPassiveType: 'ПАССИВНЫЙ',
+      boostActiveDesc: 'Ручная активация в матче (кнопка на экране или [B] на клавиатуре) на 12 секунд супер-ускорения',
+      boostPassiveDesc: 'Постоянное автоматическое усиление на протяжении всего матча',
+      boostCharges: '{n} зарядов',
+      boostUsesLeft: 'Осталось зарядов: {n}',
+      noBoostEquipped: 'Буст не выбран',
+      boostsWardrobeTitle: 'Выбранный буст',
+      boostBuyMore: 'Купить +1 заряд',
+      changeBoost: 'Выбрать',
+      selectBoostPrompt: 'Выберите буст на матч',
+      emptyBoostsDesc: 'Бусты дают решающее преимущество: супер-скорость, удвоенную выносливость и удвоение наград. Загляните в магазин за новыми бустами!',
+      boostTurboDesc: '+15% Турбо-ускорение бега (ручная активация во время матча)',
+      boostLungsDesc: '2x Скорость восстановления выносливости и -40% расход на отбор',
+      boostPowerDesc: '+12% Сила удара/броска и +25% точность прицеливания',
+      boostCoinsDesc: '2x Удвоение монет за завершение каждого матча',
       coinPackageNotice: 'Официальная внутриигровая спортивная валюта. Полностью отделена от будущих токенов ($FOOTY / $HOOPS).',
       pkgStarter: 'Стартовый: 500 FvH Монет',
       pkgPro: 'Про: 1 200 FvH Монет',
@@ -1161,7 +1199,7 @@
     var isLg = size === 'large';
     var w = isLg ? 200 : 76;
     var h = isLg ? 200 : 76;
-    var id = item.id || '';
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
 
     // Color configs based on skin ID
     var primary = '#1e3a8a';
@@ -1185,6 +1223,14 @@
       primary = '#854d0e'; secondary = '#fef08a'; accent = '#ffffff'; number = '1'; sash = true;
     } else if (id === 'skin_cyber') {
       primary = '#581c87'; secondary = '#d946ef'; accent = '#00f0ff'; number = '99'; sash = true;
+    } else if (id === 'skin_sunset') {
+      primary = '#ea580c'; secondary = '#facc15'; accent = '#ffffff'; number = '8'; stripe = true;
+    } else if (id === 'skin_hydro') {
+      primary = '#0369a1'; secondary = '#06b6d4'; accent = '#67e8f9'; number = '11'; sash = true;
+    } else if (id === 'skin_mars') {
+      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; number = '42'; stripe = true;
+    } else if (id === 'skin_astronaut') {
+      primary = '#334155'; secondary = '#94a3b8'; accent = '#38bdf8'; number = '01';
     }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -1217,8 +1263,8 @@
     var isLg = size === 'large';
     var w = isLg ? 200 : 76;
     var h = isLg ? 200 : 76;
-    var id = item.id || '';
-    var isHoops = id.indexOf('hoops') !== -1;
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+    var isHoops = id.indexOf('hoops') !== -1 || id === 'ball_tidal' || id === 'ball_cyber_neon';
 
     if (isHoops) {
       // Basketball variations
@@ -1233,6 +1279,10 @@
         baseColor = '#94a3b8'; seamColor = '#334155';
       } else if (id === 'ball_hoops_midnight') {
         baseColor = '#1e1b4b'; seamColor = '#f59e0b'; orbital = true;
+      } else if (id === 'ball_tidal') {
+        baseColor = '#0891b2'; seamColor = '#cffafe';
+      } else if (id === 'ball_cyber_neon') {
+        baseColor = '#180828'; seamColor = '#f43f5e'; glowFilter = 'filter="drop-shadow(0 0 6px #f43f5e)"'; orbital = true;
       }
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -1266,6 +1316,10 @@
         ballGradStart = '#fef08a'; ballGradEnd = '#713f12'; patchColor = '#ca8a04'; seamColor = '#fef08a';
       } else if (id === 'ball_footy_inferno') {
         ballGradStart = '#f97316'; ballGradEnd = '#431407'; patchColor = '#1f0803'; seamColor = '#ef4444'; hasAura = true;
+      } else if (id === 'ball_footy_solar') {
+        ballGradStart = '#fbbf24'; ballGradEnd = '#b45309'; patchColor = '#78350f'; seamColor = '#f59e0b'; hasAura = true;
+      } else if (id === 'ball_earthrise') {
+        ballGradStart = '#38bdf8'; ballGradEnd = '#0369a1'; patchColor = '#15803d'; seamColor = '#ffffff'; hasAura = true;
       }
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -1756,13 +1810,292 @@
     var isLg = size === 'large';
     var w = isLg ? 160 : 76;
     var h = isLg ? 160 : 76;
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+
+    if (id === 'cel_fireworks') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#030712"/>' +
+        '<circle cx="50" cy="40" r="14" stroke="#ec4899" stroke-width="2" stroke-dasharray="3 3"/>' +
+        '<circle cx="50" cy="40" r="28" stroke="#facc15" stroke-width="1.5" stroke-dasharray="4 4"/>' +
+        '<path d="M50 20L50 60 M30 40L70 40 M36 26L64 54 M64 26L36 54" stroke="#38bdf8" stroke-width="1.5"/>' +
+        '<circle cx="50" cy="40" r="4" fill="#ffffff"/>' +
+        '<circle cx="28" cy="30" r="2" fill="#ec4899"/><circle cx="72" cy="30" r="2" fill="#facc15"/><circle cx="50" cy="12" r="2.5" fill="#38bdf8"/>' +
+        '</svg>';
+    }
+
+    if (id === 'cel_shockwave') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#050814"/>' +
+        '<circle cx="50" cy="50" r="38" stroke="#00f0ff" stroke-width="3" opacity="0.4"/>' +
+        '<circle cx="50" cy="50" r="26" stroke="#38bdf8" stroke-width="3" opacity="0.7"/>' +
+        '<circle cx="50" cy="50" r="14" stroke="#ffffff" stroke-width="3.5"/>' +
+        '<circle cx="50" cy="50" r="5" fill="#00f0ff"/>' +
+        '<polygon points="50,4 52,14 48,14" fill="#00f0ff"/><polygon points="50,96 52,86 48,86" fill="#00f0ff"/>' +
+        '<polygon points="4,50 14,48 14,52" fill="#00f0ff"/><polygon points="96,50 86,48 86,52" fill="#00f0ff"/>' +
+        '</svg>';
+    }
+
+    if (id === 'cel_flames') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#180702"/>' +
+        '<path d="M50 12 C65 30 75 48 72 68 C70 82 58 88 50 88 C42 88 30 82 28 68 C25 48 35 30 50 12 Z" fill="#ef4444"/>' +
+        '<path d="M50 26 C60 40 68 54 65 70 C63 80 55 84 50 84 C45 84 37 80 35 70 C32 54 40 40 50 26 Z" fill="#f97316"/>' +
+        '<path d="M50 42 C56 52 60 62 58 74 C57 80 53 82 50 82 C47 82 43 80 42 74 C40 62 44 52 50 42 Z" fill="#fde047"/>' +
+        '<circle cx="50" cy="72" r="4" fill="#ffffff"/>' +
+        '</svg>';
+    }
+
+    if (id === 'cel_goldrain') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#140f02"/>' +
+        '<circle cx="30" cy="28" r="9" fill="#facc15" stroke="#78350f" stroke-width="1.8"/>' +
+        '<circle cx="68" cy="24" r="11" fill="#facc15" stroke="#78350f" stroke-width="2"/>' +
+        '<circle cx="48" cy="52" r="13" fill="#facc15" stroke="#78350f" stroke-width="2.2"/>' +
+        '<circle cx="24" cy="70" r="8" fill="#facc15" stroke="#78350f" stroke-width="1.6"/>' +
+        '<circle cx="76" cy="68" r="10" fill="#facc15" stroke="#78350f" stroke-width="1.8"/>' +
+        '<text x="48" y="57" font-family="Arial Black" font-size="12" fill="#78350f" text-anchor="middle">★</text>' +
+        '<polygon points="50,6 52,14 60,14 53,19 56,26 50,22 44,26 47,19 40,14 48,14" fill="#fef08a"/>' +
+        '<polygon points="86,40 88,46 94,46 89,50 91,56 86,52 81,56 83,50 78,46 84,46" fill="#fef08a"/>' +
+        '</svg>';
+    }
+
+    // Default Confetti Burst (cel_confetti)
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
       '<circle cx="50" cy="50" r="30" fill="#f59e0b" opacity="0.2"/>' +
       '<polygon points="50,15 54,38 78,35 58,50 68,75 50,60 32,75 42,50 22,35 46,38" fill="#facc15"/>' +
-      '<circle cx="20" cy="25" r="3" fill="#ec4899"/>' +
-      '<circle cx="80" cy="25" r="3" fill="#00f0ff"/>' +
-      '<circle cx="85" cy="70" r="3" fill="#10b981"/>' +
-      '<circle cx="15" cy="70" r="3" fill="#f97316"/>' +
+      '<rect x="18" y="24" width="7" height="3" rx="1.5" fill="#ec4899" transform="rotate(30, 21, 25)"/>' +
+      '<rect x="76" y="24" width="7" height="3" rx="1.5" fill="#00f0ff" transform="rotate(-25, 79, 25)"/>' +
+      '<rect x="82" y="66" width="7" height="3" rx="1.5" fill="#10b981" transform="rotate(45, 85, 67)"/>' +
+      '<rect x="14" y="68" width="7" height="3" rx="1.5" fill="#f97316" transform="rotate(-40, 17, 69)"/>' +
+      '<circle cx="34" cy="20" r="2.5" fill="#38bdf8"/>' +
+      '<circle cx="68" cy="78" r="2.5" fill="#ec4899"/>' +
+      '</svg>';
+  }
+
+  // Detailed High-Fidelity Boost SVG
+  function getDetailedBoostSvg(item, size) {
+    var isLg = size === 'large';
+    var isHud = size === 'hud';
+    var w = isLg ? 180 : isHud ? 44 : 76;
+    var h = w;
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+
+    // 1. Turbo Boots (boost_turbo) - Cybernetic speed boots with glowing neon wings
+    if (id === 'boost_turbo') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<linearGradient id="turboGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#00f0ff"/>' +
+        '<stop offset="50%" stop-color="#0284c7"/>' +
+        '<stop offset="100%" stop-color="#1e1b4b"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="0%">' +
+        '<stop offset="0%" stop-color="#fef08a"/>' +
+        '<stop offset="60%" stop-color="#f97316"/>' +
+        '<stop offset="100%" stop-color="#ef4444"/>' +
+        '</linearGradient>' +
+        '<filter id="glowTurbo"><feGaussianBlur stdDeviation="2" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
+        '</defs>' +
+        '<circle cx="50" cy="50" r="44" fill="#080e1c" stroke="#00f0ff" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="40" fill="rgba(0, 240, 255, 0.08)"/>' +
+        // Speed trail streaks
+        '<line x1="12" y1="36" x2="28" y2="36" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
+        '<line x1="8" y1="46" x2="24" y2="46" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<line x1="14" y1="56" x2="30" y2="56" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>' +
+        // High-tech winged cleat/sneaker body
+        '<path d="M34 50 L48 30 L60 30 L62 46 L78 52 L86 64 L84 72 L36 72 Z" fill="url(#turboGrad)" stroke="#38bdf8" stroke-width="2"/>' +
+        // Sole and studs
+        '<path d="M34 72 L86 72 L84 78 L34 78 Z" fill="#00f0ff"/>' +
+        '<rect x="40" y="78" width="6" height="4" rx="1" fill="#facc15"/>' +
+        '<rect x="54" y="78" width="6" height="4" rx="1" fill="#facc15"/>' +
+        '<rect x="74" y="78" width="6" height="4" rx="1" fill="#facc15"/>' +
+        // Glowing energy wing extending backward
+        '<path d="M52 38 L32 20 C28 18 36 26 34 32 C32 36 24 38 22 42 L52 46 Z" fill="url(#flameGrad)" filter="url(#glowTurbo)"/>' +
+        '<path d="M58 44 L40 32 C38 34 46 38 44 42 L58 48 Z" fill="#fef08a"/>' +
+        // Neon laces & accents
+        '<line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>' +
+        '<line x1="52" y1="40" x2="62" y2="44" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>' +
+        '</svg>';
+    }
+
+    // 2. Iron Lungs (boost_lungs) - Cybernetic oxygen lungs with stamina energy conduits
+    if (id === 'boost_lungs') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<linearGradient id="lungLeft" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#34d399"/>' +
+        '<stop offset="60%" stop-color="#059669"/>' +
+        '<stop offset="100%" stop-color="#064e3b"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="lungRight" x1="100%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="0%" stop-color="#34d399"/>' +
+        '<stop offset="60%" stop-color="#059669"/>' +
+        '<stop offset="100%" stop-color="#064e3b"/>' +
+        '</linearGradient>' +
+        '<filter id="glowLung"><feGaussianBlur stdDeviation="2" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
+        '</defs>' +
+        '<circle cx="50" cy="50" r="44" fill="#041611" stroke="#10b981" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="40" fill="rgba(16, 185, 129, 0.08)"/>' +
+        // Windpipe / Trachea
+        '<rect x="46" y="16" width="8" height="24" rx="3" fill="#0f766e" stroke="#34d399" stroke-width="1.6"/>' +
+        '<line x1="46" y1="22" x2="54" y2="22" stroke="#34d399" stroke-width="1.2"/>' +
+        '<line x1="46" y1="28" x2="54" y2="28" stroke="#34d399" stroke-width="1.2"/>' +
+        '<line x1="46" y1="34" x2="54" y2="34" stroke="#34d399" stroke-width="1.2"/>' +
+        // Central Stamina Reactor Core
+        '<circle cx="50" cy="44" r="7" fill="#10b981" filter="url(#glowLung)"/>' +
+        '<circle cx="50" cy="44" r="3.5" fill="#ffffff"/>' +
+        // Left Lung Lobe
+        '<path d="M46 38 C34 38 22 46 22 62 C22 76 34 82 44 80 C47 79 48 74 48 68 C48 56 47 44 46 38 Z" fill="url(#lungLeft)" stroke="#34d399" stroke-width="1.8"/>' +
+        // Right Lung Lobe
+        '<path d="M54 38 C66 38 78 46 78 62 C78 76 66 82 56 80 C53 79 52 74 52 68 C52 56 53 44 54 38 Z" fill="url(#lungRight)" stroke="#34d399" stroke-width="1.8"/>' +
+        // Bronchial circuits
+        '<path d="M46 48 Q36 54 32 66 M44 58 Q36 64 36 72" stroke="#a7f3d0" stroke-width="1.5" stroke-linecap="round" fill="none"/>' +
+        '<path d="M54 48 Q64 54 68 66 M56 58 Q64 64 64 72" stroke="#a7f3d0" stroke-width="1.5" stroke-linecap="round" fill="none"/>' +
+        // Oxygen pulse nodes
+        '<circle cx="32" cy="66" r="2.5" fill="#ffffff" filter="url(#glowLung)"/>' +
+        '<circle cx="68" cy="66" r="2.5" fill="#ffffff" filter="url(#glowLung)"/>' +
+        '</svg>';
+    }
+
+    // 3. Sharp Shooter (boost_power) - Holographic sniper reticle and target crosshair
+    if (id === 'boost_power') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<filter id="glowPower"><feGaussianBlur stdDeviation="2" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
+        '</defs>' +
+        '<circle cx="50" cy="50" r="44" fill="#14081c" stroke="#a855f7" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="40" fill="rgba(168, 85, 247, 0.08)"/>' +
+        // Outer concentric target ring
+        '<circle cx="50" cy="50" r="32" stroke="#c084fc" stroke-width="1.6" stroke-dasharray="8 4"/>' +
+        // Middle reticle ring with angle brackets
+        '<circle cx="50" cy="50" r="22" stroke="#ec4899" stroke-width="2"/>' +
+        '<circle cx="50" cy="50" r="10" stroke="#f43f5e" stroke-width="2.2"/>' +
+        // Crosshair beams
+        '<line x1="50" y1="12" x2="50" y2="34" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<line x1="50" y1="66" x2="50" y2="88" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<line x1="12" y1="50" x2="34" y2="50" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<line x1="66" y1="50" x2="88" y2="50" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>' +
+        // Center laser bullseye
+        '<circle cx="50" cy="50" r="4.5" fill="#ffffff" filter="url(#glowPower)"/>' +
+        '<circle cx="50" cy="50" r="2.5" fill="#f43f5e"/>' +
+        // Diagonal target lock ticks
+        '<path d="M24 24 L28 24 L28 28" stroke="#a855f7" stroke-width="2" fill="none"/>' +
+        '<path d="M76 24 L72 24 L72 28" stroke="#a855f7" stroke-width="2" fill="none"/>' +
+        '<path d="M24 76 L28 76 L28 72" stroke="#a855f7" stroke-width="2" fill="none"/>' +
+        '<path d="M76 76 L72 76 L72 72" stroke="#a855f7" stroke-width="2" fill="none"/>' +
+        '</svg>';
+    }
+
+    // 4. Coin Doubler (boost_coins) - Minted 3D gold FvH coin with 2X insignia
+    if (id === 'boost_coins') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<radialGradient id="coinGlow" cx="40%" cy="35%" r="65%">' +
+        '<stop offset="0%" stop-color="#fffbeb"/>' +
+        '<stop offset="35%" stop-color="#fde047"/>' +
+        '<stop offset="70%" stop-color="#eab308"/>' +
+        '<stop offset="100%" stop-color="#854d0e"/>' +
+        '</radialGradient>' +
+        '<filter id="glowGold"><feGaussianBlur stdDeviation="2.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
+        '</defs>' +
+        '<circle cx="50" cy="50" r="44" fill="#181202" stroke="#eab308" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="40" fill="rgba(234, 179, 8, 0.1)"/>' +
+        // Golden Coin Outer Rim
+        '<circle cx="50" cy="50" r="34" fill="url(#coinGlow)" stroke="#78350f" stroke-width="2.5" filter="url(#glowGold)"/>' +
+        '<circle cx="50" cy="50" r="28" stroke="#92400e" stroke-width="1.8" stroke-dasharray="3 2" fill="none"/>' +
+        // Big Bold "2X" Multiplier Insignia
+        '<text x="50" y="58" font-family="Impact, Arial Black" font-size="26" font-weight="900" fill="#78350f" text-anchor="middle" letter-spacing="-1">2X</text>' +
+        '<text x="49" y="57" font-family="Impact, Arial Black" font-size="26" font-weight="900" fill="#fffbeb" text-anchor="middle" letter-spacing="-1">2X</text>' +
+        // Crown Star
+        '<polygon points="50,23 52,28 58,28 53,31 55,36 50,33 45,36 47,31 42,28 48,28" fill="#fef08a"/>' +
+        // Sparkle glints
+        '<circle cx="28" cy="30" r="2" fill="#ffffff"/><circle cx="72" cy="68" r="2" fill="#ffffff"/>' +
+        '</svg>';
+    }
+
+    // Default Boost fallback
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="50" cy="50" r="44" fill="#0f172a" stroke="#00f0ff" stroke-width="2"/>' +
+      '<polygon points="50,15 54,38 78,35 58,50 68,75 50,60 32,75 42,50 22,35 46,38" fill="#facc15"/>' +
+      '</svg>';
+  }
+
+  // Detailed Speed Trail SVG
+  function getDetailedTrailSvg(item, size) {
+    var isLg = size === 'large';
+    var w = isLg ? 160 : 76;
+    var h = isLg ? 80 : 44;
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+
+    if (id === 'trail_fire') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="120" height="60" rx="8" fill="#180702"/>' +
+        '<path d="M10 30 Q40 10 70 30 T110 30" stroke="#f97316" stroke-width="6" stroke-linecap="round"/>' +
+        '<path d="M25 30 Q50 16 80 30 T110 30" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle cx="110" cy="30" r="6" fill="#ef4444"/>' +
+        '</svg>';
+    }
+
+    if (id === 'trail_ice') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="120" height="60" rx="8" fill="#03131e"/>' +
+        '<path d="M10 30 Q40 14 70 30 T110 30" stroke="#0284c7" stroke-width="5" stroke-linecap="round"/>' +
+        '<path d="M25 30 Q50 20 80 30 T110 30" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<polygon points="106,24 114,30 106,36 102,30" fill="#38bdf8"/>' +
+        '</svg>';
+    }
+
+    if (id === 'trail_rainbow') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="120" height="60" rx="8" fill="#0b0f19"/>' +
+        '<path d="M10 22 Q50 14 110 22" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M10 27 Q50 19 110 27" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M10 32 Q50 24 110 32" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M10 37 Q50 29 110 37" stroke="#06b6d4" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M10 42 Q50 34 110 42" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/>' +
+        '</svg>';
+    }
+
+    // Default Trail (trail_default / trail_laser)
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="120" height="60" rx="8" fill="#090d16"/>' +
+      '<path d="M10 30 Q50 18 110 30" stroke="#00f0ff" stroke-width="5" stroke-linecap="round" opacity="0.4"/>' +
+      '<path d="M30 30 Q65 22 110 30" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<circle cx="110" cy="30" r="5" fill="#00f0ff"/>' +
+      '</svg>';
+  }
+
+  // Detailed Avatar Frame SVG
+  function getDetailedFrameSvg(item, size) {
+    var isLg = size === 'large';
+    var w = isLg ? 160 : 76;
+    var h = w;
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+
+    if (id === 'frame_bronze') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="10" y="10" width="80" height="80" rx="14" fill="#1c1106" stroke="#b45309" stroke-width="6"/>' +
+        '<rect x="16" y="16" width="68" height="68" rx="8" stroke="#f59e0b" stroke-width="1.5" fill="none"/>' +
+        '<circle cx="18" cy="18" r="3" fill="#f59e0b"/><circle cx="82" cy="18" r="3" fill="#f59e0b"/>' +
+        '<circle cx="18" cy="82" r="3" fill="#f59e0b"/><circle cx="82" cy="82" r="3" fill="#f59e0b"/>' +
+        '</svg>';
+    }
+
+    if (id === 'frame_diamond') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="10" y="10" width="80" height="80" rx="14" fill="#041a24" stroke="#00f0ff" stroke-width="5"/>' +
+        '<rect x="16" y="16" width="68" height="68" rx="8" stroke="#cffafe" stroke-width="1.8" stroke-dasharray="4 2" fill="none"/>' +
+        '<polygon points="18,12 24,18 18,24 12,18" fill="#38bdf8"/>' +
+        '<polygon points="82,12 88,18 82,24 76,18" fill="#38bdf8"/>' +
+        '<polygon points="18,76 24,82 18,88 12,82" fill="#38bdf8"/>' +
+        '<polygon points="82,76 88,82 82,88 76,82" fill="#38bdf8"/>' +
+        '</svg>';
+    }
+
+    // Default Frame
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="12" y="12" width="76" height="76" rx="14" fill="#0f172a" stroke="#475569" stroke-width="4"/>' +
+      '<rect x="18" y="18" width="64" height="64" rx="8" stroke="#64748b" stroke-width="1.2" fill="none"/>' +
       '</svg>';
   }
 
@@ -1771,28 +2104,100 @@
     var isLg = size === 'large';
     var w = isLg ? 160 : 76;
     var h = isLg ? 190 : 88;
-    var id = item.id || '';
-    var pColor = id === 'hoops' ? '#ea580c' : id === 'clash' ? '#eab308' : '#00f0ff';
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.packId)) || '';
+    var pColor = (id.indexOf('hoops') !== -1) ? '#ea580c' : (id.indexOf('clash') !== -1) ? '#eab308' : '#00f0ff';
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">' +
       '<rect x="15" y="8" width="70" height="104" rx="6" fill="#0f172a" stroke="' + pColor + '" stroke-width="2.5"/>' +
       '<path d="M15 18L85 18 M15 102L85 102" stroke="' + pColor + '" stroke-width="1.5" stroke-dasharray="3 2"/>' +
       '<circle cx="50" cy="58" r="20" fill="' + pColor + '" opacity="0.25"/>' +
-      '<text x="50" y="65" font-family="Impact, Arial Black" font-size="20" fill="#ffffff" text-anchor="middle">' + (id === 'hoops' ? '🏀' : id === 'clash' ? '⚡' : '⚽') + '</text>' +
+      '<text x="50" y="65" font-family="Impact, Arial Black" font-size="20" fill="#ffffff" text-anchor="middle">' + ((id.indexOf('hoops') !== -1) ? '🏀' : (id.indexOf('clash') !== -1) ? '⚡' : '⚽') + '</text>' +
       '</svg>';
   }
 
-  // Universal Item Artwork Dispatcher
-  function renderItemArtwork(item, size) {
-    if (!item) return '<div class="fvh-item-fallback">📦</div>';
-    var cat = item.category || '';
-    if (cat === 'skins') return getDetailedJerseySvg(item, size);
-    if (cat === 'balls') return getDetailedBallSvg(item, size);
-    if (cat === 'stadiums') return getDetailedStadiumSvg(item, size);
-    if (cat === 'celebrations') return getDetailedCelebrationSvg(item, size);
-    if (cat === 'packs') return getDetailedPackSvg(item, size);
-    return '<div class="fvh-item-fallback" style="font-size:' + (size === 'large' ? '64px' : '32px') + ';">' + (item.icon || '👕') + '</div>';
+  // Detailed Coins Reward Stack SVG
+  function getDetailedCoinsSvg(item, size) {
+    var isLg = size === 'large';
+    var w = isLg ? 160 : 76;
+    var h = w;
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="50" cy="50" r="44" fill="#181302" stroke="#facc15" stroke-width="1.5"/>' +
+      '<ellipse cx="50" cy="68" rx="28" ry="12" fill="#78350f" stroke="#ca8a04" stroke-width="2"/>' +
+      '<ellipse cx="50" cy="62" rx="28" ry="12" fill="#a16207" stroke="#eab308" stroke-width="2"/>' +
+      '<ellipse cx="50" cy="56" rx="28" ry="12" fill="#ca8a04" stroke="#facc15" stroke-width="2"/>' +
+      '<ellipse cx="50" cy="50" rx="28" ry="12" fill="#eab308" stroke="#fde047" stroke-width="2"/>' +
+      '<ellipse cx="50" cy="44" rx="28" ry="12" fill="#facc15" stroke="#fef08a" stroke-width="2"/>' +
+      '<ellipse cx="50" cy="44" rx="20" ry="8" stroke="#ca8a04" stroke-width="1.5" fill="none"/>' +
+      '<text x="50" y="47" font-family="Arial Black" font-size="10" fill="#78350f" text-anchor="middle">★</text>' +
+      '</svg>';
   }
+
+  // Detailed Bundle Thematic Artwork SVG
+  function getDetailedBundleSvg(item, size) {
+    var isLg = size === 'large';
+    var w = isLg ? 180 : 76;
+    var h = isLg ? 140 : 64;
+    var id = (typeof item === 'string') ? item : (item && item.id) || '';
+    var bColor = (id.indexOf('hoops') !== -1) ? '#ea580c' : (id.indexOf('ocean') !== -1) ? '#06b6d4' : (id.indexOf('mars') !== -1) ? '#ef4444' : '#eab308';
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="15" y="15" width="110" height="70" rx="10" fill="#0f172a" stroke="' + bColor + '" stroke-width="2.5"/>' +
+      '<rect x="25" y="25" width="90" height="50" rx="6" fill="' + bColor + '" opacity="0.15"/>' +
+      '<line x1="15" y1="50" x2="125" y2="50" stroke="' + bColor + '" stroke-width="2"/>' +
+      '<circle cx="70" cy="50" r="14" fill="#0f172a" stroke="' + bColor + '" stroke-width="2.2"/>' +
+      '<text x="70" y="56" font-size="14" text-anchor="middle" fill="#ffffff">🎁</text>' +
+      '</svg>';
+  }
+
+  // Universal Item Artwork Dispatcher (Centralized by stable Item ID)
+  function renderItemArtwork(itemOrId, size) {
+    if (!itemOrId) return '<div class="fvh-item-fallback">📦</div>';
+    var id = '';
+    var cat = '';
+
+    if (typeof itemOrId === 'string') {
+      id = itemOrId;
+    } else if (typeof itemOrId === 'object') {
+      id = itemOrId.id || itemOrId.itemId || itemOrId.packId || '';
+      cat = itemOrId.category || '';
+      if (!cat && itemOrId.type === 'coins') cat = 'coins';
+      if (!cat && itemOrId.type === 'pack') cat = 'packs';
+    }
+
+    // Auto-detect category from item ID if unspecified
+    if (!cat && id) {
+      if (id.startsWith('boost_')) cat = 'boosts';
+      else if (id.startsWith('skin_')) cat = 'skins';
+      else if (id.startsWith('ball_')) cat = 'balls';
+      else if (id.startsWith('std_') || id.startsWith('arena_')) cat = 'stadiums';
+      else if (id.startsWith('cel_')) cat = 'celebrations';
+      else if (id.startsWith('trail_')) cat = 'trails';
+      else if (id.startsWith('frame_')) cat = 'frames';
+      else if (id.startsWith('pack_') || id === 'footy' || id === 'hoops' || id === 'clash') cat = 'packs';
+      else if (id.startsWith('bundle_')) cat = 'bundles';
+      else if (id === 'coins' || id.startsWith('pkg_coins_') || id.startsWith('coins_') || id.toLowerCase().indexOf('coin') !== -1) cat = 'coins';
+    }
+
+    if (cat === 'boosts') return getDetailedBoostSvg(itemOrId, size);
+    if (cat === 'skins') return getDetailedJerseySvg(itemOrId, size);
+    if (cat === 'balls') return getDetailedBallSvg(itemOrId, size);
+    if (cat === 'stadiums') return getDetailedStadiumSvg(itemOrId, size);
+    if (cat === 'celebrations') return getDetailedCelebrationSvg(itemOrId, size);
+    if (cat === 'trails') return getDetailedTrailSvg(itemOrId, size);
+    if (cat === 'frames') return getDetailedFrameSvg(itemOrId, size);
+    if (cat === 'packs') return getDetailedPackSvg(itemOrId, size);
+    if (cat === 'bundles') return getDetailedBundleSvg(itemOrId, size);
+    if (cat === 'coins') return getDetailedCoinsSvg(itemOrId, size);
+
+    // High-tech vector fallback glyph (never bare emoji)
+    var sz = size === 'large' ? 100 : 54;
+    return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<polygon points="40,8 68,22 68,54 40,74 12,54 12,22" fill="#0f172a" stroke="#00f0ff" stroke-width="2"/>' +
+      '<polygon points="40,16 60,26 60,50 40,64 20,50 20,26" fill="rgba(0,240,255,0.12)"/>' +
+      '<text x="40" y="47" font-size="22" text-anchor="middle">' + ((typeof itemOrId === 'object' && itemOrId.icon) ? itemOrId.icon : '⚡') + '</text>' +
+      '</svg>';
+  }
+  window.renderItemArtwork = renderItemArtwork;
 
 
   // ==========================================
@@ -2533,7 +2938,7 @@
       '<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">' +
       trackLabel + ' · ' + tr('bpTier', { lvl: lvl }) +
       '</div>' +
-      '<div style="font-size:52px;margin:12px 0;">' + reward.icon + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;margin:12px 0;min-height:90px;">' + renderItemArtwork(reward, 'large') + '</div>' +
       '<h3 style="margin:0 0 8px;font-size:20px;color:var(--text-pure);">' + trItem(reward.name) + '</h3>' +
       '<p style="color:var(--text-muted);font-size:13px;line-height:1.4;margin:0 0 20px;">' +
       (reward.type === 'coins' ? (trItem(reward.name) + ' — ' + tr('storeSub')) :
@@ -2706,7 +3111,7 @@
         freeCard.style.padding = '10px 8px';
 
         var freeTag = '<div style="font-size:9.5px;font-weight:800;letter-spacing:0.8px;color:#38bdf8;text-transform:uppercase;margin-bottom:4px;flex-shrink:0;">' + tr('bpFreeTrack') + '</div>';
-        var freeIcon = '<div class="fvh-bp-level-reward-icon" style="cursor:pointer;font-size:32px;margin:4px 0;flex-shrink:0;">' + lvlDef.freeReward.icon + '</div>';
+        var freeIcon = '<div class="fvh-bp-level-reward-icon" style="cursor:pointer;height:52px;display:flex;align-items:center;justify-content:center;margin:4px 0;flex-shrink:0;">' + renderItemArtwork(lvlDef.freeReward, 'thumb') + '</div>';
         var freeName = '<div class="fvh-bp-level-reward-name" style="cursor:pointer;font-size:11px;min-height:38px;line-height:1.25;margin-bottom:8px;word-break:break-word;">' + trItem(lvlDef.freeReward.name) + '</div>';
 
         freeCard.innerHTML = freeTag + freeIcon + freeName;
@@ -2762,7 +3167,7 @@
           'rgba(25, 20, 10, 0.6)';
 
         var vipTag = '<div style="font-size:9.5px;font-weight:900;letter-spacing:0.8px;color:#fde047;text-transform:uppercase;margin-bottom:4px;flex-shrink:0;">👑 ' + tr('bpPremiumTrack') + '</div>';
-        var vipIcon = '<div class="fvh-bp-level-reward-icon" style="cursor:pointer;font-size:32px;margin:4px 0;flex-shrink:0;">' + lvlDef.premiumReward.icon + '</div>';
+        var vipIcon = '<div class="fvh-bp-level-reward-icon" style="cursor:pointer;height:52px;display:flex;align-items:center;justify-content:center;margin:4px 0;flex-shrink:0;">' + renderItemArtwork(lvlDef.premiumReward, 'thumb') + '</div>';
         var vipName = '<div class="fvh-bp-level-reward-name" style="cursor:pointer;font-size:11px;min-height:38px;line-height:1.25;color:#fef08a;margin-bottom:8px;word-break:break-word;">' + trItem(lvlDef.premiumReward.name) + '</div>';
 
         vipCard.innerHTML = vipTag + vipIcon + vipName;
@@ -2834,7 +3239,14 @@
     return container;
   }
 
-
+  // Boost Items Catalog (4 Distinct Boosts)
+  var BOOST_CATALOG = [
+    { id: 'boost_turbo', category: 'boosts', slot: 'boost', name: 'Turbo Boots', rarity: 'common', price: 60, icon: '👟', type: 'active', duration: '12s', descKey: 'boostTurboDesc' },
+    { id: 'boost_lungs', category: 'boosts', slot: 'boost', name: 'Iron Lungs', rarity: 'common', price: 70, icon: '🫁', type: 'passive', duration: 'match', descKey: 'boostLungsDesc' },
+    { id: 'boost_power', category: 'boosts', slot: 'boost', name: 'Sharp Shooter', rarity: 'rare', price: 110, icon: '🎯', type: 'passive', duration: 'match', descKey: 'boostPowerDesc' },
+    { id: 'boost_coins', category: 'boosts', slot: 'boost', name: 'Coin Doubler', rarity: 'epic', price: 150, icon: '🪙', type: 'passive', duration: 'match', descKey: 'boostCoinsDesc' }
+  ];
+  window.BOOST_CATALOG = BOOST_CATALOG;
 
   // Build Characters & Wardrobe Page
   function buildCharactersPage(app, initialChar, initialSlot) {
@@ -2926,7 +3338,8 @@
       { id: 'skins', label: tr('catJerseys') },
       { id: 'balls', label: tr('catBalls') },
       { id: 'stadiums', label: tr('catArenas') },
-      { id: 'celebrations', label: tr('catCelebrations') }
+      { id: 'celebrations', label: tr('catCelebrations') },
+      { id: 'boosts', label: tr('catBoosts') }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
@@ -2992,15 +3405,25 @@
         app.store.update(function (d) { d.equipped = eq; });
       }
 
+      var armedBoostId = app.store.data.armedBoost;
+      var armedName = armedBoostId ? trItem(armedBoostId === 'boost_turbo' ? 'Turbo Boots' : armedBoostId === 'boost_lungs' ? 'Iron Lungs' : armedBoostId === 'boost_power' ? 'Sharp Shooter' : armedBoostId === 'boost_coins' ? 'Coin Doubler' : armedBoostId) : tr('noBoostEquipped');
+
       equipSlotList.innerHTML =
         '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + trItem(eq.skin || 'Rookie Blue') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + trItem(eq['ball.' + curChar] || 'Classic Ball') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + trItem(eq['stadium.' + curChar] || 'Standard Arena') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + trItem(eq.celebration || 'Confetti Rain') + '</b></div>';
+        '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + trItem(eq.celebration || 'Confetti Rain') + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + tr('catBoosts') + ':</span><b>' + armedName + '</b></div>';
 
       // Load matching items for current slot (OWNED ITEMS ONLY)
       itemsGrid.innerHTML = '';
       function renderMatchingItems(allItems) {
+        BOOST_CATALOG.forEach(function (bc) {
+          if (!allItems.some(function (i) { return i.id === bc.id; })) {
+            allItems.push(Object.assign({}, bc, { desc: tr(bc.descKey) }));
+          }
+        });
+
         var scenicArenas = [
           { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
           { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
@@ -3019,21 +3442,33 @@
           }
         });
 
+        var boostCharges = app.store.data.boostCharges || {};
+        var armed = app.store.data.armedBoost;
         var owned = app.store.data.owned || [];
-        var matching = allItems.filter(function (it) {
-          if (it.category !== curSlot) return false;
-          if (it.mode && it.mode !== curChar) return false;
-          var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault);
-          return isOwned;
-        });
+        var matching;
+        if (curSlot === 'boosts') {
+          matching = BOOST_CATALOG.filter(function (it) {
+            var ch = boostCharges[it.id] || 0;
+            var isArmed = armed === it.id;
+            var isOwnedLegacy = owned.indexOf(it.id) !== -1;
+            return ch > 0 || isArmed || isOwnedLegacy;
+          });
+        } else {
+          matching = allItems.filter(function (it) {
+            if (it.category !== curSlot) return false;
+            if (it.mode && it.mode !== curChar) return false;
+            var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault);
+            return isOwned;
+          });
+        }
 
         if (matching.length === 0) {
           var emptyBox = document.createElement('div');
           emptyBox.className = 'fvh-empty-locker';
           emptyBox.innerHTML =
-            '<div class="fvh-empty-icon">🎒</div>' +
-            '<div class="fvh-empty-title">' + tr('emptyCategory') + '</div>' +
-            '<div class="fvh-empty-desc">' + tr('emptyCategoryDesc') + '</div>';
+            '<div class="fvh-empty-icon">' + (curSlot === 'boosts' ? '⚡' : '🎒') + '</div>' +
+            '<div class="fvh-empty-title">' + (curSlot === 'boosts' ? tr('catBoosts') : tr('emptyCategory')) + '</div>' +
+            '<div class="fvh-empty-desc">' + (curSlot === 'boosts' ? tr('emptyBoostsDesc') : tr('emptyCategoryDesc')) + '</div>';
           var shopBtn = document.createElement('button');
           shopBtn.className = 'btn primary small fvh-empty-btn';
           shopBtn.textContent = '🛒 ' + tr('goToShop');
@@ -3047,6 +3482,76 @@
         }
 
         matching.forEach(function (item) {
+          if (curSlot === 'boosts') {
+            var isArmed = armed === item.id;
+            var ch = boostCharges[item.id] || 0;
+            var boostCard = document.createElement('div');
+            var rarClass = item.rarity || 'common';
+            boostCard.className = 'card shopc fvh-boost-card r-' + rarClass + (isArmed ? ' is-eq' : '');
+
+            var localizedRarity = tr('rarity_' + rarClass) || rarClass.toUpperCase();
+            var localizedItemName = trItem(item.name);
+            var typeTag = item.type === 'active'
+              ? '<span class="fvh-boost-type-tag active">⚡ ' + tr('boostActiveType') + '</span>'
+              : '<span class="fvh-boost-type-tag passive">🛡️ ' + tr('boostPassiveType') + '</span>';
+            var durationTag = '<span style="font-size:10px;color:var(--text-muted);font-weight:700;">⏱️ ' + (item.type === 'active' ? '12s' : 'Match') + '</span>';
+            var chargesPill = '<span class="fvh-boost-charges-tag">' + tr('boostCharges', { n: ch }) + '</span>';
+
+            boostCard.innerHTML =
+              '<div class="thumbwrap"><div class="thumb" style="display:flex;align-items:center;justify-content:center;">' +
+              renderItemArtwork(item, 'thumb') +
+              '</div>' +
+              (isArmed ? '<span class="st st-eq">✓ ' + tr('boostArmed') + '</span>' : '') +
+              '</div>' +
+              '<div class="nm">' + localizedItemName + '</div>' +
+              '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0;">' +
+              typeTag + durationTag + chargesPill +
+              '</div>' +
+              '<div class="fvh-boost-effect-desc">' + (item.desc || '') + '</div>';
+
+            var bBtn = document.createElement('button');
+            if (isArmed) {
+              bBtn.className = 'btn small';
+              bBtn.textContent = '✕ ' + tr('boostDisarm');
+              bBtn.onclick = function () {
+                var pid = getAppPlayerId(app);
+                safeEconomyApi('/api/economy/equip', {
+                  playerId: pid,
+                  slot: 'boost',
+                  itemId: 'none'
+                }).then(function () {
+                  app.store.update(function (d) { d.armedBoost = null; });
+                  app.audio.play('click');
+                  showToast(tr('boostDisarm') + ': ' + localizedItemName);
+                  updateView();
+                });
+              };
+            } else {
+              bBtn.className = 'btn small primary';
+              bBtn.textContent = tr('boostArm');
+              bBtn.onclick = function () {
+                var pid = getAppPlayerId(app);
+                safeEconomyApi('/api/economy/equip', {
+                  playerId: pid,
+                  slot: 'boost',
+                  itemId: item.id
+                }).then(function (res) {
+                  if (res && res.error === 'item_not_owned') {
+                    app.audio.play('error');
+                    showToast('⚠️ No charges remaining');
+                    return;
+                  }
+                  app.store.update(function (d) { d.armedBoost = item.id; });
+                  app.audio.play('click');
+                  showToast(tr('boostArmed') + ': ' + localizedItemName);
+                  updateView();
+                });
+              };
+            }
+            boostCard.appendChild(bBtn);
+            itemsGrid.appendChild(boostCard);
+            return;
+          }
           var activeSlotKey = item.slot || (item.category === 'balls' ? 'ball.' + curChar : item.category === 'stadiums' ? 'stadium.' + curChar : item.category === 'skins' ? 'skin' : item.category);
           var isEquipped = eq[activeSlotKey] === item.id;
 
@@ -4147,6 +4652,7 @@
       { id: 'balls', label: tr('catBalls') },
       { id: 'stadiums', label: tr('catArenas') },
       { id: 'celebrations', label: tr('catCelebrations') },
+      { id: 'boosts', label: tr('catBoosts') },
       { id: 'packs', label: tr('catPacks') }
     ];
     categories.forEach(function (c) {
@@ -4353,10 +4859,13 @@
       modal.className = 'modal fvh-item-modal';
 
       var owned = app.store.data.owned || [];
-      var isOwned = owned.indexOf(item.id) !== -1 || item.isDefault;
+      var isBoost = (item.category === 'boosts');
+      var boostCharges = (app.store.data.boostCharges && app.store.data.boostCharges[item.id]) || 0;
+      var isArmed = (app.store.data.armedBoost === item.id);
+      var isOwned = isBoost ? (boostCharges > 0 || isArmed) : (owned.indexOf(item.id) !== -1 || item.isDefault);
       var charMode = app.store.data.selectedCharacter || 'footy';
       var slotKey = item.slot || (item.category === 'balls' ? 'ball.' + charMode : item.category === 'stadiums' ? 'stadium.' + charMode : item.category === 'skins' ? 'skin' : item.category);
-      var isEquipped = (app.store.data.equipped && app.store.data.equipped[slotKey] === item.id);
+      var isEquipped = isBoost ? isArmed : (app.store.data.equipped && app.store.data.equipped[slotKey] === item.id);
       var rarKey = item.rarity || 'common';
       var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
       var localizedItemName = trItem(item.name);
@@ -4370,6 +4879,31 @@
       else if (item.category) categoryLabel = tr('cat' + item.category.charAt(0).toUpperCase() + item.category.slice(1)) || item.category;
       else categoryLabel = tr('storeSub');
 
+      var boostExtraInfo = '';
+      if (isBoost) {
+        var bDef = BOOST_CATALOG.find(function (b) { return b.id === item.id; });
+        if (bDef) {
+          if (!item.type) item.type = bDef.type;
+          if (!item.duration) item.duration = bDef.duration;
+          if (!item.descKey) item.descKey = bDef.descKey;
+          if (!item.desc) item.desc = tr(bDef.descKey);
+        }
+        var isAct = item.type === 'active' || item.id === 'boost_turbo';
+        var typeBadge = isAct
+          ? '<span class="fvh-boost-type-tag active">⚡ ' + tr('boostActiveType') + ' (12s)</span>'
+          : '<span class="fvh-boost-type-tag passive">🛡️ ' + tr('boostPassiveType') + ' (Match)</span>';
+        var chargesTag = '<span class="fvh-boost-charges-tag">' + tr('boostCharges', { n: boostCharges }) + '</span>';
+        var boostExpl = isAct ? tr('boostActiveDesc') : tr('boostPassiveDesc');
+        boostExtraInfo =
+          '<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin:6px 0 10px;">' +
+          typeBadge + chargesTag +
+          '</div>' +
+          '<div style="font-size:11.5px;color:var(--text-muted);background:rgba(255,255,255,0.05);border-radius:8px;padding:8px 12px;margin:8px 0;line-height:1.4;text-align:left;">' +
+          (isAct ? '⚡ <b>' + tr('boostActiveType') + '</b>: ' : '🛡️ <b>' + tr('boostPassiveType') + '</b>: ') + boostExpl +
+          '<br><span style="color:#fde047;font-size:10.5px;">🔒 Disabled in online multiplayer (fair play).</span>' +
+          '</div>';
+      }
+
       modal.innerHTML =
         '<div class="fvh-sheet-handle"></div>' +
         '<div class="fvh-item-modal-head">' +
@@ -4381,6 +4915,7 @@
         '</div>' +
         '<h2 class="fvh-item-modal-title">' + localizedItemName + '</h2>' +
         '<div class="fvh-item-modal-category">' + categoryLabel + (item.mode ? ' · ' + (item.mode === 'footy' ? tr('football') : tr('basketball')) : '') + '</div>' +
+        boostExtraInfo +
         '<p class="fvh-item-modal-desc">' + (item.desc || (localizedItemName + ' — ' + tr('storeSub'))) + '</p>' +
         '<div class="fvh-item-modal-actions"></div>';
 
@@ -4394,7 +4929,96 @@
 
       var actionsBox = modal.querySelector('.fvh-item-modal-actions');
 
-      if (isEquipped) {
+      if (isBoost) {
+        if (boostCharges > 0) {
+          var armBtn = document.createElement('button');
+          if (isArmed) {
+            armBtn.className = 'btn block';
+            armBtn.textContent = '✕ ' + tr('boostDisarm');
+            armBtn.onclick = function () {
+              var pid = getAppPlayerId(app);
+              safeEconomyApi('/api/economy/equip', {
+                playerId: pid,
+                slot: 'boost',
+                itemId: 'none'
+              }).then(function () {
+                app.store.update(function (d) { d.armedBoost = null; });
+                app.audio.play('click');
+                showToast(tr('boostDisarm') + ': ' + localizedItemName);
+                overlay.remove();
+                renderShop();
+              });
+            };
+          } else {
+            armBtn.className = 'btn primary block';
+            armBtn.textContent = '⚡ ' + tr('boostArm');
+            armBtn.onclick = function () {
+              var pid = getAppPlayerId(app);
+              safeEconomyApi('/api/economy/equip', {
+                playerId: pid,
+                slot: 'boost',
+                itemId: item.id
+              }).then(function (res) {
+                if (res && res.error === 'item_not_owned') {
+                  app.audio.play('error');
+                  showToast('⚠️ No charges remaining');
+                  return;
+                }
+                app.store.update(function (d) { d.armedBoost = item.id; });
+                app.audio.play('claim');
+                showToast(tr('boostArmed') + ': ' + localizedItemName);
+                overlay.remove();
+                renderShop();
+              });
+            };
+          }
+          actionsBox.appendChild(armBtn);
+        }
+
+        var buyChargeBtn = document.createElement('button');
+        buyChargeBtn.className = (boostCharges === 0 ? 'btn primary block' : 'btn block');
+        buyChargeBtn.style.marginTop = boostCharges > 0 ? '8px' : '0';
+        buyChargeBtn.textContent = tr('buyFor') + ' 🪙 ' + item.price + ' (+1 ' + tr('boostCharges', { n: 1 }) + ')';
+        buyChargeBtn.onclick = function () {
+          if (isPurchasing) return;
+          var coins = app.store.data.coins || 0;
+          if (coins < item.price) {
+            app.audio.play('error');
+            showToast(tr('notEnoughCoins'));
+            return;
+          }
+          isPurchasing = true;
+          var pid = getAppPlayerId(app);
+          safeEconomyApi('/api/economy/purchase', {
+            playerId: pid,
+            itemId: item.id,
+            idempotencyKey: 'boost_' + pid + '_' + item.id + '_' + Date.now()
+          }).then(function (res) {
+            isPurchasing = false;
+            if (res && res.ok) {
+              app.store.update(function (d) {
+                d.coins = res.coins;
+                d.xp = res.xp;
+                d.owned = res.owned;
+                d.packs = res.packs;
+                d.boostCharges = res.boostCharges;
+                d.armedBoost = res.armedBoost;
+              });
+            } else {
+              app.store.update(function (d) {
+                d.coins -= item.price;
+                if (!d.boostCharges) d.boostCharges = {};
+                d.boostCharges[item.id] = (d.boostCharges[item.id] || 0) + 1;
+              });
+            }
+            app.audio.play('claim');
+            showToast(tr('purchaseSuccess') + ' (' + localizedItemName + ' +1)');
+            overlay.remove();
+            renderShop();
+          });
+        };
+        actionsBox.appendChild(buyChargeBtn);
+      } else if (isEquipped) {
         var eqBtn = document.createElement('button');
         eqBtn.className = 'btn block';
         eqBtn.disabled = true;
@@ -4826,6 +5450,12 @@
           }
         });
 
+        BOOST_CATALOG.forEach(function (bc) {
+          if (!allItems.some(function (i) { return i.id === bc.id; })) {
+            allItems.push(Object.assign({}, bc, { desc: tr(bc.descKey) }));
+          }
+        });
+
         // If category is "all", also show the bundles at the top of the store
         if (curCategory === 'all') {
           BUNDLE_ITEMS.forEach(function (b) {
@@ -4871,24 +5501,45 @@
         }
 
         filtered.forEach(function (it) {
-          var isOwned = owned.indexOf(it.id) !== -1 || it.isDefault;
+          var isBoost = (it.category === 'boosts');
+          var boostCharges = (app.store.data.boostCharges && app.store.data.boostCharges[it.id]) || 0;
+          var isArmed = (app.store.data.armedBoost === it.id);
+          var isOwned = isBoost ? (boostCharges > 0 || isArmed) : (owned.indexOf(it.id) !== -1 || it.isDefault);
           var card = document.createElement('div');
           var rarKey = it.rarity || 'common';
           var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
           var localizedItemName = trItem(it.name);
 
-          card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '');
+          card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '') + (isBoost ? ' fvh-boost-card' : '');
+
+          var tagHtml = '';
+          if (isBoost) {
+            if (isArmed) {
+              tagHtml = '<span class="fvh-card-owned-tag" style="background:#3b82f6;color:#fff;">✓ ' + tr('boostArmed') + '</span>';
+            } else if (boostCharges > 0) {
+              tagHtml = '<span class="fvh-card-owned-tag">' + tr('boostCharges', { n: boostCharges }) + '</span>';
+            }
+          } else if (isOwned) {
+            tagHtml = '<span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>';
+          }
+
+          var priceLabel = '';
+          if (isBoost) {
+            priceLabel = '🪙 ' + it.price + (boostCharges > 0 ? ' · ' + tr('boostCharges', { n: boostCharges }) : '');
+          } else {
+            priceLabel = isOwned ? tr('inCollection') : ('🪙 ' + it.price);
+          }
 
           card.innerHTML =
             '<div class="fvh-card-head">' +
             '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-            (isOwned ? '<span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '') +
+            tagHtml +
             '</div>' +
             '<div class="fvh-card-thumb-wrap">' +
             renderItemArtwork(it, 'thumb') +
             '</div>' +
             '<div class="fvh-card-title">' + localizedItemName + '</div>' +
-            '<div class="fvh-card-price">' + (isOwned ? tr('inCollection') : '🪙 ' + it.price) + '</div>';
+            '<div class="fvh-card-price">' + priceLabel + '</div>';
 
           card.onclick = function () {
             app.audio.play('click');
@@ -6319,6 +6970,162 @@
     return container;
   }
 
+  // Boost Selector Modal for Practice & Match Setup
+  function showModeBoostSelectorModal(app, onArmedChange) {
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-back fvh-sheet-back';
+    var modal = document.createElement('div');
+    modal.className = 'modal fvh-item-modal';
+    modal.style.maxWidth = '460px';
+
+    var lang = getActiveLang();
+    var armed = app.store.data.armedBoost;
+    var charges = app.store.data.boostCharges || {};
+
+    var listHtml = BOOST_CATALOG.map(function (b) {
+      var ch = charges[b.id] || 0;
+      var isArmed = (armed === b.id);
+      var isAct = b.type === 'active';
+      return '<div class="fvh-boost-select-item ' + (isArmed ? 'is-armed' : '') + '" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid ' + (isArmed ? '#38bdf8' : 'rgba(255,255,255,0.08)') + ';margin-bottom:8px;">' +
+        '  <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+        '    <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(b, 'thumb') + '</div>' +
+        '    <div style="min-width:0;text-align:left;">' +
+        '      <div style="display:flex;align-items:center;gap:6px;">' +
+        '        <span style="font-weight:800;font-size:13px;color:#fff;">' + trItem(b.name) + '</span>' +
+        '        <span class="fvh-boost-type-tag ' + b.type + '" style="font-size:9px;padding:1px 5px;">' + (isAct ? '⚡ ' + tr('boostActiveType') : '🛡️ ' + tr('boostPassiveType')) + '</span>' +
+        '      </div>' +
+        '      <div style="font-size:11px;color:var(--text-muted);margin:2px 0;">' + tr(b.descKey) + '</div>' +
+        '      <div style="font-size:10px;color:' + (ch > 0 ? '#4ade80' : 'var(--text-muted)') + ';font-weight:700;">' + tr('boostCharges', { n: ch }) + (isAct ? ' · 12s Overdrive' : ' · ' + (lang === 'ru' ? 'Весь матч' : 'Full Match')) + '</div>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div style="margin-left:8px;flex-shrink:0;">' +
+        (isArmed
+          ? '<button class="btn small disarm-btn" data-id="' + b.id + '">✕ ' + tr('boostDisarm') + '</button>'
+          : ch > 0
+            ? '<button class="btn small primary arm-btn" data-id="' + b.id + '">⚡ ' + tr('boostArm') + '</button>'
+            : '<button class="btn small buy-btn" data-id="' + b.id + '" style="font-size:11px;">🛒 ' + tr('boostBuyMore') + '</button>'
+        ) +
+        '  </div>' +
+        '</div>';
+    }).join('');
+
+    modal.innerHTML =
+      '<div class="fvh-sheet-handle"></div>' +
+      '<div class="fvh-item-modal-head">' +
+      '<span class="rar epic">⚡ ' + tr('catBoosts').toUpperCase() + '</span>' +
+      '<button class="modal-close-x" aria-label="Close">✕</button>' +
+      '</div>' +
+      '<h2 style="margin:4px 0 6px;font-size:18px;color:#fff;">' + tr('selectBoostPrompt') + '</h2>' +
+      '<div style="font-size:11.5px;color:var(--text-muted);background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.4;text-align:left;">' +
+      '💡 <b>' + (lang === 'ru' ? 'Как работают бусты' : 'How Boosts Work') + ':</b><br>' +
+      '• <b>' + tr('boostActiveType') + '</b>: ' + tr('boostActiveDesc') + '.<br>' +
+      '• <b>' + tr('boostPassiveType') + '</b>: ' + tr('boostPassiveDesc') + '.<br>' +
+      '<span style="color:#fde047;font-size:10.5px;">✓ ' + (lang === 'ru' ? 'Заряд расходуется ТОЛЬКО после старта матча (при отмене заряд не теряется).' : 'Charge is consumed ONLY upon match start (never if cancelled).') + '</span>' +
+      '</div>' +
+      '<div class="fvh-boost-modal-list" style="max-height:280px;overflow-y:auto;margin-bottom:12px;">' +
+      listHtml +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      (armed ? '<button class="btn block clear-boost-btn">✕ ' + tr('noBoostEquipped') + '</button>' : '') +
+      '<button class="btn primary block close-modal-btn">' + tr('close') + '</button>' +
+      '</div>';
+
+    modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+    var closeBtn = modal.querySelector('.close-modal-btn');
+    if (closeBtn) closeBtn.onclick = function () { overlay.remove(); };
+    overlay.onclick = function (e) { if (e.target === overlay) overlay.remove(); };
+
+    var clearBtn = modal.querySelector('.clear-boost-btn');
+    if (clearBtn) {
+      clearBtn.onclick = function () {
+        var pid = getAppPlayerId(app);
+        safeEconomyApi('/api/economy/equip', { playerId: pid, slot: 'boost', itemId: 'none' }).then(function () {
+          app.store.update(function (d) { d.armedBoost = null; });
+          app.audio.play('click');
+          overlay.remove();
+          if (onArmedChange) onArmedChange();
+        });
+      };
+    }
+
+    modal.querySelectorAll('.arm-btn').forEach(function (btn) {
+      btn.onclick = function () {
+        var bId = btn.dataset.id;
+        var pid = getAppPlayerId(app);
+        safeEconomyApi('/api/economy/equip', { playerId: pid, slot: 'boost', itemId: bId }).then(function (res) {
+          if (res && res.error === 'item_not_owned') {
+            app.audio.play('error');
+            showToast('⚠️ No charges remaining');
+            return;
+          }
+          app.store.update(function (d) { d.armedBoost = bId; });
+          app.audio.play('claim');
+          var bDef = BOOST_CATALOG.find(function (x) { return x.id === bId; });
+          showToast(tr('boostArmed') + ': ' + trItem(bDef ? bDef.name : bId));
+          overlay.remove();
+          if (onArmedChange) onArmedChange();
+        });
+      };
+    });
+
+    modal.querySelectorAll('.disarm-btn').forEach(function (btn) {
+      btn.onclick = function () {
+        var pid = getAppPlayerId(app);
+        safeEconomyApi('/api/economy/equip', { playerId: pid, slot: 'boost', itemId: 'none' }).then(function () {
+          app.store.update(function (d) { d.armedBoost = null; });
+          app.audio.play('click');
+          overlay.remove();
+          if (onArmedChange) onArmedChange();
+        });
+      };
+    });
+
+    modal.querySelectorAll('.buy-btn').forEach(function (btn) {
+      btn.onclick = function () {
+        var bId = btn.dataset.id;
+        var bDef = BOOST_CATALOG.find(function (x) { return x.id === bId; });
+        if (!bDef) return;
+        var coins = app.store.data.coins || 0;
+        if (coins < bDef.price) {
+          app.audio.play('error');
+          showToast(tr('notEnoughCoins'));
+          return;
+        }
+        var pid = getAppPlayerId(app);
+        safeEconomyApi('/api/economy/purchase', {
+          playerId: pid,
+          itemId: bId,
+          idempotencyKey: 'mode_boost_' + pid + '_' + bId + '_' + Date.now()
+        }).then(function (res) {
+          if (res && res.ok) {
+            app.store.update(function (d) {
+              d.coins = res.coins;
+              d.xp = res.xp;
+              d.owned = res.owned;
+              d.packs = res.packs;
+              d.boostCharges = res.boostCharges;
+              d.armedBoost = bId;
+            });
+          } else {
+            app.store.update(function (d) {
+              d.coins -= bDef.price;
+              if (!d.boostCharges) d.boostCharges = {};
+              d.boostCharges[bId] = (d.boostCharges[bId] || 0) + 1;
+              d.armedBoost = bId;
+            });
+          }
+          app.audio.play('claim');
+          showToast(tr('purchaseSuccess') + ' (' + trItem(bDef.name) + ' +1)');
+          overlay.remove();
+          if (onArmedChange) onArmedChange();
+        });
+      };
+    });
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
   // Dedicated Full-Screen Mode Selection Page
   function buildModeSelectPage(app) {
     var container = document.createElement('div');
@@ -6470,6 +7277,11 @@
               '<button type="button" class="' + (selDiff === 'hard' ? 'on' : '') + '" data-diff="hard">' + tr('hard') + '</button>' +
             '</div>' +
           '</div>' +
+          '<div class="fvh-ctrl-row fvh-ctrl-boost-row">' +
+            '<span class="fvh-ctrl-label">' + tr('catBoosts') + ':</span>' +
+            '<div class="fvh-mode-boost-box" id="fvh-mode-boost-trigger" style="cursor:pointer;">' +
+            '</div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
       '<div class="fvh-mode-card-actions">' +
@@ -6495,6 +7307,50 @@
         app.audio.play('click');
       };
     });
+
+    function updatePracticeBoostBox() {
+      var boostBox = practiceCard.querySelector('#fvh-mode-boost-trigger');
+      if (!boostBox) return;
+      var armedId = app.store.data.armedBoost;
+      var boostCharges = app.store.data.boostCharges || {};
+      if (armedId) {
+        var bDef = BOOST_CATALOG.find(function (b) { return b.id === armedId; }) || { name: armedId, icon: '⚡', type: 'active' };
+        var ch = boostCharges[armedId] || 0;
+        boostBox.innerHTML =
+          '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">' +
+          '  <span style="font-size:22px;line-height:1;">' + bDef.icon + '</span>' +
+          '  <div style="min-width:0;text-align:left;">' +
+          '    <div style="font-weight:800;font-size:12px;color:#fff;display:flex;align-items:center;gap:6px;">' +
+          '      ' + trItem(bDef.name) +
+          '      <span class="fvh-boost-type-tag ' + bDef.type + '" style="font-size:9px;padding:1px 5px;">' + (bDef.type === 'active' ? '⚡ ' + tr('boostActiveType') : '🛡️ ' + tr('boostPassiveType')) + '</span>' +
+          '    </div>' +
+          '    <div style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('boostCharges', { n: ch }) + ' · ' + (bDef.type === 'active' ? '12s Overdrive' : tr('boostPassiveDesc')) + '</div>' +
+          '  </div>' +
+          '</div>' +
+          '<button class="btn small" type="button" style="padding:4px 8px;font-size:11px;font-weight:700;">' + tr('changeBoost') + ' ➔</button>';
+      } else {
+        boostBox.innerHTML =
+          '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">' +
+          '  <span style="font-size:20px;opacity:0.5;">⚡</span>' +
+          '  <div style="min-width:0;text-align:left;">' +
+          '    <div style="font-weight:800;font-size:12px;color:var(--text-muted);">' + tr('noBoostEquipped') + '</div>' +
+          '    <div style="font-size:10px;color:var(--text-muted);opacity:0.8;">' + tr('selectBoostPrompt') + '</div>' +
+          '  </div>' +
+          '</div>' +
+          '<button class="btn small" type="button" style="padding:4px 8px;font-size:11px;font-weight:700;">+ ' + tr('boostArm') + '</button>';
+      }
+    }
+    updatePracticeBoostBox();
+
+    var boostTrigger = practiceCard.querySelector('#fvh-mode-boost-trigger');
+    if (boostTrigger) {
+      boostTrigger.onclick = function () {
+        app.audio.play('click');
+        showModeBoostSelectorModal(app, function () {
+          updatePracticeBoostBox();
+        });
+      };
+    }
 
     practiceCard.querySelector('.fvh-btn-start-practice').onclick = function () {
       app.audio.play('click');
@@ -6716,6 +7572,8 @@
 
   // Hook into App & Page Router
   onAppReady(function (app) {
+    window.App = app;
+    window.__fvh = app;
     // Initial sync with authoritative backend economy
     syncAuthoritativeEconomy(app);
 

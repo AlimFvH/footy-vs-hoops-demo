@@ -1858,6 +1858,8 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             this.difficulty = opts.difficulty || 'normal';
             this.ai = exports.DIFFICULTY[this.difficulty] || exports.DIFFICULTY.normal;
             this.boosts = (_b = opts.boosts) !== null && _b !== void 0 ? _b : types_js_1.NO_BOOSTS;
+            this.turboBoostActive = false;
+            this.turboBoostTimer = 0;
             this.matchSeconds = opts.matchSeconds || 60;
             this.timeLeft = this.matchSeconds;
             this.matchPhase = 'regular';
@@ -1890,6 +1892,14 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             this.pendTackleReleased || (this.pendTackleReleased = input.tackleReleased);
             this.pendPass || (this.pendPass = input.passPressed);
             this.acc += dt;
+            if (this.turboBoostActive) {
+                this.turboBoostTimer -= dt;
+                if (this.turboBoostTimer <= 0) {
+                    this.turboBoostActive = false;
+                    this.turboBoostTimer = 0;
+                    this.emit({ type: 'boostExpired', boostId: 'boost_turbo' });
+                }
+            }
             const h = this.P.step;
             while (this.acc >= h) {
                 this.acc -= h;
@@ -1903,6 +1913,14 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 this.pend2.shootPressed = this.pend2.shootReleased = this.pend2.tacklePressed = this.pend2.tackleReleased = this.pend2.pass = false;
                 this.tick(h);
             }
+        }
+        activateTurboBoost() {
+            if (this.turboBoostActive || (this.phase !== 'playing' && this.phase !== 'countdown'))
+                return false;
+            this.turboBoostActive = true;
+            this.turboBoostTimer = 12.0;
+            this.emit({ type: 'boostActivated', boostId: 'boost_turbo', duration: 12.0 });
+            return true;
         }
         emit(e) {
             this.events.push(e);
@@ -2061,7 +2079,8 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 else {
                     mag = 0;
                 }
-                let speed = P.baseSpeed * a.speedMul * (a.human ? this.boosts.speed : this.ai.speed);
+                const turboMul = (a.human && this.turboBoostActive) ? 1.35 : 1;
+                let speed = P.baseSpeed * a.speedMul * (a.human ? this.boosts.speed * turboMul : this.ai.speed);
                 if (a.role === 'keeper')
                     speed = this.keeperBaseSpeed(a);
                 const sprinting = a.sprint && a.stamina > 2 && mag > 0.2;
@@ -11326,7 +11345,7 @@ define("ui/dom", ["require", "exports"], function (require, exports) {
         return ((_a = navigator.maxTouchPoints) !== null && _a !== void 0 ? _a : 0) > 0 || ((_b = window.matchMedia) === null || _b === void 0 ? void 0 : _b.call(window, '(pointer: coarse)').matches) === true;
     }
 });
-define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom"], function (require, exports, input_js_1, index_js_1, dom_js_1) {
+define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "data/shop"], function (require, exports, input_js_1, index_js_1, dom_js_1, shop_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Hud = void 0;
@@ -11347,6 +11366,29 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom"], f
             this.cpuEl = (0, dom_js_1.h)('b', { class: 'sb-score' }, '0');
             this.timeEl = (0, dom_js_1.h)('div', { class: 'sb-time' }, '0:00');
             this.pauseBtn = (0, dom_js_1.h)('button', { class: 'hud-pause', type: 'button', 'aria-label': (0, index_js_1.t)('hud.pause'), on: { click: () => this.onPause() } }, '❚❚');
+            this.boostWidget = (0, dom_js_1.h)('div', { class: 'fvh-hud-boost-widget', hidden: true });
+            this.boostBtn = (0, dom_js_1.h)('button', { class: 'fvh-hud-boost-btn', type: 'button', 'aria-label': 'Turbo Boost' });
+            this.boostIcon = (0, dom_js_1.h)('span', { class: 'fvh-hud-boost-icon' }, '👟');
+            this.boostLabel = (0, dom_js_1.h)('span', { class: 'fvh-hud-boost-label' }, 'TURBO');
+            this.boostChargesPill = (0, dom_js_1.h)('span', { class: 'fvh-hud-boost-charges' }, 'x1');
+            this.boostKbd = (0, dom_js_1.h)('kbd', { class: 'fvh-hud-boost-kbd' }, 'B');
+            this.boostRingSvg = (0, dom_js_1.h)('span', { class: 'fvh-hud-boost-ring' });
+            this.boostBtn.append(this.boostIcon, this.boostLabel, this.boostChargesPill, this.boostKbd, this.boostRingSvg);
+            this.boostStatusPill = (0, dom_js_1.h)('div', { class: 'fvh-hud-boost-pill', hidden: true });
+            this.boostWidget.append(this.boostBtn, this.boostStatusPill);
+            this.onBoostTrigger = null;
+            const triggerBoost = (e) => {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                if (this.onBoostTrigger) this.onBoostTrigger();
+            };
+            this.boostBtn.addEventListener('pointerdown', triggerBoost);
+            this.boostBtn.addEventListener('click', triggerBoost);
+            this.boostKeyHandler = (e) => {
+                if ((e.code === 'KeyB' || e.key === 'b' || e.key === 'B') && !e.repeat && !e.target.matches('input, textarea')) {
+                    triggerBoost();
+                }
+            };
+            window.addEventListener('keydown', this.boostKeyHandler);
             this.staminaFill = (0, dom_js_1.h)('i');
             this.staminaWrap = (0, dom_js_1.h)('div', { class: 'stamina' }, (0, dom_js_1.h)('span', null, (0, index_js_1.t)('hud.stamina')), (0, dom_js_1.h)('div', { class: 'bar' }, this.staminaFill));
             this.banner = (0, dom_js_1.h)('div', { class: 'banner' });
@@ -11367,7 +11409,27 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom"], f
             this.btnSprint = this.mkBtn('sprint', (0, index_js_1.t)('hud.sprint'), 'btn-sprint');
             this.touch = (0, dom_js_1.h)('div', { class: 'touch' }, this.stickZone, (0, dom_js_1.h)('div', { class: 'btn-cluster' }, this.btnSprint, this.btnTackle, this.btnShoot));
             this.bindStick();
-            this.root = (0, dom_js_1.h)('div', { class: 'hud', hidden: true }, (0, dom_js_1.h)('div', { class: 'hud-top' }, (0, dom_js_1.h)('div', { class: 'scoreboard' }, (0, dom_js_1.h)('div', { class: 'sb-team you' }, this.youLbl, this.youEl), this.timeEl, (0, dom_js_1.h)('div', { class: 'sb-team cpu' }, this.cpuEl, this.cpuLbl)), this.pauseBtn), this.flashEl, this.staminaWrap, this.banner, this.floatEl, this.toastEl, this.power, this.arrow, this.fps, this.hints, this.touch);
+            this.root = (0, dom_js_1.h)('div', { class: 'hud', hidden: true },
+                (0, dom_js_1.h)('div', { class: 'hud-top' },
+                    (0, dom_js_1.h)('div', { class: 'scoreboard' },
+                        (0, dom_js_1.h)('div', { class: 'sb-team you' }, this.youLbl, this.youEl),
+                        this.timeEl,
+                        (0, dom_js_1.h)('div', { class: 'sb-team cpu' }, this.cpuEl, this.cpuLbl)
+                    ),
+                    this.pauseBtn
+                ),
+                this.boostWidget,
+                this.flashEl,
+                this.staminaWrap,
+                this.banner,
+                this.floatEl,
+                this.toastEl,
+                this.power,
+                this.arrow,
+                this.fps,
+                this.hints,
+                this.touch
+            );
         }
         mkBtn(action, label, cls) {
             const el = (0, dom_js_1.h)('button', { class: `tbtn ${cls}`, type: 'button', 'data-action': action }, (0, dom_js_1.h)('span', { class: 'lbl' }, label), (0, dom_js_1.h)('i', { class: 'ring' }));
@@ -11576,6 +11638,14 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom"], f
                 else
                     this.arrow.classList.remove('show');
             }
+            if (sim.turboBoostActive) {
+                this.boostBtn.classList.add('active');
+                const rem = Math.ceil(sim.turboBoostTimer);
+                this.boostLabel.textContent = rem + 's';
+            } else if (this.boostBtn.classList.contains('active')) {
+                this.boostBtn.classList.remove('active');
+                this.boostLabel.textContent = 'TURBO';
+            }
             if (showFps) {
                 this.frames++;
                 this.lastFpsT += dtReal;
@@ -11588,7 +11658,64 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom"], f
             else if (this.fps.textContent)
                 this.fps.textContent = '';
         }
+        setBoost(cfg, save) {
+            this.cfg = cfg;
+            const boostId = cfg && cfg.boostId;
+            if (!boostId || cfg.online || cfg.demo) {
+                this.boostWidget.hidden = true;
+                return;
+            }
+            this.boostWidget.hidden = false;
+            if (boostId === 'boost_turbo') {
+                this.boostBtn.hidden = false;
+                this.boostStatusPill.hidden = true;
+                this.boostIcon.textContent = '👟';
+                this.boostLabel.textContent = 'TURBO';
+                const charges = (save.boostCharges && save.boostCharges['boost_turbo']) || 0;
+                this.boostChargesPill.textContent = 'x' + charges;
+                this.boostChargesPill.classList.toggle('empty', charges <= 0);
+            } else {
+                this.boostBtn.hidden = true;
+                this.boostStatusPill.hidden = false;
+                const it = (0, shop_js_1.getItem)(boostId);
+                const icon = it ? it.icon : '✨';
+                const name = it ? (0, index_js_1.t)(`item.${boostId}`) || it.name : 'Boost';
+                this.boostStatusPill.innerHTML = `<span class="pill-ico">${icon}</span> <span class="pill-nm">${name}</span>`;
+            }
+        }
+        updateBoostCharges(n) {
+            this.boostChargesPill.textContent = 'x' + n;
+            this.boostChargesPill.classList.toggle('empty', n <= 0);
+        }
+        onTurboBoostActive(duration) {
+            this.boostWidget.classList.add('is-active');
+            this.boostBtn.classList.add('active');
+            this.boostLabel.textContent = 'ACTIVE';
+            let t = duration;
+            if (this.boostActiveTimer) clearInterval(this.boostActiveTimer);
+            this.boostActiveTimer = setInterval(() => {
+                t -= 0.1;
+                if (t <= 0) {
+                    clearInterval(this.boostActiveTimer);
+                    this.boostActiveTimer = null;
+                    this.boostWidget.classList.remove('is-active');
+                    this.boostBtn.classList.remove('active');
+                    this.boostLabel.textContent = 'TURBO';
+                }
+            }, 100);
+        }
+        resetBoost() {
+            if (this.boostActiveTimer) {
+                clearInterval(this.boostActiveTimer);
+                this.boostActiveTimer = null;
+            }
+            this.boostWidget.hidden = true;
+            this.boostWidget.classList.remove('is-active');
+            this.boostBtn.classList.remove('active');
+            this.boostLabel.textContent = 'TURBO';
+        }
         resetState() {
+            this.resetBoost();
             this.hideBanner();
             this.cache = {};
             this.power.classList.remove('show');
@@ -12595,6 +12722,8 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.lastCountdownN = -1;
             this.paused = false;
             this.hold = holdAtStart;
+            this.passiveBoostConsumed = false;
+            this.turboSpentInMatch = false;
             this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e) }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
             this.input.capture = !cfg.demo;
             this.input.releaseAll();
@@ -12603,6 +12732,30 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 if (online)
                     this.hud.setNames(online.info.myName, online.info.oppName);
                 this.hud.resetState();
+                this.hud.setBoost(cfg, save);
+                this.hud.onBoostTrigger = () => {
+                    if (!this.running || this.paused || this.ended || !this.sim) return;
+                    if (this.cfg.boostId !== 'boost_turbo') return;
+                    if (this.sim.turboBoostActive || this.turboSpentInMatch) return;
+                    const curSave = this.getSave();
+                    const charges = (curSave.boostCharges && curSave.boostCharges['boost_turbo']) || 0;
+                    if (charges <= 0 && curSave.armedBoost !== 'boost_turbo') {
+                        this.hud.toast('No Turbo Boost charges left');
+                        return;
+                    }
+                    if (this.sim.activateTurboBoost()) {
+                        this.turboSpentInMatch = true;
+                        this.hud.onTurboBoostActive(12.0);
+                        this.audio.play('claim');
+                        telegram_js_1.telegram.haptic('medium');
+                        if (this.onBoostConsume) this.onBoostConsume('boost_turbo');
+                        const updatedSave = this.getSave();
+                        const remCharges = (updatedSave.boostCharges && updatedSave.boostCharges['boost_turbo']) || 0;
+                        this.hud.updateBoostCharges(remCharges);
+                        this.hud.showBanner('⚡ TURBO BOOST!', 'big', 1000);
+                        this.hud.toast('⚡ Turbo Overdrive Active (12s)', 2200);
+                    }
+                };
                 this.hud.show(true);
                 this.audio.startAmbience();
             }
@@ -12699,7 +12852,19 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     else if (e.n === 0) {
                         this.hud.showBanner((0, index_js_2.t)('hud.go'), 'big', 700);
                         a.play('go');
+                        if (this.cfg && this.cfg.boostId && this.cfg.boostId !== 'boost_turbo' && !this.passiveBoostConsumed && !this.cfg.online && !this.cfg.demo) {
+                            this.passiveBoostConsumed = true;
+                            if (this.onBoostConsume) this.onBoostConsume(this.cfg.boostId);
+                            const bItem = (0, shop_js_3.getItem)(this.cfg.boostId);
+                            if (bItem) {
+                                this.hud.toast(`🛡️ Buff Active: ${bItem.name}`, 2200);
+                            }
+                        }
                     }
+                    break;
+                case 'boostExpired':
+                    a.play('whistle');
+                    this.hud.toast('⏱️ Turbo Overdrive Expired', 1600);
                     break;
                 case 'whistle':
                     a.play(e.kind === 'end' ? 'whistleEnd' : 'whistle');
@@ -14641,6 +14806,9 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                     this.showMenu();
             });
             this.game = new game_js_1.Game((0, dom_js_6.$)('#gl'), (0, dom_js_6.$)('#stage'), this.input, this.audio, this.hud, () => this.store.data);
+            this.game.onBoostConsume = (boostId) => {
+                this.store.update((d) => (0, economy_js_2.consumeBoost)(d, boostId));
+            };
             this.game.onContextLost = () => this.fatal((0, index_js_7.t)('err.contextLost'));
             this.game.onMatchEnd = (sum) => this.onMatchEnd(sum);
             this.game.onOnlineLost = (why) => this.onOnlineLost(why);
@@ -14749,9 +14917,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             this.closePause();
             this.clearScreen();
             telegram_js_4.telegram.enterMatch(() => this.togglePause());
-            if (cfg.boostId) {
-                this.store.update((d) => (0, economy_js_2.consumeBoost)(d, cfg.boostId));
-            }
+            // Boost charge is consumed upon kickoff (passive) or manual activation (turbo), not prematurely here.
             this.game.start(cfg, tutorial);
             if (tutorial)
                 this.tutorial(true);
