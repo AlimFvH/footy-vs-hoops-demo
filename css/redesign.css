@@ -271,13 +271,12 @@ html.is-telegram {
 
 .fvh-hero-avatar-box {
   width: 100%;
-  height: clamp(120px, 22vh, 230px);
+  height: clamp(140px, 24vh, 250px);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   position: relative;
-  overflow: hidden;
-  border-radius: 18px;
+  overflow: visible;
 }
 
 .fvh-hero-portrait-wrap {
@@ -285,35 +284,36 @@ html.is-telegram {
   height: 100%;
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  border-radius: 18px;
-  overflow: hidden;
 }
 
 .fvh-hero-real-img {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: 100%;
-  max-height: 230px;
-  object-fit: cover;
-  object-position: center top;
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
-  transition: transform 0.25s ease, filter 0.25s ease;
+  max-height: 250px;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.75));
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
   image-rendering: -webkit-optimize-contrast;
   display: block;
+  user-select: none;
+  pointer-events: none;
 }
 
 .fvh-hero-card:hover .fvh-hero-real-img {
-  transform: scale(1.04);
+  transform: translateY(-4px) scale(1.05);
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.9));
 }
 
 .fvh-wardrobe-avatar .fvh-hero-portrait-wrap {
-  height: 220px;
+  height: 260px;
 }
 
 .fvh-wardrobe-avatar .fvh-hero-real-img {
-  max-height: 220px;
+  max-height: 260px;
 }
 
 .fvh-hero-avatar-box svg {
@@ -701,14 +701,14 @@ html.is-telegram {
     padding: 2px 5px !important;
   }
   .fvh-hero-avatar-box {
-    height: clamp(80px, 15vh, 125px) !important;
+    height: clamp(100px, 19vh, 145px) !important;
     border-radius: 12px !important;
   }
   .fvh-hero-portrait-wrap {
     border-radius: 12px !important;
   }
   .fvh-hero-real-img {
-    max-height: 125px !important;
+    max-height: 145px !important;
     border-radius: 12px !important;
   }
   .fvh-hero-name {
