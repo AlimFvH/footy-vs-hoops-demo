@@ -887,8 +887,23 @@ html.is-telegram {
 .fvh-bp-level-reward-icon {
   font-size: 38px;
   line-height: 1;
-  margin: 8px 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+  flex-shrink: 0;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+}
+
+.fvh-bp-level-reward-icon svg {
+  max-height: 48px !important;
+  max-width: 52px !important;
+  width: auto !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
 .fvh-bp-level-reward-name {
@@ -1197,20 +1212,23 @@ html.is-telegram {
 .fvh-wallet-chips {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .fvh-chip {
   background: rgba(9, 14, 28, 0.85);
   border: 1px solid var(--panel-glass-border);
-  padding: 5px 12px;
+  padding: 4px 9px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   backdrop-filter: blur(8px);
+  white-space: nowrap;
 }
 
 .fvh-chip.coins {
@@ -2837,7 +2855,21 @@ html, body {
   }
   .fvh-bp-level-reward-icon {
     font-size: 30px !important;
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     margin: 4px 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .fvh-bp-level-reward-icon svg {
+    max-height: 46px !important;
+    max-width: 50px !important;
+    width: auto !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5)) !important;
   }
   .fvh-bp-level-reward-name {
     font-size: 11px !important;
@@ -3436,3 +3468,267 @@ html, body {
   gap: 6px;
 }
 
+
+
+/* ==========================================================================
+   FvH Coin & Interactive 3D Pack Opening Animation
+   ========================================================================== */
+
+.fvh-coin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: middle;
+}
+
+.fvh-coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.fvh-pack-opening-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 40%, rgba(15, 23, 42, 0.98) 0%, rgba(4, 7, 14, 0.99) 75%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: fvhFadeIn 0.35s ease;
+}
+
+@keyframes fvhFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fvh-pack-stage {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+}
+
+.fvh-pack-unopened-wrap {
+  cursor: pointer;
+  position: relative;
+  margin: 24px 0 20px;
+  padding: 10px;
+  perspective: 1000px;
+}
+
+.fvh-pack-hover-card {
+  animation: fvhPackHover 2.8s ease-in-out infinite;
+  transition: transform 0.2s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.fvh-pack-unopened-wrap:hover .fvh-pack-hover-card {
+  transform: scale(1.05);
+}
+
+@keyframes fvhPackHover {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    filter: drop-shadow(0 14px 28px rgba(0, 229, 255, 0.45));
+  }
+  50% {
+    transform: translateY(-14px) rotate(-1deg);
+    filter: drop-shadow(0 24px 38px rgba(245, 158, 11, 0.6));
+  }
+}
+
+.fvh-pack-hover-card.rumble {
+  animation: fvhPackRumble 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite !important;
+}
+
+@keyframes fvhPackRumble {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-8px, 6px) rotate(-4deg); }
+  30% { transform: translate(8px, -6px) rotate(4deg); }
+  45% { transform: translate(-7px, -5px) rotate(-3deg); }
+  60% { transform: translate(7px, 5px) rotate(3deg); }
+  75% { transform: translate(-5px, 3px) rotate(-2deg); }
+  90% { transform: translate(5px, -3px) rotate(2deg); }
+  100% { transform: translate(0, 0) scale(1.18); filter: brightness(2.2); }
+}
+
+.fvh-pack-flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #ffffff 10%, rgba(254, 240, 138, 0.8) 40%, rgba(0, 229, 255, 0.4) 70%, transparent 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100000;
+}
+
+.fvh-pack-flash-overlay.active {
+  animation: fvhFlashBurst 0.65s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes fvhFlashBurst {
+  0% { opacity: 0; transform: scale(0.6); }
+  30% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+.fvh-pack-cards-reveal {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 18px 0 24px;
+}
+
+.fvh-pack-reward-card {
+  flex: 1 1 140px;
+  max-width: 170px;
+  min-width: 130px;
+  min-height: 240px;
+  background: linear-gradient(160deg, rgba(20, 28, 48, 0.98) 0%, rgba(10, 14, 26, 0.98) 100%);
+  border-radius: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: fvhCardDeal 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+
+@keyframes fvhCardDeal {
+  0% { opacity: 0; transform: translateY(70px) scale(0.6); }
+  60% { opacity: 1; transform: translateY(-10px) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fvh-pack-reward-card.r-rare {
+  border-color: #38bdf8;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.12);
+}
+
+.fvh-pack-reward-card.r-epic {
+  border-color: #c084fc;
+  box-shadow: 0 0 28px rgba(192, 132, 252, 0.4), inset 0 0 22px rgba(192, 132, 252, 0.14);
+}
+
+.fvh-pack-reward-card.r-legendary {
+  border-color: #fde047;
+  box-shadow: 0 0 32px rgba(253, 224, 71, 0.45), inset 0 0 26px rgba(253, 224, 71, 0.18);
+}
+
+.fvh-pack-reward-card.r-coins {
+  border-color: #f59e0b;
+  box-shadow: 0 0 28px rgba(245, 158, 11, 0.4), inset 0 0 22px rgba(245, 158, 11, 0.15);
+}
+
+.fvh-pack-card-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  pointer-events: none;
+  animation: fvhCardShine 3s infinite linear;
+}
+
+@keyframes fvhCardShine {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.fvh-pack-reward-thumb {
+  width: 100%;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.fvh-pack-reward-thumb svg {
+  max-width: 90px !important;
+  max-height: 90px !important;
+  width: auto !important;
+  height: auto !important;
+  display: block;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.6));
+}
+
+.fvh-pack-reward-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fvh-pack-badge-new {
+  background: linear-gradient(90deg, #10b981, #059669);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  margin-top: 4px;
+}
+
+.fvh-pack-badge-fallback {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+  margin-top: 4px;
+}
+
+.fvh-pack-claim-btn {
+  background: linear-gradient(135deg, #facc15 0%, #eab308 50%, #ca8a04 100%) !important;
+  color: #1c1404 !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  letter-spacing: 0.5px !important;
+  padding: 12px 32px !important;
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 6px 20px rgba(234, 179, 8, 0.5) !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, filter 0.15s ease !important;
+}
+
+.fvh-pack-claim-btn:active {
+  transform: scale(0.97) !important;
+}

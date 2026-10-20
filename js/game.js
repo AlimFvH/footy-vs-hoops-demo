@@ -2444,8 +2444,11 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
         APRON: 1.4,
         HOOP_Z: 12.6,
         RIM_H: 3.05,
+        RIM_Y: 3.05,
         RIM_R: 0.62,
         RIM_TUBE: 0.045,
+        RIM_T: 0.045,
+        NET_H: 0.68,
         BALL_R: 0.3,
         BOARD_OFFSET: 0.86,
         BOARD_W: 1.25,
@@ -6126,50 +6129,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         ];
         const crowd = crowdAndStands(root, stands, t.crowd || [0xf59e0b, 0xef4444, 0x3b82f6, 0xffffff], t.stand || 0x161c28, quality);
 
-        // Center-Hung 4-Sided Jumbotron Scoreboard directly over center court!
-        const jumbotron = new scene_js_1.Node();
-        jumbotron.setPos(0, 14.0, 0);
+        // Arena perimeter stands and spectator lighting
 
-        // Jumbotron main body
-        const jumbBodyMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0f172a), spec: 0.8, shininess: 60 });
-        const jumbCube = new scene_js_1.Node(G.box(5.0, 2.6, 5.0), jumbBodyMat);
-        jumbotron.add(jumbCube);
-
-        // 4 Glowing LED Video Displays
-        const screenMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0284c7), emissive: [0.3, 0.8, 1.2], unlit: true, spec: 0.9 });
-        for (const [sx, sz, rot] of [[0, 2.52, 0], [0, -2.52, Math.PI], [2.52, 0, Math.PI / 2], [-2.52, 0, -Math.PI / 2]]) {
-            const screen = new scene_js_1.Node(G.box(4.4, 2.1, 0.08), screenMat);
-            screen.setPos(sx, 0, sz);
-            screen.rotation = [0, rot, 0];
-            jumbotron.add(screen);
-        }
-
-        // Bottom LED Ring
-        const ringMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf59e0b), emissive: [1.2, 0.8, 0.1], unlit: true });
-        const ring = new scene_js_1.Node(G.cylinder(2.6, 2.6, 0.45, 20), ringMat);
-        ring.setPos(0, -1.5, 0);
-        jumbotron.add(ring);
-
-        // Suspension Cables to Arena Ceiling
-        const cableMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x64748b), spec: 0.8 });
-        for (const [cx, cz] of [[-2, -2], [2, -2], [-2, 2], [2, 2]]) {
-            const cable = new scene_js_1.Node(G.cylinder(0.04, 0.04, 12.0, 6), cableMat);
-            cable.setPos(cx, 7.3, cz);
-            jumbotron.add(cable);
-        }
-        root.add(jumbotron);
-
-        // Overhead Arena Steel Truss Grid & Spotlights
-        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x334155), spec: 0.6 });
-        for (const s of [-1, 1]) {
-            const longBeam = new scene_js_1.Node(G.box(0.35, 0.35, 2 * L + 14), trussMat);
-            longBeam.setPos(s * (W + 6.0), 16.5, 0);
-            root.add(longBeam);
-
-            const crossBeam = new scene_js_1.Node(G.box(2 * W + 14, 0.35, 0.35), trussMat);
-            crossBeam.setPos(0, 16.5, s * (L + 6.0));
-            root.add(crossBeam);
-        }
 
         // Courtside Team Benches & Media Desks
         const benchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.3 });
@@ -6755,53 +6716,112 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
-        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.7, spec: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
+        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.78, spec: 0.95, shininess: 85, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
         const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.6, castShadow: true });
-        const rimMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(t.rim), emissive: (0, math_js_6.rgb)(t.rim).map((v) => v * 0.3), spec: 0.9, shininess: 60, castShadow: true });
-        const poleMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x3b4252), spec: 0.4, castShadow: true });
+        const rimColorVal = t.rim || 0xff6a1a;
+        const rimRgb = (0, math_js_6.rgb)(rimColorVal);
+        const rimMat = (0, scene_js_1.material)({
+            color: rimRgb,
+            emissive: rimRgb.map((v) => v * 0.4),
+            spec: 0.95,
+            shininess: 90,
+            castShadow: true
+        });
+        const poleMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x334155), spec: 0.5, castShadow: true });
+        const padMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.3, castShadow: true });
         const netTex = new scene_js_1.Texture((0, textures_js_1.makeNetTexture)(), { repeat: true, mipmap: true, srgb: true });
         const hoopNets = [];
         const hoopRoots = [];
+
+        const RIM_R = basketball_js_2.BB.RIM_R || 0.62;
+        const RIM_TUBE = basketball_js_2.BB.RIM_TUBE || 0.052;
+        const RIM_H = basketball_js_2.BB.RIM_H || 3.05;
+        const BOARD_OFFSET = basketball_js_2.BB.BOARD_OFFSET || 0.86;
+        const NET_H = 0.68;
+
         for (const s of [-1, 1]) {
             const hz = s * basketball_js_2.BB.HOOP_Z;
-            const bz = hz + s * basketball_js_2.BB.BOARD_OFFSET;
+            const bz = hz + s * BOARD_OFFSET;
             const hoop = new scene_js_1.Node();
             const bh = basketball_js_2.BB.BOARD_TOP - basketball_js_2.BB.BOARD_BOTTOM;
+            const boardCenterY = (basketball_js_2.BB.BOARD_TOP + basketball_js_2.BB.BOARD_BOTTOM) / 2;
+
+            // 1. Backboard Glass & Outer Support Frame
             const board = new scene_js_1.Node(G.box(2 * basketball_js_2.BB.BOARD_W, bh, 2 * basketball_js_2.BB.BOARD_T), glassMat);
-            board.setPos(0, (basketball_js_2.BB.BOARD_TOP + basketball_js_2.BB.BOARD_BOTTOM) / 2, bz);
+            board.setPos(0, boardCenterY, bz);
             const fr = [
                 [2 * basketball_js_2.BB.BOARD_W + 0.08, 0.06, 0, basketball_js_2.BB.BOARD_TOP],
                 [2 * basketball_js_2.BB.BOARD_W + 0.08, 0.06, 0, basketball_js_2.BB.BOARD_BOTTOM],
-                [0.06, bh, -basketball_js_2.BB.BOARD_W, (basketball_js_2.BB.BOARD_TOP + basketball_js_2.BB.BOARD_BOTTOM) / 2],
-                [0.06, bh, basketball_js_2.BB.BOARD_W, (basketball_js_2.BB.BOARD_TOP + basketball_js_2.BB.BOARD_BOTTOM) / 2],
+                [0.06, bh, -basketball_js_2.BB.BOARD_W, boardCenterY],
+                [0.06, bh, basketball_js_2.BB.BOARD_W, boardCenterY],
             ];
             for (const [w, h, x, y] of fr) {
                 const f = new scene_js_1.Node(G.box(w, h, 2 * basketball_js_2.BB.BOARD_T + 0.02), frameMat);
                 f.setPos(x, y, bz);
                 hoop.add(f);
             }
-            const rim = new scene_js_1.Node(G.torus(basketball_js_2.BB.RIM_R, basketball_js_2.BB.RIM_T, 14, 8), rimMat);
-            rim.rotation = [Math.PI / 2, 0, 0];
-            rim.setPos(0, basketball_js_2.BB.RIM_Y, hz);
-            const mount = new scene_js_1.Node(G.box(0.14, 0.08, Math.abs(bz - hz) - basketball_js_2.BB.RIM_R), frameMat);
-            mount.setPos(0, basketball_js_2.BB.RIM_Y, (hz + bz - s * basketball_js_2.BB.RIM_R) / 2);
-            const net = new scene_js_1.Node(G.openCone(basketball_js_2.BB.RIM_R * 0.95, basketball_js_2.BB.NET_H, 12), (0, scene_js_1.material)({ texture: netTex, transparent: true, alpha: 0.85, doubleSided: true, depthWrite: false, uvScale: [6, 3], receiveShadow: false, castShadow: false, color: (0, math_js_6.rgb)(0xf1f5f9) }));
-            net.rotation = [Math.PI, 0, 0];
-            net.setPos(0, basketball_js_2.BB.RIM_Y - basketball_js_2.BB.NET_H, hz);
+
+            // 2. High-Visibility Tournament Basketball Rim (Horizontal torus facing straight up!)
+            // Unrotated torus already lies in horizontal X-Z plane with Y=height, perfectly concentric with scoring cylinder!
+            const rim = new scene_js_1.Node(G.torus(RIM_R, RIM_TUBE, 24, 10), rimMat);
+            rim.rotation = [0, 0, 0];
+            rim.setPos(0, RIM_H, hz);
+
+            // 3. Sturdy Mounting Bracket (Connects back edge of rim directly to backboard)
+            const mountLen = Math.abs(bz - hz) - RIM_R;
+            const mount = new scene_js_1.Node(G.box(0.18, 0.09, mountLen), frameMat);
+            mount.setPos(0, RIM_H, (hz + bz + s * RIM_R) / 2);
+
+            // 4. Spring Box / Breakaway Base Connector Pad (Iconic orange junction housing between rim and bracket)
+            const springBox = new scene_js_1.Node(G.box(0.22, 0.11, 0.14), rimMat);
+            springBox.setPos(0, RIM_H, hz + s * (RIM_R - 0.04));
+
+            // 5. Authentic Tapered Basketball Net (Attached directly underneath the rim)
+            // cylinder/openCone has y from -h/2 to +h/2 (top at +hh, bottom at -hh).
+            const net = new scene_js_1.Node(
+                G.openCone(RIM_R * 0.96, RIM_R * 0.54, NET_H, 16),
+                (0, scene_js_1.material)({
+                    texture: netTex,
+                    transparent: true,
+                    alpha: 0.92,
+                    doubleSided: true,
+                    depthWrite: false,
+                    uvScale: [6, 3],
+                    receiveShadow: false,
+                    castShadow: false,
+                    color: (0, math_js_6.rgb)(0xffffff)
+                })
+            );
+            net.rotation = [0, 0, 0];
+            net.setPos(0, RIM_H - NET_H / 2, hz);
             hoopNets.push(net);
+
+            // 6. Professional Arena Stanchion & Heavy Boom Arm
             const stanchion = new scene_js_1.Node();
             const poleZ = s * (L + APRON + 1.2);
             const poleH = basketball_js_2.BB.BOARD_TOP + 0.4;
-            const pole = new scene_js_1.Node(G.cylinder(0.18, 0.24, poleH, 8), poleMat);
+            const pole = new scene_js_1.Node(G.cylinder(0.20, 0.26, poleH, 10), poleMat);
             pole.setPos(0, poleH / 2, poleZ);
+
             const armLen = Math.hypot(bz - poleZ, 0.3);
-            const arm = new scene_js_1.Node(G.cylinder(0.1, 0.1, armLen, 6), poleMat);
+            const arm = new scene_js_1.Node(G.cylinder(0.12, 0.12, armLen, 8), poleMat);
             arm.rotation = [-s * Math.atan2(Math.abs(bz - poleZ), 0.3), 0, 0];
-            arm.setPos(0, (basketball_js_2.BB.BOARD_TOP + basketball_js_2.BB.BOARD_BOTTOM) / 2, (bz + poleZ) / 2);
-            const base = new scene_js_1.Node(G.box(1.6, 0.7, 1.4), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1f2937), spec: 0.4 }));
-            base.setPos(0, 0.35, poleZ);
-            stanchion.add(pole, arm, base);
-            hoop.add(board, rim, mount, net, stanchion);
+            arm.setPos(0, boardCenterY, (bz + poleZ) / 2);
+
+            // Stanchion floor base
+            const base = new scene_js_1.Node(G.box(1.8, 0.75, 1.5), padMat);
+            base.setPos(0, 0.375, poleZ);
+
+            // Safety impact protective padding on front of pole
+            const padH = 1.6;
+            const safetyPad = new scene_js_1.Node(G.box(0.55, padH, 0.55), (0, scene_js_1.material)({
+                color: (0, math_js_6.rgb)(s === -1 ? 0x0284c7 : 0xea580c),
+                spec: 0.3
+            }));
+            safetyPad.setPos(0, padH / 2, poleZ - s * 0.4);
+
+            stanchion.add(pole, arm, base, safetyPad);
+            hoop.add(board, rim, mount, springBox, net, stanchion);
             root.add(hoop);
             hoopRoots.push(hoop);
         }

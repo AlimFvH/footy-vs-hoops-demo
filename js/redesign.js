@@ -1197,148 +1197,196 @@
   // Detailed Athletic Jersey SVG
   function getDetailedJerseySvg(item, size) {
     var isLg = size === 'large';
-    var w = isLg ? 200 : 76;
-    var h = isLg ? 200 : 76;
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 200 : (isSm ? 48 : 76);
+    var h = isLg ? 200 : (isSm ? 48 : 76);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+    var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
 
-    // Color configs based on skin ID
+    // Palette & Pattern Configs
     var primary = '#1e3a8a';
     var secondary = '#38bdf8';
     var accent = '#ffffff';
+    var trim = '#93c5fd';
     var number = '10';
-    var stripe = false;
-    var sash = false;
+    var isBasketball = false;
+    var pattern = 'plain';
 
-    if (id === 'skin_crimson') {
-      primary = '#b91c1c'; secondary = '#7f1d1d'; accent = '#fef08a'; number = '7'; stripe = true;
+    if (id === 'skin_rookie') {
+      primary = '#1d4ed8'; secondary = '#0284c7'; accent = '#ffffff'; trim = '#60a5fa'; number = '10'; pattern = 'chevron';
+    } else if (id === 'skin_crimson') {
+      primary = '#b91c1c'; secondary = '#7f1d1d'; accent = '#fef08a'; trim = '#f59e0b'; number = '7'; pattern = 'stripes';
     } else if (id === 'skin_neon' || id === 'skin_neon_elite') {
-      primary = '#0f172a'; secondary = '#00f0ff'; accent = '#10b981'; number = '10'; sash = true;
+      primary = '#090d16'; secondary = '#00f0ff'; accent = '#10b981'; trim = '#00f0ff'; number = '10'; pattern = 'circuit';
     } else if (id === 'skin_frost') {
-      primary = '#0284c7'; secondary = '#e0f2fe'; accent = '#38bdf8'; number = '33';
+      primary = '#0369a1'; secondary = '#e0f2fe'; accent = '#38bdf8'; trim = '#bae6fd'; number = '33'; pattern = 'frost';
     } else if (id === 'skin_shadow') {
-      primary = '#09090b'; secondary = '#8b5cf6'; accent = '#c084fc'; number = '00'; sash = true;
+      primary = '#09090b'; secondary = '#7c3aed'; accent = '#c084fc'; trim = '#a855f7'; number = '00'; pattern = 'stealth';
     } else if (id === 'skin_solar') {
-      primary = '#c2410c'; secondary = '#f59e0b'; accent = '#fef08a'; number = '24'; stripe = true;
+      isBasketball = true;
+      primary = '#c2410c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#ea580c'; number = '24'; pattern = 'flame';
     } else if (id === 'skin_gold') {
-      primary = '#854d0e'; secondary = '#fef08a'; accent = '#ffffff'; number = '1'; sash = true;
+      primary = '#854d0e'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fef08a'; number = '1'; pattern = 'royal';
     } else if (id === 'skin_cyber') {
-      primary = '#581c87'; secondary = '#d946ef'; accent = '#00f0ff'; number = '99'; sash = true;
+      primary = '#4a044e'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#f43f5e'; number = '99'; pattern = 'glitch';
     } else if (id === 'skin_sunset') {
-      primary = '#ea580c'; secondary = '#facc15'; accent = '#ffffff'; number = '8'; stripe = true;
+      isBasketball = true;
+      primary = '#ea580c'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fb923c'; number = '8'; pattern = 'wave';
     } else if (id === 'skin_hydro') {
-      primary = '#0369a1'; secondary = '#06b6d4'; accent = '#67e8f9'; number = '11'; sash = true;
+      primary = '#0369a1'; secondary = '#06b6d4'; accent = '#67e8f9'; trim = '#22d3ee'; number = '11'; pattern = 'aquatic';
     } else if (id === 'skin_mars') {
-      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; number = '42'; stripe = true;
+      isBasketball = true;
+      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'hazard';
     } else if (id === 'skin_astronaut') {
-      primary = '#334155'; secondary = '#94a3b8'; accent = '#38bdf8'; number = '01';
+      primary = '#1e293b'; secondary = '#94a3b8'; accent = '#38bdf8'; trim = '#facc15'; number = '01'; pattern = 'space';
     }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
       '<defs>' +
-      '<linearGradient id="jg_' + id + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<linearGradient id="jg_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
       '<stop offset="0%" stop-color="' + primary + '"/>' +
-      '<stop offset="100%" stop-color="' + secondary + '"/>' +
+      '<stop offset="60%" stop-color="' + secondary + '"/>' +
+      '<stop offset="100%" stop-color="' + primary + '"/>' +
       '</linearGradient>' +
-      '<filter id="glow_' + id + '"><feGaussianBlur stdDeviation="1.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
+      '<linearGradient id="trim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="0%">' +
+      '<stop offset="0%" stop-color="' + trim + '"/>' +
+      '<stop offset="100%" stop-color="' + accent + '"/>' +
+      '</linearGradient>' +
+      '<filter id="glow_' + uid + '"><feGaussianBlur stdDeviation="1.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
       '</defs>' +
-      // Body of Jersey
-      '<path d="M28 24L12 40L24 50L30 42L30 84L70 84L70 42L76 50L88 40L72 24L58 32L42 32Z" fill="url(#jg_' + id + ')" stroke="' + accent + '" stroke-width="1.2"/>' +
-      // V-Neck Collar
-      '<polygon points="42,24 50,34 58,24 54,24 50,30 46,24" fill="' + accent + '"/>' +
-      // Design embellishments
-      (stripe ?
-        '<line x1="42" y1="36" x2="42" y2="84" stroke="' + secondary + '" stroke-width="4"/>' +
-        '<line x1="58" y1="36" x2="58" y2="84" stroke="' + secondary + '" stroke-width="4"/>' : '') +
-      (sash ?
-        '<polygon points="30,42 66,84 70,84 34,42" fill="' + accent + '" opacity="0.85" filter="url(#glow_' + id + ')"/>' : '') +
-      // Number
-      '<text x="50" y="66" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '22' : '20') + '" font-weight="900" fill="' + accent + '" text-anchor="middle" letter-spacing="1">' + number + '</text>' +
-      // Hem Lines
-      '<line x1="30" y1="82" x2="70" y2="82" stroke="' + accent + '" stroke-width="1.5" opacity="0.7"/>' +
+      '<ellipse cx="50" cy="90" rx="26" ry="5" fill="#000000" opacity="0.35"/>' +
+      (isBasketball ?
+        '<path d="M34 22 C32 30 26 36 24 46 L28 84 L72 84 L76 46 C74 36 68 30 66 22 L56 26 C54 36 46 36 44 26 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.4"/>' +
+        '<path d="M34 22 C32 30 26 36 24 46" stroke="' + trim + '" stroke-width="2.2" fill="none"/>' +
+        '<path d="M66 22 C74 36 76 46 76 46" stroke="' + trim + '" stroke-width="2.2" fill="none"/>' +
+        '<path d="M44 26 C46 36 54 36 56 26" stroke="' + trim + '" stroke-width="2.2" fill="none"/>' :
+        '<path d="M28 24 L10 38 L22 48 L28 42 L28 84 L72 84 L72 42 L78 48 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.4"/>' +
+        '<polygon points="10,38 14,41 24,33 22,30" fill="url(#trim_' + uid + ')"/>' +
+        '<polygon points="90,38 86,41 76,33 78,30" fill="url(#trim_' + uid + ')"/>' +
+        '<polygon points="44,24 50,32 56,24 53,24 50,29 47,24" fill="url(#trim_' + uid + ')"/>'
+      ) +
+      (pattern === 'stripes' ?
+        '<line x1="38" y1="36" x2="38" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' +
+        '<line x1="62" y1="36" x2="62" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' : '') +
+      (pattern === 'chevron' ?
+        '<path d="M32 44 L50 54 L68 44" stroke="' + accent + '" stroke-width="2.5" fill="none" opacity="0.8"/>' +
+        '<path d="M32 52 L50 62 L68 52" stroke="' + accent + '" stroke-width="2" fill="none" opacity="0.6"/>' : '') +
+      (pattern === 'circuit' ?
+        '<path d="M30 42 L42 42 L48 50 L48 76" stroke="#00f0ff" stroke-width="1.8" fill="none" filter="url(#glow_' + uid + ')"/>' +
+        '<circle cx="48" cy="76" r="2.5" fill="#10b981"/>' +
+        '<path d="M70 42 L58 42 L52 50 L52 76" stroke="#00f0ff" stroke-width="1.8" fill="none" filter="url(#glow_' + uid + ')"/>' +
+        '<circle cx="52" cy="76" r="2.5" fill="#10b981"/>' : '') +
+      (pattern === 'stealth' ?
+        '<polygon points="28,42 66,84 72,84 34,42" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' : '') +
+      (pattern === 'flame' ?
+        '<path d="M34 84 Q42 68 46 74 Q50 60 54 74 Q58 68 66 84 Z" fill="' + secondary + '" opacity="0.8"/>' : '') +
+      (pattern === 'royal' ?
+        '<polygon points="28,42 66,84 72,84 34,42" fill="' + accent + '" opacity="0.85"/>' +
+        '<circle cx="50" cy="40" r="4" fill="' + accent + '" filter="url(#glow_' + uid + ')"/>' : '') +
+      (pattern === 'glitch' ?
+        '<line x1="30" y1="46" x2="70" y2="46" stroke="#00f0ff" stroke-width="2" opacity="0.8"/>' +
+        '<line x1="32" y1="50" x2="68" y2="50" stroke="#f43f5e" stroke-width="2" opacity="0.8"/>' : '') +
+      '<circle cx="38" cy="38" r="4" fill="' + accent + '" stroke="' + primary + '" stroke-width="1"/>' +
+      '<text x="38" y="41" font-size="5" text-anchor="middle" fill="' + primary + '" font-weight="900">★</text>' +
+      '<text x="51" y="67" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="#000000" opacity="0.45" text-anchor="middle">' + number + '</text>' +
+      '<text x="50" y="66" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" text-anchor="middle">' + number + '</text>' +
+      '<rect x="32" y="78" width="6" height="4" rx="0.5" fill="' + accent + '" opacity="0.85"/>' +
+      '<line x1="33" y1="80" x2="37" y2="80" stroke="' + primary + '" stroke-width="0.8"/>' +
       '</svg>';
   }
 
   // Detailed 3D Ball SVG
   function getDetailedBallSvg(item, size) {
     var isLg = size === 'large';
-    var w = isLg ? 200 : 76;
-    var h = isLg ? 200 : 76;
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 200 : (isSm ? 48 : 76);
+    var h = isLg ? 200 : (isSm ? 48 : 76);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+    var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
     var isHoops = id.indexOf('hoops') !== -1 || id === 'ball_tidal' || id === 'ball_cyber_neon';
 
     if (isHoops) {
-      // Basketball variations
-      var baseColor = '#ea580c';
-      var seamColor = '#120c18';
-      var glowFilter = '';
-      var orbital = false;
+      var bStart = '#ea580c';
+      var bMid = '#c2410c';
+      var bEnd = '#451a03';
+      var seam = '#180802';
+      var hasRing = false;
+      var glow = '';
 
       if (id === 'ball_hoops_blaze') {
-        baseColor = '#7e22ce'; seamColor = '#00f0ff'; glowFilter = 'filter="drop-shadow(0 0 6px #00f0ff)"';
+        bStart = '#a855f7'; bMid = '#7c3aed'; bEnd = '#2e1065'; seam = '#00f0ff'; glow = 'filter="drop-shadow(0 0 6px #00f0ff)"';
       } else if (id === 'ball_hoops_chrome') {
-        baseColor = '#94a3b8'; seamColor = '#334155';
+        bStart = '#f8fafc'; bMid = '#94a3b8'; bEnd = '#1e293b'; seam = '#0284c7';
       } else if (id === 'ball_hoops_midnight') {
-        baseColor = '#1e1b4b'; seamColor = '#f59e0b'; orbital = true;
+        bStart = '#3b82f6'; bMid = '#1e1b4b'; bEnd = '#050714'; seam = '#f59e0b'; hasRing = true;
       } else if (id === 'ball_tidal') {
-        baseColor = '#0891b2'; seamColor = '#cffafe';
+        bStart = '#38bdf8'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#cffafe';
       } else if (id === 'ball_cyber_neon') {
-        baseColor = '#180828'; seamColor = '#f43f5e'; glowFilter = 'filter="drop-shadow(0 0 6px #f43f5e)"'; orbital = true;
+        bStart = '#180828'; bMid = '#3b0764'; bEnd = '#090314'; seam = '#f43f5e'; glow = 'filter="drop-shadow(0 0 6px #f43f5e)"'; hasRing = true;
       }
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
         '<defs>' +
-        '<radialGradient id="bb_' + id + '" cx="35%" cy="30%" r="65%">' +
-        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>' +
-        '<stop offset="40%" stop-color="' + baseColor + '"/>' +
-        '<stop offset="100%" stop-color="#0f0702"/>' +
+        '<radialGradient id="bb_' + uid + '" cx="34%" cy="30%" r="68%">' +
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>' +
+        '<stop offset="30%" stop-color="' + bStart + '"/>' +
+        '<stop offset="75%" stop-color="' + bMid + '"/>' +
+        '<stop offset="100%" stop-color="' + bEnd + '"/>' +
         '</radialGradient>' +
         '</defs>' +
-        (orbital ? '<ellipse cx="50" cy="50" rx="46" ry="14" stroke="#00f0ff" stroke-width="2.5" fill="none" transform="rotate(-25, 50, 50)"/>' : '') +
-        '<circle cx="50" cy="50" r="38" fill="url(#bb_' + id + ')" ' + glowFilter + '/>' +
-        '<circle cx="50" cy="50" r="38" stroke="' + seamColor + '" stroke-width="2.2" fill="none"/>' +
-        '<line x1="12" y1="50" x2="88" y2="50" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<line x1="50" y1="12" x2="50" y2="88" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<path d="M22 22C38 34 38 66 22 78" stroke="' + seamColor + '" stroke-width="2" fill="none"/>' +
-        '<path d="M78 22C62 34 62 66 78 78" stroke="' + seamColor + '" stroke-width="2" fill="none"/>' +
-        '<ellipse cx="38" cy="34" rx="8" ry="4" fill="#ffffff" opacity="0.3" transform="rotate(-30, 38, 34)"/>' +
+        '<ellipse cx="50" cy="92" rx="28" ry="6" fill="#000000" opacity="0.38"/>' +
+        (hasRing ? '<ellipse cx="50" cy="50" rx="46" ry="14" stroke="#00f0ff" stroke-width="2.6" fill="none" transform="rotate(-24, 50, 50)" opacity="0.9"/>' : '') +
+        '<circle cx="50" cy="50" r="38" fill="url(#bb_' + uid + ')" ' + glow + '/>' +
+        '<circle cx="50" cy="50" r="38" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
+        '<line x1="12" y1="50" x2="88" y2="50" stroke="' + seam + '" stroke-width="2.2"/>' +
+        '<line x1="50" y1="12" x2="50" y2="88" stroke="' + seam + '" stroke-width="2.2"/>' +
+        '<path d="M22 24 C38 36 38 64 22 76" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
+        '<path d="M78 24 C62 36 62 64 78 76" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
+        '<ellipse cx="36" cy="32" rx="9" ry="4.5" fill="#ffffff" opacity="0.45" transform="rotate(-28, 36, 32)"/>' +
+        '<circle cx="33" cy="29" r="2.5" fill="#ffffff" opacity="0.75"/>' +
         '</svg>';
     } else {
-      // Football / Soccer variations
-      var ballGradStart = '#ffffff';
-      var ballGradEnd = '#1e293b';
-      var patchColor = '#0f172a';
+      var fStart = '#ffffff';
+      var fMid = '#e2e8f0';
+      var fEnd = '#0f172a';
+      var patch = '#1e293b';
       var seamColor = '#00f0ff';
       var hasAura = false;
 
       if (id === 'ball_footy_plasma') {
-        ballGradStart = '#00f0ff'; ballGradEnd = '#0f172a'; patchColor = '#10b981'; hasAura = true;
+        fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#0f172a'; patch = '#10b981'; seamColor = '#00f0ff'; hasAura = true;
       } else if (id === 'ball_footy_gold') {
-        ballGradStart = '#fef08a'; ballGradEnd = '#713f12'; patchColor = '#ca8a04'; seamColor = '#fef08a';
+        fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#713f12'; patch = '#ca8a04'; seamColor = '#fef08a'; hasAura = true;
       } else if (id === 'ball_footy_inferno') {
-        ballGradStart = '#f97316'; ballGradEnd = '#431407'; patchColor = '#1f0803'; seamColor = '#ef4444'; hasAura = true;
+        fStart = '#fb923c'; fMid = '#ea580c'; fEnd = '#450a0a'; patch = '#1c0505'; seamColor = '#ef4444'; hasAura = true;
       } else if (id === 'ball_footy_solar') {
-        ballGradStart = '#fbbf24'; ballGradEnd = '#b45309'; patchColor = '#78350f'; seamColor = '#f59e0b'; hasAura = true;
+        fStart = '#fde047'; fMid = '#f59e0b'; fEnd = '#78350f'; patch = '#9a3412'; seamColor = '#fbbf24'; hasAura = true;
       } else if (id === 'ball_earthrise') {
-        ballGradStart = '#38bdf8'; ballGradEnd = '#0369a1'; patchColor = '#15803d'; seamColor = '#ffffff'; hasAura = true;
+        fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#082f49'; patch = '#15803d'; seamColor = '#ffffff'; hasAura = true;
       }
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
         '<defs>' +
-        '<radialGradient id="fb_' + id + '" cx="35%" cy="30%" r="65%">' +
-        '<stop offset="0%" stop-color="' + ballGradStart + '"/>' +
-        '<stop offset="100%" stop-color="' + ballGradEnd + '"/>' +
+        '<radialGradient id="fb_' + uid + '" cx="34%" cy="30%" r="68%">' +
+        '<stop offset="0%" stop-color="' + fStart + '"/>' +
+        '<stop offset="50%" stop-color="' + fMid + '"/>' +
+        '<stop offset="100%" stop-color="' + fEnd + '"/>' +
         '</radialGradient>' +
         '</defs>' +
-        (hasAura ? '<circle cx="50" cy="50" r="42" fill="' + seamColor + '" opacity="0.25"/>' : '') +
-        '<circle cx="50" cy="50" r="38" fill="url(#fb_' + id + ')" stroke="' + seamColor + '" stroke-width="2"/>' +
-        // Hexagonal / Pentagonal patches
-        '<polygon points="50,34 62,42 57,56 43,56 38,42" fill="' + patchColor + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<line x1="50" y1="34" x2="50" y2="16" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<line x1="62" y1="42" x2="78" y2="34" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<line x1="57" y1="56" x2="70" y2="72" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<line x1="43" y1="56" x2="30" y2="72" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<line x1="38" y1="42" x2="22" y2="34" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<ellipse cx="38" cy="32" rx="7" ry="3.5" fill="#ffffff" opacity="0.4" transform="rotate(-25, 38, 32)"/>' +
+        '<ellipse cx="50" cy="92" rx="28" ry="6" fill="#000000" opacity="0.38"/>' +
+        (hasAura ? '<circle cx="50" cy="50" r="42" fill="' + seamColor + '" opacity="0.22"/>' : '') +
+        '<circle cx="50" cy="50" r="38" fill="url(#fb_' + uid + ')" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<polygon points="50,34 63,43 58,58 42,58 37,43" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<line x1="50" y1="34" x2="50" y2="14" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<line x1="63" y1="43" x2="82" y2="36" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<line x1="58" y1="58" x2="72" y2="76" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<line x1="42" y1="58" x2="28" y2="76" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<line x1="37" y1="43" x2="18" y2="36" stroke="' + seamColor + '" stroke-width="2"/>' +
+        '<polygon points="44,14 56,14 62,20 38,20" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
+        '<polygon points="82,36 88,48 84,60 78,54" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
+        '<polygon points="18,36 12,48 16,60 22,54" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
+        '<ellipse cx="36" cy="32" rx="8" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-25, 36, 32)"/>' +
+        '<circle cx="33" cy="29" r="2.2" fill="#ffffff" opacity="0.8"/>' +
         '</svg>';
     }
   }
@@ -1805,70 +1853,94 @@
       '</svg>';
   }
 
-  // Detailed Celebration Burst SVG
+  // Detailed Celebration Burst SVG (6 Distinct Dynamic Effects)
   function getDetailedCelebrationSvg(item, size) {
     var isLg = size === 'large';
-    var w = isLg ? 160 : 76;
-    var h = isLg ? 160 : 76;
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 160 : (isSm ? 48 : 76);
+    var h = isLg ? 160 : (isSm ? 48 : 76);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+    var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
 
+    // 1. Pyrotechnic Fireworks (cel_fireworks) - Multi-tiered chrysanthemum explosion
     if (id === 'cel_fireworks') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<circle cx="50" cy="50" r="44" fill="#030712"/>' +
-        '<circle cx="50" cy="40" r="14" stroke="#ec4899" stroke-width="2" stroke-dasharray="3 3"/>' +
-        '<circle cx="50" cy="40" r="28" stroke="#facc15" stroke-width="1.5" stroke-dasharray="4 4"/>' +
-        '<path d="M50 20L50 60 M30 40L70 40 M36 26L64 54 M64 26L36 54" stroke="#38bdf8" stroke-width="1.5"/>' +
-        '<circle cx="50" cy="40" r="4" fill="#ffffff"/>' +
-        '<circle cx="28" cy="30" r="2" fill="#ec4899"/><circle cx="72" cy="30" r="2" fill="#facc15"/><circle cx="50" cy="12" r="2.5" fill="#38bdf8"/>' +
+        '<circle cx="50" cy="50" r="44" fill="#030712" stroke="#ec4899" stroke-width="1.5"/>' +
+        '<circle cx="50" cy="40" r="32" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>' +
+        '<circle cx="50" cy="40" r="22" stroke="#facc15" stroke-width="1.8" stroke-dasharray="4 4"/>' +
+        '<circle cx="50" cy="40" r="10" stroke="#38bdf8" stroke-width="2"/>' +
+        '<path d="M50 8L50 72 M18 40L82 40 M28 18L72 62 M72 18L28 62" stroke="#f43f5e" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<circle cx="50" cy="40" r="5" fill="#ffffff"/>' +
+        '<circle cx="28" cy="18" r="2.5" fill="#facc15"/><circle cx="72" cy="18" r="2.5" fill="#00f0ff"/>' +
+        '<circle cx="18" cy="40" r="2.5" fill="#ec4899"/><circle cx="82" cy="40" r="2.5" fill="#facc15"/>' +
+        '<circle cx="28" cy="62" r="2.5" fill="#38bdf8"/><circle cx="72" cy="62" r="2.5" fill="#ec4899"/>' +
+        '<circle cx="50" cy="8" r="3" fill="#ffffff"/>' +
         '</svg>';
     }
 
+    // 2. Sonic Concussion Shockwave (cel_shockwave) - Expanding sonic wave ripples
     if (id === 'cel_shockwave') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<circle cx="50" cy="50" r="44" fill="#050814"/>' +
-        '<circle cx="50" cy="50" r="38" stroke="#00f0ff" stroke-width="3" opacity="0.4"/>' +
-        '<circle cx="50" cy="50" r="26" stroke="#38bdf8" stroke-width="3" opacity="0.7"/>' +
-        '<circle cx="50" cy="50" r="14" stroke="#ffffff" stroke-width="3.5"/>' +
-        '<circle cx="50" cy="50" r="5" fill="#00f0ff"/>' +
-        '<polygon points="50,4 52,14 48,14" fill="#00f0ff"/><polygon points="50,96 52,86 48,86" fill="#00f0ff"/>' +
-        '<polygon points="4,50 14,48 14,52" fill="#00f0ff"/><polygon points="96,50 86,48 86,52" fill="#00f0ff"/>' +
+        '<circle cx="50" cy="50" r="44" fill="#050814" stroke="#00f0ff" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="38" stroke="#00f0ff" stroke-width="3" opacity="0.35"/>' +
+        '<circle cx="50" cy="50" r="26" stroke="#38bdf8" stroke-width="3.5" opacity="0.75"/>' +
+        '<circle cx="50" cy="50" r="14" stroke="#ffffff" stroke-width="4"/>' +
+        '<circle cx="50" cy="50" r="6" fill="#00f0ff"/>' +
+        '<path d="M50 4 L50 16 M50 96 L50 84 M4 50 L16 50 M96 50 L84 50" stroke="#00f0ff" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<path d="M18 18 L26 26 M82 18 L74 26 M18 82 L26 74 M82 82 L74 74" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round"/>' +
         '</svg>';
     }
 
+    // 3. Volcanic Flame Geyser (cel_flames) - Swirling fire storm
     if (id === 'cel_flames') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<circle cx="50" cy="50" r="44" fill="#180702"/>' +
-        '<path d="M50 12 C65 30 75 48 72 68 C70 82 58 88 50 88 C42 88 30 82 28 68 C25 48 35 30 50 12 Z" fill="#ef4444"/>' +
-        '<path d="M50 26 C60 40 68 54 65 70 C63 80 55 84 50 84 C45 84 37 80 35 70 C32 54 40 40 50 26 Z" fill="#f97316"/>' +
-        '<path d="M50 42 C56 52 60 62 58 74 C57 80 53 82 50 82 C47 82 43 80 42 74 C40 62 44 52 50 42 Z" fill="#fde047"/>' +
-        '<circle cx="50" cy="72" r="4" fill="#ffffff"/>' +
+        '<circle cx="50" cy="50" r="44" fill="#180702" stroke="#ea580c" stroke-width="1.8"/>' +
+        '<path d="M50 10 C68 28 80 48 76 70 C72 84 60 90 50 90 C40 90 28 84 24 70 C20 48 32 28 50 10 Z" fill="#ef4444"/>' +
+        '<path d="M50 24 C62 38 72 54 68 72 C65 82 56 86 50 86 C44 86 35 82 32 72 C28 54 38 38 50 24 Z" fill="#f97316"/>' +
+        '<path d="M50 40 C58 52 64 64 62 76 C60 82 55 84 50 84 C45 84 40 82 38 76 C36 64 42 52 50 40 Z" fill="#fde047"/>' +
+        '<circle cx="50" cy="74" r="5" fill="#ffffff"/>' +
+        '<circle cx="34" cy="30" r="2" fill="#fbbf24"/><circle cx="68" cy="34" r="2.5" fill="#f97316"/>' +
+        '<circle cx="60" cy="18" r="1.8" fill="#fde047"/><circle cx="38" cy="14" r="1.5" fill="#ef4444"/>' +
         '</svg>';
     }
 
+    // 4. Golden Rain Shower (cel_goldrain) - Cascading gold coins & trophies
     if (id === 'cel_goldrain') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<circle cx="50" cy="50" r="44" fill="#140f02"/>' +
-        '<circle cx="30" cy="28" r="9" fill="#facc15" stroke="#78350f" stroke-width="1.8"/>' +
-        '<circle cx="68" cy="24" r="11" fill="#facc15" stroke="#78350f" stroke-width="2"/>' +
-        '<circle cx="48" cy="52" r="13" fill="#facc15" stroke="#78350f" stroke-width="2.2"/>' +
-        '<circle cx="24" cy="70" r="8" fill="#facc15" stroke="#78350f" stroke-width="1.6"/>' +
-        '<circle cx="76" cy="68" r="10" fill="#facc15" stroke="#78350f" stroke-width="1.8"/>' +
-        '<text x="48" y="57" font-family="Arial Black" font-size="12" fill="#78350f" text-anchor="middle">★</text>' +
+        '<circle cx="50" cy="50" r="44" fill="#140f02" stroke="#facc15" stroke-width="1.8"/>' +
+        '<circle cx="30" cy="26" r="9" fill="#facc15" stroke="#78350f" stroke-width="1.8"/>' +
+        '<circle cx="70" cy="22" r="11" fill="#facc15" stroke="#78350f" stroke-width="2"/>' +
+        '<circle cx="48" cy="50" r="14" fill="#facc15" stroke="#78350f" stroke-width="2.2"/>' +
+        '<text x="48" y="55" font-family="Arial Black" font-size="12" fill="#78350f" text-anchor="middle">★</text>' +
+        '<circle cx="22" cy="72" r="8" fill="#facc15" stroke="#78350f" stroke-width="1.6"/>' +
+        '<circle cx="78" cy="70" r="10" fill="#facc15" stroke="#78350f" stroke-width="1.8"/>' +
         '<polygon points="50,6 52,14 60,14 53,19 56,26 50,22 44,26 47,19 40,14 48,14" fill="#fef08a"/>' +
         '<polygon points="86,40 88,46 94,46 89,50 91,56 86,52 81,56 83,50 78,46 84,46" fill="#fef08a"/>' +
+        '<polygon points="14,44 16,50 22,50 17,54 19,60 14,56 9,60 11,54 6,50 12,50" fill="#fef08a"/>' +
         '</svg>';
     }
 
-    // Default Confetti Burst (cel_confetti)
+    // 5. Electric Lightning Storm (cel_lightning) - Thunderous ionic ground strike
+    if (id === 'cel_lightning') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#050a1a" stroke="#00f0ff" stroke-width="1.8"/>' +
+        '<path d="M56 8 L34 46 L50 46 L38 92 L72 40 L52 40 Z" fill="#00f0ff" stroke="#ffffff" stroke-width="2"/>' +
+        '<path d="M53 18 L38 46 L48 46 L40 80 L62 42 L50 42 Z" fill="#ffffff"/>' +
+        '<circle cx="38" cy="92" r="6" fill="#00f0ff" opacity="0.6"/>' +
+        '<line x1="24" y1="88" x2="52" y2="88" stroke="#00f0ff" stroke-width="2" stroke-linecap="round"/>' +
+        '<line x1="28" y1="94" x2="48" y2="94" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>' +
+        '</svg>';
+    }
+
+    // 6. Stadium Confetti Burst (cel_confetti) - Party ribbons and stars
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<circle cx="50" cy="50" r="30" fill="#f59e0b" opacity="0.2"/>' +
-      '<polygon points="50,15 54,38 78,35 58,50 68,75 50,60 32,75 42,50 22,35 46,38" fill="#facc15"/>' +
-      '<rect x="18" y="24" width="7" height="3" rx="1.5" fill="#ec4899" transform="rotate(30, 21, 25)"/>' +
-      '<rect x="76" y="24" width="7" height="3" rx="1.5" fill="#00f0ff" transform="rotate(-25, 79, 25)"/>' +
-      '<rect x="82" y="66" width="7" height="3" rx="1.5" fill="#10b981" transform="rotate(45, 85, 67)"/>' +
-      '<rect x="14" y="68" width="7" height="3" rx="1.5" fill="#f97316" transform="rotate(-40, 17, 69)"/>' +
-      '<circle cx="34" cy="20" r="2.5" fill="#38bdf8"/>' +
-      '<circle cx="68" cy="78" r="2.5" fill="#ec4899"/>' +
+      '<circle cx="50" cy="50" r="44" fill="#0c101c" stroke="#f59e0b" stroke-width="1.8"/>' +
+      '<polygon points="50,15 54,38 78,35 58,50 68,75 50,60 32,75 42,50 22,35 46,38" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>' +
+      '<rect x="18" y="24" width="8" height="4" rx="2" fill="#ec4899" transform="rotate(30, 22, 26)"/>' +
+      '<rect x="76" y="24" width="8" height="4" rx="2" fill="#00f0ff" transform="rotate(-25, 80, 26)"/>' +
+      '<rect x="82" y="66" width="8" height="4" rx="2" fill="#10b981" transform="rotate(45, 86, 68)"/>' +
+      '<rect x="14" y="68" width="8" height="4" rx="2" fill="#f97316" transform="rotate(-40, 18, 70)"/>' +
+      '<circle cx="34" cy="20" r="3" fill="#38bdf8"/><circle cx="68" cy="78" r="3" fill="#ec4899"/>' +
       '</svg>';
   }
 
@@ -1876,7 +1948,8 @@
   function getDetailedBoostSvg(item, size) {
     var isLg = size === 'large';
     var isHud = size === 'hud';
-    var w = isLg ? 180 : isHud ? 44 : 76;
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 180 : isHud ? 44 : (isSm ? 48 : 76);
     var h = w;
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
 
@@ -2013,6 +2086,63 @@
         '</svg>';
     }
 
+    // 5. Overdrive Energy Core (boost_overdrive) - Maximum speed overdrive with ionic lightning
+    if (id === 'boost_overdrive') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<linearGradient id="overdriveGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#38bdf8"/><stop offset="50%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a855f7"/></linearGradient>' +
+        '</defs>' +
+        '<circle cx="50" cy="50" r="44" fill="#0b0818" stroke="#a855f7" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="38" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>' +
+        '<circle cx="50" cy="50" r="28" fill="url(#overdriveGrad)" opacity="0.3"/>' +
+        '<path d="M50 14 A36 36 0 0 1 86 50" stroke="#f43f5e" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M54 18 L36 50 L52 50 L42 82 L70 44 L54 44 Z" fill="#00f0ff" stroke="#ffffff" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="4" fill="#ffffff"/>' +
+        '<text x="50" y="76" font-family="Impact, Arial Black" font-size="11" fill="#f43f5e" text-anchor="middle" letter-spacing="1">OVERDRIVE</text>' +
+        '</svg>';
+    }
+
+    // 6. Energy Shield (boost_shield) - Hexagonal protective aegis
+    if (id === 'boost_shield') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f0ff"/><stop offset="50%" stop-color="#0284c7"/><stop offset="100%" stop-color="#0f172a"/></linearGradient>' +
+        '</defs>' +
+        '<circle cx="50" cy="50" r="44" fill="#04121a" stroke="#00f0ff" stroke-width="1.8"/>' +
+        '<path d="M50 14 L78 26 C78 54 66 74 50 86 C34 74 22 54 22 26 Z" fill="url(#shieldGrad)" stroke="#38bdf8" stroke-width="2.2"/>' +
+        '<path d="M50 22 L72 32 C72 52 62 68 50 78 C38 68 28 52 28 32 Z" fill="#00f0ff" opacity="0.25"/>' +
+        '<polygon points="50,34 60,40 60,52 50,58 40,52 40,40" fill="#ffffff" opacity="0.85"/>' +
+        '<circle cx="50" cy="46" r="3" fill="#0284c7"/>' +
+        '</svg>';
+    }
+
+    // 7. Ball Magnet (boost_magnet) - Bipolar electromagnetic attractor
+    if (id === 'boost_magnet') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#0a0f1d" stroke="#38bdf8" stroke-width="1.8"/>' +
+        '<path d="M30 20 L30 52 C30 63 39 72 50 72 C61 72 70 63 70 52 L70 20 L58 20 L58 52 C58 56 54 60 50 60 C46 60 42 56 42 52 L42 20 Z" fill="#3b82f6" stroke="#93c5fd" stroke-width="2"/>' +
+        '<rect x="29" y="18" width="13" height="12" fill="#ef4444" stroke="#ffffff" stroke-width="1.2"/>' +
+        '<text x="35.5" y="27" font-family="Arial Black" font-size="8" fill="#ffffff" text-anchor="middle">N</text>' +
+        '<rect x="58" y="18" width="13" height="12" fill="#3b82f6" stroke="#ffffff" stroke-width="1.2"/>' +
+        '<text x="64.5" y="27" font-family="Arial Black" font-size="8" fill="#ffffff" text-anchor="middle">S</text>' +
+        '<path d="M26 12 Q50 4 74 12" stroke="#00f0ff" stroke-width="1.8" fill="none" stroke-dasharray="3 2"/>' +
+        '<circle cx="50" cy="38" r="8" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>' +
+        '</svg>';
+    }
+
+    // 8. Golden Strike (boost_golden) - Solar flare super strike
+    if (id === 'boost_golden') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="44" fill="#1c1304" stroke="#facc15" stroke-width="1.8"/>' +
+        '<circle cx="50" cy="50" r="38" fill="rgba(250, 204, 21, 0.12)"/>' +
+        '<polygon points="50,14 58,34 80,34 62,48 68,70 50,56 32,70 38,48 20,34 42,34" fill="#facc15" stroke="#78350f" stroke-width="2"/>' +
+        '<polygon points="50,22 55,36 70,36 58,46 62,60 50,50 38,60 42,46 30,36 45,36" fill="#fef08a"/>' +
+        '<circle cx="50" cy="44" r="6" fill="#ffffff"/>' +
+        '<line x1="18" y1="18" x2="32" y2="32" stroke="#facc15" stroke-width="2" stroke-linecap="round"/>' +
+        '<line x1="82" y1="18" x2="68" y2="32" stroke="#facc15" stroke-width="2" stroke-linecap="round"/>' +
+        '</svg>';
+    }
+
     // Default Boost fallback
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
       '<circle cx="50" cy="50" r="44" fill="#0f172a" stroke="#00f0ff" stroke-width="2"/>' +
@@ -2020,132 +2150,388 @@
       '</svg>';
   }
 
-  // Detailed Speed Trail SVG
+  // Detailed Ball Trail SVG (5 Dynamic Particle Streams)
   function getDetailedTrailSvg(item, size) {
     var isLg = size === 'large';
     var w = isLg ? 160 : 76;
-    var h = isLg ? 80 : 44;
+    var h = isLg ? 80 : 38;
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
 
+    // 1. Fire Trail (trail_fire) - Combustion plume
     if (id === 'trail_fire') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="120" height="60" rx="8" fill="#180702"/>' +
-        '<path d="M10 30 Q40 10 70 30 T110 30" stroke="#f97316" stroke-width="6" stroke-linecap="round"/>' +
-        '<path d="M25 30 Q50 16 80 30 T110 30" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>' +
-        '<circle cx="110" cy="30" r="6" fill="#ef4444"/>' +
+        '<rect width="120" height="60" rx="8" fill="#180702" stroke="#ea580c" stroke-width="1.2"/>' +
+        '<path d="M10 30 Q45 10 95 30" stroke="#f97316" stroke-width="9" stroke-linecap="round" opacity="0.4"/>' +
+        '<path d="M25 30 Q60 15 100 30" stroke="#facc15" stroke-width="5" stroke-linecap="round" opacity="0.8"/>' +
+        '<path d="M50 30 Q80 20 105 30" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<circle cx="106" cy="30" r="6" fill="#f97316"/>' +
+        '<circle cx="106" cy="30" r="3" fill="#ffffff"/>' +
+        '<circle cx="45" cy="18" r="2" fill="#f97316"/><circle cx="70" cy="42" r="1.8" fill="#facc15"/>' +
         '</svg>';
     }
 
+    // 2. Cryo Ice Trail (trail_ice) - Frosted sub-zero vapor
     if (id === 'trail_ice') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="120" height="60" rx="8" fill="#03131e"/>' +
-        '<path d="M10 30 Q40 14 70 30 T110 30" stroke="#0284c7" stroke-width="5" stroke-linecap="round"/>' +
-        '<path d="M25 30 Q50 20 80 30 T110 30" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>' +
-        '<polygon points="106,24 114,30 106,36 102,30" fill="#38bdf8"/>' +
+        '<rect width="120" height="60" rx="8" fill="#031622" stroke="#38bdf8" stroke-width="1.2"/>' +
+        '<path d="M10 30 Q50 12 105 30" stroke="#0284c7" stroke-width="8" stroke-linecap="round" opacity="0.5"/>' +
+        '<path d="M30 30 Q65 18 105 30" stroke="#7dd3fc" stroke-width="4.5" stroke-linecap="round" opacity="0.85"/>' +
+        '<path d="M60 30 Q85 24 105 30" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>' +
+        '<circle cx="106" cy="30" r="5" fill="#38bdf8"/>' +
+        '<polygon points="40,16 42,20 46,20 43,23 44,27 40,24 36,27 37,23 34,20 38,20" fill="#bae6fd"/>' +
+        '<polygon points="75,38 77,42 81,42 78,45 79,49 75,46 71,49 72,45 69,42 73,42" fill="#bae6fd"/>' +
         '</svg>';
     }
 
+    // 3. Prismatic Rainbow Trail (trail_rainbow) - Full-spectrum light ribbon
     if (id === 'trail_rainbow') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="120" height="60" rx="8" fill="#0b0f19"/>' +
-        '<path d="M10 22 Q50 14 110 22" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>' +
-        '<path d="M10 27 Q50 19 110 27" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>' +
-        '<path d="M10 32 Q50 24 110 32" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>' +
-        '<path d="M10 37 Q50 29 110 37" stroke="#06b6d4" stroke-width="3" stroke-linecap="round"/>' +
-        '<path d="M10 42 Q50 34 110 42" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/>' +
+        '<rect width="120" height="60" rx="8" fill="#090d16" stroke="#c084fc" stroke-width="1.2"/>' +
+        '<path d="M10 20 Q55 12 105 20" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<path d="M10 25 Q55 17 105 25" stroke="#f59e0b" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<path d="M10 30 Q55 22 105 30" stroke="#10b981" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<path d="M10 35 Q55 27 105 35" stroke="#06b6d4" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<path d="M10 40 Q55 32 105 40" stroke="#8b5cf6" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<circle cx="106" cy="30" r="6" fill="#ffffff"/>' +
         '</svg>';
     }
 
-    // Default Trail (trail_default / trail_laser)
+    // 4. Pulsed Laser Beam (trail_laser) - Coherent optical beam
+    if (id === 'trail_laser') {
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="120" height="60" rx="8" fill="#04121a" stroke="#00f0ff" stroke-width="1.2"/>' +
+        '<line x1="10" y1="30" x2="105" y2="30" stroke="#00f0ff" stroke-width="8" stroke-linecap="round" opacity="0.3"/>' +
+        '<line x1="20" y1="30" x2="105" y2="30" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" opacity="0.8"/>' +
+        '<line x1="40" y1="30" x2="105" y2="30" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>' +
+        '<circle cx="106" cy="30" r="5" fill="#00f0ff"/>' +
+        '<circle cx="106" cy="30" r="2.5" fill="#ffffff"/>' +
+        '</svg>';
+    }
+
+    // 5. Clean Supersonic Vapor (trail_default)
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect width="120" height="60" rx="8" fill="#090d16"/>' +
-      '<path d="M10 30 Q50 18 110 30" stroke="#00f0ff" stroke-width="5" stroke-linecap="round" opacity="0.4"/>' +
-      '<path d="M30 30 Q65 22 110 30" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>' +
-      '<circle cx="110" cy="30" r="5" fill="#00f0ff"/>' +
+      '<rect width="120" height="60" rx="8" fill="#090d16" stroke="#475569" stroke-width="1.2"/>' +
+      '<path d="M10 30 Q50 18 105 30" stroke="#00f0ff" stroke-width="5" stroke-linecap="round" opacity="0.4"/>' +
+      '<path d="M30 30 Q65 22 105 30" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<circle cx="106" cy="30" r="5" fill="#00f0ff"/>' +
+      '<circle cx="106" cy="30" r="2" fill="#ffffff"/>' +
       '</svg>';
   }
 
-  // Detailed Avatar Frame SVG
+  // Detailed Avatar Frame SVG (3 Themed Profile Borders)
   function getDetailedFrameSvg(item, size) {
     var isLg = size === 'large';
     var w = isLg ? 160 : 76;
     var h = w;
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
 
+    // 1. Spartan Bronze Frame (frame_bronze) - Heavy forged rivets
     if (id === 'frame_bronze') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="10" y="10" width="80" height="80" rx="14" fill="#1c1106" stroke="#b45309" stroke-width="6"/>' +
-        '<rect x="16" y="16" width="68" height="68" rx="8" stroke="#f59e0b" stroke-width="1.5" fill="none"/>' +
-        '<circle cx="18" cy="18" r="3" fill="#f59e0b"/><circle cx="82" cy="18" r="3" fill="#f59e0b"/>' +
-        '<circle cx="18" cy="82" r="3" fill="#f59e0b"/><circle cx="82" cy="82" r="3" fill="#f59e0b"/>' +
+        '<rect x="8" y="8" width="84" height="84" rx="14" fill="#1c1106" stroke="#b45309" stroke-width="6"/>' +
+        '<rect x="14" y="14" width="72" height="72" rx="8" stroke="#f59e0b" stroke-width="1.8" fill="none"/>' +
+        '<circle cx="16" cy="16" r="3.5" fill="#facc15" stroke="#78350f" stroke-width="1"/>' +
+        '<circle cx="84" cy="16" r="3.5" fill="#facc15" stroke="#78350f" stroke-width="1"/>' +
+        '<circle cx="16" cy="84" r="3.5" fill="#facc15" stroke="#78350f" stroke-width="1"/>' +
+        '<circle cx="84" cy="84" r="3.5" fill="#facc15" stroke="#78350f" stroke-width="1"/>' +
         '</svg>';
     }
 
+    // 2. Radiant Diamond Frame (frame_diamond) - Brilliant faceted crystalline cuts
     if (id === 'frame_diamond') {
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="10" y="10" width="80" height="80" rx="14" fill="#041a24" stroke="#00f0ff" stroke-width="5"/>' +
-        '<rect x="16" y="16" width="68" height="68" rx="8" stroke="#cffafe" stroke-width="1.8" stroke-dasharray="4 2" fill="none"/>' +
-        '<polygon points="18,12 24,18 18,24 12,18" fill="#38bdf8"/>' +
-        '<polygon points="82,12 88,18 82,24 76,18" fill="#38bdf8"/>' +
-        '<polygon points="18,76 24,82 18,88 12,82" fill="#38bdf8"/>' +
-        '<polygon points="82,76 88,82 82,88 76,82" fill="#38bdf8"/>' +
+        '<rect x="8" y="8" width="84" height="84" rx="14" fill="#041a24" stroke="#00f0ff" stroke-width="5"/>' +
+        '<rect x="14" y="14" width="72" height="72" rx="8" stroke="#cffafe" stroke-width="1.8" stroke-dasharray="4 2" fill="none"/>' +
+        '<polygon points="16,10 22,16 16,22 10,16" fill="#38bdf8"/>' +
+        '<polygon points="84,10 90,16 84,22 78,16" fill="#38bdf8"/>' +
+        '<polygon points="16,78 22,84 16,90 10,84" fill="#38bdf8"/>' +
+        '<polygon points="84,78 90,84 84,90 78,84" fill="#38bdf8"/>' +
+        '<polygon points="50,6 54,10 50,14 46,10" fill="#ffffff"/>' +
+        '<polygon points="50,86 54,90 50,94 46,90" fill="#ffffff"/>' +
         '</svg>';
     }
 
-    // Default Frame
+    // 3. Stealth Gunmetal Frame (frame_default)
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="12" y="12" width="76" height="76" rx="14" fill="#0f172a" stroke="#475569" stroke-width="4"/>' +
-      '<rect x="18" y="18" width="64" height="64" rx="8" stroke="#64748b" stroke-width="1.2" fill="none"/>' +
+      '<rect x="10" y="10" width="80" height="80" rx="12" fill="#0f172a" stroke="#475569" stroke-width="4.5"/>' +
+      '<rect x="16" y="16" width="68" height="68" rx="8" stroke="#64748b" stroke-width="1.4" fill="none"/>' +
+      '<rect x="12" y="12" width="6" height="6" fill="#00f0ff"/>' +
+      '<rect x="82" y="12" width="6" height="6" fill="#00f0ff"/>' +
+      '<rect x="12" y="82" width="6" height="6" fill="#00f0ff"/>' +
+      '<rect x="82" y="82" width="6" height="6" fill="#00f0ff"/>' +
       '</svg>';
   }
 
-  // Detailed Mystery Pack Booster SVG
+  // Detailed Tournament Booster Pack SVG (3 Distinct Foil Wrappers)
   function getDetailedPackSvg(item, size) {
     var isLg = size === 'large';
-    var w = isLg ? 160 : 76;
-    var h = isLg ? 190 : 88;
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 160 : (isSm ? 42 : 76);
+    var h = isLg ? 190 : (isSm ? 50 : 88);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.packId)) || '';
-    var pColor = (id.indexOf('hoops') !== -1) ? '#ea580c' : (id.indexOf('clash') !== -1) ? '#eab308' : '#00f0ff';
 
+    if (id.indexOf('hoops') !== -1) {
+      // HOOPS All-Star Booster Pack (Amber & Gold Foil)
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<linearGradient id="pHoops" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#ea580c"/>' +
+        '<stop offset="60%" stop-color="#c2410c"/>' +
+        '<stop offset="100%" stop-color="#451a03"/>' +
+        '</linearGradient>' +
+        '</defs>' +
+        '<rect x="12" y="6" width="76" height="108" rx="7" fill="url(#pHoops)" stroke="#facc15" stroke-width="2.5"/>' +
+        '<path d="M12 16L88 16 M12 104L88 104" stroke="#fef08a" stroke-width="2" stroke-dasharray="3 2"/>' +
+        '<circle cx="50" cy="56" r="22" fill="#451a03" stroke="#facc15" stroke-width="2"/>' +
+        '<circle cx="50" cy="56" r="14" stroke="#ea580c" stroke-width="2"/>' +
+        '<text x="50" y="63" font-size="18" text-anchor="middle">🏀</text>' +
+        '<rect x="22" y="86" width="56" height="12" rx="3" fill="#180802"/>' +
+        '<text x="50" y="95" font-family="Impact, Arial Black" font-size="8" fill="#facc15" text-anchor="middle" letter-spacing="1">ALL-STAR</text>' +
+        '</svg>';
+    }
+
+    if (id.indexOf('clash') !== -1) {
+      // Ultimate Clash Dual Booster Pack (Split Blue & Gold with VS)
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs>' +
+        '<linearGradient id="pClashA" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#0369a1"/></linearGradient>' +
+        '<linearGradient id="pClashB" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ea580c"/><stop offset="100%" stop-color="#b45309"/></linearGradient>' +
+        '</defs>' +
+        '<rect x="12" y="6" width="76" height="108" rx="7" fill="#0f172a" stroke="#facc15" stroke-width="2.5"/>' +
+        '<polygon points="12,6 88,6 12,114" fill="url(#pClashA)"/>' +
+        '<polygon points="88,6 88,114 12,114" fill="url(#pClashB)"/>' +
+        '<line x1="88" y1="6" x2="12" y2="114" stroke="#ffffff" stroke-width="2"/>' +
+        '<circle cx="50" cy="56" r="20" fill="#18181b" stroke="#facc15" stroke-width="2"/>' +
+        '<text x="50" y="63" font-family="Impact, Arial Black" font-size="14" fill="#facc15" text-anchor="middle">VS</text>' +
+        '<rect x="22" y="86" width="56" height="12" rx="3" fill="#000000" opacity="0.85"/>' +
+        '<text x="50" y="95" font-family="Impact, Arial Black" font-size="8" fill="#ffffff" text-anchor="middle" letter-spacing="1">CLASH PACK</text>' +
+        '</svg>';
+    }
+
+    // Default FOOTY Striker Booster Pack (Electric Blue & Silver)
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="15" y="8" width="70" height="104" rx="6" fill="#0f172a" stroke="' + pColor + '" stroke-width="2.5"/>' +
-      '<path d="M15 18L85 18 M15 102L85 102" stroke="' + pColor + '" stroke-width="1.5" stroke-dasharray="3 2"/>' +
-      '<circle cx="50" cy="58" r="20" fill="' + pColor + '" opacity="0.25"/>' +
-      '<text x="50" y="65" font-family="Impact, Arial Black" font-size="20" fill="#ffffff" text-anchor="middle">' + ((id.indexOf('hoops') !== -1) ? '🏀' : (id.indexOf('clash') !== -1) ? '⚡' : '⚽') + '</text>' +
+      '<defs>' +
+      '<linearGradient id="pFooty" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#0284c7"/>' +
+      '<stop offset="60%" stop-color="#0369a1"/>' +
+      '<stop offset="100%" stop-color="#082f49"/>' +
+      '</linearGradient>' +
+      '</defs>' +
+      '<rect x="12" y="6" width="76" height="108" rx="7" fill="url(#pFooty)" stroke="#00f0ff" stroke-width="2.5"/>' +
+      '<path d="M12 16L88 16 M12 104L88 104" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/>' +
+      '<circle cx="50" cy="56" r="22" fill="#082f49" stroke="#00f0ff" stroke-width="2"/>' +
+      '<text x="50" y="63" font-size="18" text-anchor="middle">⚽</text>' +
+      '<rect x="22" y="86" width="56" height="12" rx="3" fill="#031622"/>' +
+      '<text x="50" y="95" font-family="Impact, Arial Black" font-size="8" fill="#00f0ff" text-anchor="middle" letter-spacing="1">STRIKER</text>' +
       '</svg>';
   }
 
-  // Detailed Coins Reward Stack SVG
+  
+  // ==========================================
+  // Official High-Fidelity 3D FvH Coin Generator
+  // ==========================================
+  function getFvhCoinSvg(size, extraOpts) {
+    var isInline = size === 'inline';
+    var isLg = size === 'large';
+    var isSm = size === 'small' || size === 'thumb';
+    
+    var w = isInline ? 20 : (isLg ? 160 : (isSm ? 48 : 64));
+    var h = w;
+    var uid = 'fvhCoin_' + Math.random().toString(36).substr(2, 6);
+
+    if (isInline) {
+      // 20x20 Compact High-Contrast Inline Coin for Badges & HUD
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;flex-shrink:0;">' +
+        '<circle cx="12" cy="12" r="11" fill="url(#inRim_' + uid + ')" stroke="#fef08a" stroke-width="1"/>' +
+        '<circle cx="12" cy="12" r="8.5" fill="#090d16"/>' +
+        '<path d="M12 3.5C7.3 3.5 3.5 7.3 3.5 12" stroke="#00e5ff" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<path d="M20.5 12C20.5 16.7 16.7 20.5 12 20.5" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<text x="12" y="15" font-family="Impact, Arial Black, sans-serif" font-size="8.5" font-weight="900" fill="#fde047" text-anchor="middle" letter-spacing="-0.5">FvH</text>' +
+        '<defs>' +
+        '<linearGradient id="inRim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+        '<stop offset="0%" stop-color="#fde047"/>' +
+        '<stop offset="50%" stop-color="#eab308"/>' +
+        '<stop offset="100%" stop-color="#854d0e"/>' +
+        '</linearGradient>' +
+        '</defs>' +
+        '</svg>';
+    }
+
+    // 24 Milled Edge Gold Teeth
+    var teeth = '';
+    for (var i = 0; i < 24; i++) {
+      var angle = (i * 360 / 24) * Math.PI / 180;
+      var tx = 50 + 47 * Math.cos(angle);
+      var ty = 50 + 47 * Math.sin(angle);
+      teeth += '<circle cx="' + tx.toFixed(2) + '" cy="' + ty.toFixed(2) + '" r="1.6" fill="#fde047"/>';
+    }
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter:drop-shadow(0 6px 14px rgba(245,158,11,0.35));">' +
+      '<defs>' +
+      '<linearGradient id="gRim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#fffbeb"/>' +
+      '<stop offset="20%" stop-color="#fde047"/>' +
+      '<stop offset="50%" stop-color="#ca8a04"/>' +
+      '<stop offset="85%" stop-color="#eab308"/>' +
+      '<stop offset="100%" stop-color="#713f12"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="gInner_' + uid + '" x1="0%" y1="100%" x2="100%" y2="0%">' +
+      '<stop offset="0%" stop-color="#451a03"/>' +
+      '<stop offset="40%" stop-color="#ca8a04"/>' +
+      '<stop offset="70%" stop-color="#fef08a"/>' +
+      '<stop offset="100%" stop-color="#a16207"/>' +
+      '</linearGradient>' +
+      '<radialGradient id="gCore_' + uid + '" cx="50%" cy="40%" r="60%">' +
+      '<stop offset="0%" stop-color="#1e1b4b"/>' +
+      '<stop offset="65%" stop-color="#0b0f19"/>' +
+      '<stop offset="100%" stop-color="#020408"/>' +
+      '</radialGradient>' +
+      '<linearGradient id="gText_' + uid + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="#ffffff"/>' +
+      '<stop offset="35%" stop-color="#fef08a"/>' +
+      '<stop offset="70%" stop-color="#facc15"/>' +
+      '<stop offset="100%" stop-color="#b45309"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="gSheen_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>' +
+      '<stop offset="35%" stop-color="#ffffff" stop-opacity="0.08"/>' +
+      '<stop offset="65%" stop-color="#ffffff" stop-opacity="0"/>' +
+      '</linearGradient>' +
+      '</defs>' +
+      '<circle cx="50" cy="50" r="48" fill="#f59e0b" fill-opacity="0.12"/>' +
+      '<circle cx="50" cy="50" r="47" fill="url(#gRim_' + uid + ')" stroke="#fef08a" stroke-width="1.2"/>' +
+      teeth +
+      '<circle cx="50" cy="50" r="41" fill="url(#gInner_' + uid + ')" stroke="#713f12" stroke-width="1.5"/>' +
+      '<circle cx="50" cy="50" r="37.5" fill="#020408"/>' +
+      '<circle cx="50" cy="50" r="36" fill="url(#gCore_' + uid + ')"/>' +
+      '<circle cx="50" cy="50" r="34" stroke="#facc15" stroke-width="0.6" stroke-dasharray="1.5 1.5" stroke-opacity="0.5"/>' +
+      '<circle cx="50" cy="50" r="28" stroke="#ca8a04" stroke-width="0.5" stroke-opacity="0.3"/>' +
+      '<path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 22 72" stroke="#00e5ff" stroke-width="3.2" stroke-linecap="round" filter="drop-shadow(0 0 3px #00e5ff)"/>' +
+      '<path d="M22 34 L28 32 L32 37 L30 43 L24 44 Z" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.55"/>' +
+      '<path d="M50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 78 28" stroke="#f97316" stroke-width="3.2" stroke-linecap="round" filter="drop-shadow(0 0 3px #ea580c)"/>' +
+      '<path d="M72 40 C76 46 76 54 72 60" stroke="#fdba74" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.65"/>' +
+      '<path id="arcTop_' + uid + '" d="M24 50 A26 26 0 0 1 76 50" fill="none"/>' +
+      '<text font-family="Arial Black, Impact, sans-serif" font-size="5.2" font-weight="900" fill="#fef08a" letter-spacing="1.2">' +
+      '<textPath href="#arcTop_' + uid + '" startOffset="50%" text-anchor="middle">FOOTY VS HOOPS</textPath>' +
+      '</text>' +
+      '<g filter="drop-shadow(0 3px 4px rgba(0,0,0,0.9))">' +
+      '<text x="50" y="58" font-family="Impact, Arial Black, sans-serif" font-size="24" font-weight="900" fill="#451a03" text-anchor="middle" letter-spacing="-1">FvH</text>' +
+      '<text x="50" y="57" font-family="Impact, Arial Black, sans-serif" font-size="24" font-weight="900" fill="url(#gText_' + uid + ')" text-anchor="middle" letter-spacing="-1">FvH</text>' +
+      '<text x="50" y="57" font-family="Impact, Arial Black, sans-serif" font-size="24" font-weight="900" fill="none" stroke="#fffbeb" stroke-width="0.6" text-anchor="middle" letter-spacing="-1">FvH</text>' +
+      '</g>' +
+      '<text x="50" y="76" font-family="Arial, sans-serif" font-size="6.5" fill="#fde047" text-anchor="middle" letter-spacing="3">★ ★ ★</text>' +
+      '<path d="M18 36 C32 20 68 20 82 36 C64 42 36 42 18 36 Z" fill="url(#gSheen_' + uid + ')"/>' +
+      '<polygon points="26,19 28,15 30,19 34,21 30,23 28,27 26,23 22,21" fill="#ffffff"/>' +
+      '<circle cx="28" cy="21" r="1.5" fill="#ffffff" filter="drop-shadow(0 0 2px #fff)"/>' +
+      '</svg>';
+  }
+  window.getFvhCoinSvg = getFvhCoinSvg;
+
+
+  // Detailed Coins Reward Stack SVG (Featuring Authentic 3D FvH Coins)
   function getDetailedCoinsSvg(item, size) {
     var isLg = size === 'large';
-    var w = isLg ? 160 : 76;
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 160 : (isSm ? 48 : 76);
     var h = w;
-    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<circle cx="50" cy="50" r="44" fill="#181302" stroke="#facc15" stroke-width="1.5"/>' +
-      '<ellipse cx="50" cy="68" rx="28" ry="12" fill="#78350f" stroke="#ca8a04" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="62" rx="28" ry="12" fill="#a16207" stroke="#eab308" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="56" rx="28" ry="12" fill="#ca8a04" stroke="#facc15" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="50" rx="28" ry="12" fill="#eab308" stroke="#fde047" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="44" rx="28" ry="12" fill="#facc15" stroke="#fef08a" stroke-width="2"/>' +
-      '<ellipse cx="50" cy="44" rx="20" ry="8" stroke="#ca8a04" stroke-width="1.5" fill="none"/>' +
-      '<text x="50" y="47" font-family="Arial Black" font-size="10" fill="#78350f" text-anchor="middle">★</text>' +
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
+
+    // If single coin or generic coin reward, return the single FvH Coin Medallion
+    if (id === 'coins' || id === 'coin' || id === '' || id === 'reward_coins') {
+      return getFvhCoinSvg(size);
+    }
+
+    var stackCount = 5;
+    if (id === 'pkg_coins_starter') stackCount = 3;
+    else if (id === 'pkg_coins_pro') stackCount = 5;
+    else if (id === 'pkg_coins_elite') stackCount = 8;
+    else if (id === 'pkg_coins_champion') stackCount = 10;
+    else if (id === 'pkg_coins_legend') stackCount = 12;
+
+    var coinsHtml = '';
+    var baseY = 76;
+    var dy = 5.2;
+    for (var i = 0; i < stackCount; i++) {
+      var y = baseY - (i * dy);
+      coinsHtml += '<ellipse cx="50" cy="' + y + '" rx="29" ry="11" fill="#713f12" stroke="#ca8a04" stroke-width="1.8"/>' +
+        '<ellipse cx="50" cy="' + (y - 1.8) + '" rx="28" ry="10" fill="#eab308" stroke="#fef08a" stroke-width="1.2"/>' +
+        '<ellipse cx="50" cy="' + (y - 2.5) + '" rx="24" ry="8" fill="#ca8a04"/>' +
+        '<ellipse cx="50" cy="' + (y - 2.8) + '" rx="23" ry="7.5" fill="#090d16"/>' +
+        '<text x="50" y="' + (y - 0.5) + '" font-family="Impact, Arial Black" font-size="7" fill="#fde047" text-anchor="middle" letter-spacing="-0.5">FvH</text>';
+    }
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter:drop-shadow(0 6px 14px rgba(245,158,11,0.4));">' +
+      '<defs>' +
+      '<radialGradient id="cStackGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fde047" stop-opacity="0.35"/><stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/></radialGradient>' +
+      '</defs>' +
+      '<circle cx="50" cy="50" r="46" fill="#131003" stroke="#facc15" stroke-width="1.8"/>' +
+      '<circle cx="50" cy="50" r="42" fill="url(#cStackGlow)"/>' +
+      coinsHtml +
+      // Golden Sparkle Stars
+      '<polygon points="22,25 24,20 26,25 31,27 26,29 24,34 22,29 17,27" fill="#ffffff" filter="drop-shadow(0 0 2px #fff)"/>' +
+      '<polygon points="78,35 80,31 82,35 86,37 82,39 80,43 78,39 74,37" fill="#fef08a"/>' +
       '</svg>';
   }
 
-  // Detailed Bundle Thematic Artwork SVG
+
+  // Detailed Battle Pass VIP Season Pass SVG
+  function getDetailedBattlePassSvg(item, size) {
+    var isLg = size === 'large';
+    var w = isLg ? 180 : 76;
+    var h = isLg ? 110 : 48;
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 160 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs>' +
+      '<linearGradient id="bpCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#854d0e"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#3b1d03"/>' +
+      '</linearGradient>' +
+      '</defs>' +
+      '<rect x="8" y="10" width="144" height="80" rx="10" fill="#1c1404" stroke="url(#bpCardGrad)" stroke-width="3"/>' +
+      '<rect x="14" y="16" width="132" height="68" rx="6" stroke="#fef08a" stroke-width="1" stroke-dasharray="4 2" fill="none"/>' +
+      '<rect x="22" y="26" width="32" height="32" rx="4" fill="#ca8a04" stroke="#fef08a" stroke-width="1.5"/>' +
+      '<text x="38" y="48" font-size="18" text-anchor="middle">👑</text>' +
+      '<text x="62" y="42" font-family="Impact, Arial Black" font-size="15" fill="#fef08a" letter-spacing="1">VIP PASS</text>' +
+      '<text x="62" y="56" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#fde047">SEASON 1 PREMIUM</text>' +
+      '<rect x="22" y="66" width="116" height="10" rx="3" fill="#3b1d03"/>' +
+      '<rect x="24" y="68" width="80" height="6" rx="2" fill="#facc15"/>' +
+      '</svg>';
+  }
+
+  // Detailed Thematic Bundle Loot Vault SVG (7 Distinct Vault Containers)
   function getDetailedBundleSvg(item, size) {
     var isLg = size === 'large';
     var w = isLg ? 180 : 76;
     var h = isLg ? 140 : 64;
     var id = (typeof item === 'string') ? item : (item && item.id) || '';
-    var bColor = (id.indexOf('hoops') !== -1) ? '#ea580c' : (id.indexOf('ocean') !== -1) ? '#06b6d4' : (id.indexOf('mars') !== -1) ? '#ef4444' : '#eab308';
+
+    var bColor = '#facc15';
+    var trim = '#ca8a04';
+    var icon = '🎁';
+    var title = 'BUNDLE';
+
+    if (id === 'bundle_footy_starter') {
+      bColor = '#0284c7'; trim = '#00f0ff'; icon = '⚽'; title = 'FOOTY PACK';
+    } else if (id === 'bundle_hoops_starter') {
+      bColor = '#ea580c'; trim = '#facc15'; icon = '🏀'; title = 'HOOPS PACK';
+    } else if (id === 'bundle_ocean_arena') {
+      bColor = '#06b6d4'; trim = '#67e8f9'; icon = '🌊'; title = 'OCEAN VAULT';
+    } else if (id === 'bundle_mars_explorer') {
+      bColor = '#dc2626'; trim = '#f97316'; icon = '🚀'; title = 'MARS POD';
+    } else if (id === 'bundle_lunar_champ') {
+      bColor = '#475569'; trim = '#facc15'; icon = '🌕'; title = 'LUNAR VAULT';
+    } else if (id === 'bundle_cyber_neon') {
+      bColor = '#7c3aed'; trim = '#d946ef'; icon = '⚡'; title = 'CYBER DECK';
+    } else if (id === 'bundle_legendary_champs') {
+      bColor = '#854d0e'; trim = '#facc15'; icon = '👑'; title = 'CHAMPIONS';
+    }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="15" y="15" width="110" height="70" rx="10" fill="#0f172a" stroke="' + bColor + '" stroke-width="2.5"/>' +
-      '<rect x="25" y="25" width="90" height="50" rx="6" fill="' + bColor + '" opacity="0.15"/>' +
-      '<line x1="15" y1="50" x2="125" y2="50" stroke="' + bColor + '" stroke-width="2"/>' +
-      '<circle cx="70" cy="50" r="14" fill="#0f172a" stroke="' + bColor + '" stroke-width="2.2"/>' +
-      '<text x="70" y="56" font-size="14" text-anchor="middle" fill="#ffffff">🎁</text>' +
+      '<rect x="12" y="16" width="116" height="68" rx="10" fill="#0f172a" stroke="' + trim + '" stroke-width="2.5"/>' +
+      '<rect x="20" y="24" width="100" height="52" rx="6" fill="' + bColor + '" opacity="0.18"/>' +
+      '<line x1="12" y1="50" x2="128" y2="50" stroke="' + trim + '" stroke-width="2"/>' +
+      '<circle cx="70" cy="50" r="16" fill="#0f172a" stroke="' + trim + '" stroke-width="2.2"/>' +
+      '<text x="70" y="56" font-size="16" text-anchor="middle">' + icon + '</text>' +
+      '<rect x="36" y="80" width="68" height="12" rx="3" fill="#020617"/>' +
+      '<text x="70" y="89" font-family="Impact, Arial Black" font-size="7.5" fill="' + trim + '" text-anchor="middle" letter-spacing="1">' + title + '</text>' +
       '</svg>';
   }
 
@@ -2175,6 +2561,7 @@
       else if (id.startsWith('frame_')) cat = 'frames';
       else if (id.startsWith('pack_') || id === 'footy' || id === 'hoops' || id === 'clash') cat = 'packs';
       else if (id.startsWith('bundle_')) cat = 'bundles';
+      else if (id.startsWith('battlepass')) cat = 'battlepass';
       else if (id === 'coins' || id.startsWith('pkg_coins_') || id.startsWith('coins_') || id.toLowerCase().indexOf('coin') !== -1) cat = 'coins';
     }
 
@@ -2188,6 +2575,7 @@
     if (cat === 'packs') return getDetailedPackSvg(itemOrId, size);
     if (cat === 'bundles') return getDetailedBundleSvg(itemOrId, size);
     if (cat === 'coins') return getDetailedCoinsSvg(itemOrId, size);
+    if (cat === 'battlepass') return getDetailedBattlePassSvg(itemOrId, size);
 
     // High-tech vector fallback glyph (never bare emoji)
     var sz = size === 'large' ? 100 : 54;
@@ -4685,8 +5073,7 @@
       if (packs.free) Object.keys(packs.free).forEach(function (k) { totalPacks += packs.free[k] || 0; });
       if (packs.paid) Object.keys(packs.paid).forEach(function (k) { totalPacks += packs.paid[k] || 0; });
 
-      walletBox.innerHTML =
-        '<div class="fvh-chip coins">🪙 ' + coins + '</div>' +
+      walletBox.innerHTML = '<div class="fvh-chip coins">' + getFvhCoinSvg("inline") + ' <span style="font-weight:900;color:#fde047;margin-left:4px;">' + coins.toLocaleString() + '</span></div>' +
         '<div class="fvh-chip packs">🎁 ' + totalPacks + '</div>';
     }
 
@@ -4749,7 +5136,7 @@
         var owned = (app.store.data.owned || []).indexOf(it.id) !== -1;
         return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.08);">' +
           '  <div style="display:flex;align-items:center;gap:10px;">' +
-          '    <span style="font-size:24px;">' + it.icon + '</span>' +
+          '    <div style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + renderItemArtwork(it.id, 'small') + '</div>' +
           '    <div>' +
           '      <div style="font-weight:800;font-size:13px;color:var(--text-pure);">' + trItem(it.name) + '</div>' +
           '      <div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;">' + it.type + '</div>' +
@@ -5120,43 +5507,273 @@
       { id: 'clash', category: 'packs', name: 'Ultimate Clash Pack', price: 500, icon: '⚡', desc: 'High-tier pack with rare celebrations, stadiums, and high coin drops.' }
     ];
 
+    
+    // Full Catalog Cosmetic Pools for Packs
+    var PACK_POOLS = {
+      footy: [
+        { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', rarity: 'rare' },
+        { id: 'skin_neon', name: 'Neon Striker', category: 'skins', rarity: 'epic' },
+        { id: 'skin_frost', name: 'Frost Giant', category: 'skins', rarity: 'rare' },
+        { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', rarity: 'epic' },
+        { id: 'skin_solar', name: 'Solar Flare', category: 'skins', rarity: 'epic' },
+        { id: 'skin_gold', name: 'Golden Legend', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_sunset', name: 'Sunset Gold Jersey', category: 'skins', rarity: 'rare' },
+        { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', rarity: 'rare' },
+        { id: 'ball_footy_plasma', name: 'Plasma Orb', category: 'balls', rarity: 'rare' },
+        { id: 'ball_footy_gold', name: 'Golden Cup', category: 'balls', rarity: 'epic' },
+        { id: 'ball_footy_inferno', name: 'Inferno', category: 'balls', rarity: 'epic' },
+        { id: 'ball_footy_solar', name: 'Solar Blaze Ball', category: 'balls', rarity: 'legendary' },
+        { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls', rarity: 'legendary' },
+        { id: 'std_ocean_sunset', name: 'Coastal Sunset Court', category: 'stadiums', rarity: 'epic' },
+        { id: 'std_forest_redwood', name: 'Redwood Forest Arena', category: 'stadiums', rarity: 'epic' },
+        { id: 'std_footy_night', name: 'Night Arena', category: 'stadiums', rarity: 'rare' },
+        { id: 'std_footy_golden', name: 'Golden Hour', category: 'stadiums', rarity: 'rare' },
+        { id: 'std_footy_neon', name: 'Neon Turf', category: 'stadiums', rarity: 'epic' },
+        { id: 'cel_confetti', name: 'Confetti Burst', category: 'celebrations', rarity: 'rare' },
+        { id: 'cel_fireworks', name: 'Fireworks', category: 'celebrations', rarity: 'rare' },
+        { id: 'cel_flames', name: 'Flame Burst', category: 'celebrations', rarity: 'epic' },
+        { id: 'trail_fire', name: 'Fire Trail', category: 'trails', rarity: 'rare' },
+        { id: 'trail_laser', name: 'Laser Trail', category: 'trails', rarity: 'legendary' }
+      ],
+      hoops: [
+        { id: 'skin_sunset', name: 'Sunset Gold Jersey', category: 'skins', rarity: 'rare' },
+        { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', rarity: 'rare' },
+        { id: 'skin_mars', name: 'Mars Rover Kit', category: 'skins', rarity: 'epic' },
+        { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_neon_elite', name: 'Cyber Striker #10', category: 'skins', rarity: 'legendary' },
+        { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls', rarity: 'rare' },
+        { id: 'ball_hoops_chrome', name: 'Chrome', category: 'balls', rarity: 'epic' },
+        { id: 'ball_hoops_midnight', name: 'Midnight', category: 'balls', rarity: 'rare' },
+        { id: 'ball_tidal', name: 'Tidal Wave Ball', category: 'balls', rarity: 'epic' },
+        { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', category: 'balls', rarity: 'legendary' },
+        { id: 'std_hoops_sky', name: 'Skyline Rooftop', category: 'stadiums', rarity: 'rare' },
+        { id: 'std_hoops_neon', name: 'Neon Night', category: 'stadiums', rarity: 'epic' },
+        { id: 'std_hoops_gold', name: 'Gold Hardwood', category: 'stadiums', rarity: 'epic' },
+        { id: 'std_ocean_sunset', name: 'Coastal Sunset Court', category: 'stadiums', rarity: 'epic' },
+        { id: 'cel_shockwave', name: 'Shockwave', category: 'celebrations', rarity: 'rare' },
+        { id: 'cel_goldrain', name: 'Gold Rain', category: 'celebrations', rarity: 'legendary' },
+        { id: 'cel_lightning', name: 'Lightning Storm', category: 'celebrations', rarity: 'legendary' },
+        { id: 'trail_ice', name: 'Ice Trail', category: 'trails', rarity: 'rare' },
+        { id: 'trail_rainbow', name: 'Rainbow Trail', category: 'trails', rarity: 'epic' }
+      ],
+      clash: [
+        { id: 'skin_gold', name: 'Golden Legend', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_neon_elite', name: 'Cyber Striker #10', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', rarity: 'epic' },
+        { id: 'ball_footy_solar', name: 'Solar Blaze Ball', category: 'balls', rarity: 'legendary' },
+        { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls', rarity: 'legendary' },
+        { id: 'ball_tidal', name: 'Tidal Wave Ball', category: 'balls', rarity: 'epic' },
+        { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', category: 'balls', rarity: 'legendary' },
+        { id: 'ball_hoops_chrome', name: 'Chrome', category: 'balls', rarity: 'epic' },
+        { id: 'std_space_orbit', name: 'Orbital Space Colosseum', category: 'stadiums', rarity: 'legendary' },
+        { id: 'std_mars_dome', name: 'Mars Bio-Dome Arena', category: 'stadiums', rarity: 'epic' },
+        { id: 'std_moon_crater', name: 'Apollo Lunar Arena', category: 'stadiums', rarity: 'rare' },
+        { id: 'std_underwater_dome', name: 'Abyssal Ocean Dome', category: 'stadiums', rarity: 'legendary' },
+        { id: 'std_cyber_megacity', name: 'Neo Tokyo Megacity', category: 'stadiums', rarity: 'legendary' },
+        { id: 'std_volcano_caldera', name: 'Magma Caldera Arena', category: 'stadiums', rarity: 'epic' },
+        { id: 'std_floating_islands', name: 'Aetheria Sky Islands', category: 'stadiums', rarity: 'legendary' },
+        { id: 'std_crystal_cavern', name: 'Prismatic Crystal Cave', category: 'stadiums', rarity: 'epic' },
+        { id: 'cel_goldrain', name: 'Gold Rain', category: 'celebrations', rarity: 'legendary' },
+        { id: 'cel_lightning', name: 'Lightning Storm', category: 'celebrations', rarity: 'legendary' },
+        { id: 'cel_fireworks', name: 'Fireworks', category: 'celebrations', rarity: 'rare' },
+        { id: 'trail_rainbow', name: 'Rainbow Trail', category: 'trails', rarity: 'epic' },
+        { id: 'trail_laser', name: 'Laser Trail', category: 'trails', rarity: 'legendary' },
+        { id: 'frame_bronze', name: 'Bronze Frame', category: 'frames', rarity: 'rare' },
+        { id: 'frame_diamond', name: 'Diamond Frame', category: 'frames', rarity: 'legendary' }
+      ]
+    };
+
     function openPackAnimation(packDef) {
-      app.audio.play('claim');
-      var pool = [
-        { name: '150 Starter Coins', icon: '🪙', type: 'coins', val: 150 },
-        { name: 'Shadow Ninja', icon: '🥷', type: 'cosmetic', itemId: 'skin_shadow' },
-        { name: 'Rainbow Trail', icon: '🌈', type: 'cosmetic', itemId: 'trail_rainbow' },
-        { name: 'Gold Rain Celebration', icon: '✨', type: 'cosmetic', itemId: 'cel_goldrain' },
-        { name: 'Coastal Sunset Court', icon: '🌅', type: 'cosmetic', itemId: 'std_ocean_sunset' }
-      ];
-      var drop = pool[Math.floor(Math.random() * pool.length)];
+      var pId = (packDef && packDef.id) || 'footy';
+      if (pId === 'pack_footy') pId = 'footy';
+      else if (pId === 'pack_hoops') pId = 'hoops';
+      else if (pId === 'pack_clash') pId = 'clash';
 
-      app.store.update(function (d) {
-        if (drop.type === 'coins') d.coins = (d.coins || 0) + drop.val;
-        else if (drop.type === 'cosmetic') {
-          if (!d.owned) d.owned = [];
-          if (d.owned.indexOf(drop.itemId) === -1) d.owned.push(drop.itemId);
+      var pool = PACK_POOLS[pId] || PACK_POOLS.footy;
+      var cardCount = (pId === 'clash') ? 3 : 2;
+      var coinFallbackAmount = (pId === 'clash') ? 600 : 300;
+
+      // Duplicate-free pull logic:
+      // Filter current owned items so that player NEVER pulls duplicates.
+      // If player already owns all items in the pool, reward guaranteed FvH Coins!
+      var storeData = app.store.data;
+      var ownedList = (storeData.owned || []).slice();
+      var drops = [];
+
+      for (var c = 0; c < cardCount; c++) {
+        var unowned = pool.filter(function (it) {
+          return ownedList.indexOf(it.id) === -1;
+        });
+
+        if (unowned.length > 0) {
+          // Pull a guaranteed new cosmetic item!
+          var randIdx = Math.floor(Math.random() * unowned.length);
+          var pickedItem = unowned[randIdx];
+          ownedList.push(pickedItem.id); // Prevent duplicate within the same pack!
+          drops.push({
+            type: 'cosmetic',
+            item: pickedItem,
+            isNew: true
+          });
+        } else {
+          // All items owned in this pool -> fallback directly to FvH Coins!
+          drops.push({
+            type: 'coins',
+            val: coinFallbackAmount,
+            name: coinFallbackAmount + ' FvH Coin',
+            isDuplicateFallback: true
+          });
         }
-      });
+      }
 
+      // 1. Build Full-Screen Cinematic Pack Opening Overlay
       var overlay = document.createElement('div');
-      overlay.className = 'modal-back';
-      var m = document.createElement('div');
-      m.className = 'modal';
-      m.style.textAlign = 'center';
-      m.innerHTML =
-        '<div style="font-size:12px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">' + tr('packOpened') + '</div>' +
-        '<div style="margin:16px 0;animation:bounce 0.6s ease;">' + (drop.icon || '🎁') + '</div>' +
-        '<h2 style="margin:0 0 8px;">' + trItem(drop.name) + '</h2>' +
-        '<p style="color:var(--text-muted);font-size:13px;margin:0 0 20px;">' + tr('packAdded') + '</p>' +
-        '<button class="btn primary block">' + tr('claimAndContinue') + '</button>';
-      m.querySelector('button').onclick = function () {
-        overlay.remove();
-        renderShop();
-      };
-      overlay.appendChild(m);
+      overlay.className = 'fvh-pack-opening-overlay';
+
+      var flash = document.createElement('div');
+      flash.className = 'fvh-pack-flash-overlay';
+      overlay.appendChild(flash);
+
+      var stage = document.createElement('div');
+      stage.className = 'fvh-pack-stage';
+
+      var packTitle = document.createElement('div');
+      packTitle.style.cssText = 'font-size:12px;font-weight:900;letter-spacing:1.5px;color:#38bdf8;text-transform:uppercase;margin-bottom:8px;';
+      packTitle.textContent = trItem(packDef.name);
+
+      var packSub = document.createElement('div');
+      packSub.style.cssText = 'font-size:11px;color:var(--text-muted);margin-bottom:12px;';
+      packSub.textContent = (getActiveLang() === 'ru') ? 'Турнирный бустер-пак сезона' : 'Tournament Season Booster Pack';
+
+      // Unopened 3D Foil Pack with breathing hover
+      var packWrap = document.createElement('div');
+      packWrap.className = 'fvh-pack-unopened-wrap';
+      var hoverCard = document.createElement('div');
+      hoverCard.className = 'fvh-pack-hover-card';
+      hoverCard.innerHTML = getDetailedPackSvg(pId, 'large');
+      packWrap.appendChild(hoverCard);
+
+      var ripHint = document.createElement('div');
+      ripHint.style.cssText = 'margin-top:16px;font-size:13px;font-weight:900;color:#fde047;letter-spacing:1px;text-transform:uppercase;animation:fvhPulse 1.2s infinite;';
+      ripHint.innerHTML = '⚡ ' + ((getActiveLang() === 'ru') ? 'Нажмите, чтобы вскрыть пак' : 'Tap to rip open pack');
+
+      stage.appendChild(packTitle);
+      stage.appendChild(packSub);
+      stage.appendChild(packWrap);
+      stage.appendChild(ripHint);
+      overlay.appendChild(stage);
       document.body.appendChild(overlay);
+
+      // Play introductory suspense sound
+      app.audio.play('click');
+
+      var isRipped = false;
+      packWrap.onclick = function () {
+        if (isRipped) return;
+        isRipped = true;
+
+        // Stage 2: Violent rumble & tear sound
+        hoverCard.className = 'fvh-pack-hover-card rumble';
+        ripHint.textContent = (getActiveLang() === 'ru') ? 'Вскрытие...' : 'Ripping...';
+        app.audio.play('kick');
+
+        setTimeout(function () {
+          // Stage 3: Energy burst flash
+          flash.className = 'fvh-pack-flash-overlay active';
+          app.audio.play('whistle');
+
+          setTimeout(function () {
+            // Apply rewards to persistent store
+            app.store.update(function (d) {
+              if (!d.owned) d.owned = [];
+              drops.forEach(function (dr) {
+                if (dr.type === 'cosmetic') {
+                  if (d.owned.indexOf(dr.item.id) === -1) d.owned.push(dr.item.id);
+                } else if (dr.type === 'coins') {
+                  d.coins = (d.coins || 0) + dr.val;
+                }
+              });
+            });
+
+            // Stage 4: Cards reveal
+            stage.innerHTML = '';
+            var congratsTitle = document.createElement('h2');
+            congratsTitle.style.cssText = 'margin:0 0 4px;font-size:22px;color:#fde047;letter-spacing:0.5px;';
+            congratsTitle.textContent = (getActiveLang() === 'ru') ? '🎉 НАГРАДЫ ИЗ ПАКА!' : '🎉 PACK REWARDS!';
+
+            var cardsContainer = document.createElement('div');
+            cardsContainer.className = 'fvh-pack-cards-reveal';
+
+            drops.forEach(function (dr, idx) {
+              var cCard = document.createElement('div');
+              var rarity = dr.type === 'cosmetic' ? (dr.item.rarity || 'epic') : 'coins';
+              cCard.className = 'fvh-pack-reward-card r-' + rarity;
+              cCard.style.animationDelay = (idx * 0.16) + 's';
+
+              var shine = document.createElement('div');
+              shine.className = 'fvh-pack-card-shine';
+              cCard.appendChild(shine);
+
+              var rarityBadge = document.createElement('div');
+              rarityBadge.className = 'rar ' + (rarity === 'coins' ? 'legendary' : rarity);
+              rarityBadge.style.cssText = 'font-size:9.5px;padding:2px 8px;margin-bottom:6px;';
+              rarityBadge.textContent = rarity === 'coins' ? 'FVH COINS' : tr('rarity_' + rarity);
+              cCard.appendChild(rarityBadge);
+
+              var thumb = document.createElement('div');
+              thumb.className = 'fvh-pack-reward-thumb';
+              if (dr.type === 'cosmetic') {
+                thumb.innerHTML = renderItemArtwork(dr.item, 'large');
+              } else {
+                thumb.innerHTML = getFvhCoinSvg('large');
+              }
+              cCard.appendChild(thumb);
+
+              var nameBox = document.createElement('div');
+              nameBox.className = 'fvh-pack-reward-title';
+              nameBox.textContent = dr.type === 'cosmetic' ? trItem(dr.item.name) : ('+' + dr.val + ' FvH Coin');
+              cCard.appendChild(nameBox);
+
+              if (dr.isNew) {
+                var newPill = document.createElement('div');
+                newPill.className = 'fvh-pack-badge-new';
+                newPill.textContent = (getActiveLang() === 'ru') ? '✨ НОВИНКА!' : '✨ NEW!';
+                cCard.appendChild(newPill);
+              } else if (dr.isDuplicateFallback) {
+                var compPill = document.createElement('div');
+                compPill.className = 'fvh-pack-badge-fallback';
+                compPill.title = (getActiveLang() === 'ru') ? 'Все предметы коллекции получены!' : 'All collection items owned!';
+                compPill.textContent = (getActiveLang() === 'ru') ? '💎 КОМПЕНСАЦИЯ' : '💎 COIN BONUS';
+                cCard.appendChild(compPill);
+              }
+
+              cardsContainer.appendChild(cCard);
+            });
+
+            stage.appendChild(congratsTitle);
+            stage.appendChild(cardsContainer);
+
+            // Stage 5: Claim All Button
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'btn fvh-pack-claim-btn';
+            claimBtn.textContent = (getActiveLang() === 'ru') ? 'ЗАБРАТЬ ВСЁ' : 'CLAIM ALL';
+            claimBtn.onclick = function () {
+              app.audio.play('claim');
+              overlay.remove();
+              renderShop();
+            };
+            stage.appendChild(claimBtn);
+
+            app.audio.play('score');
+          }, 350);
+        }, 450);
+      };
     }
+    app.openPackAnimation = openPackAnimation;
+
 
     function renderShop() {
       updateWalletUI();
@@ -5321,7 +5938,7 @@
           bCard.style.cursor = 'pointer';
 
           var previewIcons = b.items.slice(0, 4).map(function (it) {
-            return '<span style="font-size:20px;" title="' + trItem(it.name) + '">' + it.icon + '</span>';
+            return '<div style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;" title="' + trItem(it.name) + '">' + renderItemArtwork(it.id, 'small') + '</div>';
           }).join(' ');
 
           bCard.innerHTML =
@@ -5329,8 +5946,8 @@
             '  <span class="rar legendary" style="font-size:10px;padding:3px 8px;">' + b.badge + '</span>' +
             '  <span style="font-size:10px;font-weight:900;color:#fde047;background:rgba(255,200,0,0.2);padding:2px 6px;border-radius:10px;">-' + b.discount + '%</span>' +
             '</div>' +
-            '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
-            '  <div style="font-size:38px;">' + b.icon + '</div>' +
+            '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
+            '  <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(b.id, 'medium') + '</div>' +
             '</div>' +
             '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + trItem(b.name) + '</div>' +
             '<div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:8px;opacity:0.85;">' + previewIcons + '</div>' +
@@ -5466,19 +6083,24 @@
             bCard.style.background = 'linear-gradient(135deg, rgba(25, 20, 40, 0.95) 0%, rgba(12, 10, 24, 0.98) 100%)';
             bCard.style.cursor = 'pointer';
 
+            var previewIcons = b.items.slice(0, 4).map(function (it) {
+              return '<div style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;" title="' + trItem(it.name) + '">' + renderItemArtwork(it.id, 'small') + '</div>';
+            }).join(' ');
+
             bCard.innerHTML =
               '<div class="fvh-card-head" style="justify-content:space-between;">' +
               '  <span class="rar legendary" style="font-size:10px;padding:3px 8px;">' + b.badge + '</span>' +
               '  <span style="font-size:10px;font-weight:900;color:#fde047;background:rgba(255,200,0,0.2);padding:2px 6px;border-radius:10px;">-' + b.discount + '%</span>' +
               '</div>' +
-              '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
-              '  <div style="font-size:38px;">' + b.icon + '</div>' +
+              '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
+              '  <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(b.id, 'medium') + '</div>' +
               '</div>' +
               '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + trItem(b.name) + '</div>' +
+              '<div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:8px;opacity:0.85;">' + previewIcons + '</div>' +
               '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
               (ownInfo.isFullyOwned ?
                 '✓ ' + tr('bundleAlreadyOwned') :
-                '🪙 ' + b.coinsPrice + ' · ' + b.starsPrice + ' ⭐'
+                '🪙 ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
               ) +
               '</div>';
 
