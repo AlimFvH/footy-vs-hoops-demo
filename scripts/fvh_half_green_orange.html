@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FvH Coin: Наполовину зелёная, наполовину оранжевая</title>
+<style>
+  body {
+    margin: 0;
+    padding: 30px 20px;
+    background: #06090f;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #34d399 0%, #fde047 50%, #fb923c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+  }
+  p.subtitle {
+    color: #94a3b8;
+    margin-top: 0;
+    margin-bottom: 28px;
+    font-size: 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    max-width: 1180px;
+    width: 100%;
+  }
+  .card {
+    background: radial-gradient(120% 120% at 50% 0%, #151d2a 0%, #0d121c 70%, #06080d 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  }
+  .card.highlight {
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 16px 40px rgba(245, 158, 11, 0.2), 0 0 0 1px rgba(245, 158, 11, 0.4);
+  }
+  .card-tag {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(249, 115, 22, 0.3));
+    border: 1px solid rgba(253, 224, 71, 0.5);
+    color: #fef08a;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+  }
+  .preview-large {
+    margin: 26px 0 16px;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: #f8fafc;
+  }
+  .card-desc {
+    font-size: 12.5px;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.45;
+    margin-bottom: 18px;
+    min-height: 52px;
+  }
+  .sizes-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: rgba(11, 15, 25, 0.9);
+    border-radius: 14px;
+    padding: 12px 14px;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .size-label {
+    font-size: 10.5px;
+    color: #64748b;
+    font-weight: 700;
+    text-align: center;
+  }
+  .size-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .hud-pill-demo {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #fef08a;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+</style>
+</head>
+<body>
+
+<h1>FvH Coin: Наполовину зелёная, наполовину оранжевая</h1>
+<p class="subtitle">Точное исполнение: 50% Изумрудный Футбол (Footy), 50% Огненный Баскетбол (Hoops), кристально читаемая надпись «FvH COIN»</p>
+
+<div class="grid">
+
+  <!-- OPTION 3A: Master Split with Gold Ribbon -->
+  <div class="card highlight">
+    <div class="card-tag">ТОП-ВЫБОР: MASTER SPLIT 3D</div>
+    <div class="preview-large" id="prev3A_lg"></div>
+    <div class="card-title">Мастер-Сплит (Золотая плашка)</div>
+    <div class="card-desc">Настоящее 50/50: футбольный изумруд слева, баскетбольный огонь справа. Чёткая рельефная монограмма «FvH» и золотая плашка с надписью «COIN». Идеальный баланс и читаемость.</div>
+    <div class="sizes-row">
+      <div class="size-group"><div id="prev3A_64"></div><span class="size-label">64px</span></div>
+      <div class="size-group"><div id="prev3A_48"></div><span class="size-label">48px</span></div>
+      <div class="size-group"><div id="prev3A_20"></div><span class="size-label">HUD 20px</span></div>
+    </div>
+    <div class="hud-pill-demo"><span id="prev3A_hud"></span> 12,500</div>
+  </div>
+
+  <!-- OPTION 3B: Sport Texture Split (Soccer Hexagons & Basketball Seams) -->
+  <div class="card">
+    <div class="card-tag">ВАРИАНТ: SPORT TEXTURE</div>
+    <div class="preview-large" id="prev3B_lg"></div>
+    <div class="card-title">Спортивная Текстура</div>
+    <div class="card-desc">На зелёной половине выгравированы классические шестиугольники футбольного мяча, на оранжевой — характерные дуги баскетбольного мяча. Золотой молниевый шов и объёмный FvH COIN.</div>
+    <div class="sizes-row">
+      <div class="size-group"><div id="prev3B_64"></div><span class="size-label">64px</span></div>
+      <div class="size-group"><div id="prev3B_48"></div><span class="size-label">48px</span></div>
+      <div class="size-group"><div id="prev3B_20"></div><span class="size-label">HUD 20px</span></div>
+    </div>
+    <div class="hud-pill-demo"><span id="prev3B_hud"></span> 12,500</div>
+  </div>
+
+  <!-- OPTION 3C: Single-Line Arc (Arched FvH COIN) -->
+  <div class="card">
+    <div class="card-tag">ВАРИАНТ: DUAL GLOSS ARC</div>
+    <div class="preview-large" id="prev3C_lg"></div>
+    <div class="card-title">Двойной Глянец (Единый текст)</div>
+    <div class="card-desc">Глянцевый раздельный диск со стеклянным бликом, где надпись «FvH COIN» выполнена единым блоком с толстой контрастной золотой фаской для мгновенного распознавания.</div>
+    <div class="sizes-row">
+      <div class="size-group"><div id="prev3C_64"></div><span class="size-label">64px</span></div>
+      <div class="size-group"><div id="prev3C_48"></div><span class="size-label">48px</span></div>
+      <div class="size-group"><div id="prev3C_20"></div><span class="size-label">HUD 20px</span></div>
+    </div>
+    <div class="hud-pill-demo"><span id="prev3C_hud"></span> 12,500</div>
+  </div>
+
+</div>
+
+<script>
+// ==========================================
+// MASTER SPLIT 3D (3A)
+// ==========================================
+function createCoin3A(size) {
+  var s = size || 100;
+  var uid = 'c3a_' + Math.random().toString(36).substr(2, 5);
+
+  if (s <= 24) {
+    // Ultra-clean 20-24px HUD icon: half green, half orange with gold rim & crisp FvH
+    return `
+    <svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;flex-shrink:0;filter:drop-shadow(0 2px 5px rgba(245,158,11,0.5));">
+      <defs>
+        <linearGradient id="c3a_rim_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="30%" stop-color="#fde047"/>
+          <stop offset="70%" stop-color="#ca8a04"/>
+          <stop offset="100%" stop-color="#713f12"/>
+        </linearGradient>
+        <clipPath id="c3a_clip_${uid}">
+          <circle cx="12" cy="12" r="8.2"/>
+        </clipPath>
+      </defs>
+      <!-- Base Gold Rim -->
+      <circle cx="12" cy="12.8" r="10.5" fill="#381402"/>
+      <circle cx="12" cy="12" r="10.5" fill="url(#c3a_rim_${uid})"/>
+      <circle cx="12" cy="12" r="8.2" fill="#1e293b"/>
+      
+      <!-- Split Interior -->
+      <g clip-path="url(#c3a_clip_${uid})">
+        <rect x="3.5" y="3.5" width="8.5" height="17" fill="#10b981"/>
+        <rect x="12" y="3.5" width="8.5" height="17" fill="#f97316"/>
+        <line x1="12" y1="3.5" x2="12" y2="20.5" stroke="#fef08a" stroke-width="0.9"/>
+      </g>
+
+      <!-- Center Embossed FvH -->
+      <text x="12" y="15.2" font-family="'Impact', 'Arial Black', sans-serif" font-size="8.4" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="-0.3">FvH</text>
+      <text x="12" y="14.5" font-family="'Impact', 'Arial Black', sans-serif" font-size="8.4" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="-0.3">FvH</text>
+      <circle cx="6" cy="6" r="1.3" fill="#ffffff" opacity="0.95"/>
+    </svg>`;
+  }
+
+  // 24 Milled gold beads
+  var beads = '';
+  for(var i=0; i<24; i++) {
+    var a = (i * 360 / 24) * Math.PI / 180;
+    var bx = 50 + 44.5 * Math.cos(a);
+    var by = 50 + 44.5 * Math.sin(a);
+    beads += `<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="1.4" fill="#fde047"/>`;
+  }
+
+  return `
+  <svg width="${s}" height="${s}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.65));">
+    <defs>
+      <!-- Thick Mirror Gold Rim -->
+      <linearGradient id="c3a_rim_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="15%" stop-color="#fffbeb"/>
+        <stop offset="35%" stop-color="#fde047"/>
+        <stop offset="65%" stop-color="#ca8a04"/>
+        <stop offset="88%" stop-color="#eab308"/>
+        <stop offset="100%" stop-color="#713f12"/>
+      </linearGradient>
+      <!-- Left Half: Green Pitch Gradient (Football) -->
+      <radialGradient id="c3a_green_${uid}" cx="35%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#6ee7b7"/>
+        <stop offset="35%" stop-color="#10b981"/>
+        <stop offset="75%" stop-color="#047857"/>
+        <stop offset="100%" stop-color="#064e3b"/>
+      </radialGradient>
+      <!-- Right Half: Orange Court Gradient (Basketball) -->
+      <radialGradient id="c3a_orange_${uid}" cx="65%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#fed7aa"/>
+        <stop offset="35%" stop-color="#f97316"/>
+        <stop offset="75%" stop-color="#ea580c"/>
+        <stop offset="100%" stop-color="#7c2d12"/>
+      </radialGradient>
+      <!-- Gold Plaque Gradient -->
+      <linearGradient id="c3a_goldPlaque_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="25%" stop-color="#fef08a"/>
+        <stop offset="60%" stop-color="#eab308"/>
+        <stop offset="100%" stop-color="#854d0e"/>
+      </linearGradient>
+      <!-- FvH 3D Text Gradient -->
+      <linearGradient id="c3a_fvh_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="40%" stop-color="#fffbeb"/>
+        <stop offset="75%" stop-color="#fde047"/>
+        <stop offset="100%" stop-color="#ca8a04"/>
+      </linearGradient>
+      <!-- Specular Gloss Sheen -->
+      <linearGradient id="c3a_sheen_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+        <stop offset="35%" stop-color="#ffffff" stop-opacity="0.12"/>
+        <stop offset="65%" stop-color="#ffffff" stop-opacity="0"/>
+      </linearGradient>
+      <clipPath id="c3a_inner_${uid}">
+        <circle cx="50" cy="50" r="39.5"/>
+      </clipPath>
+    </defs>
+
+    <!-- Outer Glow -->
+    <circle cx="50" cy="50" r="48.5" fill="#facc15" fill-opacity="0.2"/>
+
+    <!-- Bottom Drop Lip (3D depth) -->
+    <circle cx="50" cy="53" r="47" fill="#381402"/>
+    
+    <!-- Mirror Gold Beveled Rim -->
+    <circle cx="50" cy="50" r="47" fill="url(#c3a_rim_${uid})"/>
+    
+    <!-- Inner Ridge & Milled Beads -->
+    <circle cx="50" cy="50" r="44.5" fill="none" stroke="#78350f" stroke-width="0.8"/>
+    ${beads}
+
+    <!-- Stepped Bevel Drop into Interior -->
+    <circle cx="50" cy="50" r="40.5" fill="#1e293b"/>
+
+    <!-- 50/50 Split Disc: Left Green, Right Orange -->
+    <g clip-path="url(#c3a_inner_${uid})">
+      <!-- Left Half: Green Pitch -->
+      <rect x="10" y="10" width="40.2" height="80" fill="url(#c3a_green_${uid})"/>
+      <!-- Soccer Penalty Arc Outline -->
+      <path d="M42 30 A20 20 0 0 0 42 70" stroke="#ffffff" stroke-width="1.8" stroke-opacity="0.35" fill="none"/>
+      <circle cx="50" cy="50" r="16" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.25" fill="none"/>
+
+      <!-- Right Half: Orange Court -->
+      <rect x="50" y="10" width="40.2" height="80" fill="url(#c3a_orange_${uid})"/>
+      <!-- Basketball Ribs Outline -->
+      <path d="M58 30 A20 20 0 0 1 58 70" stroke="#000000" stroke-width="2.2" stroke-opacity="0.35" fill="none"/>
+      <path d="M50 20 C68 28 78 40 78 50 C78 60 68 72 50 80" stroke="#000000" stroke-width="1.8" stroke-opacity="0.25" fill="none"/>
+
+      <!-- Center Gold Division Seam -->
+      <line x1="50.1" y1="10" x2="50.1" y2="90" stroke="#fde047" stroke-width="2.2"/>
+      <line x1="50.1" y1="10" x2="50.1" y2="90" stroke="#ffffff" stroke-width="0.8"/>
+    </g>
+
+    <!-- Inner Gold Ring Frame -->
+    <circle cx="50" cy="50" r="39.5" fill="none" stroke="#fde047" stroke-width="1.3"/>
+
+    <!-- Stars on Gold Rim (Top and Bottom) -->
+    <path d="M50 17 L51.5 19.5 L54 20 L52 21.8 L52.6 24.2 L50 22.8 L47.4 24.2 L48 21.8 L46 20 L48.5 19.5 Z" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))"/>
+    <path d="M50 78 L51.2 80 L53.5 80.5 L51.8 82 L52.4 84.2 L50 83 L47.6 84.2 L48.2 82 L46.5 80.5 L48.8 80 Z" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))"/>
+
+    <!-- Chiseled 3D "FvH" - Crystal Clear Readability -->
+    <!-- Heavy Deep Drop Shadow -->
+    <text x="50" y="55" font-family="'Impact', 'Arial Black', sans-serif" font-size="30" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="-0.5" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.9))">FvH</text>
+    <text x="50" y="53.5" font-family="'Impact', 'Arial Black', sans-serif" font-size="30" font-weight="900" fill="#2a0f02" text-anchor="middle" letter-spacing="-0.5">FvH</text>
+    
+    <!-- Top Face with Brilliant Crisp Stroke -->
+    <text x="50" y="51.5" font-family="'Impact', 'Arial Black', sans-serif" font-size="30" font-weight="900" fill="url(#c3a_fvh_${uid})" text-anchor="middle" letter-spacing="-0.5" stroke="#ffffff" stroke-width="0.9">FvH</text>
+
+    <!-- Distinctive Gold "COIN" Plaque Below -->
+    <rect x="29" y="60.5" width="42" height="14" rx="7" fill="#090d16" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.8))"/>
+    <rect x="29" y="60.5" width="42" height="14" rx="7" fill="url(#c3a_goldPlaque_${uid})" stroke="#ffffff" stroke-width="0.8"/>
+    <text x="50" y="71" font-family="'Arial Black', sans-serif" font-size="9" font-weight="900" fill="#381402" text-anchor="middle" letter-spacing="1.5">COIN</text>
+
+    <!-- Top Highlight Glass Sheen -->
+    <path d="M12 40 A42 42 0 0 1 88 40 A46 43 0 0 0 12 40 Z" fill="url(#c3a_sheen_${uid})"/>
+
+    <!-- Diamond Star Sparkle (Top-Left) -->
+    <path d="M22 21 Q22 27 16 27 Q22 27 22 33 Q22 27 28 27 Q22 27 22 21 Z" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+    <circle cx="22" cy="27" r="6" fill="#fde047" opacity="0.6"/>
+  </svg>`;
+}
+
+// ==========================================
+// SPORT TEXTURE SPLIT (3B)
+// ==========================================
+function createCoin3B(size) {
+  var s = size || 100;
+  var uid = 'c3b_' + Math.random().toString(36).substr(2, 5);
+
+  if (s <= 24) {
+    return createCoin3A(s);
+  }
+
+  return `
+  <svg width="${s}" height="${s}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.65));">
+    <defs>
+      <linearGradient id="c3b_rim_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="25%" stop-color="#fde047"/>
+        <stop offset="65%" stop-color="#ca8a04"/>
+        <stop offset="100%" stop-color="#713f12"/>
+      </linearGradient>
+      <linearGradient id="c3b_green_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#34d399"/>
+        <stop offset="50%" stop-color="#059669"/>
+        <stop offset="100%" stop-color="#064e3b"/>
+      </linearGradient>
+      <linearGradient id="c3b_orange_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fb923c"/>
+        <stop offset="50%" stop-color="#ea580c"/>
+        <stop offset="100%" stop-color="#7c2d12"/>
+      </linearGradient>
+      <linearGradient id="c3b_fvh_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="40%" stop-color="#fffbeb"/>
+        <stop offset="80%" stop-color="#fde047"/>
+        <stop offset="100%" stop-color="#ca8a04"/>
+      </linearGradient>
+      <clipPath id="c3b_inner_${uid}">
+        <circle cx="50" cy="50" r="39.5"/>
+      </clipPath>
+    </defs>
+
+    <!-- Outer Rim -->
+    <circle cx="50" cy="53" r="47" fill="#381402"/>
+    <circle cx="50" cy="50" r="47" fill="url(#c3b_rim_${uid})"/>
+    <circle cx="50" cy="50" r="40.5" fill="#1e293b"/>
+
+    <!-- Interior Split -->
+    <g clip-path="url(#c3b_inner_${uid})">
+      <!-- Left: Green Football Pitch with Hexagons -->
+      <rect x="10" y="10" width="40.2" height="80" fill="url(#c3b_green_${uid})"/>
+      <polygon points="26,30 36,35 32,47 20,47 16,35" stroke="#ffffff" stroke-width="1.4" stroke-opacity="0.4" fill="none"/>
+      <polygon points="36,65 44,70 42,80 30,80 28,70" stroke="#ffffff" stroke-width="1.4" stroke-opacity="0.35" fill="none"/>
+
+      <!-- Right: Orange Basketball with Ribs -->
+      <rect x="50" y="10" width="40.2" height="80" fill="url(#c3b_orange_${uid})"/>
+      <path d="M50 25 C75 35 75 65 50 75" stroke="#000000" stroke-width="2.4" stroke-opacity="0.4" fill="none"/>
+      <path d="M50 35 C68 42 68 58 50 65" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.3" fill="none"/>
+
+      <!-- Center Gold Division Seam -->
+      <line x1="50.2" y1="10" x2="50.2" y2="90" stroke="#fde047" stroke-width="2.5"/>
+      <line x1="50.2" y1="10" x2="50.2" y2="90" stroke="#ffffff" stroke-width="1"/>
+    </g>
+
+    <circle cx="50" cy="50" r="39.5" fill="none" stroke="#fde047" stroke-width="1.4"/>
+
+    <!-- Center Black Oval Plaque with Gold Border -->
+    <ellipse cx="50" cy="50" rx="30" ry="24" fill="#090d16" stroke="#fde047" stroke-width="1.8" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.85))"/>
+
+    <text x="50" y="48" font-family="'Impact', 'Arial Black', sans-serif" font-size="20" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="-0.3">FvH</text>
+    <text x="50" y="47" font-family="'Impact', 'Arial Black', sans-serif" font-size="20" font-weight="900" fill="url(#c3b_fvh_${uid})" text-anchor="middle" letter-spacing="-0.3" stroke="#ffffff" stroke-width="0.5">FvH</text>
+    
+    <text x="50" y="60" font-family="'Arial Black', sans-serif" font-size="8.5" font-weight="900" fill="#fde047" text-anchor="middle" letter-spacing="1.5">COIN</text>
+
+    <!-- Top Glint -->
+    <path d="M22 22 Q22 27 17 27 Q22 27 22 32 Q22 27 27 27 Q22 27 22 22 Z" fill="#ffffff" filter="drop-shadow(0 0 3px #fff)"/>
+  </svg>`;
+}
+
+// ==========================================
+// DUAL GLOSS ARC (3C)
+// ==========================================
+function createCoin3C(size) {
+  var s = size || 100;
+  var uid = 'c3c_' + Math.random().toString(36).substr(2, 5);
+
+  if (s <= 24) {
+    return createCoin3A(s);
+  }
+
+  return `
+  <svg width="${s}" height="${s}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.65));">
+    <defs>
+      <linearGradient id="c3c_rim_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="25%" stop-color="#fde047"/>
+        <stop offset="65%" stop-color="#ca8a04"/>
+        <stop offset="100%" stop-color="#713f12"/>
+      </linearGradient>
+      <linearGradient id="c3c_green_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#34d399"/>
+        <stop offset="50%" stop-color="#10b981"/>
+        <stop offset="100%" stop-color="#047857"/>
+      </linearGradient>
+      <linearGradient id="c3c_orange_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#fb923c"/>
+        <stop offset="50%" stop-color="#f97316"/>
+        <stop offset="100%" stop-color="#c2410c"/>
+      </linearGradient>
+      <linearGradient id="c3c_text_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="35%" stop-color="#fffbeb"/>
+        <stop offset="70%" stop-color="#fde047"/>
+        <stop offset="100%" stop-color="#eab308"/>
+      </linearGradient>
+      <clipPath id="c3c_inner_${uid}">
+        <circle cx="50" cy="50" r="39.5"/>
+      </clipPath>
+    </defs>
+
+    <circle cx="50" cy="53" r="47" fill="#381402"/>
+    <circle cx="50" cy="50" r="47" fill="url(#c3c_rim_${uid})"/>
+    <circle cx="50" cy="50" r="40.5" fill="#1e293b"/>
+
+    <g clip-path="url(#c3c_inner_${uid})">
+      <rect x="10" y="10" width="40.2" height="80" fill="url(#c3c_green_${uid})"/>
+      <rect x="50" y="10" width="40.2" height="80" fill="url(#c3c_orange_${uid})"/>
+      <line x1="50.2" y1="10" x2="50.2" y2="90" stroke="#fde047" stroke-width="2.5"/>
+    </g>
+
+    <circle cx="50" cy="50" r="39.5" fill="none" stroke="#fde047" stroke-width="1.3"/>
+
+    <!-- Single Block: "FvH COIN" directly on coin -->
+    <text x="50" y="50" font-family="'Impact', 'Arial Black', sans-serif" font-size="26" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="-0.5" filter="drop-shadow(0 3px 6px rgba(0,0,0,0.9))">FvH</text>
+    <text x="50" y="48.5" font-family="'Impact', 'Arial Black', sans-serif" font-size="26" font-weight="900" fill="url(#c3c_text_${uid})" text-anchor="middle" letter-spacing="-0.5" stroke="#ffffff" stroke-width="0.8">FvH</text>
+
+    <text x="50" y="65" font-family="'Arial Black', sans-serif" font-size="11" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="2" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.9))">COIN</text>
+    <text x="50" y="64" font-family="'Arial Black', sans-serif" font-size="11" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="2">COIN</text>
+
+    <!-- Top Glint -->
+    <path d="M22 21 Q22 27 16 27 Q22 27 22 33 Q22 27 28 27 Q22 27 22 21 Z" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+  </svg>`;
+}
+
+// Render previews
+document.getElementById('prev3A_lg').innerHTML = createCoin3A(160);
+document.getElementById('prev3A_64').innerHTML = createCoin3A(56);
+document.getElementById('prev3A_48').innerHTML = createCoin3A(42);
+document.getElementById('prev3A_20').innerHTML = createCoin3A(20);
+document.getElementById('prev3A_hud').innerHTML = createCoin3A(20);
+
+document.getElementById('prev3B_lg').innerHTML = createCoin3B(160);
+document.getElementById('prev3B_64').innerHTML = createCoin3B(56);
+document.getElementById('prev3B_48').innerHTML = createCoin3B(42);
+document.getElementById('prev3B_20').innerHTML = createCoin3B(20);
+document.getElementById('prev3B_hud').innerHTML = createCoin3B(20);
+
+document.getElementById('prev3C_lg').innerHTML = createCoin3C(160);
+document.getElementById('prev3C_64').innerHTML = createCoin3C(56);
+document.getElementById('prev3C_48').innerHTML = createCoin3C(42);
+document.getElementById('prev3C_20').innerHTML = createCoin3C(20);
+document.getElementById('prev3C_hud').innerHTML = createCoin3C(20);
+</script>
+
+</body>
+</html>

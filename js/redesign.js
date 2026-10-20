@@ -2334,101 +2334,123 @@
     var isInline = size === 'inline';
     var isLg = size === 'large';
     var isSm = size === 'small' || size === 'thumb';
-    
+
     var w = isInline ? 20 : (isLg ? 160 : (isSm ? 48 : 64));
     var h = w;
     var uid = 'fvhCoin_' + Math.random().toString(36).substr(2, 6);
 
     if (isInline) {
-      // 20x20 Compact High-Contrast Inline Coin for Badges & HUD
-      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;flex-shrink:0;">' +
-        '<circle cx="12" cy="12" r="11" fill="url(#inRim_' + uid + ')" stroke="#fef08a" stroke-width="1"/>' +
-        '<circle cx="12" cy="12" r="8.5" fill="#090d16"/>' +
-        '<path d="M12 3.5C7.3 3.5 3.5 7.3 3.5 12" stroke="#00e5ff" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<path d="M20.5 12C20.5 16.7 16.7 20.5 12 20.5" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<text x="12" y="15" font-family="Impact, Arial Black, sans-serif" font-size="8.5" font-weight="900" fill="#fde047" text-anchor="middle" letter-spacing="-0.5">FvH</text>' +
+      // 20x20 Compact High-Contrast Half-Green, Half-Orange Coin for Badges & HUD
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;flex-shrink:0;filter:drop-shadow(0 2px 5px rgba(245,158,11,0.5));">' +
         '<defs>' +
         '<linearGradient id="inRim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
-        '<stop offset="0%" stop-color="#fde047"/>' +
-        '<stop offset="50%" stop-color="#eab308"/>' +
-        '<stop offset="100%" stop-color="#854d0e"/>' +
+        '<stop offset="0%" stop-color="#ffffff"/>' +
+        '<stop offset="30%" stop-color="#fde047"/>' +
+        '<stop offset="70%" stop-color="#ca8a04"/>' +
+        '<stop offset="100%" stop-color="#713f12"/>' +
         '</linearGradient>' +
+        '<clipPath id="inClip_' + uid + '">' +
+        '<circle cx="12" cy="12" r="8.2"/>' +
+        '</clipPath>' +
         '</defs>' +
+        '<circle cx="12" cy="12.8" r="10.5" fill="#381402"/>' +
+        '<circle cx="12" cy="12" r="10.5" fill="url(#inRim_' + uid + ')"/>' +
+        '<circle cx="12" cy="12" r="8.2" fill="#1e293b"/>' +
+        '<g clip-path="url(#inClip_' + uid + ')">' +
+        '<rect x="3.5" y="3.5" width="8.5" height="17" fill="#10b981"/>' +
+        '<rect x="12" y="3.5" width="8.5" height="17" fill="#f97316"/>' +
+        '<line x1="12" y1="3.5" x2="12" y2="20.5" stroke="#fef08a" stroke-width="0.9"/>' +
+        '</g>' +
+        '<text x="12" y="15.2" font-family="Impact, Arial Black, sans-serif" font-size="8.4" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="-0.3">FvH</text>' +
+        '<text x="12" y="14.5" font-family="Impact, Arial Black, sans-serif" font-size="8.4" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="-0.3">FvH</text>' +
+        '<circle cx="6" cy="6" r="1.3" fill="#ffffff" opacity="0.95"/>' +
         '</svg>';
     }
 
-    // 24 Milled Edge Gold Teeth
-    var teeth = '';
+    // 24 Milled gold beads
+    var beads = '';
     for (var i = 0; i < 24; i++) {
-      var angle = (i * 360 / 24) * Math.PI / 180;
-      var tx = 50 + 47 * Math.cos(angle);
-      var ty = 50 + 47 * Math.sin(angle);
-      teeth += '<circle cx="' + tx.toFixed(2) + '" cy="' + ty.toFixed(2) + '" r="1.6" fill="#fde047"/>';
+      var a = (i * 360 / 24) * Math.PI / 180;
+      var bx = 50 + 44.5 * Math.cos(a);
+      var by = 50 + 44.5 * Math.sin(a);
+      beads += '<circle cx="' + bx.toFixed(2) + '" cy="' + by.toFixed(2) + '" r="1.4" fill="#fde047"/>';
     }
 
-    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter:drop-shadow(0 6px 14px rgba(245,158,11,0.35));">' +
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter:drop-shadow(0 8px 20px rgba(0, 0, 0, 0.65));">' +
       '<defs>' +
-      '<linearGradient id="gRim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
-      '<stop offset="0%" stop-color="#fffbeb"/>' +
-      '<stop offset="20%" stop-color="#fde047"/>' +
-      '<stop offset="50%" stop-color="#ca8a04"/>' +
-      '<stop offset="85%" stop-color="#eab308"/>' +
+      '<linearGradient id="rim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#ffffff"/>' +
+      '<stop offset="15%" stop-color="#fffbeb"/>' +
+      '<stop offset="35%" stop-color="#fde047"/>' +
+      '<stop offset="65%" stop-color="#ca8a04"/>' +
+      '<stop offset="88%" stop-color="#eab308"/>' +
       '<stop offset="100%" stop-color="#713f12"/>' +
       '</linearGradient>' +
-      '<linearGradient id="gInner_' + uid + '" x1="0%" y1="100%" x2="100%" y2="0%">' +
-      '<stop offset="0%" stop-color="#451a03"/>' +
-      '<stop offset="40%" stop-color="#ca8a04"/>' +
-      '<stop offset="70%" stop-color="#fef08a"/>' +
-      '<stop offset="100%" stop-color="#a16207"/>' +
-      '</linearGradient>' +
-      '<radialGradient id="gCore_' + uid + '" cx="50%" cy="40%" r="60%">' +
-      '<stop offset="0%" stop-color="#1e1b4b"/>' +
-      '<stop offset="65%" stop-color="#0b0f19"/>' +
-      '<stop offset="100%" stop-color="#020408"/>' +
+      '<radialGradient id="green_' + uid + '" cx="35%" cy="35%" r="65%">' +
+      '<stop offset="0%" stop-color="#6ee7b7"/>' +
+      '<stop offset="35%" stop-color="#10b981"/>' +
+      '<stop offset="75%" stop-color="#047857"/>' +
+      '<stop offset="100%" stop-color="#064e3b"/>' +
       '</radialGradient>' +
-      '<linearGradient id="gText_' + uid + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<radialGradient id="orange_' + uid + '" cx="65%" cy="35%" r="65%">' +
+      '<stop offset="0%" stop-color="#fed7aa"/>' +
+      '<stop offset="35%" stop-color="#f97316"/>' +
+      '<stop offset="75%" stop-color="#ea580c"/>' +
+      '<stop offset="100%" stop-color="#7c2d12"/>' +
+      '</radialGradient>' +
+      '<linearGradient id="plaque_' + uid + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
       '<stop offset="0%" stop-color="#ffffff"/>' +
-      '<stop offset="35%" stop-color="#fef08a"/>' +
-      '<stop offset="70%" stop-color="#facc15"/>' +
-      '<stop offset="100%" stop-color="#b45309"/>' +
+      '<stop offset="25%" stop-color="#fef08a"/>' +
+      '<stop offset="60%" stop-color="#eab308"/>' +
+      '<stop offset="100%" stop-color="#854d0e"/>' +
       '</linearGradient>' +
-      '<linearGradient id="gSheen_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
-      '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>' +
-      '<stop offset="35%" stop-color="#ffffff" stop-opacity="0.08"/>' +
+      '<linearGradient id="fvh_' + uid + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" stop-color="#ffffff"/>' +
+      '<stop offset="40%" stop-color="#fffbeb"/>' +
+      '<stop offset="75%" stop-color="#fde047"/>' +
+      '<stop offset="100%" stop-color="#ca8a04"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="sheen_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>' +
+      '<stop offset="35%" stop-color="#ffffff" stop-opacity="0.12"/>' +
       '<stop offset="65%" stop-color="#ffffff" stop-opacity="0"/>' +
       '</linearGradient>' +
+      '<clipPath id="inner_' + uid + '">' +
+      '<circle cx="50" cy="50" r="39.5"/>' +
+      '</clipPath>' +
       '</defs>' +
-      '<circle cx="50" cy="50" r="48" fill="#f59e0b" fill-opacity="0.12"/>' +
-      '<circle cx="50" cy="50" r="47" fill="url(#gRim_' + uid + ')" stroke="#fef08a" stroke-width="1.2"/>' +
-      teeth +
-      '<circle cx="50" cy="50" r="41" fill="url(#gInner_' + uid + ')" stroke="#713f12" stroke-width="1.5"/>' +
-      '<circle cx="50" cy="50" r="37.5" fill="#020408"/>' +
-      '<circle cx="50" cy="50" r="36" fill="url(#gCore_' + uid + ')"/>' +
-      '<circle cx="50" cy="50" r="34" stroke="#facc15" stroke-width="0.6" stroke-dasharray="1.5 1.5" stroke-opacity="0.5"/>' +
-      '<circle cx="50" cy="50" r="28" stroke="#ca8a04" stroke-width="0.5" stroke-opacity="0.3"/>' +
-      '<path d="M50 15 A35 35 0 0 0 15 50 A35 35 0 0 0 22 72" stroke="#00e5ff" stroke-width="3.2" stroke-linecap="round" filter="drop-shadow(0 0 3px #00e5ff)"/>' +
-      '<path d="M22 34 L28 32 L32 37 L30 43 L24 44 Z" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.55"/>' +
-      '<path d="M50 85 A35 35 0 0 0 85 50 A35 35 0 0 0 78 28" stroke="#f97316" stroke-width="3.2" stroke-linecap="round" filter="drop-shadow(0 0 3px #ea580c)"/>' +
-      '<path d="M72 40 C76 46 76 54 72 60" stroke="#fdba74" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.65"/>' +
-      '<path id="arcTop_' + uid + '" d="M24 50 A26 26 0 0 1 76 50" fill="none"/>' +
-      '<text font-family="Arial Black, Impact, sans-serif" font-size="5.2" font-weight="900" fill="#fef08a" letter-spacing="1.2">' +
-      '<textPath href="#arcTop_' + uid + '" startOffset="50%" text-anchor="middle">FOOTY VS HOOPS</textPath>' +
-      '</text>' +
-      '<g filter="drop-shadow(0 3px 4px rgba(0,0,0,0.9))">' +
-      '<text x="50" y="58" font-family="Impact, Arial Black, sans-serif" font-size="24" font-weight="900" fill="#451a03" text-anchor="middle" letter-spacing="-1">FvH</text>' +
-      '<text x="50" y="57" font-family="Impact, Arial Black, sans-serif" font-size="24" font-weight="900" fill="url(#gText_' + uid + ')" text-anchor="middle" letter-spacing="-1">FvH</text>' +
-      '<text x="50" y="57" font-family="Impact, Arial Black, sans-serif" font-size="24" font-weight="900" fill="none" stroke="#fffbeb" stroke-width="0.6" text-anchor="middle" letter-spacing="-1">FvH</text>' +
+      '<circle cx="50" cy="50" r="48.5" fill="#facc15" fill-opacity="0.2"/>' +
+      '<circle cx="50" cy="53" r="47" fill="#381402"/>' +
+      '<circle cx="50" cy="50" r="47" fill="url(#rim_' + uid + ')"/>' +
+      '<circle cx="50" cy="50" r="44.5" fill="none" stroke="#78350f" stroke-width="0.8"/>' +
+      beads +
+      '<circle cx="50" cy="50" r="40.5" fill="#1e293b"/>' +
+      '<g clip-path="url(#inner_' + uid + ')">' +
+      '<rect x="10" y="10" width="40.2" height="80" fill="url(#green_' + uid + ')"/>' +
+      '<path d="M42 30 A20 20 0 0 0 42 70" stroke="#ffffff" stroke-width="1.8" stroke-opacity="0.35" fill="none"/>' +
+      '<circle cx="50" cy="50" r="16" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.25" fill="none"/>' +
+      '<rect x="50" y="10" width="40.2" height="80" fill="url(#orange_' + uid + ')"/>' +
+      '<path d="M58 30 A20 20 0 0 1 58 70" stroke="#000000" stroke-width="2.2" stroke-opacity="0.35" fill="none"/>' +
+      '<path d="M50 20 C68 28 78 40 78 50 C78 60 68 72 50 80" stroke="#000000" stroke-width="1.8" stroke-opacity="0.25" fill="none"/>' +
+      '<line x1="50.1" y1="10" x2="50.1" y2="90" stroke="#fde047" stroke-width="2.2"/>' +
+      '<line x1="50.1" y1="10" x2="50.1" y2="90" stroke="#ffffff" stroke-width="0.8"/>' +
       '</g>' +
-      '<text x="50" y="76" font-family="Arial, sans-serif" font-size="6.5" fill="#fde047" text-anchor="middle" letter-spacing="3">★ ★ ★</text>' +
-      '<path d="M18 36 C32 20 68 20 82 36 C64 42 36 42 18 36 Z" fill="url(#gSheen_' + uid + ')"/>' +
-      '<polygon points="26,19 28,15 30,19 34,21 30,23 28,27 26,23 22,21" fill="#ffffff"/>' +
-      '<circle cx="28" cy="21" r="1.5" fill="#ffffff" filter="drop-shadow(0 0 2px #fff)"/>' +
+      '<circle cx="50" cy="50" r="39.5" fill="none" stroke="#fde047" stroke-width="1.3"/>' +
+      '<path d="M50 17 L51.5 19.5 L54 20 L52 21.8 L52.6 24.2 L50 22.8 L47.4 24.2 L48 21.8 L46 20 L48.5 19.5 Z" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))"/>' +
+      '<path d="M50 78 L51.2 80 L53.5 80.5 L51.8 82 L52.4 84.2 L50 83 L47.6 84.2 L48.2 82 L46.5 80.5 L48.8 80 Z" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))"/>' +
+      '<text x="50" y="55" font-family="Impact, Arial Black, sans-serif" font-size="30" font-weight="900" fill="#000000" text-anchor="middle" letter-spacing="-0.5" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.9))">FvH</text>' +
+      '<text x="50" y="53.5" font-family="Impact, Arial Black, sans-serif" font-size="30" font-weight="900" fill="#2a0f02" text-anchor="middle" letter-spacing="-0.5">FvH</text>' +
+      '<text x="50" y="51.5" font-family="Impact, Arial Black, sans-serif" font-size="30" font-weight="900" fill="url(#fvh_' + uid + ')" text-anchor="middle" letter-spacing="-0.5" stroke="#ffffff" stroke-width="0.9">FvH</text>' +
+      '<rect x="29" y="60.5" width="42" height="14" rx="7" fill="#090d16" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.8))"/>' +
+      '<rect x="29" y="60.5" width="42" height="14" rx="7" fill="url(#plaque_' + uid + ')" stroke="#ffffff" stroke-width="0.8"/>' +
+      '<text x="50" y="71" font-family="Arial Black, sans-serif" font-size="9" font-weight="900" fill="#381402" text-anchor="middle" letter-spacing="1.5">COIN</text>' +
+      '<path d="M12 40 A42 42 0 0 1 88 40 A46 43 0 0 0 12 40 Z" fill="url(#sheen_' + uid + ')"/>' +
+      '<path d="M22 21 Q22 27 16 27 Q22 27 22 33 Q22 27 28 27 Q22 27 22 21 Z" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>' +
+      '<circle cx="22" cy="27" r="6" fill="#fde047" opacity="0.6"/>' +
       '</svg>';
   }
-  window.getFvhCoinSvg = getFvhCoinSvg;
 
-
-  // Detailed Coins Reward Stack SVG (Featuring Authentic 3D FvH Coins)
+  // Detailed Stacked Currency Bundles SVG
   function getDetailedCoinsSvg(item, size) {
     var isLg = size === 'large';
     var isSm = size === 'thumb' || size === 'small';
@@ -2448,33 +2470,42 @@
     else if (id === 'pkg_coins_champion') stackCount = 10;
     else if (id === 'pkg_coins_legend') stackCount = 12;
 
+    var uid = 'cStack_' + Math.random().toString(36).substr(2, 6);
     var coinsHtml = '';
     var baseY = 76;
     var dy = 5.2;
     for (var i = 0; i < stackCount; i++) {
       var y = baseY - (i * dy);
-      coinsHtml += '<ellipse cx="50" cy="' + y + '" rx="29" ry="11" fill="#713f12" stroke="#ca8a04" stroke-width="1.8"/>' +
+      coinsHtml += '<ellipse cx="50" cy="' + y + '" rx="29" ry="11" fill="#381402" stroke="#ca8a04" stroke-width="1.8"/>' +
         '<ellipse cx="50" cy="' + (y - 1.8) + '" rx="28" ry="10" fill="#eab308" stroke="#fef08a" stroke-width="1.2"/>' +
-        '<ellipse cx="50" cy="' + (y - 2.5) + '" rx="24" ry="8" fill="#ca8a04"/>' +
-        '<ellipse cx="50" cy="' + (y - 2.8) + '" rx="23" ry="7.5" fill="#090d16"/>' +
-        '<text x="50" y="' + (y - 0.5) + '" font-family="Impact, Arial Black" font-size="7" fill="#fde047" text-anchor="middle" letter-spacing="-0.5">FvH</text>';
+        '<ellipse cx="50" cy="' + (y - 2.5) + '" rx="24" ry="8" fill="#1e293b"/>' +
+        '<g clip-path="url(#cStackClip_' + uid + '_' + i + ')">' +
+        '<rect x="25" y="' + (y - 11) + '" width="25" height="18" fill="#10b981"/>' +
+        '<rect x="50" y="' + (y - 11) + '" width="25" height="18" fill="#f97316"/>' +
+        '<line x1="50" y1="' + (y - 11) + '" x2="50" y2="' + (y + 7) + '" stroke="#fef08a" stroke-width="0.8"/>' +
+        '</g>' +
+        '<text x="50" y="' + (y - 0.5) + '" font-family="Impact, Arial Black" font-size="7.5" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">FvH</text>';
     }
 
-    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter:drop-shadow(0 6px 14px rgba(245,158,11,0.4));">' +
+    var defsClips = '';
+    for (var i = 0; i < stackCount; i++) {
+      var y = baseY - (i * dy);
+      defsClips += '<clipPath id="cStackClip_' + uid + '_' + i + '"><ellipse cx="50" cy="' + (y - 2.5) + '" rx="24" ry="8"/></clipPath>';
+    }
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;filter:drop-shadow(0 6px 16px rgba(245,158,11,0.45));">' +
       '<defs>' +
-      '<radialGradient id="cStackGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fde047" stop-opacity="0.35"/><stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="cStackGlow_' + uid + '" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fde047" stop-opacity="0.35"/><stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/></radialGradient>' +
+      defsClips +
       '</defs>' +
-      '<circle cx="50" cy="50" r="46" fill="#131003" stroke="#facc15" stroke-width="1.8"/>' +
-      '<circle cx="50" cy="50" r="42" fill="url(#cStackGlow)"/>' +
+      '<circle cx="50" cy="50" r="46" fill="#0d131f" stroke="#facc15" stroke-width="1.8"/>' +
+      '<circle cx="50" cy="50" r="42" fill="url(#cStackGlow_' + uid + ')"/>' +
       coinsHtml +
-      // Golden Sparkle Stars
       '<polygon points="22,25 24,20 26,25 31,27 26,29 24,34 22,29 17,27" fill="#ffffff" filter="drop-shadow(0 0 2px #fff)"/>' +
       '<polygon points="78,35 80,31 82,35 86,37 82,39 80,43 78,39 74,37" fill="#fef08a"/>' +
       '</svg>';
   }
 
-
-  // Detailed Battle Pass VIP Season Pass SVG
   function getDetailedBattlePassSvg(item, size) {
     var isLg = size === 'large';
     var w = isLg ? 180 : 76;
@@ -2994,9 +3025,9 @@
         (coinsPrice > 0 ?
           '  <button class="btn fvh-pay-opt-coins" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;">' +
           '    <span style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--text-pure);">' +
-          '      <span style="font-size:22px;">🪙</span> ' + tr('buyFor') +
+          '      ' + getFvhCoinSvg('thumb') + ' ' + tr('buyFor') +
           '    </span>' +
-          '    <span style="font-weight:900;font-size:14px;color:#facc15;">' + coinsPrice + ' 🪙</span>' +
+          '    <span style="font-weight:900;font-size:14px;color:#facc15;display:inline-flex;align-items:center;gap:4px;">' + getFvhCoinSvg('inline') + ' ' + coinsPrice + '</span>' +
           '  </button>' : ''
         ) +
         '</div>' +
@@ -4193,7 +4224,7 @@
         '<span class="fvh-prime-tag">🔥 ' + tr('primeChallenge') + '</span>' +
         '<h2 style="margin:4px 0 2px;font-size:18px;">' + primeTitleStr + '</h2>' +
         '</div>' +
-        '<div class="fvh-prime-reward">🪙 250 + 100 XP</div>' +
+        '<div class="fvh-prime-reward">' + getFvhCoinSvg('inline') + ' 250 + 100 XP</div>' +
         '</div>' +
         '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">' + tr('resetsIn', { t: '14h 22m' }) + ' · ' + tr('streakBadge', { n: 3 }) + '</div>' +
         '<div class="pbar" style="height:10px;margin:0 0 10px 0;"><i style="width:' + Math.min(100, Math.floor((primeCur / primeTarget) * 100)) + '%;"></i></div>' +
@@ -4276,7 +4307,7 @@
           '<div class="fvh-mission-content">' +
           '<div class="fvh-mission-title-row">' +
           '<div class="fvh-mission-title">' + q.title + '</div>' +
-          '<div class="fvh-mission-reward">🪙 ' + q.coins + ' · ' + q.xp + ' XP</div>' +
+          '<div class="fvh-mission-reward">' + getFvhCoinSvg('inline') + ' ' + q.coins + ' · ' + q.xp + ' XP</div>' +
           '</div>' +
           '<div class="fvh-mission-desc">' + q.desc + '</div>' +
           '<div class="pbar" style="height:6px;margin:8px 0 4px 0;"><i style="width:' + pct + '%;"></i></div>' +
@@ -4455,7 +4486,7 @@
           '<div class="fvh-mission-content">' +
           '<div class="fvh-mission-title-row">' +
           '<div class="fvh-mission-title">' + task.title + '</div>' +
-          '<div class="fvh-mission-reward">🪙 ' + task.coins + ' · ' + task.xp + ' XP</div>' +
+          '<div class="fvh-mission-reward">' + getFvhCoinSvg('inline') + ' ' + task.coins + ' · ' + task.xp + ' XP</div>' +
           '</div>' +
           '<div class="fvh-mission-desc">' + task.desc + '</div>' +
           '<div class="fvh-mission-meta" style="margin-top:6px;">' +
@@ -4677,7 +4708,7 @@
             '<div class="fvh-mission-content">' +
             '<div class="fvh-mission-title-row">' +
             '<div class="fvh-mission-title">' + (lang === 'ru' ? (m.target + ' Друзей в отряде') : (m.target + ' Squad Friends')) + '</div>' +
-            '<div class="fvh-mission-reward">🪙 ' + m.coins + '</div>' +
+            '<div class="fvh-mission-reward">' + getFvhCoinSvg('inline') + ' ' + m.coins + '</div>' +
             '</div>' +
             '<div class="fvh-mission-desc">' + m.rewardTitle + '</div>' +
             '<div class="fvh-mission-meta" style="margin-top:4px;">' +
@@ -5157,7 +5188,7 @@
         '    ' + bundle.badge + ' · -' + bundle.discount + '% OFF' +
         '  </span>' +
         '  <span style="font-size:12px;color:var(--text-muted);">' +
-        '    <del style="opacity:0.6;">' + (bundle.originalValue ? bundle.originalValue.toLocaleString() : '') + ' 🪙</del> ➔ <b style="color:#fde047;">' + bundle.coinsPrice.toLocaleString() + ' 🪙</b>' +
+        '    <del style="opacity:0.6;">' + (bundle.originalValue ? bundle.originalValue.toLocaleString() : '') + '</del> ➔ <b style="color:#fde047;display:inline-flex;align-items:center;gap:3px;">' + getFvhCoinSvg('inline') + ' ' + bundle.coinsPrice.toLocaleString() + '</b>' +
         '  </span>' +
         '  <button class="modal-close-x">✕</button>' +
         '</div>' +
@@ -5193,7 +5224,7 @@
         buyBtn.style.fontSize = '13px';
         buyBtn.style.padding = '12px 8px';
         buyBtn.style.lineHeight = '1.3';
-        buyBtn.innerHTML = tr('buyFor') + ' 🪙 ' + bundle.coinsPrice.toLocaleString() + ' &nbsp;·&nbsp; ' + bundle.starsPrice + ' ⭐';
+        buyBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + bundle.coinsPrice.toLocaleString() + ' &nbsp;·&nbsp; ' + bundle.starsPrice + ' ⭐';
         buyBtn.onclick = function () {
           overlay.remove();
           if (window.__fvhPayments && window.__fvhPayments.openPaymentModal) {
@@ -5365,7 +5396,7 @@
         var buyChargeBtn = document.createElement('button');
         buyChargeBtn.className = (boostCharges === 0 ? 'btn primary block' : 'btn block');
         buyChargeBtn.style.marginTop = boostCharges > 0 ? '8px' : '0';
-        buyChargeBtn.textContent = tr('buyFor') + ' 🪙 ' + item.price + ' (+1 ' + tr('boostCharges', { n: 1 }) + ')';
+        buyChargeBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price + ' (+1 ' + tr('boostCharges', { n: 1 }) + ')';
         buyChargeBtn.onclick = function () {
           if (isPurchasing) return;
           var coins = app.store.data.coins || 0;
@@ -5807,7 +5838,7 @@
         '<div class="fvh-featured-actions">' +
         (isFeatOwned ?
           '<button class="btn small" disabled>✓ ' + tr('ownedInLocker') + '</button>' :
-          '<button class="btn primary small feat-buy-btn">' + tr('buyFor') + ' 🪙 ' + featuredItem.price + '</button>') +
+          '<button class="btn primary small feat-buy-btn">' + tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + featuredItem.price + '</button>') +
         '<button class="btn small feat-inspect-btn">' + tr('inspect') + '</button>' +
         '</div>' +
         '</div>' +
@@ -5895,7 +5926,7 @@
           pCard.innerHTML =
             '<div class="fvh-card-head" style="justify-content:space-between;">' +
             '  <span class="rar legendary" style="font-size:10px;padding:3px 8px;">' + pkg.badge + '</span>' +
-            '  <span style="font-size:11px;font-weight:900;color:#fde047;">🪙 +' + pkg.coinsAmount.toLocaleString() + '</span>' +
+            '  <span style="font-size:11px;font-weight:900;color:#fde047;display:inline-flex;align-items:center;gap:3px;">' + getFvhCoinSvg('inline') + ' +' + pkg.coinsAmount.toLocaleString() + '</span>' +
             '</div>' +
             '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
             '  <div style="font-size:42px;">' + pkg.icon + '</div>' +
@@ -5954,7 +5985,7 @@
             '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
             (ownInfo.isFullyOwned ?
               '✓ ' + tr('bundleAlreadyOwned') :
-              '🪙 ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
+              getFvhCoinSvg('inline') + ' ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
             ) +
             '</div>';
 
@@ -6002,7 +6033,7 @@
           } else {
             var buyPackBtn = document.createElement('button');
             buyPackBtn.className = 'btn small block';
-            buyPackBtn.textContent = '🪙 ' + pk.price;
+            buyPackBtn.innerHTML = getFvhCoinSvg('inline') + ' ' + pk.price;
             buyPackBtn.onclick = function () {
               if (isPurchasing) return;
               var coins = app.store.data.coins || 0;
@@ -6100,7 +6131,7 @@
               '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
               (ownInfo.isFullyOwned ?
                 '✓ ' + tr('bundleAlreadyOwned') :
-                '🪙 ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
+                getFvhCoinSvg('inline') + ' ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
               ) +
               '</div>';
 
@@ -6147,9 +6178,9 @@
 
           var priceLabel = '';
           if (isBoost) {
-            priceLabel = '🪙 ' + it.price + (boostCharges > 0 ? ' · ' + tr('boostCharges', { n: boostCharges }) : '');
+            priceLabel = getFvhCoinSvg('inline') + ' <span style="vertical-align:middle;margin-left:4px;">' + it.price + '</span>' + (boostCharges > 0 ? ' · ' + tr('boostCharges', { n: boostCharges }) : '');
           } else {
-            priceLabel = isOwned ? tr('inCollection') : ('🪙 ' + it.price);
+            priceLabel = isOwned ? tr('inCollection') : (getFvhCoinSvg('inline') + ' <span style="vertical-align:middle;margin-left:4px;">' + it.price + '</span>');
           }
 
           card.innerHTML =
@@ -7573,7 +7604,7 @@
           };
         } else {
           btn.className = 'btn small block';
-          btn.textContent = '🪙 ' + arena.price + ' · ' + tr('buyArenaBtn');
+          btn.innerHTML = getFvhCoinSvg('inline') + ' ' + arena.price + ' · ' + tr('buyArenaBtn');
           btn.onclick = function () {
             app.audio.play('click');
             app.go('shop');
@@ -8084,7 +8115,7 @@
       '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
       '</div>' +
       '<div class="fvh-topbar-stats">' +
-      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">🪙 ' + (d.coins || 0) + '</button>' +
+      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
       '<button class="fvh-pill" id="fvh-btn-profile" title="' + tr('profile') + '">⭐ LVL ' + bpState.level + '</button>' +
       '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
       '</div>';
