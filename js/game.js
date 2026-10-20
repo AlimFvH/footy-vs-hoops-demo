@@ -7260,13 +7260,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             this.head.add(at(mk(G.box(0.04, 0.05, 0.03), skin.skin, { fine: true, skin: true }), 0, -0.04, 0.2));
 
             if (foot) {
-                // Football: Futuristic glowing cyber-visor
-                const visor = mk(G.box(0.16, 0.045, 0.04), 0x00f0ff, { spec: 0.9, emissive: 0x00f0ff, emissiveMul: 0.8, fine: true });
-                this.head.add(at(visor, 0, 0.005, 0.195));
+                // Football: Real athletic haircut fringe and eyebrows (clean natural athlete)
+                const hairFringe = mk(G.box(0.18, 0.05, 0.04), skin.hair, { spec: 0.2, fine: true });
+                this.head.add(at(hairFringe, 0, 0.08, 0.16));
             }
             else {
-                // Basketball: Signature fiery orange headband with embroidered logo patch
-                const hb = mk(G.cylinder(0.218, 0.218, 0.065, 12), 0xff6b00, { spec: 0.4, fine: true });
+                // Basketball: Authentic cotton athletic headband with embroidered logo patch
+                const hb = mk(G.cylinder(0.218, 0.218, 0.065, 12), 0xff6b00, { spec: 0.15, fine: true });
                 const hbLogo = mk(G.box(0.06, 0.04, 0.02), white, { fine: true });
                 this.head.add(at(hb, 0, 0.08, 0), at(hbLogo, 0, 0.08, 0.215));
             }
