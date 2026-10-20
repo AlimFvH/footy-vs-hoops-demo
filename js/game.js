@@ -1879,6 +1879,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             p.shootReleased || (p.shootReleased = input.shootReleased);
             p.tacklePressed || (p.tacklePressed = input.tacklePressed);
             p.tackleReleased || (p.tackleReleased = input.tackleReleased);
+            p.pass || (p.pass = input.passPressed);
         }
         step(dt, input) {
             dt = (0, math_js_3.clamp)(dt, 0, 0.1);
@@ -1899,7 +1900,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 this.edges.pass = this.pendPass;
                 this.pendShootPressed = this.pendShootReleased = this.pendTacklePressed = this.pendTackleReleased = this.pendPass = false;
                 Object.assign(this.edges2, this.pend2);
-                this.pend2.shootPressed = this.pend2.shootReleased = this.pend2.tacklePressed = this.pend2.tackleReleased = false;
+                this.pend2.shootPressed = this.pend2.shootReleased = this.pend2.tacklePressed = this.pend2.tackleReleased = this.pend2.pass = false;
                 this.tick(h);
             }
         }
@@ -12410,15 +12411,20 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 this.buf.shift();
         }
         receive(m, _ch) {
-            switch (m.k) {
-                case 'in':
-                    if (this.sim && m.i && typeof m.i === 'object') {
+            if (!m) return;
+            const packet = m.packet || m;
+            const k = packet.k || packet.type;
+            switch (k) {
+                case 'in': {
+                    const inp = packet.i || packet.data;
+                    if (this.sim && inp && typeof inp === 'object') {
                         this.inputsRecv++;
-                        this.sim.setInput2((0, protocol_js_1.mirrorInput)(sanitize(m.i)));
+                        this.sim.setInput2((0, protocol_js_1.mirrorInput)(sanitize(inp)));
                     }
                     break;
+                }
                 case 'snap': {
-                    const s = m.s;
+                    const s = packet.s || packet.data;
                     const last = this.buf[this.buf.length - 1];
                     if (!s || !Array.isArray(s.a) || (last && s.t <= last.s.t))
                         break;
@@ -12426,11 +12432,13 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                     this.buf.push({ s, at: performance.now() });
                     break;
                 }
-                case 'ev':
-                    if (Array.isArray(m.l))
-                        for (const x of m.l)
+                case 'ev': {
+                    const evList = packet.l || packet.data;
+                    if (Array.isArray(evList))
+                        for (const x of evList)
                             this.evq.push(x);
                     break;
+                }
                 case 'bye':
                     this.lost('left');
                     break;

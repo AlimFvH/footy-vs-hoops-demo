@@ -5239,33 +5239,85 @@
     { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
   ];
 
-  // High-Reliability Server Relay Link for Authoritative Multiplayer
+  // High-Reliability Native WebSocket & Server Relay Link for Authoritative Multiplayer
   function RelayLink(matchId, role) {
     this.matchId = matchId;
     this.role = role;
     this.h = {};
     this.open = true;
     this.closed = false;
-    this.rtt = 45;
+    this.rtt = 25;
     var self = this;
 
+    // 1. Native WebSocket connection for sub-10ms real-time state sync
+    this.ws = null;
+    this.wsOpen = false;
+    try {
+      if (typeof WebSocket !== 'undefined') {
+        var wsProto = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+        var wsUrl = wsProto + '//' + window.location.host + '/ws/match?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role);
+        var ws = new WebSocket(wsUrl);
+        this.ws = ws;
+
+        ws.onopen = function () {
+          if (self.closed) { ws.close(); return; }
+          self.wsOpen = true;
+        };
+
+        ws.onmessage = function (evt) {
+          if (self.closed) return;
+          try {
+            var parsed = JSON.parse(evt.data);
+            var m = parsed.packet || parsed;
+            if (!m.k && parsed.type) {
+              m = { k: parsed.type, i: parsed.data, s: parsed.data, l: parsed.data };
+            }
+            if (self.h.onMessage) self.h.onMessage(m, 'fast');
+          } catch (e) {}
+        };
+
+        ws.onerror = function () {
+          self.wsOpen = false;
+        };
+
+        ws.onclose = function () {
+          self.wsOpen = false;
+        };
+      }
+    } catch (e) {
+      this.wsOpen = false;
+    }
+
+    // 2. High-Frequency HTTP Polling Fallback (ensures reliability even if WebSocket is filtered)
     this.pollInterval = setInterval(function () {
       if (self.closed) return;
+      // If WebSocket is actively streaming, keep polling minimal
+      if (self.wsOpen && Math.random() > 0.08) return;
+
       fetch(getApiUrl('/api/match/relay?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role)))
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res && res.ok && Array.isArray(res.messages)) {
             res.messages.forEach(function (msg) {
-              var m = msg.data || msg;
+              var m = msg.packet || msg;
+              if (!m.k && msg.type) {
+                m = { k: msg.type, i: msg.data, s: msg.data, l: msg.data };
+              }
               if (self.h.onMessage) self.h.onMessage(m, 'fast');
             });
           }
         }).catch(function () {});
-    }, 50); // 20Hz polling
+    }, 40); // 25Hz polling fallback
   }
 
   RelayLink.prototype.sendCtl = function (m) {
     if (this.closed) return;
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      try {
+        this.ws.send(JSON.stringify(m));
+        return;
+      } catch (e) {}
+    }
     fetch(getApiUrl('/api/match/relay'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -5281,19 +5333,24 @@
     this.closed = true;
     this.open = false;
     if (this.pollInterval) clearInterval(this.pollInterval);
+    if (this.ws) {
+      try { this.ws.close(); } catch (e) {}
+    }
     if (this.h.onClose) this.h.onClose('local');
   };
 
   // Helper to establish WebRTC or Resilient Server Relay Session between two players
-  function startWebRTCSession(app, role, roomCode, myName, oppName, mode, onConnect, onError) {
+  function startWebRTCSession(app, role, roomCode, myName, oppName, modeOrOpts, onConnect, onError) {
     if (typeof window.require !== 'function') {
       onError('Module loader unavailable');
       return;
     }
     window.require(['net/link', 'net/session'], function (linkMod, sessionMod) {
       try {
-        var seed = (Math.random() * 1e9) | 0;
-        var minutes = 2;
+        var mode = typeof modeOrOpts === 'object' ? (modeOrOpts.mode || 'footy') : (modeOrOpts || 'footy');
+        var minutes = typeof modeOrOpts === 'object' ? (modeOrOpts.minutes || 2) : 2;
+        var seed = typeof modeOrOpts === 'object' ? (modeOrOpts.seed || ((Math.random() * 1e9) | 0)) : ((Math.random() * 1e9) | 0);
+        var arenaId = typeof modeOrOpts === 'object' ? (modeOrOpts.arenaId || null) : null;
         var isStarted = false;
         var relayFallbackTimer = null;
 
@@ -5302,7 +5359,7 @@
           isStarted = true;
           if (relayFallbackTimer) clearTimeout(relayFallbackTimer);
           var rLink = new RelayLink(roomCode, role);
-          var info = { role: role, mode: mode, minutes: minutes, seed: seed, myName: myName, oppName: oppName, matchId: roomCode };
+          var info = { role: role, mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, myName: myName, oppName: oppName, matchId: roomCode };
           var session = new sessionMod.OnlineSession(rLink, info);
           onConnect(session);
         }
@@ -5317,7 +5374,7 @@
           return;
         }
 
-        // If WebRTC negotiation doesn't complete within 3.5 seconds, use RelayLink smoothly
+        // If WebRTC negotiation doesn't complete within 2.5 seconds, use RelayLink smoothly
         relayFallbackTimer = setTimeout(function () {
           if (!isStarted) {
             console.log('WebRTC negotiation timeout, falling back to Server Relay Link');
@@ -5326,14 +5383,14 @@
             }
             startWithRelay();
           }
-        }, 3500);
+        }, 2500);
 
         link.h.onClose = function () {
           if (!isStarted) startWithRelay();
         };
 
         if (role === 'host') {
-          link.createOffer({ mode: mode, minutes: minutes, name: myName }).then(function (offerStr) {
+          link.createOffer({ mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, name: myName }).then(function (offerStr) {
             return fetch(getApiUrl('/api/room/signal'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -5359,11 +5416,11 @@
                           if (relayFallbackTimer) clearTimeout(relayFallbackTimer);
                           link.h.onMessage = function (m) {
                             if (m.k === 'ready') {
-                              var info = { role: 'host', mode: mode, minutes: minutes, seed: seed, myName: myName, oppName: oppName, matchId: roomCode };
+                              var info = { role: 'host', mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, myName: myName, oppName: oppName, matchId: roomCode };
                               onConnect(new sessionMod.OnlineSession(link, info));
                             }
                           };
-                          link.sendCtl({ k: 'start', mode: mode, minutes: minutes, seed: seed, host: myName, guest: oppName });
+                          link.sendCtl({ k: 'start', mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, host: myName, guest: oppName });
                         };
                         if (link.open && link.h.onOpen) link.h.onOpen();
                       }).catch(function (e) {
@@ -5372,7 +5429,7 @@
                     }
                   }
                 }).catch(function () {});
-            }, 800);
+            }, 600);
           }).catch(function (e) {
             startWithRelay();
           });
@@ -5404,7 +5461,11 @@
                           link.h.onMessage = function (m) {
                             if (m.k === 'start') {
                               link.sendCtl({ k: 'ready' });
-                              var info = { role: 'guest', mode: m.mode || mode, minutes: m.minutes || 2, seed: m.seed, myName: myName, oppName: oppName, matchId: roomCode };
+                              var resolvedMode = m.mode || mode;
+                              var resolvedSeed = (m.seed !== undefined && m.seed !== null) ? m.seed : seed;
+                              var resolvedMinutes = m.minutes || minutes;
+                              var resolvedArena = m.arenaId || arenaId;
+                              var info = { role: 'guest', mode: resolvedMode, minutes: resolvedMinutes, seed: resolvedSeed, arenaId: resolvedArena, myName: myName, oppName: oppName, matchId: roomCode };
                               onConnect(new sessionMod.OnlineSession(link, info));
                             }
                           };
@@ -5419,7 +5480,7 @@
                   }
                 }
               }).catch(function () {});
-          }, 800);
+          }, 600);
         }
       } catch (e) {
         startWithRelay();
@@ -5638,7 +5699,12 @@
           clearInterval(cdInterval);
           overlay.remove();
 
-          startWebRTCSession(app, matchInfo.role, matchInfo.matchId, playerName, opp.name, curChar, function (session) {
+          startWebRTCSession(app, matchInfo.role, matchInfo.matchId, playerName, opp.name, {
+            mode: matchInfo.mode || curChar,
+            minutes: matchInfo.minutes || 2,
+            seed: matchInfo.seed,
+            arenaId: matchInfo.arenaId
+          }, function (session) {
             app.launchOnline(session);
           }, function (err) {
             showToast(tr('serverUnavailable'));
@@ -5652,12 +5718,14 @@
     document.body.appendChild(overlay);
   }
 
-  // Private Match: Create Room Modal (Cryptographically Unpredictable 6-char Code FVH-XXXX)
-  function showCreateRoomModal(app, curChar) {
+  // -------------------------------------------------------------
+  // Dedicated Pre-Match Multiplayer Lobby (Room Synchronization & Mode Selection)
+  // -------------------------------------------------------------
+  function showPrivateMatchLobby(app, roomCode, role, initialRoomData) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-back';
     var modal = document.createElement('div');
-    modal.className = 'modal fvh-matchmaking-modal';
+    modal.className = 'modal fvh-matchmaking-modal fvh-lobby-modal';
 
     var tabId = '';
     try {
@@ -5672,56 +5740,168 @@
     var playerName = (app.store.data.profile && app.store.data.profile.nickname) || ('Athlete #' + basePid.slice(-4));
     var lang = getActiveLang();
 
-    var roomCode = '';
-    var pollStatusId = null;
+    var room = initialRoomData || {
+      roomCode: roomCode,
+      mode: 'footy',
+      arenaId: 'std_classic_pitch',
+      minutes: 2,
+      seed: (Math.random() * 1e9) | 0,
+      host: { playerId: playerId, name: playerName, ready: false },
+      guest: null,
+      status: 'waiting'
+    };
+
+    var myRole = role; // 'host' or 'guest'
+    var isStarting = false;
     var isCancelled = false;
-
-    modal.innerHTML =
-      '<div class="fvh-mm-header">' +
-      '<span class="fvh-mm-badge">🔑 ' + tr('privateMatchBadge') + '</span>' +
-      '<h3>' + tr('privateMatchCreate') + '</h3>' +
-      '</div>' +
-      '<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:14px;margin:12px 0;text-align:center;">' +
-      '<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">' + tr('roomCodeTitle') + '</div>' +
-      '<div class="fvh-room-code-display" style="font-size:28px;font-weight:900;letter-spacing:4px;color:var(--accent-cyan);margin:8px 0;">...</div>' +
-      '<button class="btn small primary fvh-copy-room-btn">📋 ' + tr('copyInviteLink') + '</button>' +
-      '</div>' +
-      '<div class="fvh-mm-status" id="fvh-room-status" style="margin:12px 0;">' + tr('roomWaitingStatus') + '</div>' +
-      '<div class="actions">' +
-      '<button class="btn block fvh-btn-cancel-room">' + tr('cancelSearch') + '</button>' +
-      '</div>';
-
-    var codeEl = modal.querySelector('.fvh-room-code-display');
-    var statusEl = modal.querySelector('#fvh-room-status');
-    var copyBtn = modal.querySelector('.fvh-copy-room-btn');
+    var pollStatusId = null;
+    var countdownSec = null;
+    var lastSoundCount = null;
 
     function cleanup() {
       isCancelled = true;
       if (pollStatusId) clearInterval(pollStatusId);
-      if (roomCode) {
-        fetch(getApiUrl('/api/room/cancel'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: roomCode, hostId: playerId })
-        }).catch(function () {});
-      }
     }
 
-    fetch(getApiUrl('/api/room/create'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        hostId: playerId,
-        hostName: playerName,
-        character: curChar,
-        mode: curChar
-      })
-    }).then(function (r) { return r.json(); }).then(function (res) {
-      if (isCancelled) return;
-      if (res.ok && res.code) {
-        roomCode = res.code;
-        codeEl.textContent = roomCode;
+    function render() {
+      var isHost = myRole === 'host';
+      var hostObj = room.host || { name: 'Host', ready: false };
+      var guestObj = room.guest;
+      var curMode = room.mode || 'footy';
+      var isFooty = curMode === 'footy';
+      var myReady = isHost ? (hostObj.ready === true) : (guestObj && guestObj.ready === true);
 
+      var arenaName = isFooty ? (lang === 'ru' ? 'Классический стадион' : 'Classic Pitch') : (lang === 'ru' ? 'Городской корт (Крыша)' : 'Urban Rooftop Court');
+
+      var statusText = '';
+      var statusClass = 'fvh-lobby-status-banner';
+      if (room.status === 'countdown' && countdownSec !== null) {
+        statusText = (lang === 'ru' ? '⚡ Оба игрока готовы! Запуск матча через ' : '⚡ Both players ready! Match starting in ') + countdownSec + '...';
+        statusClass += ' highlight';
+      } else if (guestObj) {
+        statusText = (lang === 'ru' ? '⚡ Соперник в лобби. Выберите режим и подтвердите готовность' : '⚡ Opponent in lobby. Choose mode and confirm ready');
+        statusClass += ' highlight';
+      } else {
+        statusText = (lang === 'ru' ? '⏳ Ожидание подключения соперника... Скопируйте код или ссылку' : '⏳ Waiting for opponent to join... Share room code or link');
+      }
+
+      var guestNameDisplay = guestObj ? guestObj.name : (lang === 'ru' ? 'Ожидание игрока...' : 'Waiting for player...');
+      var guestReadyClass = !guestObj ? 'empty' : (guestObj.ready ? 'ready' : 'waiting');
+      var guestReadyText = !guestObj ? (lang === 'ru' ? 'ОЖИДАНИЕ' : 'WAITING') : (guestObj.ready ? (lang === 'ru' ? '✓ ГОТОВ' : '✓ READY') : (lang === 'ru' ? '⏳ НЕ ГОТОВ' : '⏳ NOT READY'));
+
+      var hostReadyClass = hostObj.ready ? 'ready' : 'waiting';
+      var hostReadyText = hostObj.ready ? (lang === 'ru' ? '✓ ГОТОВ' : '✓ READY') : (lang === 'ru' ? '⏳ НЕ ГОТОВ' : '⏳ NOT READY');
+
+      modal.innerHTML =
+        '<div class="fvh-lobby-badge-header">' +
+          '<span class="fvh-mm-badge">🏟️ ' + (lang === 'ru' ? '1v1 МУЛЬТИПЛЕЕР' : '1v1 MULTIPLAYER') + '</span>' +
+          '<div class="fvh-lobby-room-code-pill" title="Код комнаты">' +
+            '<span>🔑</span><span>' + roomCode + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="' + statusClass + '">' + statusText + '</div>' +
+        '<div class="fvh-lobby-players-grid">' +
+          // Host Card
+          '<div class="fvh-lobby-player-card' + (isHost ? ' is-you' : '') + (hostObj.ready ? ' is-ready' : '') + '">' +
+            '<div class="fvh-lobby-role-pill">' + (lang === 'ru' ? 'ХОСТ' : 'HOST') + (isHost ? ' (ВЫ)' : '') + '</div>' +
+            '<div class="fvh-lobby-player-avatar">⚽</div>' +
+            '<div class="fvh-lobby-player-name">' + hostObj.name + '</div>' +
+            '<div class="fvh-lobby-ready-pill ' + hostReadyClass + '">' + hostReadyText + '</div>' +
+          '</div>' +
+          // VS Center
+          '<div class="fvh-lobby-vs">VS</div>' +
+          // Guest Card
+          '<div class="fvh-lobby-player-card' + (!isHost ? ' is-you' : '') + (guestObj && guestObj.ready ? ' is-ready' : '') + '">' +
+            '<div class="fvh-lobby-role-pill">' + (lang === 'ru' ? 'ГОСТЬ' : 'GUEST') + (!isHost ? ' (ВЫ)' : '') + '</div>' +
+            '<div class="fvh-lobby-player-avatar">🏀</div>' +
+            '<div class="fvh-lobby-player-name">' + guestNameDisplay + '</div>' +
+            '<div class="fvh-lobby-ready-pill ' + guestReadyClass + '">' + guestReadyText + '</div>' +
+          '</div>' +
+        '</div>' +
+        // Mode Selection (FOOTY vs HOOPS)
+        '<div class="fvh-lobby-section-title">' + (lang === 'ru' ? 'РЕЖИМ СПОРТА (СИНХРОНИЗИРОВАН):' : 'SPORT MODE (SYNCHRONIZED):') + '</div>' +
+        '<div class="fvh-lobby-mode-grid">' +
+          '<button class="fvh-lobby-mode-option' + (isFooty ? ' active' : '') + '" data-mode="footy"' + (!isHost ? ' disabled style="opacity:0.9;cursor:default;"' : '') + '>' +
+            '<div class="mode-icon">⚽</div>' +
+            '<div class="mode-name">FOOTY</div>' +
+            '<div class="mode-sub">' + (lang === 'ru' ? 'Футбол 1v1' : 'Football 1v1') + '</div>' +
+          '</button>' +
+          '<button class="fvh-lobby-mode-option' + (!isFooty ? ' active' : '') + '" data-mode="hoops"' + (!isHost ? ' disabled style="opacity:0.9;cursor:default;"' : '') + '>' +
+            '<div class="mode-icon">🏀</div>' +
+            '<div class="mode-name">HOOPS</div>' +
+            '<div class="mode-sub">' + (lang === 'ru' ? 'Баскетбол 1v1' : 'Basketball 1v1') + '</div>' +
+          '</button>' +
+        '</div>' +
+        (!isHost ? '<div style="font-size:10.5px;color:#94a3b8;margin:-8px 0 10px 0;text-align:center;">' + (lang === 'ru' ? '💡 Режим спорта выбирает создатель комнаты' : '💡 Sport mode is selected by host') + '</div>' : '') +
+        // Arena Display
+        '<div class="fvh-lobby-arena-row">' +
+          '<span>🏟️ ' + (lang === 'ru' ? 'Арена' : 'Arena') + ':</span>' +
+          '<b>' + arenaName + '</b>' +
+        '</div>' +
+        // Actions
+        '<div class="fvh-lobby-actions" style="display:flex;flex-direction:column;gap:8px;">' +
+          '<button class="btn ' + (myReady ? 'fvh-btn-unready' : 'primary') + ' block fvh-btn-toggle-ready"' + (!guestObj ? ' disabled style="opacity:0.6;"' : '') + '>' +
+            (myReady ? (lang === 'ru' ? '✕ ОТМЕНИТЬ ГОТОВНОСТЬ' : '✕ CANCEL READY') : (!guestObj ? (lang === 'ru' ? '⏳ ОЖИДАНИЕ СОПЕРНИКА...' : '⏳ WAITING FOR OPPONENT...') : (lang === 'ru' ? '✓ ГОТОВ К МАТЧУ' : '✓ READY TO PLAY'))) +
+          '</button>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<button class="btn small block fvh-btn-copy-link" style="flex:1;">📋 ' + (lang === 'ru' ? 'Копировать ссылку' : 'Copy link') + '</button>' +
+            '<button class="btn small block fvh-btn-leave-lobby" style="flex:1;">✕ ' + (lang === 'ru' ? 'Покинуть лобби' : 'Leave lobby') + '</button>' +
+          '</div>' +
+        '</div>';
+
+      // Countdown Overlay
+      if (room.status === 'countdown' && countdownSec !== null && countdownSec > 0) {
+        var countOverlay = document.createElement('div');
+        countOverlay.className = 'fvh-lobby-countdown-overlay';
+        countOverlay.innerHTML =
+          '<div class="fvh-lobby-countdown-number">' + countdownSec + '</div>' +
+          '<div class="fvh-lobby-countdown-label">' + (lang === 'ru' ? 'МАТЧ НАЧИНАЕТСЯ!' : 'MATCH STARTING!') + '</div>';
+        modal.appendChild(countOverlay);
+      }
+
+      // Mode Selection Click (Host only)
+      if (isHost) {
+        modal.querySelectorAll('.fvh-lobby-mode-option').forEach(function (btn) {
+          btn.onclick = function () {
+            var targetMode = btn.getAttribute('data-mode');
+            if (targetMode === room.mode) return;
+            app.audio.play('click');
+            fetch(getApiUrl('/api/room/update'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: roomCode, mode: targetMode })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.ok && res.room) {
+                room = res.room;
+                render();
+              }
+            }).catch(function () {});
+          };
+        });
+      }
+
+      // Ready Button Click
+      var readyBtn = modal.querySelector('.fvh-btn-toggle-ready');
+      if (readyBtn && guestObj) {
+        readyBtn.onclick = function () {
+          app.audio.play('click');
+          var nextReady = !myReady;
+          fetch(getApiUrl('/api/room/ready'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: roomCode, role: myRole, ready: nextReady })
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res && res.ok && res.room) {
+              room = res.room;
+              render();
+            }
+          }).catch(function () {});
+        };
+      }
+
+      // Copy Link Button
+      var copyBtn = modal.querySelector('.fvh-btn-copy-link');
+      if (copyBtn) {
         copyBtn.onclick = function () {
           var joinLink = window.location.origin + window.location.pathname + '?room=' + roomCode;
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -5730,46 +5910,144 @@
           app.audio.play('click');
           showToast(tr('inviteLinkCopied') + ' (' + roomCode + ')');
           copyBtn.textContent = '✓ ' + (lang === 'ru' ? 'Скопировано!' : 'Copied!');
-          setTimeout(function () { copyBtn.textContent = '📋 ' + tr('copyInviteLink'); }, 1800);
+          setTimeout(function () {
+            copyBtn.textContent = '📋 ' + (lang === 'ru' ? 'Копировать ссылку' : 'Copy link');
+          }, 1800);
         };
-
-        pollStatusId = setInterval(function () {
-          if (isCancelled) return;
-          fetch(getApiUrl('/api/room/status?code=' + encodeURIComponent(roomCode)))
-            .then(function (r) { return r.json(); })
-            .then(function (st) {
-              if (st.ok && (st.status === 'ready' || st.status === 'playing') && st.guest) {
-                clearInterval(pollStatusId);
-                statusEl.style.color = '#10b981';
-                statusEl.textContent = tr('roomReadyStatus');
-                app.audio.play('claim');
-
-                startWebRTCSession(app, 'host', roomCode, playerName, st.guest.name, curChar, function (session) {
-                  overlay.remove();
-                  app.launchOnline(session);
-                }, function (err) {
-                  statusEl.textContent = tr('serverUnavailable');
-                  statusEl.style.color = '#f59e0b';
-                });
-              }
-            }).catch(function () {});
-        }, 1200);
       }
-    }).catch(function () {
-      statusEl.textContent = tr('serverUnavailable');
-      statusEl.style.color = '#f59e0b';
-    });
 
-    modal.querySelector('.fvh-btn-cancel-room').onclick = function () {
-      cleanup();
-      overlay.remove();
-    };
+      // Leave Button
+      var leaveBtn = modal.querySelector('.fvh-btn-leave-lobby');
+      if (leaveBtn) {
+        leaveBtn.onclick = function () {
+          app.audio.play('click');
+          cleanup();
+          fetch(getApiUrl('/api/room/cancel'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: roomCode, playerId: playerId })
+          }).catch(function () {});
+          overlay.remove();
+        };
+      }
+    }
 
+    render();
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+
+    // Synchronized Polling Loop
+    pollStatusId = setInterval(function () {
+      if (isCancelled || isStarting) return;
+      fetch(getApiUrl('/api/room/status?code=' + encodeURIComponent(roomCode)))
+        .then(function (r) { return r.json(); })
+        .then(function (st) {
+          if (isCancelled || isStarting) return;
+
+          if (!st || !st.ok || st.status === 'closed' || st.status === 'abandoned') {
+            cleanup();
+            overlay.remove();
+            showToast(lang === 'ru' ? 'Комната закрыта или соперник покинул лобби' : 'Room closed or opponent left');
+            return;
+          }
+
+          var prevMode = room.mode;
+          var prevGuest = room.guest ? room.guest.playerId : null;
+          var prevHostReady = room.host ? room.host.ready : false;
+          var prevGuestReady = room.guest ? room.guest.ready : false;
+          var prevStatus = room.status;
+
+          room = st.room || room;
+          countdownSec = st.countdown !== undefined ? st.countdown : null;
+
+          var newGuest = room.guest ? room.guest.playerId : null;
+          var newHostReady = room.host ? room.host.ready : false;
+          var newGuestReady = room.guest ? room.guest.ready : false;
+
+          // Sound alert when guest joins
+          if (!prevGuest && newGuest) {
+            app.audio.play('claim');
+          }
+
+          // Countdown tick audio
+          if (room.status === 'countdown' && countdownSec !== null && countdownSec > 0) {
+            if (lastSoundCount !== countdownSec) {
+              lastSoundCount = countdownSec;
+              app.audio.play('click');
+            }
+          }
+
+          // Launch match when countdown completes or playing
+          if ((room.status === 'playing' || (room.status === 'countdown' && countdownSec === 0)) && !isStarting) {
+            isStarting = true;
+            cleanup();
+            app.audio.play('whistle');
+
+            var oppName = myRole === 'host' ? ((room.guest && room.guest.name) || 'Opponent') : ((room.host && room.host.name) || 'Host');
+            var syncOpts = {
+              mode: room.mode || 'footy',
+              arenaId: room.arenaId || (room.mode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch'),
+              minutes: room.minutes || 2,
+              seed: room.seed
+            };
+
+            startWebRTCSession(app, myRole, roomCode, playerName, oppName, syncOpts, function (session) {
+              overlay.remove();
+              app.launchOnline(session);
+            }, function (err) {
+              overlay.remove();
+              showToast(tr('serverUnavailable'));
+            });
+            return;
+          }
+
+          // Re-render if state changed
+          if (prevMode !== room.mode || prevGuest !== newGuest || prevHostReady !== newHostReady || prevGuestReady !== newGuestReady || prevStatus !== room.status || countdownSec !== null) {
+            render();
+          }
+        }).catch(function () {});
+    }, 550);
   }
 
-  // Private Match: Join Room Modal (Server-side validation & connection)
+  // Private Match: Create Room Modal (Transitions seamlessly into Lobby)
+  function showCreateRoomModal(app, curChar) {
+    var tabId = '';
+    try {
+      tabId = sessionStorage.getItem('fvh_tab_id');
+      if (!tabId) {
+        tabId = Math.random().toString(36).slice(2, 6);
+        sessionStorage.setItem('fvh_tab_id', tabId);
+      }
+    } catch (e) {}
+    var basePid = app.store.data.playerId || ('PLAYER_' + Math.floor(1000 + Math.random() * 9000));
+    var playerId = basePid + (tabId ? '_' + tabId : '');
+    var playerName = (app.store.data.profile && app.store.data.profile.nickname) || ('Athlete #' + basePid.slice(-4));
+    var lang = getActiveLang();
+
+    showToast(lang === 'ru' ? 'Создание приватной арены...' : 'Creating private arena...');
+
+    fetch(getApiUrl('/api/room/create'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hostId: playerId,
+        hostName: playerName,
+        character: curChar,
+        mode: curChar,
+        arenaId: curChar === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch'
+      })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res && res.ok && res.code) {
+        showPrivateMatchLobby(app, res.code, 'host', res.room);
+      } else {
+        showToast(tr('serverUnavailable'));
+      }
+    }).catch(function () {
+      showToast(tr('serverUnavailable'));
+    });
+  }
+
+  // Private Match: Join Room Modal (Server-side validation & transitions into Lobby)
   function showJoinRoomModal(app, curChar) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-back';
@@ -5848,19 +6126,8 @@
         });
       }).then(function (res) {
         if (res.data && res.data.ok) {
-          statusEl.style.color = '#10b981';
-          statusEl.textContent = tr('roomReadyStatus');
-          app.audio.play('claim');
-
-          var hostName = (res.data.room && res.data.room.host && res.data.room.host.name) || 'Host';
-          startWebRTCSession(app, 'guest', enteredCode, playerName, hostName, curChar, function (session) {
-            overlay.remove();
-            app.launchOnline(session);
-          }, function (err) {
-            confirmBtn.disabled = false;
-            statusEl.textContent = tr('serverUnavailable');
-            statusEl.style.color = '#f59e0b';
-          });
+          overlay.remove();
+          showPrivateMatchLobby(app, enteredCode, 'guest', res.data.room);
         } else {
           confirmBtn.disabled = false;
           statusEl.style.color = '#f43f5e';
@@ -5887,6 +6154,12 @@
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
   }
+
+  window.__fvhLobby = {
+    showPrivateMatchLobby: showPrivateMatchLobby,
+    showCreateRoomModal: showCreateRoomModal,
+    showJoinRoomModal: showJoinRoomModal
+  };
 
 
   // Dedicated Full-Screen Arena Selection Page (Gallery of 10 Worlds)

@@ -14,6 +14,7 @@ let state = {
   rooms: {}, // roomCode -> { roomCode, host: { playerId, name, char }, guest: { playerId, name, char } | null, mode, minutes, status: 'waiting' | 'ready' | 'playing' | 'closed' | 'abandoned', createdAt, lastActivity }
   signals: {}, // roomId -> { host: [signals], guest: [signals] }
   relays: {}, // matchId -> { host: [packets], guest: [packets], lastHostTick, lastGuestTick }
+  wsClients: {}, // matchId -> { host: socket, guest: socket }
   completedMatches: {}, // matchId -> { matchId, host, guest, finalScore, winner, phase, outcome, stats, completedAt, matchToken, rewarded: {} }
   referrals: {}, // refCode -> { ownerId, referred: [ { playerId, registeredAt, qualified: boolean, qualifiedAt } ], claimedMilestones: [1, 3, 5, 10] }
   starsInvoices: {}, // invoiceId -> { invoiceId, productId, playerId, starsAmount, status, createdAt, paidAt, chargeId }
@@ -580,6 +581,29 @@ function readJsonBody(req, callback) {
   });
 }
 
+// Helper functions for room codes
+function generateRoomCode() {
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let code = 'FVH-';
+  const bytes = crypto.randomBytes(4);
+  for (let i = 0; i < 4; i++) {
+    code += chars[bytes[i] % chars.length];
+  }
+  return code;
+}
+
+function normalizeRoomCode(raw) {
+  if (!raw) return '';
+  let code = String(raw).trim().toUpperCase();
+  if (!code.startsWith('FVH-') && !code.startsWith('FVH')) {
+    code = 'FVH-' + code;
+  }
+  if (!code.includes('-') && code.startsWith('FVH')) {
+    code = code.slice(0, 3) + '-' + code.slice(3);
+  }
+  return code;
+}
+
 const server = http.createServer((req, res) => {
   // CORS Preflight
   if (req.method === 'OPTIONS') {
@@ -593,29 +617,6 @@ const server = http.createServer((req, res) => {
 
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
-
-  // Helper functions for room codes
-  function generateRoomCode() {
-    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    let code = 'FVH-';
-    const bytes = crypto.randomBytes(4);
-    for (let i = 0; i < 4; i++) {
-      code += chars[bytes[i] % chars.length];
-    }
-    return code;
-  }
-
-  function normalizeRoomCode(raw) {
-    if (!raw) return '';
-    let code = String(raw).trim().toUpperCase();
-    if (!code.startsWith('FVH-') && !code.startsWith('FVH')) {
-      code = 'FVH-' + code;
-    }
-    if (!code.includes('-') && code.startsWith('FVH')) {
-      code = code.slice(0, 3) + '-' + code.slice(3);
-    }
-    return code;
-  }
 
   // 0. Health check endpoint
   if (pathname === '/api/health' && req.method === 'GET') {
@@ -800,15 +801,19 @@ const server = http.createServer((req, res) => {
       const char = data.character || data.char || mode;
       const minutes = Math.max(1, Math.min(5, Number(data.minutes) || 2));
       const seed = (Math.random() * 1e9) | 0;
+      const arenaId = data.arenaId || (mode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch');
 
       state.rooms[code] = {
         roomCode: code,
-        host: { playerId, name: playerName, char },
+        host: { playerId, name: playerName, char, ready: false },
         guest: null,
         mode,
+        arenaId,
         minutes,
         seed,
         status: 'waiting',
+        countdownStart: null,
+        countdownSeconds: null,
         createdAt: Date.now(),
         lastActivity: Date.now()
       };
@@ -843,9 +848,9 @@ const server = http.createServer((req, res) => {
         });
       }
 
-      // Check Room Expiration (10 minutes)
+      // Check Room Expiration (15 minutes)
       const now = Date.now();
-      if ((now - room.createdAt) > 600000) {
+      if ((now - room.createdAt) > 900000) {
         delete state.rooms[code];
         delete state.signals[code];
         delete state.relays[code];
@@ -898,9 +903,9 @@ const server = http.createServer((req, res) => {
         });
       }
 
-      // Join room as guest and activate match session
-      room.guest = { playerId, name: playerName, char };
-      room.status = 'ready';
+      // Join room as guest in lobby
+      room.guest = { playerId, name: playerName, char, ready: false };
+      room.status = 'lobby';
       room.lastActivity = Date.now();
 
       // Register matching record so state relay, overtime and authoritative results work seamlessly
@@ -908,11 +913,12 @@ const server = http.createServer((req, res) => {
         matchId: code,
         roomId: code,
         mode: room.mode,
+        arenaId: room.arenaId,
         minutes: room.minutes,
         seed: room.seed,
         host: room.host,
         guest: room.guest,
-        status: 'playing',
+        status: 'lobby',
         createdAt: Date.now(),
         lastActivity: Date.now()
       };
@@ -928,6 +934,92 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  // 2B. Update Room Settings (Mode, Arena, Duration) - Host only
+  if (pathname === '/api/room/update' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
+      const code = normalizeRoomCode(data.code || data.roomCode);
+      const room = state.rooms[code];
+      if (!room) return sendJson(res, 404, { ok: false, error: 'room_not_found' });
+
+      // Host updates sport mode (FOOTY vs HOOPS)
+      if (data.mode === 'footy' || data.mode === 'hoops') {
+        room.mode = data.mode;
+        // Also update default arena if not explicitly passed
+        if (!data.arenaId) {
+          room.arenaId = room.mode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch';
+        }
+      }
+      if (data.arenaId) {
+        room.arenaId = String(data.arenaId);
+      }
+      if (data.minutes) {
+        room.minutes = Math.max(1, Math.min(5, Number(data.minutes) || 2));
+      }
+
+      // Reset readiness when settings change so both players explicitly re-confirm
+      if (room.host) room.host.ready = false;
+      if (room.guest) room.guest.ready = false;
+      if (room.status === 'countdown') {
+        room.status = 'lobby';
+        room.countdownStart = null;
+      }
+      room.lastActivity = Date.now();
+
+      if (state.matches[code]) {
+        state.matches[code].mode = room.mode;
+        state.matches[code].arenaId = room.arenaId;
+        state.matches[code].minutes = room.minutes;
+      }
+
+      return sendJson(res, 200, { ok: true, room });
+    });
+  }
+
+  // 2C. Toggle Player Ready State
+  if (pathname === '/api/room/ready' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
+      const code = normalizeRoomCode(data.code || data.roomCode);
+      const room = state.rooms[code];
+      if (!room) return sendJson(res, 404, { ok: false, error: 'room_not_found' });
+
+      const role = data.role === 'guest' ? 'guest' : 'host';
+      const isReady = data.ready === true;
+
+      if (room[role]) {
+        room[role].ready = isReady;
+      }
+
+      // If both Host and Guest are Ready, start 3-second synchronized countdown!
+      if (room.host && room.host.ready && room.guest && room.guest.ready) {
+        room.status = 'countdown';
+        room.countdownStart = Date.now();
+        room.countdownSeconds = 3;
+
+        state.matches[code] = {
+          matchId: code,
+          roomId: code,
+          mode: room.mode,
+          arenaId: room.arenaId,
+          minutes: room.minutes,
+          seed: room.seed,
+          host: room.host,
+          guest: room.guest,
+          status: 'playing',
+          createdAt: Date.now(),
+          lastActivity: Date.now()
+        };
+      } else if (room.status === 'countdown') {
+        room.status = 'lobby';
+        room.countdownStart = null;
+      }
+
+      room.lastActivity = Date.now();
+      return sendJson(res, 200, { ok: true, room, status: room.status });
+    });
+  }
+
   // 3. Poll Room Status
   if (pathname === '/api/room/status' && req.method === 'GET') {
     const code = normalizeRoomCode(parsedUrl.query.code || parsedUrl.query.roomCode);
@@ -935,12 +1027,26 @@ const server = http.createServer((req, res) => {
     if (!room) {
       return sendJson(res, 404, { ok: false, status: 'closed', error: 'room_not_found' });
     }
+
+    let countdown = null;
+    if (room.status === 'countdown' && room.countdownStart) {
+      const elapsed = (Date.now() - room.countdownStart) / 1000;
+      countdown = Math.max(0, Math.ceil(3 - elapsed));
+      if (countdown <= 0) {
+        room.status = 'playing';
+      }
+    }
+
     return sendJson(res, 200, {
       ok: true,
       status: room.status,
       room,
       guest: room.guest,
-      host: room.host
+      host: room.host,
+      mode: room.mode,
+      arenaId: room.arenaId,
+      seed: room.seed,
+      countdown
     });
   }
 
@@ -1025,11 +1131,16 @@ const server = http.createServer((req, res) => {
             delete state.rooms[code];
             delete state.signals[code];
             delete state.relays[code];
+            delete state.wsClients[code];
           }, 15000);
         } else {
-          // Guest left, reset to waiting
+          // Guest left, reset room to waiting and reset host readiness cleanly without soft-locking
           state.rooms[code].guest = null;
           state.rooms[code].status = 'waiting';
+          state.rooms[code].countdownStart = null;
+          if (state.rooms[code].host) {
+            state.rooms[code].host.ready = false;
+          }
         }
       }
       return sendJson(res, 200, { ok: true, success: true });
@@ -1060,16 +1171,27 @@ const server = http.createServer((req, res) => {
       if (role === 'host') relay.lastHostTick = Date.now();
       else relay.lastGuestTick = Date.now();
 
-      // Enqueue packet for target player
+      // Enqueue packet with preserved envelope
       relay[targetRole].push({
-        type: packet.type || packet.k,
-        data: packet.data || packet.s || packet.i || packet.l || packet,
+        packet: packet,
+        type: packet.k || packet.type,
+        data: packet.s || packet.i || packet.l || packet.data || packet,
         timestamp: Date.now()
       });
 
-      // Keep recent 25 packets in memory
-      if (relay[targetRole].length > 25) {
+      // Keep recent 30 packets in memory
+      if (relay[targetRole].length > 30) {
         relay[targetRole].shift();
+      }
+
+      // If peer is connected via native WebSocket relay, forward immediately
+      if (state.wsClients && state.wsClients[matchId] && state.wsClients[matchId][targetRole]) {
+        const peerWs = state.wsClients[matchId][targetRole];
+        if (peerWs && !peerWs.destroyed && peerWs.writable) {
+          try {
+            peerWs.write(makeWsTextFrame(JSON.stringify(packet)));
+          } catch (e) {}
+        }
       }
 
       return sendJson(res, 200, { ok: true, success: true });
@@ -2543,6 +2665,154 @@ const server = http.createServer((req, res) => {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('404 Not Found');
   }
+});
+
+// ==========================================
+// Native RFC6455 Real-Time WebSocket Relay
+// ==========================================
+const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+
+function makeWsTextFrame(str) {
+  const payload = Buffer.from(str, 'utf8');
+  const len = payload.length;
+  let header;
+  if (len < 126) {
+    header = Buffer.from([0x81, len]);
+  } else if (len < 65536) {
+    header = Buffer.from([0x81, 126, (len >> 8) & 0xff, len & 0xff]);
+  } else {
+    header = Buffer.alloc(10);
+    header[0] = 0x81;
+    header[1] = 127;
+    header.writeBigUInt64BE(BigInt(len), 2);
+  }
+  return Buffer.concat([header, payload]);
+}
+
+server.on('upgrade', (req, socket, head) => {
+  const parsed = url.parse(req.url, true);
+  if (parsed.pathname !== '/ws/match') {
+    socket.destroy();
+    return;
+  }
+
+  const secKey = req.headers['sec-websocket-key'];
+  if (!secKey) {
+    socket.destroy();
+    return;
+  }
+
+  const matchId = normalizeRoomCode(parsed.query.matchId || parsed.query.roomId || parsed.query.code);
+  const role = parsed.query.role === 'guest' ? 'guest' : 'host';
+  const targetRole = role === 'host' ? 'guest' : 'host';
+
+  if (!matchId) {
+    socket.destroy();
+    return;
+  }
+
+  const acceptKey = crypto.createHash('sha1').update(secKey + WS_GUID).digest('base64');
+  socket.write(
+    'HTTP/1.1 101 Switching Protocols\r\n' +
+    'Upgrade: websocket\r\n' +
+    'Connection: Upgrade\r\n' +
+    'Sec-WebSocket-Accept: ' + acceptKey + '\r\n\r\n'
+  );
+
+  if (!state.wsClients[matchId]) {
+    state.wsClients[matchId] = { host: null, guest: null };
+  }
+  state.wsClients[matchId][role] = socket;
+
+  let buffer = Buffer.alloc(0);
+
+  socket.on('data', (chunk) => {
+    buffer = Buffer.concat([buffer, chunk]);
+    while (buffer.length >= 2) {
+      const byte0 = buffer[0];
+      const byte1 = buffer[1];
+      const opcode = byte0 & 0x0f;
+      const isMasked = (byte1 & 0x80) !== 0;
+      let payloadLen = byte1 & 0x7f;
+      let offset = 2;
+
+      if (payloadLen === 126) {
+        if (buffer.length < 4) break;
+        payloadLen = buffer.readUInt16BE(2);
+        offset = 4;
+      } else if (payloadLen === 127) {
+        if (buffer.length < 10) break;
+        payloadLen = Number(buffer.readBigUInt64BE(2));
+        offset = 10;
+      }
+
+      const maskLen = isMasked ? 4 : 0;
+      const totalLen = offset + maskLen + payloadLen;
+      if (buffer.length < totalLen) break;
+
+      let payload = buffer.slice(offset + maskLen, totalLen);
+      if (isMasked) {
+        const maskKey = buffer.slice(offset, offset + 4);
+        payload = Buffer.from(payload);
+        for (let i = 0; i < payload.length; i++) {
+          payload[i] ^= maskKey[i % 4];
+        }
+      }
+
+      buffer = buffer.slice(totalLen);
+
+      // Opcode 8: close
+      if (opcode === 8) {
+        socket.end();
+        break;
+      }
+      // Opcode 9: ping -> send pong (opcode 10)
+      if (opcode === 9) {
+        const pong = Buffer.from([0x8a, 0x00]);
+        socket.write(pong);
+        continue;
+      }
+      // Opcode 1: text message
+      if (opcode === 1) {
+        const text = payload.toString('utf8');
+        try {
+          const packet = JSON.parse(text);
+          // 1. Deliver to peer WebSocket immediately
+          const peerSocket = state.wsClients[matchId] && state.wsClients[matchId][targetRole];
+          if (peerSocket && !peerSocket.destroyed && peerSocket.writable) {
+            peerSocket.write(makeWsTextFrame(text));
+          }
+          // 2. Also enqueue into HTTP relay queue for late pollers
+          if (!state.relays[matchId]) {
+            state.relays[matchId] = { host: [], guest: [], lastHostTick: Date.now(), lastGuestTick: Date.now() };
+          }
+          const relay = state.relays[matchId];
+          if (role === 'host') relay.lastHostTick = Date.now();
+          else relay.lastGuestTick = Date.now();
+          relay[targetRole].push({
+            packet: packet,
+            type: packet.k || packet.type,
+            data: packet.s || packet.i || packet.l || packet.data || packet,
+            timestamp: Date.now()
+          });
+          if (relay[targetRole].length > 30) relay[targetRole].shift();
+        } catch (e) {}
+      }
+    }
+  });
+
+  const cleanupSocket = () => {
+    if (state.wsClients[matchId] && state.wsClients[matchId][role] === socket) {
+      state.wsClients[matchId][role] = null;
+    }
+  };
+
+  socket.on('close', cleanupSocket);
+  socket.on('end', cleanupSocket);
+  socket.on('error', (err) => {
+    cleanupSocket();
+    socket.destroy();
+  });
 });
 
 server.listen(PORT, '0.0.0.0', () => {
