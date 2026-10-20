@@ -87,45 +87,48 @@ PORT=8099
 
 В `server/server.js` настроен официальный каталог товаров:
 
-| ID Товара | Название | Тип | Награда | Цена (Stars) |
+| ID Товара | Название | Тип | Награда | Валюта / Цена |
 | :--- | :--- | :--- | :--- | :--- |
-| `fvh_coins_500` | Starter Coin Pack | Валюта | 500 FvH Coin | 50 ⭐ |
-| `fvh_coins_1200` | Pro Coin Pack | Валюта | 1,200 FvH Coin | 100 ⭐ |
-| `fvh_coins_2800` | Elite Coin Pack | Валюта | 2,800 FvH Coin | 200 ⭐ |
-| `fvh_coins_6500` | Champion Pack | Валюта | 6,500 FvH Coin | 450 ⭐ |
-| `fvh_coins_15000` | Legend Vault | Валюта | 15,000 FvH Coin | 950 ⭐ |
-| `battlepass_vip_s1` | VIP Battle Pass Pass | Сезонный пропуск | Разблокировка VIP трека (30 уровней) | 250 ⭐ |
+| `battlepass_premium` | Battle Pass Season 1 VIP | Цифровой пропуск | 30 уровней VIP наград | **Только 250 ⭐ XTR** (TON строго запрещен) |
+| `pkg_coins_starter` | Starter Coin Pack | Валюта | 500 FvH Coin | 50 ⭐ XTR (или 0.3 TON) |
+| `pkg_coins_pro` | Pro Coin Pack | Валюта | 1,200 FvH Coin | 100 ⭐ XTR (или 0.6 TON) |
+| `pkg_coins_elite` | Elite Coin Pack | Валюта | 2,800 FvH Coin | 200 ⭐ XTR (или 1.2 TON) |
+| `pkg_coins_champ` | Champion Pack | Валюта | 6,500 FvH Coin | 450 ⭐ XTR (или 2.5 TON) |
+| `pkg_coins_legend` | Legend Vault | Валюта | 15,000 FvH Coin | 950 ⭐ XTR (или 5.0 TON) |
+
+> 🔒 **Правило безопасности цифровых товаров (Digital Goods Policy):**
+> Battle Pass является внутриигровым цифровым продуктом, продаваемым внутри Telegram Mini App. По официальным требованиям Telegram и политике App Store / Google Play, для Battle Pass **разрешены исключительно Telegram Stars (XTR)**.
+> Опция оплаты TON для Battle Pass полностью удалена из интерфейса, а на бэкенде запрос `/api/ton/create-payload` с `productId: 'battlepass_premium'` возвращает ошибку `400 digital_good_ton_prohibited`.
 
 ---
 
-## 5. Обработка Webhook от Telegram API
+## 5. Жизненный цикл заказа и обработка Webhook от Telegram API
 
-Для надежного зачисления покупок Telegram отправляет на бэкенд два типа запросов:
+Заказы контролируются строго бэкендом и имеют следующие серверные статусы:
+- `pending` — счет создан, ожидает оплаты в интерфейсе Telegram Stars.
+- `payment_processing` — пользователь подтвердил оплату, идет проверка `pre_checkout_query`.
+- `paid` — получено и валидировано серверное обновление `successful_payment`, VIP статус активирован.
+- `failed` — ошибка валидации суммы, валюты или несоответствие пользователя.
+- `cancelled` — пользователь закрыл окно оплаты без списания Stars.
 
 ### A. Pre-Checkout Query (`pre_checkout_query`)
-Telegram спрашивает сервер, готов ли он принять оплату за товар до списания Stars:
-```javascript
-// Ответ на pre_checkout_query (в течение 10 секунд)
-await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerPreCheckoutQuery`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    pre_checkout_query_id: update.pre_checkout_query.id,
-    ok: true
-  })
-});
-```
+Telegram запрашивает у сервера подтверждение перед списанием Stars. Сервер проверяет:
+1. Заказ существует в `state.starsInvoices` со статусом `pending`.
+2. Валюта строго равна `XTR`.
+3. Сумма в точности совпадает со стоимостью товара (`starsAmount`).
+4. При совпадении вызывает Telegram API `answerPreCheckoutQuery` с `ok: true`.
 
 ### B. Successful Payment (`successful_payment`)
-Telegram уведомляет об успешном списании Stars с аккаунта пользователя:
-```javascript
-const payment = message.successful_payment;
-const payload = JSON.parse(payment.invoice_payload);
-// payload содержит: { productId, playerId, orderId }
+Telegram отправляет вебхук об успешном платеже. Сервер выполняет:
+1. **Проверка идемпотентности:** `telegram_payment_charge_id` проверяется по словарю `processedChargeIds`. Повторные или продублированные вызовы не приводят к повторному зачислению.
+2. **Проверка валюты и суммы:** Защита от фальсификации (tampering).
+3. **Проверка пользователя:** Платеж должен принадлежать авторизованному Telegram ID.
+4. **Перевод заказа в статус `paid`** и фиксация времени `paidAt`.
+5. **Авторитетная активация:** `creditPurchasedProduct(playerId, productId, 'stars')` переводит `player.battlePass.isPremium = true`.
+6. **Запись в неизменяемый финансовый журнал** `paymentsLedger`.
 
-// Авторитетное зачисление FvH Coin в хранилище сервера
-creditAuthoritativePurchase(payload.playerId, payload.productId, payment.telegram_payment_charge_id);
-```
+### C. Клиентский опрос статуса (`POST /api/stars/check-order`)
+Кнопка «Проверить оплату» и автоматический опрос после закрытия окна Telegram Native Pay вызывают эндпоинт `/api/stars/check-order`. Данный эндпоинт является **read-only** (только для чтения): он никогда сам не меняет статус заказа и не активирует Premium. Активация происходит **только** на основе проверенного вебхука от Telegram.
 
 ---
 

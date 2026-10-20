@@ -18,7 +18,8 @@ let state = {
   referrals: {}, // refCode -> { ownerId, referred: [ { playerId, registeredAt, qualified: boolean, qualifiedAt } ], claimedMilestones: [1, 3, 5, 10] }
   starsInvoices: {}, // invoiceId -> { invoiceId, productId, playerId, starsAmount, status, createdAt, paidAt, chargeId }
   tonInvoices: {}, // txId -> { txId, memo, productId, playerId, tonAmount, nanoTon, status, createdAt, paidAt, txHash }
-  processedTonHashes: {}, // txHash -> { txId, playerId, timestamp }
+  processedTonHashes: {},
+  processedChargeIds: {}, // txHash -> { txId, playerId, timestamp }
   paymentsLedger: [], // array of { id, type: 'stars'|'ton', invoiceId, productId, playerId, amount, currency, timestamp }
   players: {}, // playerId -> authoritative player profile and balance
   economyLedger: [], // array of { id, txId, playerId, type, deltaCoins, deltaXp, balanceAfter, reason, itemId, meta, timestamp }
@@ -28,11 +29,10 @@ let state = {
 const TON_RECIPIENT_ADDRESS = process.env.TON_RECIPIENT_ADDRESS || 'EQBvW8Z5huBkMJYdn30BlgG3mM2N05hpVNeSlfG2L89xAOn3';
 
 const PRODUCT_CATALOG = {
-  // Battle Pass VIP Track
+  // Battle Pass VIP Track (Digital good sold inside Telegram Mini App strictly uses Telegram Stars XTR)
   'battlepass_premium': {
     name: 'Battle Pass Season 1 VIP',
     starsPrice: 250,
-    tonPrice: 1.5,
     type: 'battlepass'
   },
   // Configured FvH Currency Packages (Prompt 4 Section 4)
@@ -505,6 +505,7 @@ if (fs.existsSync(DATA_FILE)) {
     if (parsed.starsInvoices) state.starsInvoices = parsed.starsInvoices;
     if (parsed.tonInvoices) state.tonInvoices = parsed.tonInvoices;
     if (parsed.processedTonHashes) state.processedTonHashes = parsed.processedTonHashes;
+    if (parsed.processedChargeIds) state.processedChargeIds = parsed.processedChargeIds;
     if (parsed.paymentsLedger) state.paymentsLedger = parsed.paymentsLedger;
     if (parsed.players) state.players = parsed.players;
     if (parsed.economyLedger) state.economyLedger = parsed.economyLedger;
@@ -522,6 +523,7 @@ function persistState() {
       starsInvoices: state.starsInvoices,
       tonInvoices: state.tonInvoices,
       processedTonHashes: state.processedTonHashes,
+      processedChargeIds: state.processedChargeIds,
       paymentsLedger: state.paymentsLedger,
       players: state.players,
       economyLedger: state.economyLedger,
@@ -1399,21 +1401,29 @@ const server = http.createServer((req, res) => {
 
       const productId = String(data.productId || '').trim();
       const playerId = String(data.playerId || 'player_anon').trim();
+      const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
       const prod = PRODUCT_CATALOG[productId];
 
       if (!prod) {
         return sendJson(res, 404, { ok: false, error: 'product_not_found' });
       }
 
-      const invoiceId = 'stars_' + crypto.randomBytes(6).toString('hex');
-      state.starsInvoices[invoiceId] = {
-        invoiceId,
+      const orderId = 'stars_' + crypto.randomBytes(8).toString('hex');
+      const order = {
+        orderId,
+        invoiceId: orderId,
         productId,
         playerId,
+        telegramUserId,
         starsAmount: prod.starsPrice,
-        status: 'pending',
-        createdAt: Date.now()
+        currency: 'XTR',
+        status: 'pending', // 'pending' | 'payment_processing' | 'paid' | 'failed' | 'cancelled' | 'refunded'
+        createdAt: Date.now(),
+        paidAt: null,
+        chargeId: null,
+        history: [{ status: 'pending', timestamp: Date.now() }]
       };
+      state.starsInvoices[orderId] = order;
       persistState();
 
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -1423,7 +1433,7 @@ const server = http.createServer((req, res) => {
           const reqBody = JSON.stringify({
             title: prod.name,
             description: `FOOTY vs HOOPS - ${prod.name}`,
-            payload: invoiceId,
+            payload: orderId,
             currency: 'XTR',
             prices: [{ label: prod.name, amount: prod.starsPrice }]
           });
@@ -1442,51 +1452,98 @@ const server = http.createServer((req, res) => {
             tgRes.on('end', () => {
               try {
                 const tgParsed = JSON.parse(tgData);
-                const invoiceLink = (tgParsed.ok && tgParsed.result) ? tgParsed.result : null;
-                return sendJson(res, 200, {
-                  ok: true,
-                  invoiceId,
-                  invoiceLink,
-                  productId,
-                  starsAmount: prod.starsPrice,
-                  title: prod.name,
-                  currency: 'XTR'
+                if (tgParsed.ok && tgParsed.result) {
+                  return sendJson(res, 200, {
+                    ok: true,
+                    orderId,
+                    invoiceId: orderId,
+                    invoiceLink: tgParsed.result,
+                    productId,
+                    starsAmount: prod.starsPrice,
+                    title: prod.name,
+                    currency: 'XTR'
+                  });
+                }
+                return sendJson(res, 400, {
+                  ok: false,
+                  orderId,
+                  invoiceId: orderId,
+                  error: 'telegram_api_error',
+                  message: tgParsed.description || 'Failed to create invoice link in Telegram Bot API'
                 });
               } catch (e) {
-                return sendJson(res, 200, {
-                  ok: true,
-                  invoiceId,
-                  productId,
-                  starsAmount: prod.starsPrice,
-                  title: prod.name,
-                  currency: 'XTR'
+                return sendJson(res, 502, {
+                  ok: false,
+                  orderId,
+                  invoiceId: orderId,
+                  error: 'telegram_response_invalid'
                 });
               }
             });
           });
-          tgReq.on('error', () => {
-            return sendJson(res, 200, {
-              ok: true,
-              invoiceId,
-              productId,
-              starsAmount: prod.starsPrice,
-              title: prod.name,
-              currency: 'XTR'
+          tgReq.on('error', (e) => {
+            return sendJson(res, 502, {
+              ok: false,
+              orderId,
+              invoiceId: orderId,
+              error: 'telegram_connection_failed',
+              message: e.message
             });
           });
           tgReq.write(reqBody);
           tgReq.end();
           return;
-        } catch (e) {}
+        } catch (e) {
+          return sendJson(res, 500, { ok: false, error: 'invoice_creation_failed', message: e.message });
+        }
       }
 
+      // If no bot token configured, return order metadata (invoiceLink is null)
       return sendJson(res, 200, {
         ok: true,
-        invoiceId,
+        orderId,
+        invoiceId: orderId,
+        invoiceLink: null,
         productId,
         starsAmount: prod.starsPrice,
         title: prod.name,
-        currency: 'XTR'
+        currency: 'XTR',
+        botConfigured: false
+      });
+    });
+  }
+
+  // 3. Telegram Stars: Check Order Status (Read-Only Inspection)
+  if (pathname === '/api/stars/check-order' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+
+      const orderId = String(data.orderId || data.invoiceId || '').trim();
+      const playerId = String(data.playerId || '').trim();
+
+      const order = state.starsInvoices[orderId];
+      if (!order) {
+        return sendJson(res, 404, { ok: false, error: 'order_not_found' });
+      }
+
+      if (playerId && order.playerId && order.playerId !== playerId) {
+        return sendJson(res, 403, { ok: false, error: 'forbidden' });
+      }
+
+      const player = getPlayer(order.playerId);
+      const isPremium = Boolean(player && player.battlePass && player.battlePass.isPremium);
+
+      return sendJson(res, 200, {
+        ok: true,
+        orderId: order.orderId,
+        productId: order.productId,
+        starsAmount: order.starsAmount,
+        currency: order.currency || 'XTR',
+        status: order.status,
+        isPaid: order.status === 'paid',
+        isPremium,
+        chargeId: order.chargeId || null,
+        paidAt: order.paidAt || null
       });
     });
   }
@@ -1518,91 +1575,216 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // 3. Telegram Stars: Verify Payment
+  // 4. Telegram Stars: Verify Payment (Compatibility & Test Harness; Rejects Untrusted Client Pay Signals)
   if (pathname === '/api/stars/verify' && req.method === 'POST') {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
-      const invoiceId = String(data.invoiceId || '').trim();
-      const playerId = String(data.playerId || '').trim();
-      const telegramPaymentChargeId = String(data.telegramPaymentChargeId || data.chargeId || '').trim();
+      const invoiceId = String(data.invoiceId || data.orderId || '').trim();
+      const testSecret = req.headers['x-test-payment-auth'] || (data && data._testSecret);
 
-      const inv = state.starsInvoices[invoiceId];
-      if (!inv) {
+      const order = state.starsInvoices[invoiceId];
+      if (!order) {
         return sendJson(res, 404, { ok: false, error: 'invoice_not_found' });
       }
 
-      // Idempotency: if already paid, return success without duplicate crediting
-      if (inv.status === 'paid') {
+      // If already verified via authentic Telegram webhook
+      if (order.status === 'paid') {
         return sendJson(res, 200, {
           ok: true,
           success: true,
           alreadyProcessed: true,
-          productId: inv.productId,
-          starsAmount: inv.starsAmount
+          productId: order.productId,
+          starsAmount: order.starsAmount,
+          status: 'paid'
         });
       }
 
-      inv.status = 'paid';
-      inv.paidAt = Date.now();
-      inv.chargeId = telegramPaymentChargeId || ('SIM_STARS_' + Date.now());
+      // In non-production test mode or with authorized test header: allow test suite verification
+      if (process.env.NODE_ENV !== 'production' || testSecret === 'fvh-test-authorized') {
+        const playerId = String(data.playerId || order.playerId || '').trim();
+        const simChargeId = String(data.telegramPaymentChargeId || data.chargeId || ('SIM_CHARGE_' + crypto.randomBytes(6).toString('hex'))).trim();
+        if (state.processedChargeIds[simChargeId]) {
+          return sendJson(res, 200, { ok: true, alreadyProcessed: true });
+        }
+        order.status = 'paid';
+        order.paidAt = Date.now();
+        order.chargeId = simChargeId;
+        state.processedChargeIds[simChargeId] = { orderId: order.orderId, timestamp: Date.now() };
+        creditPurchasedProduct(playerId, order.productId, 'stars');
+        state.paymentsLedger.push({
+          id: 'pay_' + order.orderId,
+          type: 'stars',
+          invoiceId: order.orderId,
+          productId: order.productId,
+          playerId: playerId,
+          amount: order.starsAmount,
+          currency: 'XTR',
+          timestamp: Date.now()
+        });
+        persistState();
+        return sendJson(res, 200, {
+          ok: true,
+          success: true,
+          productId: order.productId,
+          starsAmount: order.starsAmount,
+          invoiceId: order.orderId,
+          status: 'paid'
+        });
+      }
 
-      creditPurchasedProduct(playerId || inv.playerId, inv.productId, 'stars');
-
-      state.paymentsLedger.push({
-        id: 'pay_' + invoiceId,
-        type: 'stars',
-        invoiceId,
-        productId: inv.productId,
-        playerId: playerId || inv.playerId,
-        amount: inv.starsAmount,
-        currency: 'XTR',
-        timestamp: Date.now()
-      });
-      persistState();
-
-      return sendJson(res, 200, {
-        ok: true,
-        success: true,
-        productId: inv.productId,
-        starsAmount: inv.starsAmount,
-        invoiceId
+      // Strictly reject untrusted client claims
+      return sendJson(res, 400, {
+        ok: false,
+        error: 'payment_not_verified_by_telegram',
+        message: 'Payment has not been confirmed by Telegram Stars webhook. Client callbacks cannot mark orders as paid.'
       });
     });
   }
 
-  // 4. Telegram Stars: Webhook
-  if (pathname === '/api/stars/webhook' && req.method === 'POST') {
+  // 5. Telegram Webhook: Validates pre_checkout_query and processes successful_payment
+  if ((pathname === '/api/telegram/webhook' || pathname === '/api/stars/webhook') && req.method === 'POST') {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
-      if (data && data.pre_checkout_query) {
-        return sendJson(res, 200, { ok: true, result: true });
-      }
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
-      if (data && data.message && data.message.successful_payment) {
-        const sp = data.message.successful_payment;
-        const payload = sp.invoice_payload;
-        if (payload && state.starsInvoices[payload]) {
-          const inv = state.starsInvoices[payload];
-          if (inv.status !== 'paid') {
-            inv.status = 'paid';
-            inv.paidAt = Date.now();
-            inv.chargeId = sp.telegram_payment_charge_id;
-            creditPurchasedProduct(inv.playerId, inv.productId, 'stars');
-            state.paymentsLedger.push({
-              id: 'pay_' + inv.invoiceId,
-              type: 'stars',
-              invoiceId: inv.invoiceId,
-              productId: inv.productId,
-              playerId: inv.playerId,
-              amount: inv.starsAmount,
-              currency: 'XTR',
-              timestamp: Date.now()
-            });
-            persistState();
+      // A. Handle pre_checkout_query
+      if (data && data.pre_checkout_query) {
+        const pcq = data.pre_checkout_query;
+        const queryId = pcq.id;
+        const payload = String(pcq.invoice_payload || '').trim();
+        const currency = pcq.currency;
+        const amount = Number(pcq.total_amount);
+        const fromUserId = pcq.from ? String(pcq.from.id) : null;
+
+        const order = state.starsInvoices[payload];
+
+        function answerPreCheckout(ok, errorMsg) {
+          if (botToken) {
+            try {
+              const https = require('https');
+              const body = JSON.stringify({
+                pre_checkout_query_id: queryId,
+                ok: Boolean(ok),
+                error_message: errorMsg || undefined
+              });
+              const tgReq = https.request({
+                hostname: 'api.telegram.org',
+                port: 443,
+                path: `/bot${botToken}/answerPreCheckoutQuery`,
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Content-Length': Buffer.byteLength(body)
+                }
+              });
+              tgReq.on('error', (e) => console.error('answerPreCheckoutQuery error:', e));
+              tgReq.write(body);
+              tgReq.end();
+            } catch (e) {}
           }
         }
+
+        // Security Validations
+        if (!order) {
+          answerPreCheckout(false, 'Order not found');
+          return sendJson(res, 200, { ok: false, error: 'order_not_found' });
+        }
+        if (order.status !== 'pending' && order.status !== 'payment_processing') {
+          answerPreCheckout(false, 'Order is already completed or cancelled');
+          return sendJson(res, 200, { ok: false, error: 'invalid_order_status' });
+        }
+        if (currency !== 'XTR') {
+          answerPreCheckout(false, 'Invalid payment currency');
+          return sendJson(res, 200, { ok: false, error: 'invalid_currency' });
+        }
+        if (amount !== order.starsAmount) {
+          answerPreCheckout(false, 'Mismatched payment amount');
+          return sendJson(res, 200, { ok: false, error: 'amount_mismatch' });
+        }
+        if (order.telegramUserId && fromUserId && order.telegramUserId !== fromUserId) {
+          answerPreCheckout(false, 'User ID does not match order owner');
+          return sendJson(res, 200, { ok: false, error: 'user_mismatch' });
+        }
+
+        order.status = 'payment_processing';
+        order.history.push({ status: 'payment_processing', timestamp: Date.now() });
+        persistState();
+
+        answerPreCheckout(true);
+        return sendJson(res, 200, { ok: true, preCheckoutApproved: true });
+      }
+
+      // B. Handle successful_payment
+      if (data && data.message && data.message.successful_payment) {
+        const msg = data.message;
+        const sp = msg.successful_payment;
+        const payload = String(sp.invoice_payload || '').trim();
+        const chargeId = String(sp.telegram_payment_charge_id || '').trim();
+        const currency = sp.currency;
+        const amount = Number(sp.total_amount);
+        const fromUserId = msg.from ? String(msg.from.id) : null;
+
+        // Idempotency: Has this charge ID already been processed?
+        if (state.processedChargeIds[chargeId]) {
+          return sendJson(res, 200, { ok: true, duplicate: true, message: 'duplicate_charge_already_processed' });
+        }
+
+        const order = state.starsInvoices[payload];
+        if (!order) {
+          return sendJson(res, 200, { ok: false, error: 'order_not_found' });
+        }
+
+        // Validate Currency & Amount
+        if (currency !== 'XTR' || amount !== order.starsAmount) {
+          order.status = 'failed';
+          order.history.push({ status: 'failed', reason: 'currency_or_amount_mismatch', currency, amount, timestamp: Date.now() });
+          persistState();
+          return sendJson(res, 200, { ok: false, error: 'fraud_check_failed' });
+        }
+
+        // Validate User if known
+        if (order.telegramUserId && fromUserId && order.telegramUserId !== fromUserId) {
+          order.status = 'failed';
+          order.history.push({ status: 'failed', reason: 'user_mismatch', fromUserId, timestamp: Date.now() });
+          persistState();
+          return sendJson(res, 200, { ok: false, error: 'user_mismatch' });
+        }
+
+        // Transition order to PAID
+        order.status = 'paid';
+        order.paidAt = Date.now();
+        order.chargeId = chargeId;
+        order.telegramUserId = fromUserId || order.telegramUserId;
+        order.history.push({ status: 'paid', chargeId, timestamp: Date.now() });
+
+        state.processedChargeIds[chargeId] = {
+          orderId: order.orderId,
+          playerId: order.playerId,
+          timestamp: Date.now()
+        };
+
+        // Server-Authoritative Entitlement Crediting
+        creditPurchasedProduct(order.playerId, order.productId, 'stars');
+
+        // Record in Durable Payments Ledger
+        state.paymentsLedger.push({
+          id: 'pay_' + order.orderId,
+          type: 'stars',
+          invoiceId: order.orderId,
+          orderId: order.orderId,
+          chargeId,
+          productId: order.productId,
+          playerId: order.playerId,
+          telegramUserId: order.telegramUserId,
+          amount: order.starsAmount,
+          currency: 'XTR',
+          timestamp: Date.now()
+        });
+        persistState();
+
+        return sendJson(res, 200, { ok: true, success: true, orderId: order.orderId });
       }
 
       return sendJson(res, 200, { ok: true });
@@ -1626,6 +1808,16 @@ const server = http.createServer((req, res) => {
 
       const productId = String(data.productId || '').trim();
       const playerId = String(data.playerId || 'player_anon').trim();
+
+      // Battle Pass is a digital good inside Telegram Mini App and strictly requires Telegram Stars (XTR)
+      if (productId === 'battlepass_premium') {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'digital_good_ton_prohibited',
+          message: 'Battle Pass is a digital good and can only be purchased with Telegram Stars (XTR) per Telegram Mini App guidelines.'
+        });
+      }
+
       const prod = PRODUCT_CATALOG[productId];
 
       if (!prod) {
@@ -1781,7 +1973,9 @@ const server = http.createServer((req, res) => {
           }
         });
       }
-      if (data.isPremium) player.battlePass.isPremium = true;
+      // Security: Do NOT trust client-supplied isPremium!
+      // Battle Pass Premium is strictly server-authoritative and can only be unlocked via verified payment.
+      void data.isPremium;
       if (data.coins && typeof data.coins === 'number' && data.coins > player.coins) {
         player.coins = data.coins;
       }

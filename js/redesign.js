@@ -2160,6 +2160,7 @@
     var starsPrice = options.starsPrice || 250;
     var tonPrice = options.tonPrice || 1.5;
     var coinsPrice = options.coinsPrice || 0;
+    var hideTon = options.hideTon || (productId === 'battlepass_premium');
     var onPurchased = options.onPurchased;
 
     var overlay = document.createElement('div');
@@ -2187,12 +2188,14 @@
         '    </span>' +
         '    <span style="font-weight:900;font-size:14px;color:#fef08a;">' + starsPrice + ' ⭐</span>' +
         '  </button>' +
-        '  <button class="btn fvh-pay-opt-ton" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(135deg,rgba(0,152,234,0.15) 0%,rgba(0,102,204,0.15) 100%);border:1.5px solid rgba(0,152,234,0.4);border-radius:12px;cursor:pointer;">' +
-        '    <span style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:#38bdf8;">' +
-        '      <span style="font-size:22px;">💎</span> ' + tr('payWithTonCrypto') +
-        '    </span>' +
-        '    <span style="font-weight:900;font-size:14px;color:#7dd3fc;">' + tonPrice + ' 💎 TON</span>' +
-        '  </button>' +
+        (!hideTon ?
+          '  <button class="btn fvh-pay-opt-ton" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(135deg,rgba(0,152,234,0.15) 0%,rgba(0,102,204,0.15) 100%);border:1.5px solid rgba(0,152,234,0.4);border-radius:12px;cursor:pointer;">' +
+          '    <span style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:#38bdf8;">' +
+          '      <span style="font-size:22px;">💎</span> ' + tr('payWithTonCrypto') +
+          '    </span>' +
+          '    <span style="font-weight:900;font-size:14px;color:#7dd3fc;">' + tonPrice + ' 💎 TON</span>' +
+          '  </button>' : ''
+        ) +
         (coinsPrice > 0 ?
           '  <button class="btn fvh-pay-opt-coins" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;">' +
           '    <span style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--text-pure);">' +
@@ -2211,7 +2214,7 @@
       if (starsBtn) starsBtn.onclick = function () { startStarsPayment(); };
 
       var tonBtn = modal.querySelector('.fvh-pay-opt-ton');
-      if (tonBtn) tonBtn.onclick = function () { startTonPayment(); };
+      if (tonBtn && !hideTon) tonBtn.onclick = function () { startTonPayment(); };
 
       var coinsBtn = modal.querySelector('.fvh-pay-opt-coins');
       if (coinsBtn) coinsBtn.onclick = function () { processCoinsPayment(); };
@@ -2242,28 +2245,20 @@
         var isRu = getActiveLang() === 'ru';
         throw new Error(
           isRu
-            ? 'Сервер игры недоступен (Connection Refused: ' + targetUrl + '). Убедитесь, что запущен backend-сервер командой: node server/server.js'
-            : 'Game server is unreachable (Connection Refused: ' + targetUrl + '). Ensure backend server is running: node server/server.js'
+            ? 'Сервер игры недоступен (Connection Refused: ' + targetUrl + ').'
+            : 'Game server is unreachable (Connection Refused: ' + targetUrl + ').'
         );
       })
       .then(function (res) {
         var contentType = (res.headers && res.headers.get('content-type')) || '';
         if (!contentType.includes('application/json')) {
           return res.text().then(function (rawText) {
-            var isRu = getActiveLang() === 'ru';
-            var preview = rawText.trim().slice(0, 60).replace(/<[^>]+>/g, '');
-            throw new Error(
-              isRu
-                ? 'Сервер вернул ответ без JSON (HTTP ' + res.status + ' ' + (res.statusText || '') + '). ' +
-                  (preview ? 'Ответ: ' + preview : 'Возможно, игра запущена через статический сервер без API бэкенда на ' + targetUrl)
-                : 'Server returned non-JSON response (HTTP ' + res.status + ' ' + (res.statusText || '') + '). ' +
-                  (preview ? 'Response: ' + preview : 'Game opened without active API backend at ' + targetUrl)
-            );
+            throw new Error('HTTP ' + res.status + ': Server returned non-JSON response.');
           });
         }
         return res.json().then(function (data) {
           if (!res.ok) {
-            throw new Error((data && (data.error || data.message)) || ('HTTP ' + res.status));
+            throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
           }
           return data;
         });
@@ -2308,52 +2303,61 @@
         '<div class="fvh-spinner" style="width:32px;height:32px;border:3px solid rgba(255,200,0,0.2);border-top-color:#fde047;border-radius:50%;margin:0 auto 16px;animation:fvhSpin 0.8s linear infinite;"></div>';
 
       var playerId = (app.store.data && app.store.data.playerId) || 'player_' + Math.random().toString(36).slice(2, 8);
+      var tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+      var telegramUserId = tgUser ? tgUser.id : null;
 
-      safeApiRequest('/api/stars/create-invoice', { productId: productId, playerId: playerId })
+      safeApiRequest('/api/stars/create-invoice', {
+        productId: productId,
+        playerId: playerId,
+        telegramUserId: telegramUserId
+      })
       .then(function (invData) {
-        if (!invData.ok || !invData.invoiceId) {
-          throw new Error(invData.error || 'Failed to create invoice');
+        if (!invData.ok || (!invData.orderId && !invData.invoiceId)) {
+          throw new Error(invData.message || invData.error || 'Failed to create invoice');
+        }
+
+        var orderId = invData.orderId || invData.invoiceId;
+        var invoiceLink = invData.invoiceLink;
+
+        if (!invoiceLink) {
+          throw new Error(invData.message || 'Telegram Bot Token is not configured on the server. Telegram Stars invoices cannot be created.');
         }
 
         // Native Telegram Mini App invoice support
-        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && invData.invoiceLink && window.Telegram.WebApp.openInvoice) {
-          window.Telegram.WebApp.openInvoice(invData.invoiceLink, function (status) {
-            if (status === 'paid') {
-              verifyStarsInvoice(invData.invoiceId, playerId);
+        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openInvoice) {
+          window.Telegram.WebApp.openInvoice(invoiceLink, function (status) {
+            if (status === 'paid' || status === 'pending') {
+              // Telegram client completed payment!
+              // Authoritatively verify with backend webhook before granting entitlement
+              pollOrderStatus(orderId, playerId, 0);
             } else if (status === 'cancelled') {
+              // User dismissed checkout without paying -> Keep Free status
               renderSelectionScreen();
             } else if (status === 'failed') {
-              showPaymentError(new Error('Telegram Stars payment failed'), function () { startStarsPayment(); });
+              showPaymentError(new Error('Telegram Stars payment failed or was declined.'), function () { startStarsPayment(); });
             }
           });
           return;
         }
 
-        // Direct verification for standalone / simulated testing
-        verifyStarsInvoice(invData.invoiceId, playerId);
-      })
-      .catch(function (err) {
-        showPaymentError(err, function () { startStarsPayment(); });
-      });
-    }
-
-    function verifyStarsInvoice(invoiceId, playerId) {
-      safeApiRequest('/api/stars/verify', {
-        invoiceId: invoiceId,
-        playerId: playerId,
-        chargeId: 'TG_CHARGE_' + Date.now()
-      })
-      .then(function (verData) {
-        if (!verData.ok) throw new Error(verData.error || 'Verification failed');
+        // Outside Telegram environment notice
         modal.innerHTML =
-          '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
-          '<h3 style="margin:0 0 8px;color:#fde047;">' + tr('paymentSuccess') + '</h3>' +
-          '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">' + starsPrice + ' ⭐ Stars confirmed on-chain</p>' +
-          '<button class="btn primary block fvh-pay-done">' + tr('claimAndContinue') + '</button>';
+          '<div style="font-size:36px;margin-bottom:12px;">📱</div>' +
+          '<h3 style="margin:0 0 8px;">' + (getActiveLang() === 'ru' ? 'Оплата через Telegram Stars' : 'Telegram Stars Checkout') + '</h3>' +
+          '<p style="color:var(--text-muted);font-size:13px;line-height:1.5;margin-bottom:16px;">' +
+          (getActiveLang() === 'ru'
+            ? 'Оплата Telegram Stars работает внутри Telegram. Откройте игру через бота @FootyHoopsGameBot.'
+            : 'Telegram Stars purchases must be completed inside the Telegram app via @FootyHoopsGameBot.') +
+          '</p>' +
+          '<a class="btn primary block" href="' + invoiceLink + '" target="_blank" style="margin-bottom:8px;text-decoration:none;">⭐ ' +
+          (getActiveLang() === 'ru' ? 'Оплатить в Telegram' : 'Pay in Telegram') + '</a>' +
+          '<button class="btn block fvh-check-status" style="background:rgba(255,255,255,0.08);margin-bottom:8px;">🔄 ' +
+          (getActiveLang() === 'ru' ? 'Проверить статус' : 'Check Status') + '</button>' +
+          '<button class="btn block fvh-pay-cancel" style="background:transparent;border:none;color:var(--text-muted);">' + tr('cancel') + '</button>';
 
-        modal.querySelector('.fvh-pay-done').onclick = function () {
-          overlay.remove();
-          if (onPurchased) onPurchased();
+        modal.querySelector('.fvh-pay-cancel').onclick = function () { overlay.remove(); };
+        modal.querySelector('.fvh-check-status').onclick = function () {
+          pollOrderStatus(orderId, playerId, 0);
         };
       })
       .catch(function (err) {
@@ -2361,7 +2365,77 @@
       });
     }
 
+    function pollOrderStatus(orderId, playerId, attempt) {
+      modal.innerHTML =
+        '<div style="font-size:36px;margin-bottom:12px;">⏳</div>' +
+        '<h3 style="margin:0 0 8px;">' + (getActiveLang() === 'ru' ? 'Подтверждение платежа...' : 'Verifying Payment...') + '</h3>' +
+        '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">' +
+        (getActiveLang() === 'ru' ? 'Ожидание официального подтверждения от Telegram...' : 'Waiting for official confirmation from Telegram...') +
+        '</p>' +
+        '<div class="fvh-spinner" style="width:32px;height:32px;border:3px solid rgba(255,200,0,0.2);border-top-color:#fde047;border-radius:50%;margin:0 auto 16px;animation:fvhSpin 0.8s linear infinite;"></div>';
+
+      safeApiRequest('/api/stars/check-order', { orderId: orderId, playerId: playerId })
+      .then(function (statusRes) {
+        if (statusRes.ok && statusRes.status === 'paid') {
+          // Genuinely confirmed by Telegram webhook!
+          if (productId === 'battlepass_premium') {
+            app.store.update(function (d) {
+              if (!d.battlePass) d.battlePass = { claimedFree: [], claimedPremium: [], isPremium: false };
+              d.battlePass.isPremium = true;
+              d.battlePass.premiumUnlockedAt = statusRes.paidAt || Date.now();
+            });
+          }
+          modal.innerHTML =
+            '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
+            '<h3 style="margin:0 0 8px;color:#fde047;">' + tr('paymentSuccess') + '</h3>' +
+            '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">' +
+            (getActiveLang() === 'ru'
+              ? 'Платеж на ' + (statusRes.starsAmount || 250) + ' ⭐ подтвержден Telegram. Доступ к VIP Premium открыт!'
+              : (statusRes.starsAmount || 250) + ' ⭐ confirmed by Telegram. VIP Premium Access unlocked!') +
+            '</p>' +
+            '<button class="btn primary block fvh-pay-done">' + tr('claimAndContinue') + '</button>';
+
+          modal.querySelector('.fvh-pay-done').onclick = function () {
+            overlay.remove();
+            if (onPurchased) onPurchased();
+          };
+          return;
+        }
+
+        if (attempt < 5) {
+          setTimeout(function () {
+            pollOrderStatus(orderId, playerId, attempt + 1);
+          }, 1500);
+          return;
+        }
+
+        // After 5 attempts, still pending / processing
+        modal.innerHTML =
+          '<div style="font-size:36px;margin-bottom:12px;">⌛</div>' +
+          '<h3 style="margin:0 0 8px;">' + (getActiveLang() === 'ru' ? 'Платеж в обработке' : 'Payment Processing') + '</h3>' +
+          '<p style="color:var(--text-muted);font-size:12px;line-height:1.4;margin-bottom:16px;">' +
+          (getActiveLang() === 'ru'
+            ? 'Telegram еще обрабатывает платеж. Доступ откроется автоматически, как только сервер получит подтверждение.'
+            : 'Telegram is processing the transaction. Access will unlock once confirmed.') +
+          '</p>' +
+          '<button class="btn primary block fvh-check-again" style="margin-bottom:8px;font-weight:800;">🔄 ' +
+          (getActiveLang() === 'ru' ? 'Проверить статус' : 'Check Status') + '</button>' +
+          '<button class="btn block fvh-pay-close" style="background:transparent;border:none;color:var(--text-muted);">' + tr('cancel') + '</button>';
+
+        modal.querySelector('.fvh-check-again').onclick = function () {
+          pollOrderStatus(orderId, playerId, 0);
+        };
+        modal.querySelector('.fvh-pay-close').onclick = function () {
+          overlay.remove();
+        };
+      })
+      .catch(function (err) {
+        showPaymentError(err, function () { pollOrderStatus(orderId, playerId, 0); });
+      });
+    }
+
     function startTonPayment() {
+      // Fallback for non-digital items if any
       modal.innerHTML =
         '<div style="font-size:36px;margin-bottom:12px;">💎</div>' +
         '<h3 style="margin:0 0 8px;">' + tr('paymentProcessing') + '</h3>' +
@@ -2391,7 +2465,6 @@
           '  <div style="font-family:monospace;font-size:13px;font-weight:900;color:#fde047;margin:4px 0 6px;">' + payload.memo + '</div>' +
           '  <button class="btn small fvh-copy-memo" style="font-size:10px;padding:3px 8px;">' + tr('copyMemo') + '</button>' +
           '</div>' +
-          '<button class="btn primary block fvh-verify-ton" style="margin-bottom:8px;font-weight:800;">' + tr('checkTonPayment') + '</button>' +
           '<button class="btn block fvh-cancel-ton" style="background:transparent;border:none;color:var(--text-muted);font-size:12px;">' + tr('cancel') + '</button>';
 
         var copyAddrBtn = modal.querySelector('.fvh-copy-addr');
@@ -2408,36 +2481,6 @@
 
         var cancelBtn = modal.querySelector('.fvh-cancel-ton');
         if (cancelBtn) cancelBtn.onclick = function () { overlay.remove(); };
-
-        var verifyBtn = modal.querySelector('.fvh-verify-ton');
-        if (verifyBtn) verifyBtn.onclick = function () {
-          verifyBtn.disabled = true;
-          verifyBtn.textContent = '⏳ ' + tr('paymentProcessing');
-
-          safeApiRequest('/api/ton/verify', {
-            txId: payload.txId,
-            playerId: playerId,
-            txHash: 'TON_TX_' + payload.txId + '_' + Date.now()
-          })
-          .then(function (verRes) {
-            if (!verRes.ok) throw new Error(verRes.error || 'Verification failed');
-            modal.innerHTML =
-              '<div style="font-size:48px;margin-bottom:12px;">💎</div>' +
-              '<h3 style="margin:0 0 8px;color:#38bdf8;">' + tr('paymentSuccess') + '</h3>' +
-              '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">' + tonPrice + ' TON confirmed on-chain</p>' +
-              '<button class="btn primary block fvh-pay-done">' + tr('claimAndContinue') + '</button>';
-
-            modal.querySelector('.fvh-pay-done').onclick = function () {
-              overlay.remove();
-              if (onPurchased) onPurchased();
-            };
-          })
-          .catch(function (err) {
-            verifyBtn.disabled = false;
-            verifyBtn.textContent = tr('checkTonPayment');
-            showPaymentError(err, function () { startTonPayment(); });
-          });
-        };
       })
       .catch(function (err) {
         showPaymentError(err, function () { startTonPayment(); });

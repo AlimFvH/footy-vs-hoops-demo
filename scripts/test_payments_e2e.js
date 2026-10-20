@@ -14,8 +14,8 @@ async function runPaymentTests() {
   assert(catData.catalog.battlepass_premium, 'Catalog must contain battlepass_premium');
   assert(catData.catalog.bundle_footy_starter, 'Catalog must contain bundle_footy_starter');
   assert.strictEqual(catData.catalog.battlepass_premium.starsPrice, 250);
-  assert.strictEqual(catData.catalog.battlepass_premium.tonPrice, 1.5);
-  console.log('  [PASS] Catalog verified with 8 products.\n');
+  assert.strictEqual(catData.catalog.battlepass_premium.tonPrice, undefined, 'Battle Pass must NOT have a TON price (digital goods policy)');
+  console.log('  [PASS] Catalog verified (Battle Pass strictly configured for Telegram Stars XTR only).\n');
 
   // 2. Telegram Stars: Create Invoice
   console.log('2. Testing /api/stars/create-invoice...');
@@ -80,6 +80,22 @@ async function runPaymentTests() {
   assert.strictEqual(tonPayload.tonAmount, 0.9);
   assert.strictEqual(tonPayload.nanoTon, 900000000);
   console.log(`  [PASS] TON payload created with memo ${tonPayload.memo} for ${tonPayload.tonAmount} TON.\n`);
+
+  // 5a. TON: Prohibit Battle Pass Digital Good
+  console.log('5a. Testing TON rejection for Battle Pass digital good...');
+  const tonBpRes = await fetch(`${BASE_URL}/api/ton/create-payload`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: 'battlepass_premium',
+      playerId: testPlayerId
+    })
+  });
+  const tonBp = await tonBpRes.json();
+  assert.strictEqual(tonBpRes.status, 400);
+  assert.strictEqual(tonBp.ok, false);
+  assert.strictEqual(tonBp.error, 'digital_good_ton_prohibited');
+  console.log('  [PASS] Battle Pass TON checkout strictly rejected (400 digital_good_ton_prohibited).\n');
 
   // 6. TON: Verify Payment
   console.log('6. Testing /api/ton/verify...');
