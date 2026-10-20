@@ -4390,7 +4390,7 @@
         '<span class="fvh-prime-tag">🌐 ' + tr('socialMissionTitle') + '</span>' +
         '<h2 style="margin:4px 0 2px;font-size:18px;">' + tr('socialMissionSubtitle') + '</h2>' +
         '</div>' +
-        '<div class="fvh-prime-reward">🎁 1,950 🪙</div>' +
+        '<div class="fvh-prime-reward">🎁 1,950 ' + getFvhCoinSvg('inline') + '</div>' +
         '</div>' +
         '<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">' +
         (lang === 'ru' ? '✓ Подпишитесь на официальные каналы проекта. Награда выдаётся после подтверждения перехода.' : '✓ Follow official project channels. Rewards unlocked upon verified visit.') +
@@ -4504,7 +4504,7 @@
           btn.textContent = '✓ ' + tr('completed');
         } else if (isReady) {
           btn.className = 'btn small primary';
-          btn.textContent = tr('claim') + ' 🪙 ' + task.coins;
+          btn.innerHTML = tr('claim') + ' ' + getFvhCoinSvg('inline') + ' ' + task.coins;
           btn.onclick = function () {
             app.store.update(function (d) {
               if (!d.equipped) d.equipped = {};
@@ -4807,6 +4807,7 @@
       tonPrice: 0.3,
       icon: '🪙',
       badge: 'STARTER',
+      type: 'coins',
       desc: '500 FvH Coin for quick cosmetics & early match boosts.'
     },
     {
@@ -5472,7 +5473,7 @@
       } else {
         var buyBtn = document.createElement('button');
         buyBtn.className = 'btn primary block';
-        buyBtn.textContent = tr('buyFor') + ' 🪙 ' + item.price;
+        buyBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price;
         buyBtn.onclick = function () {
           if (isPurchasing) return;
           var coins = app.store.data.coins || 0;
@@ -5907,7 +5908,7 @@
         noticeBox.style.marginBottom = '12px';
         noticeBox.innerHTML =
           '<div style="display:flex;align-items:center;gap:12px;">' +
-          '  <span style="font-size:32px;">🪙</span>' +
+          '  <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getFvhCoinSvg('thumb') + '</div>' +
           '  <div>' +
           '    <div style="font-weight:900;font-size:14px;color:#fde047;letter-spacing:0.5px;">' + tr('catCoins') + ' · ' + tr('storeSub') + '</div>' +
           '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + tr('coinPackageNotice') + '</div>' +
@@ -5929,7 +5930,7 @@
             '  <span style="font-size:11px;font-weight:900;color:#fde047;display:inline-flex;align-items:center;gap:3px;">' + getFvhCoinSvg('inline') + ' +' + pkg.coinsAmount.toLocaleString() + '</span>' +
             '</div>' +
             '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
-            '  <div style="font-size:42px;">' + pkg.icon + '</div>' +
+            '  <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(pkg.id, 'thumb') + '</div>' +
             '</div>' +
             '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + tr(pkg.id === 'pkg_coins_starter' ? 'pkgStarter' : pkg.id === 'pkg_coins_pro' ? 'pkgPro' : pkg.id === 'pkg_coins_elite' ? 'pkgElite' : pkg.id === 'pkg_coins_champion' ? 'pkgChampion' : 'pkgLegend') + '</div>' +
             '<div class="fvh-card-desc" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.3;">' + pkg.desc + '</div>' +
