@@ -132,6 +132,7 @@
       catArenas: 'Arenas',
       catCelebrations: 'Celebrations',
       catPacks: 'Packs',
+      catBoosts: 'Boosts',
       coinPackageNotice: 'Official internal game sports currency. Separate from future tokens ($FOOTY / $HOOPS).',
       pkgStarter: 'Starter: 500 FvH Coin',
       pkgPro: 'Pro: 1,200 FvH Coin',
@@ -452,6 +453,7 @@
       catArenas: 'Арены',
       catCelebrations: 'Празднования',
       catPacks: 'Пакеты',
+      catBoosts: 'Бусты',
       coinPackageNotice: 'Официальная внутриигровая спортивная валюта. Полностью отделена от будущих токенов ($FOOTY / $HOOPS).',
       pkgStarter: 'Стартовый: 500 FvH Монет',
       pkgPro: 'Про: 1 200 FvH Монет',
@@ -2815,17 +2817,16 @@
     page.appendChild(body);
     container.appendChild(page);
 
-    // Auto-scroll to specific level if requested via URL param (e.g. ?page=battlepass&lvl=20)
+    // Auto-scroll to current active level or specific level from URL
     var urlParams = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : null;
     var targetLvl = urlParams ? parseInt(urlParams.get('lvl'), 10) : null;
-    if (targetLvl && targetLvl >= 1 && targetLvl <= 30) {
-      setTimeout(function () {
-        var targetCol = scrollTrack.querySelector('.fvh-bp-dual-column:nth-child(' + targetLvl + ')');
-        if (targetCol) {
-          targetCol.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
-        }
-      }, 150);
-    }
+    var activeLvl = (targetLvl && targetLvl >= 1 && targetLvl <= 30) ? targetLvl : Math.max(1, Math.min(30, (getBattlePassState(app.store).level || 1)));
+    setTimeout(function () {
+      var targetCol = scrollTrack.querySelector('.fvh-bp-dual-column:nth-child(' + activeLvl + ')');
+      if (targetCol) {
+        targetCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 150);
 
     // Persistent Unified Bottom Navigation
     container.appendChild(createSharedBottomNav('battlepass', app));
@@ -4347,7 +4348,7 @@
     // Dedicated Item Inspector & Purchase Modal
     function openItemInspector(item) {
       var overlay = document.createElement('div');
-      overlay.className = 'modal-back';
+      overlay.className = 'modal-back fvh-sheet-back';
       var modal = document.createElement('div');
       modal.className = 'modal fvh-item-modal';
 
@@ -4360,20 +4361,36 @@
       var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
       var localizedItemName = trItem(item.name);
 
+      var categoryLabel = '';
+      if (item.category === 'stadiums') categoryLabel = tr('catArenas');
+      else if (item.category === 'skins') categoryLabel = tr('catJerseys');
+      else if (item.category === 'balls') categoryLabel = tr('catBalls');
+      else if (item.category === 'boosts') categoryLabel = tr('catBoosts');
+      else if (item.category === 'packs') categoryLabel = tr('catPacks');
+      else if (item.category) categoryLabel = tr('cat' + item.category.charAt(0).toUpperCase() + item.category.slice(1)) || item.category;
+      else categoryLabel = tr('storeSub');
+
       modal.innerHTML =
+        '<div class="fvh-sheet-handle"></div>' +
         '<div class="fvh-item-modal-head">' +
         '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-        '<button class="modal-close-x">✕</button>' +
+        '<button class="modal-close-x" aria-label="Close">✕</button>' +
         '</div>' +
         '<div class="fvh-item-modal-preview r-' + rarKey + '" style="display:flex;align-items:center;justify-content:center;padding:16px;">' +
         renderItemArtwork(item, 'large') +
         '</div>' +
         '<h2 class="fvh-item-modal-title">' + localizedItemName + '</h2>' +
-        '<div class="fvh-item-modal-category">' + (item.category === 'stadiums' ? tr('catArenas') : item.category === 'skins' ? tr('catJerseys') : item.category ? tr('cat' + item.category.charAt(0).toUpperCase() + item.category.slice(1)) : tr('storeSub')) + (item.mode ? ' · ' + (item.mode === 'footy' ? tr('football') : tr('basketball')) : '') + '</div>' +
+        '<div class="fvh-item-modal-category">' + categoryLabel + (item.mode ? ' · ' + (item.mode === 'footy' ? tr('football') : tr('basketball')) : '') + '</div>' +
         '<p class="fvh-item-modal-desc">' + (item.desc || (localizedItemName + ' — ' + tr('storeSub'))) + '</p>' +
         '<div class="fvh-item-modal-actions"></div>';
 
       modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+      overlay.onclick = function (e) {
+        if (e.target === overlay) {
+          app.audio.play('click');
+          overlay.remove();
+        }
+      };
 
       var actionsBox = modal.querySelector('.fvh-item-modal-actions');
 
@@ -6399,7 +6416,7 @@
     seasonCard.innerHTML =
       '<div class="fvh-season-hub-left">' +
       '<div class="fvh-season-hub-tag">👑 ' + tr('seasonBannerTitle') + '</div>' +
-      '<div class="fvh-season-hub-title">' + tr('bpTier', { lvl: bpState.level }) + ' · ' + tr('bpSeason') + '</div>' +
+      '<div class="fvh-season-hub-title">' + tr('bpTier', { lvl: bpState.level }) + ' (' + bpState.percent + '% XP)</div>' +
       '<div class="pbar" style="height:6px;margin:6px 0 0 0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
       '</div>' +
       '<button class="btn small primary fvh-season-hub-btn">' + tr('quests') + ' ➔</button>';
@@ -6557,6 +6574,30 @@
         tg.expand();
         if (typeof tg.enableClosingConfirmation === 'function') {
           tg.enableClosingConfirmation();
+        }
+        if (typeof tg.disableVerticalSwipes === 'function') {
+          tg.disableVerticalSwipes();
+        }
+
+        if (typeof document !== 'undefined' && document.documentElement) {
+          document.documentElement.classList.add('is-telegram');
+          var applyTgInsets = function () {
+            if (tg.contentSafeAreaInset) {
+              document.documentElement.style.setProperty('--tg-content-top', (tg.contentSafeAreaInset.top || 0) + 'px');
+              document.documentElement.style.setProperty('--tg-content-bottom', (tg.contentSafeAreaInset.bottom || 0) + 'px');
+            }
+            if (tg.safeAreaInset) {
+              document.documentElement.style.setProperty('--tg-safe-top', (tg.safeAreaInset.top || 0) + 'px');
+              document.documentElement.style.setProperty('--tg-safe-bottom', (tg.safeAreaInset.bottom || 0) + 'px');
+            }
+          };
+          applyTgInsets();
+          if (typeof tg.onEvent === 'function') {
+            try {
+              tg.onEvent('contentSafeAreaChanged', applyTgInsets);
+              tg.onEvent('safeAreaChanged', applyTgInsets);
+            } catch (e) {}
+          }
         }
 
         if (tg.setHeaderColor) {
