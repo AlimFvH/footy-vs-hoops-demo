@@ -1,0 +1,22 @@
+{
+  "name": "footy-vs-hoops",
+  "version": "2.0.0",
+  "description": "FOOTY vs HOOPS — 1v1 Football vs Basketball Arcade Game and Telegram Mini App",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node tests/verify.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "telegram-mini-app",
+    "game",
+    "sports",
+    "multiplayer",
+    "webgl"
+  ],
+  "author": "Alim",
+  "license": "UNLICENSED"
+}

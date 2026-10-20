@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: footy-vs-hoops
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production

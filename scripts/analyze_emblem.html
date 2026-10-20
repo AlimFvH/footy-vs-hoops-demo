@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+<canvas id="c"></canvas>
+<script>
+window.onload = function() {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    const c = document.getElementById('c');
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const idata = ctx.getImageData(0, 0, img.width, img.height);
+    const d = idata.data;
+    
+    // Find bounding box of non-black pixels
+    let minX = img.width, minY = img.height, maxX = 0, maxY = 0;
+    // Also track row non-black count
+    const rowCounts = new Array(img.height).fill(0);
+    
+    for (let y = 0; y < img.height; y++) {
+      for (let x = 0; x < img.width; x++) {
+        const idx = (y * img.width + x) * 4;
+        const r = d[idx], g = d[idx+1], b = d[idx+2];
+        if (r > 15 || g > 15 || b > 15) {
+          rowCounts[y]++;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    
+    // Find gap between symbol and text "FOOTY VS HOOPS"
+    const gaps = [];
+    for (let y = 500; y < img.height - 100; y++) {
+      if (rowCounts[y] === 0 && rowCounts[y-1] > 0) {
+        gaps.push({ start: y });
+      }
+      if (rowCounts[y] > 0 && rowCounts[y-1] === 0 && gaps.length && !gaps[gaps.length-1].end) {
+        gaps[gaps.length-1].end = y;
+      }
+    }
+
+    const report = {
+      width: img.width,
+      height: img.height,
+      minX, minY, maxX, maxY,
+      gaps,
+      sampleCorners: [
+        [d[0], d[1], d[2], d[3]],
+        [d[(img.width-1)*4], d[(img.width-1)*4+1], d[(img.width-1)*4+2], d[(img.width-1)*4+3]]
+      ]
+    };
+    
+    const pre = document.createElement('pre');
+    pre.id = 'report';
+    pre.textContent = JSON.stringify(report, null, 2);
+    document.body.appendChild(pre);
+  };
+  img.src = '/assets/emblem.png';
+};
+</script>
+</body>
+</html>

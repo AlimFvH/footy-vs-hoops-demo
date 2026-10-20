@@ -1,0 +1,23 @@
+# Environment variables & secrets
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Backups & Temp files
+backups/
+backup_*/
+temp_build/
+temp_inspect.html
+*.BACKUP.html
+FOOTY vs HOOPS.html
+screenshot_*.png
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
