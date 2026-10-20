@@ -1917,6 +1917,123 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 200, { ok: true, success: true, orderId: order.orderId });
       }
 
+      // C. Handle incoming chat messages (/start, /play, /help)
+      if (data && data.message && typeof data.message.text === 'string') {
+        const msg = data.message;
+        const text = msg.text.trim();
+        const chatId = msg.chat ? msg.chat.id : null;
+        const fromUser = msg.from || {};
+        const effectiveToken = botToken || process.env.TELEGRAM_BOT_TOKEN || '8354664806:AAHnIjETn8jMISGsvpNs6zkU35_q340vuXk';
+        const miniAppUrl = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
+
+        if (chatId && effectiveToken) {
+          if (text.startsWith('/start') || text.startsWith('/play')) {
+            const parts = text.split(' ');
+            const startParam = parts.length > 1 ? parts[1].trim() : '';
+            const appUrl = startParam ? `${miniAppUrl}?tgWebAppStartParam=${encodeURIComponent(startParam)}` : miniAppUrl;
+
+            const welcomeText = 
+              `⚽🏀 *FOOTY vs HOOPS*\n\n` +
+              `Быстрая 1v1 аркада: Футбол и Баскетбол прямо в Telegram!\n\n` +
+              `• ⚽ *Footy* и 🏀 *Hoops* спортивные режимы\n` +
+              `• 👥 *1v1 Онлайн мультиплеер* с друзьями\n` +
+              `• ⚡ *8 тактических бустов* (Супер-удар, Овердрайв, Магнит и др.)\n` +
+              `• 👕 *Гардероб*: 68 предметов формы и кастомизации\n` +
+              `• 🏆 *10 уникальных 3D стадионов*\n\n` +
+              `👇 Нажмите кнопку ниже, чтобы выйти на поле!`;
+
+            try {
+              const https = require('https');
+              const body = JSON.stringify({
+                chat_id: chatId,
+                text: welcomeText,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: '🎮 Играть в FOOTY vs HOOPS ⚽🏀',
+                        web_app: { url: appUrl }
+                      }
+                    ],
+                    [
+                      {
+                        text: '👥 Позвать друга на матч',
+                        url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?start=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent('Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀')}`
+                      }
+                    ]
+                  ]
+                }
+              });
+              const tgReq = https.request({
+                hostname: 'api.telegram.org',
+                port: 443,
+                path: `/bot${effectiveToken}/sendMessage`,
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Content-Length': Buffer.byteLength(body)
+                }
+              });
+              tgReq.on('error', (e) => console.error('Telegram bot reply error:', e.message));
+              tgReq.write(body);
+              tgReq.end();
+            } catch (e) {}
+
+            return sendJson(res, 200, { ok: true, handled: 'start_or_play' });
+          } else if (text.startsWith('/help')) {
+            const helpText = 
+              `📖 *FOOTY vs HOOPS — Как играть:*\n\n` +
+              `🕹 *Управление:*\n` +
+              `• Джойстик слева — передвижение\n` +
+              `• SHOOT — удар/бросок (удерживайте для силы)\n` +
+              `• TURBO — рывок и спринт\n` +
+              `• BOOST — активация тактического буста перед или во время матча\n\n` +
+              `🏆 *Режимы:*\n` +
+              `• ⚽ Footy — футбол 1v1\n` +
+              `• 🏀 Hoops — баскетбол 1v1\n` +
+              `• 🌐 1v1 Онлайн — создайте приватную комнату и отправьте код другу\n\n` +
+              `👕 *Гардероб и Бусты:*\n` +
+              `• Разблокируйте новые скины, мячи и стадионы\n` +
+              `• Выполняйте квесты и прокачивайте Battle Pass!`;
+
+            try {
+              const https = require('https');
+              const body = JSON.stringify({
+                chat_id: chatId,
+                text: helpText,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: '🎮 Выйти на поле ⚽🏀',
+                        web_app: { url: miniAppUrl }
+                      }
+                    ]
+                  ]
+                }
+              });
+              const tgReq = https.request({
+                hostname: 'api.telegram.org',
+                port: 443,
+                path: `/bot${effectiveToken}/sendMessage`,
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Content-Length': Buffer.byteLength(body)
+                }
+              });
+              tgReq.on('error', (e) => console.error('Telegram bot help reply error:', e.message));
+              tgReq.write(body);
+              tgReq.end();
+            } catch (e) {}
+
+            return sendJson(res, 200, { ok: true, handled: 'help' });
+          }
+        }
+      }
+
       return sendJson(res, 200, { ok: true });
     });
   }
