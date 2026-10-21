@@ -5085,13 +5085,42 @@
           btn.textContent = task.actionText + ' ↗';
           btn.onclick = function () {
             window.open(task.url, '_blank');
+            var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+            var isTgTask = (task.id === 'q_sub_tg_news' || task.id === 'q_sub_tg_chat');
+
             app.store.update(function (d) {
               if (!d.socialState) d.socialState = {};
               d.socialState[task.id] = { status: 'verifying', startTime: Date.now() };
             });
             app.audio.play('click');
-            showToast(lang === 'ru' ? 'Канал открыт! Идёт верификация...' : 'Channel opened! Verification started...');
-            renderSocialQuests();
+
+            if (isTgTask && tgUser && tgUser.id) {
+              showToast(lang === 'ru' ? 'Проверяем подписку в Telegram...' : 'Verifying Telegram subscription...');
+              fetch(getApiUrl('/api/social/verify-telegram'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  telegramUserId: tgUser.id,
+                  target: (task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
+                })
+              }).then(function (r) { return r.json(); }).then(function (res) {
+                if (res && res.verified) {
+                  app.store.update(function (d) {
+                    if (!d.socialState) d.socialState = {};
+                    d.socialState[task.id] = { status: 'ready' };
+                  });
+                  showToast(lang === 'ru' ? '✓ Подписка подтверждена! Награда готова.' : '✓ Subscription verified! Reward ready.');
+                  renderSocialQuests();
+                } else {
+                  showToast(lang === 'ru' ? 'Пожалуйста, подпишитесь на канал/чат, чтобы забрать награду!' : 'Please subscribe to channel/chat to claim reward!');
+                }
+              }).catch(function () {
+                renderSocialQuests();
+              });
+            } else {
+              showToast(lang === 'ru' ? 'Канал открыт! Идёт верификация...' : 'Channel opened! Verification started...');
+              renderSocialQuests();
+            }
           };
         }
 
@@ -9319,23 +9348,46 @@
     // -------------------------------------------------------------
     var quickCard = document.createElement('div');
     quickCard.className = 'fvh-mode-card quick-card';
-    quickCard.innerHTML =
-      '<div class="fvh-mode-card-header">' +
-        '<span class="fvh-mode-badge online">⚡ ' + tr('quickMatchBadge') + '</span>' +
-        '<span class="fvh-mode-server-status"><span class="status-dot"></span> P2P Live</span>' +
-      '</div>' +
-      '<div class="fvh-mode-card-body">' +
-        '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
-        '<div class="fvh-mode-desc">' + tr('quickMatchDesc') + '</div>' +
-      '</div>' +
-      '<div class="fvh-mode-card-actions">' +
-        '<button class="btn primary block fvh-btn-matchmaking">⚡ ' + tr('quickMatchBtn') + '</button>' +
-      '</div>';
+    var onlineSport = curChar;
 
-    quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
-      app.audio.play('click');
-      showQuickMatchSearchModal(app, curChar);
-    };
+    function renderQuickCard() {
+      var isFooty = (onlineSport === 'footy');
+      quickCard.innerHTML =
+        '<div class="fvh-mode-card-header">' +
+          '<span class="fvh-mode-badge online">⚡ ' + tr('quickMatchBadge') + '</span>' +
+          '<span class="fvh-mode-server-status"><span class="status-dot"></span> P2P Live</span>' +
+        '</div>' +
+        '<div class="fvh-mode-card-body">' +
+          '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
+          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь в реальном времени против живого соперника 1v1 через WebRTC / P2P.' : 'Battle in real-time against a live 1v1 human opponent via WebRTC / P2P.') + '</div>' +
+          '<div class="fvh-ctrl-row" style="margin:10px 0 12px 0;">' +
+            '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
+            '<div class="seg seg-sport-online">' +
+              '<button type="button" class="' + (isFooty ? 'on' : '') + '" data-sport="footy">⚽ FOOTY</button>' +
+              '<button type="button" class="' + (!isFooty ? 'on' : '') + '" data-sport="hoops">🏀 HOOPS</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="fvh-mode-card-actions">' +
+          '<button class="btn primary block fvh-btn-matchmaking">⚡ ' + (isFooty ? (lang === 'ru' ? 'ИСКАТЬ МАТЧ (⚽ ФУТБОЛ)' : 'SEARCH MATCH (⚽ FOOTY)') : (lang === 'ru' ? 'ИСКАТЬ МАТЧ (🏀 БАСКЕТБОЛ)' : 'SEARCH MATCH (🏀 HOOPS)')) + '</button>' +
+        '</div>';
+
+      quickCard.querySelectorAll('.seg-sport-online button').forEach(function (b) {
+        b.onclick = function () {
+          var sp = b.dataset.sport;
+          if (sp === onlineSport) return;
+          onlineSport = sp;
+          app.audio.play('click');
+          renderQuickCard();
+        };
+      });
+
+      quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
+        app.audio.play('click');
+        showQuickMatchSearchModal(app, onlineSport);
+      };
+    }
+    renderQuickCard();
     grid.appendChild(quickCard);
 
     // -------------------------------------------------------------
