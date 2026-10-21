@@ -7494,6 +7494,47 @@
       "rewardedMatches": [],
       "createdAt": 1792579912763,
       "updatedAt": 1792579912771
+    },
+    "fvh_elsicmrg": {
+      "playerId": "fvh_elsicmrg",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792580947667,
+      "updatedAt": 1792580947671
     }
   },
   "economyLedger": [

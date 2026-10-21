@@ -1154,13 +1154,13 @@
 
   // Dynamic Hero Jersey Palette Definitions for in-game and menu character customization
   var HERO_SKIN_PALETTES = {
-    skin_rookie: { h: 205, s: 0.90, lMult: 1.0, darkShorts: true, name: 'Rookie Blue', ru: 'Новичок Синий' },
+    skin_rookie: { h: 205, s: 0.90, lMult: 1.0, darkShorts: true, name: 'Rookie Blue', ru: 'Стартовая: Синяя' },
     skin_crimson: { h: 358, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Crimson Comet', ru: 'Багровая Комета' },
     skin_neon: { h: 155, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Neon Striker', ru: 'Неоновый Страйкер' },
     skin_neon_elite: { h: 185, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Cyber Striker', ru: 'Кибер Страйкер' },
     skin_frost: { h: 200, s: 0.55, lMult: 1.35, darkShorts: false, name: 'Frost Giant', ru: 'Ледяной Титан' },
     skin_shadow: { h: 275, s: 0.70, lMult: 0.82, darkShorts: true, name: 'Shadow Ninja', ru: 'Теневой Ниндзя' },
-    skin_solar: { h: 22, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Solar Flare', ru: 'Солнечная Вспышка' },
+    skin_solar: { h: 22, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Solar Flare', ru: 'Стартовая: Огненная' },
     skin_gold: { h: 46, s: 0.95, lMult: 1.18, darkShorts: false, name: 'Golden Legend', ru: 'Золотая Легенда' },
     skin_cyber: { h: 300, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Cyber Punk', ru: 'Киберпанк' },
     skin_sunset: { h: 28, s: 0.95, lMult: 1.1, darkShorts: false, name: 'Sunset Gold', ru: 'Закатное Золото' },
@@ -1319,21 +1319,30 @@
     return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
   }
 
-  function getCharacterDisplayHtml(charId, specificSkinId) {
+  function getCharacterDisplayHtml(charId, specificSkinId, options) {
     var isFooty = charId === 'footy';
     var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
     var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
-    var skinId = specificSkinId || eq.skin || (isFooty ? 'skin_rookie' : 'skin_solar');
+    var opts = options || {};
+    // Ensure HOOPS doesn't inherit FOOTY's skin_rookie by default
+    var defaultSkin = isFooty ? 'skin_rookie' : 'skin_solar';
+    var charSpecificSkin = isFooty ? (eq['skin.footy'] || (eq.skin !== 'skin_solar' ? eq.skin : null)) : (eq['skin.hoops'] || (eq.skin !== 'skin_rookie' ? eq.skin : null));
+    var skinId = specificSkinId || charSpecificSkin || defaultSkin;
     var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var svgFallback = isFooty ? getFootyAvatarSvg() : getHoopsAvatarSvg();
     var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
     var skinLabel = (lang === 'ru') ? pal.ru : pal.name;
 
+    var showJerseyTag = opts.showJerseyTag !== undefined ? opts.showJerseyTag : true;
+    var tagHtml = showJerseyTag ?
+      '<div class="fvh-hero-active-jersey-tag" style="position:absolute;bottom:0px;font-size:10.5px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.85);backdrop-filter:blur(6px);border:1px solid ' + (isFooty ? 'rgba(56,189,248,0.3)' : 'rgba(251,146,60,0.3)') + ';border-radius:999px;padding:3px 12px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,0.5);"><span>🎽</span> <span>' + skinLabel + '</span></div>'
+      : '';
+
     return '<div class="fvh-hero-portrait-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;">' +
       '<img class="fvh-hero-real-img fvh-hero-cutout-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + imgSrc + '" alt="' + (isFooty ? 'FOOTY' : 'HOOPS') + '" onerror="this.style.display=\'none\'; if(this.nextElementSibling) this.nextElementSibling.style.display=\'block\';">' +
       '<div class="fvh-hero-svg-fallback" style="display:none;width:100%;height:100%;">' + svgFallback + '</div>' +
-      '<div class="fvh-hero-active-jersey-tag" style="position:absolute;bottom:0px;font-size:10.5px;font-weight:800;color:#38bdf8;background:rgba(8,16,36,0.85);backdrop-filter:blur(6px);border:1px solid rgba(56,189,248,0.3);border-radius:999px;padding:3px 12px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,0.5);"><span>🎽</span> <span>' + skinLabel + '</span></div>' +
+      tagHtml +
       '</div>';
   }
 
@@ -9446,7 +9455,7 @@
       '    <div class="fvh-team-card-badge" style="color:#00f0ff;font-size:12px;font-weight:900;">⚽ ' + tr('teamFootyTitle') + '</div>' +
       '    <div class="fvh-team-token-badge footy">💎 ' + tr('teamFootyTokenBadge') + '</div>' +
       '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
-             getCharacterDisplayHtml('footy') +
+             getCharacterDisplayHtml('footy', 'skin_rookie', { showJerseyTag: false }) +
       '    </div>' +
       '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamFootySub') + '</div>' +
       '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 6px 0;line-height:1.3;text-align:center;">' + tr('teamFootyDesc') + '</div>' +
@@ -9457,7 +9466,7 @@
       '    <div class="fvh-team-card-badge" style="color:#f97316;font-size:12px;font-weight:900;">🏀 ' + tr('teamHoopsTitle') + '</div>' +
       '    <div class="fvh-team-token-badge hoops">💎 ' + tr('teamHoopsTokenBadge') + '</div>' +
       '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
-             getCharacterDisplayHtml('hoops') +
+             getCharacterDisplayHtml('hoops', 'skin_solar', { showJerseyTag: false }) +
       '    </div>' +
       '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamHoopsSub') + '</div>' +
       '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 6px 0;line-height:1.3;text-align:center;">' + tr('teamHoopsDesc') + '</div>' +
