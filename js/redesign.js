@@ -470,6 +470,26 @@
       leaderboard: 'Leaderboard',
       leaderboardTitle: 'TEAM WAR',
       leaderboardSubtitle: 'Whichever team has more points wins the Season!',
+      leaderboardOverall: 'Overall',
+      leaderboardFooty: 'FOOTY',
+      leaderboardHoops: 'HOOPS',
+      timeWeekly: 'Weekly',
+      timeSeason: 'Season 1',
+      timeAllTime: 'All-Time',
+      searchAthletePlaceholder: 'Search athlete nickname...',
+      rankTierChampion: 'Champion',
+      rankTierDiamond: 'Diamond',
+      rankTierPlatinum: 'Platinum',
+      rankTierGold: 'Gold',
+      rankTierSilver: 'Silver',
+      rankTierBronze: 'Bronze',
+      noAthletesFound: 'No athletes found matching search',
+      winRateLabel: '{n}% WR',
+      winsLossesLabel: '{w}W · {l}L',
+      syncingRankings: 'Syncing rankings...',
+      retrySync: 'Retry',
+      syncFailed: 'Could not load rankings',
+      ptsUnit: 'pts',
       teamFootball: 'TEAM FOOTBALL',
       teamBasketball: 'TEAM BASKETBALL',
       teamFootballWins: '⚽ TEAM FOOTBALL IS WINNING!',
@@ -947,6 +967,26 @@
       leaderboard: 'Лидерборд',
       leaderboardTitle: 'БИТВА КОМАНД',
       leaderboardSubtitle: 'У чьей команды больше очков — та команда победит!',
+      leaderboardOverall: 'Общий',
+      leaderboardFooty: 'ФУТБОЛ',
+      leaderboardHoops: 'БАСКЕТБОЛ',
+      timeWeekly: 'Неделя',
+      timeSeason: 'Сезон 1',
+      timeAllTime: 'Всё время',
+      searchAthletePlaceholder: 'Поиск по имени атлета...',
+      rankTierChampion: 'Чемпион',
+      rankTierDiamond: 'Алмаз',
+      rankTierPlatinum: 'Платина',
+      rankTierGold: 'Золото',
+      rankTierSilver: 'Серебро',
+      rankTierBronze: 'Бронза',
+      noAthletesFound: 'Атлеты не найдены по запросу',
+      winRateLabel: '{n}% побед',
+      winsLossesLabel: '{w}В · {l}П',
+      syncingRankings: 'Синхронизация рейтинга...',
+      retrySync: 'Повторить',
+      syncFailed: 'Не удалось загрузить рейтинг',
+      ptsUnit: 'очков',
       teamFootball: 'КОМАНДА ФУТБОЛА',
       teamBasketball: 'КОМАНДА БАСКЕТБОЛА',
       teamFootballWins: '⚽ КОМАНДА ФУТБОЛА ПОБЕЖДАЕТ!',
@@ -6930,6 +6970,15 @@
     return tr('pointsContributed');
   }
 
+  function getRankTier(score) {
+    if (score >= 3500) return { id: 'champion', name: tr('rankTierChampion'), badge: '👑 ' + tr('rankTierChampion').toUpperCase(), color: '#ef4444' };
+    if (score >= 2000) return { id: 'diamond', name: tr('rankTierDiamond'), badge: '💎 ' + tr('rankTierDiamond').toUpperCase(), color: '#a855f7' };
+    if (score >= 1200) return { id: 'platinum', name: tr('rankTierPlatinum'), badge: '💠 ' + tr('rankTierPlatinum').toUpperCase(), color: '#06b6d4' };
+    if (score >= 700) return { id: 'gold', name: tr('rankTierGold'), badge: '🥇 ' + tr('rankTierGold').toUpperCase(), color: '#f59e0b' };
+    if (score >= 300) return { id: 'silver', name: tr('rankTierSilver'), badge: '🥈 ' + tr('rankTierSilver').toUpperCase(), color: '#94a3b8' };
+    return { id: 'bronze', name: tr('rankTierBronze'), badge: '🥉 ' + tr('rankTierBronze').toUpperCase(), color: '#cd7f32' };
+  }
+
   function createPodiumColHtml(ath, place, cat) {
     var pClass = 'p' + place;
     var crownHtml = place === 1 ? '<div class="fvh-podium-crown">👑</div>' : '';
@@ -6940,12 +6989,19 @@
       '<span class="fvh-podium-team-tag hoops">🏀 ' + tr('hoopsChar') + '</span>' :
       '<span class="fvh-podium-team-tag footy">⚽ ' + tr('footyChar') + '</span>';
 
+    var tier = ath.tier || getRankTier(ath.score || 0);
+    var winRate = ath.winRate !== undefined ? ath.winRate : 80;
+    var wins = ath.wins || 0;
+    var losses = ath.losses || 0;
+
     return '<div class="fvh-podium-col ' + pClass + (isHoops ? ' is-hoops' : ' is-footy') + '">' +
       crownHtml +
       '<div class="fvh-podium-avatar-box ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' + avatarSvg + '</div>' +
-      '<div class="fvh-podium-name" title="' + ath.name + '">' + ath.name + '</div>' +
+      '<div class="fvh-podium-name" title="' + escapeHtml(ath.name) + '">' + escapeHtml(ath.name) + '</div>' +
       teamTag +
-      '<div class="fvh-podium-score">' + ath.score.toLocaleString() + ' <small style="font-size:10px;opacity:0.8;">' + tr('pointsContributed') + '</small></div>' +
+      '<div class="fvh-podium-tier-pill" style="color:' + tier.color + ';border-color:' + tier.color + '60;">' + tier.badge + '</div>' +
+      '<div class="fvh-podium-score">' + (ath.score || 0).toLocaleString() + ' <small style="font-size:10px;opacity:0.8;">' + tr('ptsUnit') + '</small></div>' +
+      '<div class="fvh-podium-winrate">' + tr('winsLossesLabel', { w: wins, l: losses }) + ' · ' + tr('winRateLabel', { n: winRate }) + '</div>' +
       '<div class="fvh-podium-pedestal">' +
       '  <span class="fvh-podium-num">#' + place + '</span>' +
       '  <span class="fvh-podium-medal">' + medalEmoji + '</span>' +
@@ -6953,9 +7009,11 @@
       '</div>';
   }
 
-  function fetchLeaderboardData(cat, app, cb) {
+  function fetchLeaderboardData(cat, timeframe, app, cb) {
     var pid = getAppPlayerId(app);
-    var url = getApiUrl('/api/leaderboard?category=' + encodeURIComponent(cat || 'season') + (pid ? '&playerId=' + encodeURIComponent(pid) : ''));
+    var queryCat = cat || 'season';
+    var queryTime = timeframe || 'season';
+    var url = getApiUrl('/api/leaderboard?category=' + encodeURIComponent(queryCat) + '&timeframe=' + encodeURIComponent(queryTime) + (pid ? '&playerId=' + encodeURIComponent(pid) : ''));
 
     var handled = false;
     function finish(d) {
@@ -6968,7 +7026,7 @@
       var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
       var timeoutId = setTimeout(function () {
         if (controller) controller.abort();
-        fallbackClientLeaderboard(cat, app, finish);
+        fallbackClientLeaderboard(queryCat, queryTime, app, finish);
       }, 6000);
 
       fetch(url, { signal: controller ? controller.signal : undefined })
@@ -6981,19 +7039,19 @@
           if (data && data.ok && Array.isArray(data.top)) {
             finish(data);
           } else {
-            fallbackClientLeaderboard(cat, app, finish);
+            fallbackClientLeaderboard(queryCat, queryTime, app, finish);
           }
         })
         .catch(function () {
           clearTimeout(timeoutId);
-          fallbackClientLeaderboard(cat, app, finish);
+          fallbackClientLeaderboard(queryCat, queryTime, app, finish);
         });
     } catch (e) {
-      fallbackClientLeaderboard(cat, app, finish);
+      fallbackClientLeaderboard(queryCat, queryTime, app, finish);
     }
   }
 
-  function fallbackClientLeaderboard(cat, app, cb) {
+  function fallbackClientLeaderboard(cat, timeframe, app, cb) {
     var myData = (app && app.store && app.store.data) || {};
     var myStats = myData.stats || {};
     var myCoins = myData.coins || 0;
@@ -7004,19 +7062,24 @@
 
     var myName = (myData.profile && myData.profile.nickname) || myData.playerName || 'Alim';
     var isMyAlim = myName.toLowerCase().includes('alim');
+    var myWins = myStats.wins || 6;
+    var myLosses = myStats.losses || 1;
+    var myTotalM = myWins + myLosses;
+    var myWinRate = myTotalM > 0 ? Math.round((myWins / myTotalM) * 100) : 86;
 
     var myEntry = {
       id: 'me',
       name: myName,
       char: myChar,
       club: (myChar === 'footy' ? 'Footy United' : 'Hoops Squad'),
-      wins: myStats.wins || 6,
+      wins: myWins,
+      losses: myLosses,
+      winRate: myWinRate,
       goals: myStats.goals || 14,
       baskets: myStats.baskets || 4,
       winsByDiff: { easy: 2, normal: 3, hard: 1 },
       coins: myCoins || 1200,
       xp: myXp || 450,
-      badge: 'CAPTAIN',
       isCurrentUser: true
     };
     athletes.push(myEntry);
@@ -7028,12 +7091,13 @@
       char: (myChar === 'footy' ? 'hoops' : 'footy'),
       club: (myChar === 'footy' ? 'Hoops Squad' : 'Footy United'),
       wins: 5,
+      losses: 1,
+      winRate: 83,
       goals: 3,
       baskets: 18,
       winsByDiff: { easy: 2, normal: 2, hard: 1 },
       coins: 1100,
       xp: 420,
-      badge: 'ALL-STAR',
       isCurrentUser: false
     });
 
@@ -7044,43 +7108,59 @@
         char: 'footy',
         club: 'Footy United',
         wins: 6,
+        losses: 1,
+        winRate: 86,
         goals: 14,
         baskets: 2,
         winsByDiff: { easy: 2, normal: 3, hard: 1 },
         coins: 1200,
         xp: 450,
-        badge: 'CAPTAIN',
         isCurrentUser: false
       });
     }
 
-    function computeScore(ath, c) {
+    function computeScore(ath, c, tf) {
       var wDiff = ath.winsByDiff || {
         easy: Math.floor((ath.wins || 0) * 0.25),
         normal: Math.floor((ath.wins || 0) * 0.5),
         hard: Math.floor((ath.wins || 0) * 0.25)
       };
-      // Separate points per AI difficulty: Easy=15, Normal=30, Hard=60
       var winPoints = (wDiff.easy || 0) * 15 + (wDiff.normal || 0) * 30 + (wDiff.hard || 0) * 60;
       var goalsPoints = (ath.goals || 0) * 6;
       var basketsPoints = (ath.baskets || 0) * 3;
       var xpPoints = Math.floor((ath.xp || 0) / 8);
 
+      var raw = 0;
       if (c === 'footy') {
-        return (ath.goals || 0) * 10 + Math.round(winPoints * 0.55);
+        raw = (ath.goals || 0) * 10 + Math.round(winPoints * 0.55);
+      } else if (c === 'hoops') {
+        raw = (ath.baskets || 0) * 5 + Math.round(winPoints * 0.45);
+      } else if (c === 'coins') {
+        raw = ath.coins || 0;
+      } else {
+        // default: overall/season
+        raw = winPoints + goalsPoints + basketsPoints + xpPoints;
       }
-      if (c === 'hoops') {
-        return (ath.baskets || 0) * 5 + Math.round(winPoints * 0.45);
+
+      if (tf === 'weekly') {
+        return Math.max(15, Math.round(raw * 0.38));
       }
-      if (c === 'coins') {
-        return ath.coins || 0;
+      if (tf === 'alltime') {
+        return Math.round(raw * 1.5);
       }
-      return winPoints + goalsPoints + basketsPoints + xpPoints;
+      return raw;
     }
 
     var ranked = athletes.map(function (a) {
-      return Object.assign({}, a, { score: computeScore(a, cat || 'season') });
+      var score = computeScore(a, cat || 'season', timeframe || 'season');
+      var tier = getRankTier(score);
+      return Object.assign({}, a, {
+        score: score,
+        tier: tier,
+        badge: tier.badge
+      });
     });
+
     ranked.sort(function (a, b) { return b.score - a.score; });
     ranked.forEach(function (a, idx) { a.rank = idx + 1; });
 
@@ -7091,6 +7171,7 @@
       playerRankInfo = {
         rank: myIdx + 1,
         score: ranked[myIdx].score,
+        tier: ranked[myIdx].tier,
         pointsToNext: higher ? Math.max(1, higher.score - ranked[myIdx].score) : 0
       };
     }
@@ -7117,6 +7198,7 @@
     cb({
       ok: true,
       category: cat || 'season',
+      timeframe: timeframe || 'season',
       seasonName: (getActiveLang() === 'ru') ? 'Сезон 1: Битва Команд' : 'Season 1: Football vs Basketball War',
       seasonDaysLeft: 14,
       teamFootball: {
@@ -7141,176 +7223,220 @@
     });
   }
 
-  function renderWarScoreboardAndRankings(body, data, app) {
+  function renderWarScoreboardAndRankings(body, data, app, onCategoryChange, onTimeframeChange, activeCat, activeTimeframe) {
     var teamFooty = data.teamFootball || { score: 0, pct: 50 };
     var teamHoops = data.teamBasketball || { score: 0, pct: 50 };
     var winningTeam = data.winningTeam || (teamFooty.score >= teamHoops.score ? 'footy' : 'hoops');
     var leadDiff = data.leadDiff || Math.abs(teamFooty.score - teamHoops.score);
     var isFootyWinning = (winningTeam === 'footy');
     var myChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
+    var cat = activeCat || data.category || 'season';
+    var tf = activeTimeframe || data.timeframe || 'season';
 
-    // 1. Victory Callout Banner
-    var victoryBanner = document.createElement('div');
-    victoryBanner.className = 'fvh-war-victory-banner ' + winningTeam;
-    victoryBanner.innerHTML =
-      '<div class="fvh-war-trophy-wrap">🏆</div>' +
-      '<div class="fvh-war-victory-info">' +
-      '  <div class="fvh-war-victory-badge">' + (isFootyWinning ? tr('teamFootballWins') : tr('teamBasketballWins')) + '</div>' +
-      '  <div class="fvh-war-victory-lead">' + tr('leadDiffNotice', { diff: leadDiff.toLocaleString() }) + '</div>' +
-      '  <div class="fvh-war-victory-timer">⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }) + '</div>' +
-      '</div>';
-    body.appendChild(victoryBanner);
-
-    // 2. Scoreboard Clash Card
-    var scoreboardCard = document.createElement('div');
-    scoreboardCard.className = 'fvh-war-scoreboard-card';
-    scoreboardCard.innerHTML =
-      '<div class="fvh-war-scoreboard-head">' +
-      '  <span class="fvh-war-live-pill">🔴 ' + (getActiveLang() === 'ru' ? 'СЕЗОН 1 · ПРЯМОЙ ЭФИР' : 'SEASON 1 · LIVE CLASH') + '</span>' +
-      '  <span class="fvh-war-rule-tag">⚡ ' + (getActiveLang() === 'ru' ? 'Кто наберет больше очков — тот победил' : 'Most team points wins the Season') + '</span>' +
-      '</div>' +
-      '<div class="fvh-war-diff-subhead">🤖 ' + tr('warDiffBreakdown') + '</div>' +
-      '<div class="fvh-war-clash-grid">' +
-      '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
-      '    <div class="fvh-team-tag">⚽ ' + tr('teamFootball') + '</div>' +
-      '    <div class="fvh-team-score-num">' + teamFooty.score.toLocaleString() + '</div>' +
-      '    <div class="fvh-team-meta">' +
-      '      <span class="fvh-team-pct">' + teamFooty.pct + '%</span>' +
-      '      <span class="fvh-team-status ' + (isFootyWinning ? 'lead' : 'behind') + '">' +
-      (isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
-      '      </span>' +
-      '    </div>' +
-      '  </div>' +
-      '  <div class="fvh-war-vs-divider">' +
-      '    <div class="fvh-war-vs-badge">VS</div>' +
-      '  </div>' +
-      '  <div class="fvh-war-team-panel hoops ' + (!isFootyWinning ? 'is-leading' : '') + '">' +
-      '    <div class="fvh-team-tag">🏀 ' + tr('teamBasketball') + '</div>' +
-      '    <div class="fvh-team-score-num">' + teamHoops.score.toLocaleString() + '</div>' +
-      '    <div class="fvh-team-meta">' +
-      '      <span class="fvh-team-pct">' + teamHoops.pct + '%</span>' +
-      '      <span class="fvh-team-status ' + (!isFootyWinning ? 'lead' : 'behind') + '">' +
-      (!isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
-      '      </span>' +
-      '    </div>' +
-      '  </div>' +
-      '</div>' +
-      '<div class="fvh-war-tug-wrap">' +
-      '  <div class="fvh-war-tug-track">' +
-      '    <div class="fvh-war-tug-fill footy" style="width:' + teamFooty.pct + '%;"></div>' +
-      '    <div class="fvh-war-tug-spark"></div>' +
-      '    <div class="fvh-war-tug-fill hoops" style="width:' + teamHoops.pct + '%;"></div>' +
-      '  </div>' +
-      '  <div class="fvh-war-tug-labels">' +
-      '    <span style="color:#38bdf8;font-weight:900;">⚽ ' + teamFooty.pct + '%</span>' +
-      '    <span style="color:var(--text-muted);font-size:11px;">' + (getActiveLang() === 'ru' ? 'Линия противостояния' : 'Frontline tug-of-war') + '</span>' +
-      '    <span style="color:#fb923c;font-weight:900;">🏀 ' + teamHoops.pct + '%</span>' +
-      '  </div>' +
-      '</div>';
-    body.appendChild(scoreboardCard);
-
-    // 2b. Season TGE Prize Pool Banner ($FOOTY vs $HOOPS on TON)
-    var tgeBanner = document.createElement('div');
-    tgeBanner.className = 'fvh-war-tge-banner';
-    tgeBanner.innerHTML =
-      '<div class="fvh-war-tge-title">💎 ' + tr('warPrizePoolTitle') + '</div>' +
-      '<div class="fvh-war-tge-desc">' + tr('warPrizePoolDesc') + '</div>' +
-      '<div class="fvh-war-tge-factions">' +
-      '  <span class="fvh-tge-faction-pill footy">⚽ ' + tr('warTokenFactionFooty') + '</span>' +
-      '  <span class="fvh-tge-faction-vs">VS</span>' +
-      '  <span class="fvh-tge-faction-pill hoops">🏀 ' + tr('warTokenFactionHoops') + '</span>' +
-      '</div>';
-    body.appendChild(tgeBanner);
-
-    // 3. Player Allegiance & Personal Contribution Card
-    var myContribScore = (data.player && data.player.score) ? data.player.score : 0;
-    var playerCard = document.createElement('div');
-    playerCard.className = 'fvh-war-player-card ' + myChar;
-    playerCard.innerHTML =
-      '<div class="fvh-war-player-avatar ' + (myChar === 'hoops' ? 'hoops-halo' : 'footy-halo') + '">' +
-      (myChar === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
-      '</div>' +
-      '<div class="fvh-war-player-info">' +
-      '  <div class="fvh-war-player-side-row">' +
-      '    <span class="fvh-player-side-badge ' + myChar + '">' +
-      (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) +
-      '    </span>' +
-      '    <span class="fvh-player-my-badge">' + (getActiveLang() === 'ru' ? 'ВАША КОМАНДА' : 'YOUR TEAM') + '</span>' +
-      '  </div>' +
-      '  <div class="fvh-war-player-contrib-num">' + tr('yourContribution', { score: myContribScore.toLocaleString() }) + '</div>' +
-      '  <div class="fvh-war-tge-subrow">' +
-      '    <span class="fvh-war-tge-token-pill">💎 ' + (myChar === 'footy' ? tr('warTokenFactionFooty') : tr('warTokenFactionHoops')) + '</span>' +
-      '    <span class="fvh-war-tge-token-sub">' + tr('warQualifyingContrib') + '</span>' +
-      '  </div>' +
-      '  <div class="fvh-war-player-hint">' +
-      (getActiveLang() === 'ru' ?
-        'Очки за победу над ИИ: Лёгкий (+15), Обычный (+30), Сложный (+60). Забитый гол/мяч (+6/+3) и XP сразу добавляются к общему счёту вашей команды!' :
-        'AI Victory Points: Easy (+15), Normal (+30), Hard (+60). Scored goals (+6/+3) and earned XP directly boost your team\'s total score!') +
-      '  </div>' +
-      '</div>';
-    body.appendChild(playerCard);
-
-    // 4. MVP Standings Header
-    var mvpHeader = document.createElement('div');
-    mvpHeader.className = 'fvh-war-mvp-head';
-    mvpHeader.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:20px 0 12px;">' +
-      '  <div>' +
-      '    <h3 style="margin:0 0 2px;font-size:16px;font-weight:900;color:var(--text-pure);">' + tr('warMvpTitle') + '</h3>' +
-      '    <div style="font-size:11.5px;color:var(--text-muted);">' + tr('warMvpSubtitle') + '</div>' +
-      '  </div>' +
-      '  <span style="font-size:11px;font-weight:800;color:#fde047;background:rgba(255,200,0,0.15);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,200,0,0.3);">' +
-      '    ТОП-50 MVP' +
-      '  </span>' +
-      '</div>';
-    body.appendChild(mvpHeader);
-
-    // 5. Top 3 Podium
-    var topAthletes = data.top || [];
-    var top1 = topAthletes[0];
-    var top2 = topAthletes[1];
-    var top3 = topAthletes[2];
-    var rest = topAthletes.slice(3);
-
-    var podium = document.createElement('div');
-    podium.className = 'fvh-podium-wrap';
-    podium.innerHTML =
-      (top2 ? createPodiumColHtml(top2, 2, 'season') : '') +
-      (top1 ? createPodiumColHtml(top1, 1, 'season') : '') +
-      (top3 ? createPodiumColHtml(top3, 3, 'season') : '');
-    body.appendChild(podium);
-
-    // 6. Ranks 4 to 50
-    var rowsWrap = document.createElement('div');
-    rowsWrap.className = 'fvh-leaderboard-rows';
-    rest.forEach(function (ath) {
-      var isHoops = (ath.char === 'hoops');
-      var row = document.createElement('div');
-      row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '') + (isHoops ? ' row-hoops' : ' row-footy');
-      row.innerHTML =
-        '<div class="fvh-lb-rank">#' + ath.rank + '</div>' +
-        '<div class="fvh-lb-avatar ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' +
-        (isHoops ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
-        '</div>' +
-        '<div class="fvh-lb-info">' +
-        '  <div class="fvh-lb-name">' +
-        ath.name + (ath.isCurrentUser ? ' <span class="fvh-me-badge">' + (getActiveLang() === 'ru' ? 'ВЫ' : 'YOU') + '</span>' : '') +
-        '  </div>' +
-        '  <div class="fvh-lb-club">' +
-        '    <span class="fvh-team-pill ' + (isHoops ? 'hoops' : 'footy') + '">' + (isHoops ? '🏀 ' + tr('teamBasketball') : '⚽ ' + tr('teamFootball')) + '</span>' +
-        '    · ' + (ath.club || 'FvH Club') +
-        '  </div>' +
-        '</div>' +
-        '<div class="fvh-lb-score">' +
-        '  <span class="fvh-lb-val">' + ath.score.toLocaleString() + '</span> ' +
-        '  <span class="fvh-lb-unit" style="font-size:10px;color:var(--text-muted);">' + tr('pointsContributed') + '</span>' +
-        '</div>';
-      rowsWrap.appendChild(row);
+    // 1. Category Tabs Bar (Clearly Accessible)
+    var catBar = document.createElement('div');
+    catBar.className = 'fvh-lb-cat-tabs';
+    var categories = [
+      { id: 'season', label: '🌐 ' + tr('leaderboardOverall') },
+      { id: 'footy', label: '⚽ ' + tr('leaderboardFooty') },
+      { id: 'hoops', label: '🏀 ' + tr('leaderboardHoops') }
+    ];
+    categories.forEach(function (c) {
+      var btn = document.createElement('button');
+      btn.className = 'fvh-lb-cat-btn' + (c.id === cat || (c.id === 'season' && cat === 'overall') ? ' active' : '');
+      btn.textContent = c.label;
+      btn.onclick = function () {
+        app.audio.play('click');
+        if (onCategoryChange) onCategoryChange(c.id);
+      };
+      catBar.appendChild(btn);
     });
-    body.appendChild(rowsWrap);
+    body.appendChild(catBar);
+
+    // 2. Timeframe Tabs Bar (Weekly / Season 1 / All-Time)
+    var timeBar = document.createElement('div');
+    timeBar.className = 'fvh-lb-time-tabs';
+    var timeframes = [
+      { id: 'weekly', label: '📅 ' + tr('timeWeekly') },
+      { id: 'season', label: '🏆 ' + tr('timeSeason') },
+      { id: 'alltime', label: '⏳ ' + tr('timeAllTime') }
+    ];
+    timeframes.forEach(function (t) {
+      var btn = document.createElement('button');
+      btn.className = 'fvh-lb-time-btn' + (t.id === tf ? ' active' : '');
+      btn.textContent = t.label;
+      btn.onclick = function () {
+        app.audio.play('click');
+        if (onTimeframeChange) onTimeframeChange(t.id);
+      };
+      timeBar.appendChild(btn);
+    });
+    body.appendChild(timeBar);
+
+    // 3. Live Search Filter Bar
+    var searchWrap = document.createElement('div');
+    searchWrap.className = 'fvh-lb-search-wrap';
+    searchWrap.innerHTML =
+      '<div class="fvh-lb-search-box">' +
+      '  <span class="fvh-lb-search-icon">🔍</span>' +
+      '  <input type="text" class="fvh-lb-search-input" placeholder="' + tr('searchAthletePlaceholder') + '" />' +
+      '  <button class="fvh-lb-search-clear" style="display:none;">✕</button>' +
+      '</div>';
+    body.appendChild(searchWrap);
+
+    var searchInput = searchWrap.querySelector('.fvh-lb-search-input');
+    var searchClear = searchWrap.querySelector('.fvh-lb-search-clear');
+
+    // Container for results (Podium + Rows)
+    var resultsMount = document.createElement('div');
+    resultsMount.className = 'fvh-lb-results-mount';
+    body.appendChild(resultsMount);
+
+    function renderAthletesDisplay(filterQuery) {
+      resultsMount.innerHTML = '';
+      var query = (filterQuery || '').trim().toLowerCase();
+      var allAthletes = data.top || [];
+      var filtered = query 
+        ? allAthletes.filter(function (a) { return a.name.toLowerCase().includes(query) || (a.club && a.club.toLowerCase().includes(query)); })
+        : allAthletes;
+
+      if (filtered.length === 0) {
+        var emptyCard = document.createElement('div');
+        emptyCard.className = 'fvh-lb-empty-card';
+        emptyCard.innerHTML =
+          '<div style="font-size:36px;margin-bottom:8px;">🔍</div>' +
+          '<div style="font-size:14px;font-weight:800;color:var(--text-pure);">' + tr('noAthletesFound') + '</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);margin:4px 0 14px;">«' + escapeHtml(query) + '»</div>' +
+          '<button class="btn primary small fvh-lb-reset-search-btn">' + tr('retrySync') + '</button>';
+        emptyCard.querySelector('.fvh-lb-reset-search-btn').onclick = function () {
+          searchInput.value = '';
+          searchClear.style.display = 'none';
+          renderAthletesDisplay('');
+        };
+        resultsMount.appendChild(emptyCard);
+        return;
+      }
+
+      // 4. Team Rivalry Balance Card (Compact Clash Card)
+      var scoreboardCard = document.createElement('div');
+      scoreboardCard.className = 'fvh-war-scoreboard-card';
+      scoreboardCard.innerHTML =
+        '<div class="fvh-war-scoreboard-head">' +
+        '  <span class="fvh-war-live-pill">🔴 ' + (getActiveLang() === 'ru' ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH') + '</span>' +
+        '  <span class="fvh-war-rule-tag">⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }) + '</span>' +
+        '</div>' +
+        '<div class="fvh-war-clash-grid">' +
+        '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
+        '    <div class="fvh-team-tag">⚽ ' + tr('teamFootball') + '</div>' +
+        '    <div class="fvh-team-score-num">' + teamFooty.score.toLocaleString() + '</div>' +
+        '    <div class="fvh-team-meta">' +
+        '      <span class="fvh-team-pct">' + teamFooty.pct + '%</span>' +
+        '      <span class="fvh-team-status ' + (isFootyWinning ? 'lead' : 'behind') + '">' +
+        (isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
+        '      </span>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div class="fvh-war-vs-divider">' +
+        '    <div class="fvh-war-vs-badge">VS</div>' +
+        '  </div>' +
+        '  <div class="fvh-war-team-panel hoops ' + (!isFootyWinning ? 'is-leading' : '') + '">' +
+        '    <div class="fvh-team-tag">🏀 ' + tr('teamBasketball') + '</div>' +
+        '    <div class="fvh-team-score-num">' + teamHoops.score.toLocaleString() + '</div>' +
+        '    <div class="fvh-team-meta">' +
+        '      <span class="fvh-team-pct">' + teamHoops.pct + '%</span>' +
+        '      <span class="fvh-team-status ' + (!isFootyWinning ? 'lead' : 'behind') + '">' +
+        (!isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
+        '      </span>' +
+        '    </div>' +
+        '  </div>' +
+        '</div>' +
+        '<div class="fvh-war-tug-wrap">' +
+        '  <div class="fvh-war-tug-track">' +
+        '    <div class="fvh-war-tug-fill footy" style="width:' + teamFooty.pct + '%;"></div>' +
+        '    <div class="fvh-war-tug-spark"></div>' +
+        '    <div class="fvh-war-tug-fill hoops" style="width:' + teamHoops.pct + '%;"></div>' +
+        '  </div>' +
+        '  <div class="fvh-war-tug-labels">' +
+        '    <span style="color:#38bdf8;font-weight:900;">⚽ ' + teamFooty.pct + '%</span>' +
+        '    <span style="color:var(--text-muted);font-size:11px;">' + (getActiveLang() === 'ru' ? 'Баланс команд' : 'Team Balance') + '</span>' +
+        '    <span style="color:#fb923c;font-weight:900;">🏀 ' + teamHoops.pct + '%</span>' +
+        '  </div>' +
+        '</div>';
+      resultsMount.appendChild(scoreboardCard);
+
+      // 5. Top 3 Podium (If unfiltered or at least 2 athletes)
+      if (!query && filtered.length >= 2) {
+        var top1 = filtered[0];
+        var top2 = filtered[1];
+        var top3 = filtered[2];
+
+        var podium = document.createElement('div');
+        podium.className = 'fvh-podium-wrap';
+        podium.innerHTML =
+          (top2 ? createPodiumColHtml(top2, 2, cat) : '') +
+          (top1 ? createPodiumColHtml(top1, 1, cat) : '') +
+          (top3 ? createPodiumColHtml(top3, 3, cat) : '');
+        resultsMount.appendChild(podium);
+      }
+
+      // 6. Ranked Rows (Ranks 4+ when unfiltered, or all matching when filtered)
+      var rowsWrap = document.createElement('div');
+      rowsWrap.className = 'fvh-leaderboard-rows';
+      var rowsAthletes = (!query && filtered.length >= 3) ? filtered.slice(3) : filtered;
+
+      rowsAthletes.forEach(function (ath) {
+        var isHoops = (ath.char === 'hoops');
+        var tier = ath.tier || getRankTier(ath.score || 0);
+        var winRate = ath.winRate !== undefined ? ath.winRate : 80;
+        var wins = ath.wins || 0;
+        var losses = ath.losses || 0;
+
+        var row = document.createElement('div');
+        row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '') + (isHoops ? ' row-hoops' : ' row-footy');
+        row.innerHTML =
+          '<div class="fvh-lb-rank">#' + ath.rank + '</div>' +
+          '<div class="fvh-lb-avatar ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' +
+          (isHoops ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
+          '</div>' +
+          '<div class="fvh-lb-info">' +
+          '  <div class="fvh-lb-name">' +
+          escapeHtml(ath.name) + (ath.isCurrentUser ? ' <span class="fvh-me-badge">' + (getActiveLang() === 'ru' ? 'ВЫ' : 'YOU') + '</span>' : '') +
+          '  </div>' +
+          '  <div class="fvh-lb-club">' +
+          '    <span class="fvh-team-pill ' + (isHoops ? 'hoops' : 'footy') + '">' + (isHoops ? '🏀 ' + tr('hoopsChar') : '⚽ ' + tr('footyChar')) + '</span>' +
+          '    · ' + escapeHtml(ath.club || 'FvH Club') +
+          '    · <span class="fvh-lb-winrate-text">' + tr('winsLossesLabel', { w: wins, l: losses }) + ' (' + tr('winRateLabel', { n: winRate }) + ')</span>' +
+          '  </div>' +
+          '</div>' +
+          '<div class="fvh-lb-score-block">' +
+          '  <div class="fvh-lb-tier-badge" style="color:' + tier.color + ';border-color:' + tier.color + '50;">' + tier.badge + '</div>' +
+          '  <div class="fvh-lb-score">' +
+          '    <span class="fvh-lb-val">' + (ath.score || 0).toLocaleString() + '</span> ' +
+          '    <span class="fvh-lb-unit">' + tr('ptsUnit') + '</span>' +
+          '  </div>' +
+          '</div>';
+        rowsWrap.appendChild(row);
+      });
+      resultsMount.appendChild(rowsWrap);
+    }
+
+    searchInput.oninput = function () {
+      var val = searchInput.value;
+      searchClear.style.display = val ? 'block' : 'none';
+      renderAthletesDisplay(val);
+    };
+
+    searchClear.onclick = function () {
+      searchInput.value = '';
+      searchClear.style.display = 'none';
+      renderAthletesDisplay('');
+    };
+
+    renderAthletesDisplay('');
 
     // 7. Docked Current Player Bar
     if (data.player) {
+      var pTier = data.player.tier || getRankTier(data.player.score || 0);
       var sticky = document.createElement('div');
       sticky.className = 'fvh-leaderboard-sticky-player ' + myChar;
       sticky.innerHTML =
@@ -7327,7 +7453,8 @@
         '  </div>' +
         '</div>' +
         '<div class="fvh-lb-sticky-score">' +
-        '  <b>' + data.player.score.toLocaleString() + '</b> ' + tr('pointsContributed') +
+        '  <div class="fvh-lb-sticky-tier" style="color:' + pTier.color + ';">' + pTier.badge + '</div>' +
+        '  <div><b>' + (data.player.score || 0).toLocaleString() + '</b> ' + tr('ptsUnit') + '</div>' +
         '</div>';
       body.appendChild(sticky);
     }
@@ -7335,6 +7462,7 @@
 
   function buildLeaderboardPage(app, initialCategory) {
     var curCategory = initialCategory || 'season';
+    var curTimeframe = 'season';
     var container = document.createElement('div');
     container.className = 'screen solid page-screen has-nav fvh-leaderboard-page';
     container.dataset.id = 'leaderboard';
@@ -7364,20 +7492,34 @@
     page.appendChild(body);
     container.appendChild(page);
 
-    function renderWarLeaderboard() {
+    function loadLeaderboard() {
       body.innerHTML =
         '<div style="text-align:center;padding:48px 20px;color:var(--text-muted);">' +
         '  <div style="font-size:36px;margin-bottom:10px;animation:fvhPulse 1.2s infinite;">⚡</div>' +
-        '  <div style="font-weight:900;letter-spacing:1px;font-size:14px;color:var(--text-pure);">' + (getActiveLang() === 'ru' ? 'СИНХРОНИЗАЦИЯ БИТВЫ КОМАНД...' : 'SYNCING TEAM WAR...') + '</div>' +
+        '  <div style="font-weight:900;letter-spacing:1px;font-size:14px;color:var(--text-pure);">' + tr('syncingRankings') + '</div>' +
         '</div>';
 
-      fetchLeaderboardData('season', app, function (data) {
+      fetchLeaderboardData(curCategory, curTimeframe, app, function (data) {
         body.innerHTML = '';
-        renderWarScoreboardAndRankings(body, data, app);
+        renderWarScoreboardAndRankings(
+          body,
+          data,
+          app,
+          function (newCat) {
+            curCategory = newCat;
+            loadLeaderboard();
+          },
+          function (newTime) {
+            curTimeframe = newTime;
+            loadLeaderboard();
+          },
+          curCategory,
+          curTimeframe
+        );
       });
     }
 
-    renderWarLeaderboard();
+    loadLeaderboard();
     container.appendChild(createSharedBottomNav('leaderboard', app));
     return container;
   }
