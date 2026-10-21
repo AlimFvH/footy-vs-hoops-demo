@@ -3069,16 +3069,16 @@
       if (!cat && itemOrId.type === 'pack') cat = 'packs';
     }
 
-    // Auto-detect category from item ID if unspecified
-    if (!cat && id) {
+    // Auto-detect or refine category from item ID, slot, or object
+    if (!cat || cat === 'other') {
       if (id.startsWith('crowd_')) cat = 'crowd';
       else if (id.startsWith('boost_')) cat = 'boosts';
       else if (id.startsWith('skin_')) cat = 'skins';
       else if (id.startsWith('ball_')) cat = 'balls';
       else if (id.startsWith('std_') || id.startsWith('arena_')) cat = 'stadiums';
       else if (id.startsWith('cel_')) cat = 'celebrations';
-      else if (id.startsWith('trail_')) cat = 'trails';
-      else if (id.startsWith('frame_')) cat = 'frames';
+      else if (id.startsWith('trail_') || (typeof itemOrId === 'object' && itemOrId.slot === 'trail')) cat = 'trails';
+      else if (id.startsWith('frame_') || (typeof itemOrId === 'object' && itemOrId.slot === 'frame')) cat = 'frames';
       else if (id.startsWith('pack_') || id === 'footy' || id === 'hoops' || id === 'clash') cat = 'packs';
       else if (id.startsWith('bundle_')) cat = 'bundles';
       else if (id.startsWith('battlepass')) cat = 'battlepass';
@@ -3362,32 +3362,32 @@
 
   function claimBattlePassTier(app, lvl, track, onDone) {
     var bpState = getBattlePassState(app.store);
-    var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
-    var playerName = (tgUser && (tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : ''))) ||
-                     app.store.data.playerName ||
-                     (typeof localStorage !== 'undefined' && localStorage.getItem('fvh_player_name')) ||
-                     'Alim';
-    var playerUsername = tgUser && tgUser.username ? ('@' + tgUser.username) : '';
-    var userPhotoUrl = (tgUser && tgUser.photo_url) || app.store.data.photoUrl || null;
-    var avatarImgHtml = userPhotoUrl
-      ? '<img src="' + userPhotoUrl + '" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'
-      : '<img src="assets/avatar_crest.png" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.onerror=null;this.parentElement.innerHTML=\'' + (curChar === 'footy' ? getFootyAvatarSvg() : getHoopsAvatarSvg()).replace(/'/g, "\\'") + '\';" />';
-    var roleLabel = curChar === 'footy' ? '⚽ Team Footy · #10 Striker' : '🏀 Team Hoops · #23 Forward';
+    var lang = getActiveLang();
     track = track || 'free';
 
     if (lvl > bpState.level) {
       app.audio.play('error');
+      showToast(lang === 'ru' ? 'Уровень ещё не достигнут!' : 'Level not reached yet!');
       return;
     }
 
     if (track === 'free') {
-      if (bpState.claimedFree.indexOf(lvl) !== -1) {
+      if (bpState.claimedFree && bpState.claimedFree.indexOf(lvl) !== -1) {
         app.audio.play('error');
+        showToast(lang === 'ru' ? '✓ Награда за этот уровень уже получена!' : '✓ Reward for this tier already claimed!');
+        if (onDone) onDone();
         return;
       }
     } else if (track === 'premium') {
-      if (!bpState.isPremium || bpState.claimedPremium.indexOf(lvl) !== -1) {
+      if (!bpState.isPremium) {
         app.audio.play('error');
+        showToast(lang === 'ru' ? 'Требуется VIP Пропуск для этой награды!' : 'VIP Pass required for this reward!');
+        return;
+      }
+      if (bpState.claimedPremium && bpState.claimedPremium.indexOf(lvl) !== -1) {
+        app.audio.play('error');
+        showToast(lang === 'ru' ? '✓ Награда за этот уровень уже получена!' : '✓ Reward for this tier already claimed!');
+        if (onDone) onDone();
         return;
       }
     }
@@ -3411,8 +3411,11 @@
           d.packs = res.packs;
           d.battlePass = res.battlePass;
         });
-      } else {
-        // Fallback local update if backend offline
+        app.audio.play('claim');
+        var badge = track === 'premium' ? '👑 VIP' : tr('bpFreeTrack');
+        showToast('🎁 ' + trItem(rew.name) + ' (' + badge + ' ' + tr('bpTier', { lvl: lvl }) + ')');
+      } else if (res && (res.error === 'tier_already_claimed' || res.error === 'level_not_reached')) {
+        // Authoritative server rejection: already claimed or invalid. Lock tier locally without granting duplicate rewards
         app.store.update(function (d) {
           if (!d.battlePass) d.battlePass = { claimedFree: [], claimedPremium: [], isPremium: false };
           if (track === 'free') {
@@ -3422,21 +3425,34 @@
             if (!d.battlePass.claimedPremium) d.battlePass.claimedPremium = [];
             if (d.battlePass.claimedPremium.indexOf(lvl) === -1) d.battlePass.claimedPremium.push(lvl);
           }
-          applyRewardToStore(d, rew);
+        });
+        showToast(lang === 'ru' ? '✓ Награда уже была забрана ранее' : '✓ Tier reward already claimed previously');
+      } else if (res && res.offline) {
+        // Offline fallback ONLY: verify not already claimed
+        app.store.update(function (d) {
+          if (!d.battlePass) d.battlePass = { claimedFree: [], claimedPremium: [], isPremium: false };
+          var list = (track === 'free') ? (d.battlePass.claimedFree = d.battlePass.claimedFree || []) : (d.battlePass.claimedPremium = d.battlePass.claimedPremium || []);
+          if (list.indexOf(lvl) === -1) {
+            list.push(lvl);
+            applyRewardToStore(d, rew);
+            app.audio.play('claim');
+            var badge = track === 'premium' ? '👑 VIP' : tr('bpFreeTrack');
+            showToast('🎁 ' + trItem(rew.name) + ' (' + badge + ' ' + tr('bpTier', { lvl: lvl }) + ')');
+          }
         });
       }
-
-      app.audio.play('claim');
-      var badge = track === 'premium' ? '👑 VIP' : tr('bpFreeTrack');
-      showToast('🎁 ' + trItem(rew.name) + ' (' + badge + ' ' + tr('bpTier', { lvl: lvl }) + ')');
+      if (onDone) onDone();
+    }).catch(function () {
       if (onDone) onDone();
     });
   }
 
   function claimAllBattlePassTiers(app, onDone) {
     var bpState = getBattlePassState(app.store);
+    var lang = getActiveLang();
     if (bpState.claimableCount === 0) {
       app.audio.play('error');
+      showToast(lang === 'ru' ? 'Все доступные награды уже забраны!' : 'All available rewards already claimed!');
       return;
     }
 
@@ -3454,8 +3470,10 @@
           d.packs = res.packs;
           d.battlePass = res.battlePass;
         });
-      } else {
-        // Fallback local claim all
+        app.audio.play('claim');
+        showToast('🎉 ' + tr('bpAllClaimed'));
+      } else if (res && res.offline) {
+        // Fallback local claim all only for unclaimed tiers
         app.store.update(function (d) {
           if (!d.battlePass) d.battlePass = { claimedFree: [], claimedPremium: [], isPremium: false };
           if (!d.battlePass.claimedFree) d.battlePass.claimedFree = [];
@@ -3473,10 +3491,11 @@
             }
           }
         });
+        app.audio.play('claim');
+        showToast('🎉 ' + tr('bpAllClaimed'));
       }
-
-      app.audio.play('claim');
-      showToast('🎉 ' + tr('bpAllClaimed'));
+      if (onDone) onDone();
+    }).catch(function () {
       if (onDone) onDone();
     });
   }
@@ -4201,22 +4220,32 @@
     var body = document.createElement('div');
     body.className = 'page-body';
 
-    // Character Tabs: FOOTY vs HOOPS
-    var charSeg = document.createElement('div');
-    charSeg.className = 'seg';
-    charSeg.style.marginBottom = '14px';
+    // Fixed Team: Once chosen, team is permanently locked
+    curChar = app.store.data.selectedCharacter || curChar || 'footy';
+    var isFooty = (curChar === 'footy');
+    var lang = getActiveLang();
 
-    var btnFooty = document.createElement('button');
-    btnFooty.textContent = tr('footyBadge');
-    if (curChar === 'footy') btnFooty.className = 'on';
-
-    var btnHoops = document.createElement('button');
-    btnHoops.textContent = tr('hoopsBadge');
-    if (curChar === 'hoops') btnHoops.className = 'on';
-
-    charSeg.appendChild(btnFooty);
-    charSeg.appendChild(btnHoops);
-    body.appendChild(charSeg);
+    var teamLockBadge = document.createElement('div');
+    teamLockBadge.className = 'fvh-team-lock-banner';
+    teamLockBadge.style.display = 'flex';
+    teamLockBadge.style.alignItems = 'center';
+    teamLockBadge.style.gap = '10px';
+    teamLockBadge.style.padding = '10px 14px';
+    teamLockBadge.style.marginBottom = '14px';
+    teamLockBadge.style.borderRadius = '12px';
+    teamLockBadge.style.background = isFooty ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 122, 0, 0.08)';
+    teamLockBadge.style.border = isFooty ? '1px solid rgba(0, 240, 255, 0.25)' : '1px solid rgba(255, 122, 0, 0.25)';
+    teamLockBadge.innerHTML =
+      '<span style="font-size:20px;">🔒</span>' +
+      '<div>' +
+      '  <div style="font-size:12px;font-weight:900;color:#fff;letter-spacing:0.5px;text-transform:uppercase;">' +
+           (isFooty ? '⚡ КОМАНДА ФУТБОЛА (FOOTY)' : '⚡ КОМАНДА БАСКЕТБОЛА (HOOPS)') +
+      '  </div>' +
+      '  <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' +
+           (lang === 'ru' ? 'Выбор команды сделан навсегда · Доступна экипировка вашего атлета' : 'Team chosen permanently · Equipping your active athlete') +
+      '  </div>' +
+      '</div>';
+    body.appendChild(teamLockBadge);
 
     // Wardrobe & Inspection Layout
     var layout = document.createElement('div');
@@ -4297,9 +4326,7 @@
       charName.textContent = curChar === 'footy' ? 'FOOTY' : 'HOOPS';
       charRole.textContent = curChar === 'footy' ? tr('footyRole') : tr('hoopsRole');
 
-      var isSelected = (app.store.data.selectedCharacter || 'footy') === curChar;
-      selectBtn.textContent = isSelected ? '✓ ' + tr('selected') : tr('selectChar');
-      selectBtn.disabled = isSelected;
+      selectBtn.style.display = 'none';
 
       // Equipped summary
       var eq = app.store.data.equipped || {};
@@ -7359,21 +7386,90 @@
 
     var bpState = getBattlePassState(app.store);
 
-    // 1. Identity Hero Banner
+    // 1. Identity Hero Banner with editable Player Nickname
+    var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+    var currentNickname = (app.store.data.profile && app.store.data.profile.nickname) ||
+                         app.store.data.playerName ||
+                         (tgUser && (tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : ''))) ||
+                         (typeof localStorage !== 'undefined' && localStorage.getItem('fvh_player_name')) ||
+                         'Alim';
+    var tgHandle = (tgUser && tgUser.username) ? ('@' + tgUser.username) : '';
+    var userPhotoUrl = (tgUser && tgUser.photo_url) || app.store.data.photoUrl || null;
+    var roleLabel = (curChar === 'footy') ? '⚽ Team Footy · #10 Striker' : '🏀 Team Hoops · #23 Forward';
+    var lang = getActiveLang();
+
     var idCard = document.createElement('div');
     idCard.className = 'fvh-profile-id-card';
     idCard.innerHTML =
       '<div class="fvh-profile-avatar-wrap">' +
-      '<div class="fvh-profile-avatar-thumb">' + (curChar === 'footy' ? getFootyAvatarSvg() : getHoopsAvatarSvg()) + '</div>' +
-      '<div class="fvh-profile-lvl-badge">LVL ' + bpState.level + '</div>' +
+      '  <div class="fvh-profile-avatar-thumb" style="overflow:hidden;border-radius:50%;">' +
+           (userPhotoUrl ? '<img src="' + userPhotoUrl + '" style="width:100%;height:100%;object-fit:cover;" />' : (curChar === 'footy' ? getFootyAvatarSvg() : getHoopsAvatarSvg())) +
+      '  </div>' +
+      '  <div class="fvh-profile-lvl-badge">LVL ' + bpState.level + '</div>' +
       '</div>' +
-      '<div class="fvh-profile-id-info">' +
-      '<div class="fvh-profile-title-tag">ALL-STAR ATHLETE</div>' +
-      '<h2 style="margin:2px 0 4px;font-size:22px;">' + (curChar === 'footy' ? 'STRIKER' : 'FORWARD') + '</h2>' +
-      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">' + tr('bpXpNeeded', { cur: bpState.intoLevel, need: bpState.needed, next: Math.min(30, bpState.level + 1) }) + '</div>' +
-      '<div class="pbar" style="height:8px;margin:0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
+      '<div class="fvh-profile-id-info" style="flex:1;min-width:180px;">' +
+      '  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">' +
+      '    <div class="fvh-profile-title-tag">' + roleLabel + '</div>' +
+      '    <button class="fvh-btn-edit-name" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:6px;color:#38bdf8;font-size:11px;font-weight:800;padding:3px 8px;cursor:pointer;">✏️ ' + (lang === 'ru' ? 'Изменить' : 'Edit') + '</button>' +
+      '  </div>' +
+      '  <h2 class="fvh-profile-name-text" style="margin:2px 0 2px;font-size:20px;font-weight:900;color:#fff;">' + escapeHtml(currentNickname) + '</h2>' +
+      '  <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">' + (tgHandle ? tgHandle + ' · ' : '') + tr('bpXpNeeded', { cur: bpState.intoLevel, need: bpState.needed, next: Math.min(30, bpState.level + 1) }) + '</div>' +
+      '  <div class="pbar" style="height:8px;margin:0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
       '</div>';
     body.appendChild(idCard);
+
+    // Edit Name Modal Handler
+    var editBtn = idCard.querySelector('.fvh-btn-edit-name');
+    if (editBtn) {
+      editBtn.onclick = function () {
+        app.audio.play('click');
+        var editOverlay = document.createElement('div');
+        editOverlay.className = 'modal-back';
+        var editModal = document.createElement('div');
+        editModal.className = 'modal';
+        editModal.style.maxWidth = '360px';
+        editModal.style.width = '100%';
+        editModal.innerHTML =
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+          '  <h3 style="margin:0;font-size:16px;font-weight:900;">' + (lang === 'ru' ? 'Имя игрока' : 'Player Name') + '</h3>' +
+          '  <button class="modal-close-x" style="background:none;border:none;color:#fff;font-size:16px;cursor:pointer;">✕</button>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">' + (lang === 'ru' ? 'Введите ваш никнейм (до 20 символов):' : 'Enter your athlete nickname (up to 20 chars):') + '</div>' +
+          '<input type="text" class="fvh-name-input" maxlength="20" value="' + escapeHtml(currentNickname) + '" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;background:#0f172a;border:1px solid #334155;color:#fff;font-size:15px;font-weight:800;margin-bottom:16px;" />' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+          '  <button class="btn fvh-btn-cancel-name" style="padding:10px;">' + (lang === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
+          '  <button class="btn primary fvh-btn-save-name" style="padding:10px;font-weight:900;">' + (lang === 'ru' ? 'Сохранить' : 'Save') + '</button>' +
+          '</div>';
+
+        editModal.querySelector('.modal-close-x').onclick = function () { editOverlay.remove(); };
+        editModal.querySelector('.fvh-btn-cancel-name').onclick = function () { editOverlay.remove(); };
+
+        var nameInput = editModal.querySelector('.fvh-name-input');
+        editModal.querySelector('.fvh-btn-save-name').onclick = function () {
+          var val = (nameInput.value || '').trim();
+          if (!val) {
+            showToast(lang === 'ru' ? 'Имя не может быть пустым' : 'Name cannot be empty');
+            return;
+          }
+          currentNickname = val;
+          app.store.update(function (d) {
+            d.playerName = val;
+            if (!d.profile) d.profile = {};
+            d.profile.nickname = val;
+          });
+          try { localStorage.setItem('fvh_player_name', val); } catch (e) {}
+          syncAuthoritativeEconomy(app);
+          app.audio.play('claim');
+          showToast(lang === 'ru' ? '✓ Имя успешно сохранено!' : '✓ Name successfully saved!');
+          editOverlay.remove();
+          app.show(buildProfilePage(app), 'profile');
+        };
+
+        editOverlay.appendChild(editModal);
+        document.body.appendChild(editOverlay);
+        setTimeout(function () { nameInput.focus(); }, 100);
+      };
+    }
 
     // 2. Career Records & Tri-Color Win Rate
     var statsCard = document.createElement('div');
@@ -9601,12 +9697,19 @@
       getOfficialEmblemHtml() +
       '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
       '</div>' +
-      '<div class="fvh-topbar-stats">' +
-      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
-      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
-      '<button class="fvh-pill" id="fvh-btn-profile" title="' + tr('profile') + '">⭐ LVL ' + bpState.level + '</button>' +
-      '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
-      '</div>';
+      var playerDisplayName = (d.profile && d.profile.nickname) || d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Alim';
+      var shortName = playerDisplayName.length > 9 ? (playerDisplayName.slice(0, 8) + '…') : playerDisplayName;
+      topbar.innerHTML =
+        '<div class="fvh-topbar-brand" style="cursor:pointer;" title="FOOTY vs HOOPS">' +
+        getOfficialEmblemHtml() +
+        '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
+        '</div>' +
+        '<div class="fvh-topbar-stats">' +
+        '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
+        '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
+        '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '">👤 ' + escapeHtml(shortName) + '</button>' +
+        '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
+        '</div>';
     screen.appendChild(topbar);
 
     topbar.querySelector('.fvh-topbar-brand').onclick = function () { app.showMenu(); };
@@ -9641,8 +9744,9 @@
       '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY' : '🏀 HOOPS') + '</div>' +
       '<div class="fvh-hero-role" style="font-size:12.5px;color:var(--text-muted);font-weight:700;margin-top:2px;text-align:center;">' + heroRoleText + '</div>' +
       '<div class="fvh-hero-lore" style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:12px;text-align:center;line-height:1.35;max-width:340px;">' + heroLoreDesc + '</div>' +
-      '<div class="fvh-solo-actions-row" style="width:100%;display:flex;justify-content:center;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="width:100%;padding:10px 16px;font-size:12.5px;font-weight:900;border-radius:14px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,0.35);"><span>👕</span> <span>' + tr('openLocker') + ' ➔</span></button>' +
+      '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 8px;font-size:12px;font-weight:900;border-radius:14px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-profile-pill" style="padding:10px 8px;font-size:12px;font-weight:900;border-radius:14px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👤</span> <span>' + tr('profile') + '</span></button>' +
       '</div>';
 
     // Clicking gear button opens locker
@@ -9655,6 +9759,14 @@
         app.openCharacterLocker('hoops');
       }
     };
+    var soloProfBtn = heroCard.querySelector('.fvh-solo-profile-pill');
+    if (soloProfBtn) {
+      soloProfBtn.onclick = function (e) {
+        e.stopPropagation();
+        app.audio.play('click');
+        app.go('profile');
+      };
+    }
 
     // Tapping the card / hero directly opens the locker
     heroCard.onclick = function () {

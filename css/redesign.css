@@ -5402,3 +5402,106 @@ html, body {
     font-size: 9.5px !important;
   }
 }
+
+
+/* =========================================================
+   COMPACT PROPORTIONAL RARITY & SHOP CARD BADGES (FIX TEXT OVERFLOW)
+   ========================================================= */
+.rar {
+  display: inline-block !important;
+  font-size: 8.5px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  padding: 2px 5px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
+}
+.rar.common { background: rgba(148, 163, 184, 0.16) !important; color: #94a3b8 !important; border: 1px solid rgba(148, 163, 184, 0.28) !important; }
+.rar.rare { background: rgba(56, 189, 248, 0.16) !important; color: #38bdf8 !important; border: 1px solid rgba(56, 189, 248, 0.35) !important; }
+.rar.epic { background: rgba(192, 132, 252, 0.16) !important; color: #c084fc !important; border: 1px solid rgba(192, 132, 252, 0.35) !important; }
+.rar.legendary { background: rgba(251, 191, 36, 0.16) !important; color: #fbbf24 !important; border: 1px solid rgba(251, 191, 36, 0.4) !important; text-shadow: 0 0 6px rgba(251, 191, 36, 0.3) !important; }
+
+/* Fix Shop Featured Item Preview Overflow on Mobile */
+.fvh-featured-preview {
+  min-width: 84px !important;
+  max-width: 104px !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 8px 10px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+.fvh-featured-preview .rar {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  text-align: center !important;
+  margin-top: 4px !important;
+}
+
+/* Fix Item Card Head layout in Shop & Wardrobe */
+.fvh-card-head {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-bottom: 6px !important;
+  min-height: 20px !important;
+  box-sizing: border-box !important;
+}
+.fvh-card-owned-tag {
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  color: #10b981 !important;
+  white-space: nowrap !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  padding: 2px 5px !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  box-sizing: border-box !important;
+}
+
+/* Topbar Alignment & Equal Heights */
+.fvh-topbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+.fvh-topbar-stats {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+.fvh-topbar-stats button.fvh-pill {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+.fvh-topbar-stats button.fvh-pill.icon-only {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+}
+.fvh-btn-topbar-profile {
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  color: #fff !important;
+  background: rgba(0, 240, 255, 0.12) !important;
+  border: 1px solid rgba(0, 240, 255, 0.35) !important;
+  padding: 0 8px !important;
+}
