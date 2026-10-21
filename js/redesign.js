@@ -111,6 +111,8 @@
       selectChar: 'SET AS ACTIVE CHAMPION',
       selected: 'ACTIVE CHAMPION',
       openLocker: 'WARDROBE & GEAR',
+      openLockerShort: 'WARDROBE',
+      switchSideShort: 'SWITCH TEAM',
       tapToInspect: 'Tap player to customize wardrobe, balls & stadiums',
       practiceTitle: 'Practice Match vs AI',
       selectDifficulty: 'Choose match rules and difficulty',
@@ -276,6 +278,23 @@
       matchupTitle: 'Cross-Sport Rivalry Matchup:',
       youTeam: 'You',
       cpuTeam: 'Opponent',
+      teamSelectTitle: 'FOOTBALL VS BASKETBALL',
+      teamSelectSubtitle: 'Choose your side in the legendary clash of two sports!',
+      teamFootyTitle: 'TEAM FOOTBALL',
+      teamFootySub: 'Striker #10 · Precision Cleats & Dribbling',
+      teamFootyDesc: 'Fight for Football glory! Score incredible goals and prove Football reigns supreme over Basketball!',
+      teamFootyBtn: 'CHOOSE FOOTBALL',
+      teamHoopsTitle: 'TEAM BASKETBALL',
+      teamHoopsSub: 'All-Star #23 · Slam Dunks & Sniper Shots',
+      teamHoopsDesc: 'Fight for Basketball pride! Sink unstoppable buckets and show that Basketball rules the arena!',
+      teamHoopsBtn: 'CHOOSE BASKETBALL',
+      yourTeamLabel: 'Your Team',
+      rivalTeamLabel: 'Rival Team',
+      switchTeamBtn: 'Switch Sport Side',
+      playForFooty: 'PLAY FOR FOOTBALL',
+      playForHoops: 'PLAY FOR BASKETBALL',
+      playFootySub: 'Crush Team Basketball in the Arena ⚔️',
+      playHoopsSub: 'Crush Team Football in the Arena ⚔️',
       quickMatchTitle: 'Quick Match',
       quickMatchBadge: 'ONLINE 1v1',
       quickMatchDesc: 'Real-time online matchmaking against live athletes worldwide.',
@@ -485,6 +504,8 @@
       selectChar: 'СДЕЛАТЬ АКТИВНЫМ',
       selected: 'АКТИВНЫЙ ЧЕМПИОН',
       openLocker: 'ГАРДЕРОБ И ЭКИПИРОВКА',
+      openLockerShort: 'ГАРДЕРОБ',
+      switchSideShort: 'СМЕНИТЬ',
       tapToInspect: 'Нажмите на персонажа для настройки гардероба и экипировки',
       practiceTitle: 'Тренировка с ИИ',
       selectDifficulty: 'Выберите сложность и режим',
@@ -651,6 +672,23 @@
       matchupTitle: 'Противостояние видов спорта:',
       youTeam: 'Вы',
       cpuTeam: 'Соперник',
+      teamSelectTitle: 'ФУТБОЛ ПРОТИВ БАСКЕТБОЛА',
+      teamSelectSubtitle: 'Выберите свою сторону в легендарной битве двух видов спорта!',
+      teamFootyTitle: 'КОМАНДА ФУТБОЛА',
+      teamFootySub: 'Форвард №10 · Фирменные бутсы и техника',
+      teamFootyDesc: 'Сражайтесь за честь футбола! Забивайте голы и докажите превосходство футбола над баскетболом!',
+      teamFootyBtn: 'ВЫБРАТЬ ФУТБОЛ',
+      teamHoopsTitle: 'КОМАНДА БАСКЕТБОЛА',
+      teamHoopsSub: 'Ас №23 · Мощные данки и броски',
+      teamHoopsDesc: 'Сражайтесь за гордость баскетбола! Бросайте в кольцо и докажите мощь баскетбола над футболом!',
+      teamHoopsBtn: 'ВЫБРАТЬ БАСКЕТБОЛ',
+      yourTeamLabel: 'Ваша команда',
+      rivalTeamLabel: 'Соперники',
+      switchTeamBtn: 'Сменить сторону',
+      playForFooty: 'В БОЙ ЗА ФУТБОЛ!',
+      playForHoops: 'В БОЙ ЗА БАСКЕТБОЛ!',
+      playFootySub: 'Сокрушите команду Баскетбола на арене ⚔️',
+      playHoopsSub: 'Сокрушите команду Футбола на арене ⚔️',
       quickMatchTitle: 'Быстрый матч',
       quickMatchBadge: 'ОНЛАЙН 1v1',
       quickMatchDesc: 'Моментальный поиск реального соперника в глобальной сети.',
@@ -8411,6 +8449,89 @@
     return ticker;
   }
 
+  // Onboarding & Sport Team Selection Modal (Football vs Basketball)
+  function showTeamSelectionModal(app, canClose) {
+    if (document.querySelector('.fvh-team-modal-back')) return;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-back fvh-team-modal-back';
+
+    var modal = document.createElement('div');
+    modal.className = 'modal fvh-team-modal';
+
+    var d = app.store.data;
+    var curChar = d.selectedCharacter || 'footy';
+
+    var closeBtnHtml = canClose
+      ? '<button class="modal-close-x" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;">✕</button>'
+      : '';
+
+    modal.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+      '  <span class="fvh-mode-badge clash" style="font-size:11px;padding:3px 10px;">🔥 ' + tr('teamSelectTitle') + '</span>' +
+         closeBtnHtml +
+      '</div>' +
+      '<h2 style="margin:4px 0 6px 0;font-size:20px;font-weight:900;letter-spacing:0.3px;color:#fff;text-align:center;">' + tr('teamSelectTitle') + '</h2>' +
+      '<div style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:16px;line-height:1.4;">' + tr('teamSelectSubtitle') + '</div>' +
+      '<div class="fvh-team-cards-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+      '  <div class="fvh-team-choice-card footy ' + (curChar === 'footy' ? 'selected' : '') + '" style="cursor:pointer;">' +
+      '    <div class="fvh-team-card-badge" style="color:#00f0ff;font-size:12px;font-weight:900;">⚽ ' + tr('teamFootyTitle') + '</div>' +
+      '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
+             getCharacterDisplayHtml('footy') +
+      '    </div>' +
+      '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamFootySub') + '</div>' +
+      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 10px 0;line-height:1.3;text-align:center;">' + tr('teamFootyDesc') + '</div>' +
+      '    <button class="btn block fvh-btn-choose-footy">' + tr('teamFootyBtn') + ' ▶</button>' +
+      '  </div>' +
+      '  <div class="fvh-team-choice-card hoops ' + (curChar === 'hoops' ? 'selected' : '') + '" style="cursor:pointer;">' +
+      '    <div class="fvh-team-card-badge" style="color:#f97316;font-size:12px;font-weight:900;">🏀 ' + tr('teamHoopsTitle') + '</div>' +
+      '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
+             getCharacterDisplayHtml('hoops') +
+      '    </div>' +
+      '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamHoopsSub') + '</div>' +
+      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 10px 0;line-height:1.3;text-align:center;">' + tr('teamHoopsDesc') + '</div>' +
+      '    <button class="btn block fvh-btn-choose-hoops">' + tr('teamHoopsBtn') + ' ▶</button>' +
+      '  </div>' +
+      '</div>';
+
+    function selectSide(side) {
+      app.audio.play('claim');
+      app.store.update(function (storeData) {
+        storeData.selectedCharacter = side;
+        storeData.teamChosen = true;
+      });
+      document.querySelectorAll('.fvh-team-modal-back').forEach(function (el) { el.remove(); });
+      app.showMenu();
+    }
+
+    modal.querySelector('.fvh-btn-choose-footy').onclick = function (e) {
+      e.stopPropagation();
+      selectSide('footy');
+    };
+    modal.querySelector('.fvh-team-choice-card.footy').onclick = function () {
+      selectSide('footy');
+    };
+
+    modal.querySelector('.fvh-btn-choose-hoops').onclick = function (e) {
+      e.stopPropagation();
+      selectSide('hoops');
+    };
+    modal.querySelector('.fvh-team-choice-card.hoops').onclick = function () {
+      selectSide('hoops');
+    };
+
+    if (canClose) {
+      var xBtn = modal.querySelector('.modal-close-x');
+      if (xBtn) xBtn.onclick = function () { overlay.remove(); };
+      overlay.onclick = function (e) {
+        if (e.target === overlay) overlay.remove();
+      };
+    }
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
   // Complete Redesigned Main Menu
   function renderRedesignedMenu(app) {
     app.state = 'menu';
@@ -8448,62 +8569,81 @@
     topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
 
-    // 2. Hero Area: Side-by-Side Face-Off Showcase
+    // 2. Hero Area: Solo Champion Showcase (Shows ONLY the chosen sport hero!)
     var stage = document.createElement('section');
-    stage.className = 'fvh-hero-stage';
+    stage.className = 'fvh-hero-stage solo-stage';
 
     var curChar = d.selectedCharacter || 'footy';
+    var isFooty = (curChar === 'footy');
 
-    // Footy Hero Card
-    var footyHero = document.createElement('div');
-    footyHero.className = 'fvh-hero-card footy' + (curChar === 'footy' ? ' selected' : '');
-    footyHero.innerHTML =
-      '<div class="fvh-hero-badge">' + tr('footyBadge') + '</div>' +
-      '<div class="fvh-hero-avatar-box">' + getCharacterDisplayHtml('footy') + '</div>' +
-      '<div class="fvh-hero-name">' + tr('footyChar') + '</div>' +
-      '<div class="fvh-hero-role">' + tr('footyRole') + '</div>' +
-      '<div class="fvh-hero-gear-pill">👕 ' + tr('openLocker') + ' ➔</div>';
+    var heroCard = document.createElement('div');
+    heroCard.className = 'fvh-hero-card solo-hero ' + curChar;
 
-    // Hoops Hero Card
-    var hoopsHero = document.createElement('div');
-    hoopsHero.className = 'fvh-hero-card hoops' + (curChar === 'hoops' ? ' selected' : '');
-    hoopsHero.innerHTML =
-      '<div class="fvh-hero-badge">' + tr('hoopsBadge') + '</div>' +
-      '<div class="fvh-hero-avatar-box">' + getCharacterDisplayHtml('hoops') + '</div>' +
-      '<div class="fvh-hero-name">' + tr('hoopsChar') + '</div>' +
-      '<div class="fvh-hero-role">' + tr('hoopsRole') + '</div>' +
-      '<div class="fvh-hero-gear-pill">👕 ' + tr('openLocker') + ' ➔</div>';
+    var badgeText = isFooty ? '⚽ ' + tr('teamFootyTitle') : '🏀 ' + tr('teamHoopsTitle');
+    var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS #23' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY #10';
+    var heroRoleText = isFooty ? tr('teamFootySub') : tr('teamHoopsSub');
+    var heroLoreDesc = isFooty ? tr('teamFootyDesc') : tr('teamHoopsDesc');
 
-    // Tapping hero opens respective wardrobe / locker directly
-    footyHero.onclick = function () {
+    heroCard.innerHTML =
+      '<div class="fvh-solo-header" style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:8px;gap:6px;">' +
+      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:11px;padding:3px 8px;font-weight:900;white-space:nowrap;">' + badgeText + '</span>' +
+      '  <span class="fvh-solo-rival-pill" style="font-size:10.5px;color:#f59e0b;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:999px;font-weight:800;white-space:nowrap;">' + rivalText + '</span>' +
+      '</div>' +
+      '<div class="fvh-hero-avatar-box solo-avatar-box" style="height:230px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+         getCharacterDisplayHtml(curChar) +
+      '</div>' +
+      '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY #10' : '🏀 HOOPS #23') + '</div>' +
+      '<div class="fvh-hero-role" style="font-size:12.5px;color:var(--text-muted);font-weight:700;margin-top:2px;text-align:center;">' + heroRoleText + '</div>' +
+      '<div class="fvh-hero-lore" style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:12px;text-align:center;line-height:1.35;max-width:340px;">' + heroLoreDesc + '</div>' +
+      '<div class="fvh-solo-actions-row" style="display:flex;gap:10px;width:100%;justify-content:center;">' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="flex:1;padding:8px 10px;font-size:12px;font-weight:800;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;"><span>👕</span> <span>' + tr('openLockerShort') + ' ➔</span></button>' +
+      '  <button type="button" class="btn fvh-solo-switch-btn" style="flex:1;padding:8px 10px;font-size:12px;font-weight:800;border-radius:12px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#f59e0b;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;"><span>🔄</span> <span>' + tr('switchSideShort') + ' ➔</span></button>' +
+      '</div>';
+
+    // Clicking gear button opens locker
+    heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
+      e.stopPropagation();
       app.audio.play('click');
-      app.openCharacterLocker('footy');
+      if (curChar === 'footy') {
+        app.openCharacterLocker('footy');
+      } else {
+        app.openCharacterLocker('hoops');
+      }
     };
 
-    hoopsHero.onclick = function () {
+    // Clicking switch team button opens selection modal
+    heroCard.querySelector('.fvh-solo-switch-btn').onclick = function (e) {
+      e.stopPropagation();
       app.audio.play('click');
-      app.openCharacterLocker('hoops');
+      showTeamSelectionModal(app, true);
     };
 
-    var vsMiddle = document.createElement('div');
-    vsMiddle.className = 'fvh-vs-middle';
-    vsMiddle.textContent = 'VS';
+    // Tapping the card / hero directly opens the locker
+    heroCard.onclick = function () {
+      app.audio.play('click');
+      if (curChar === 'footy') {
+        app.openCharacterLocker('footy');
+      } else {
+        app.openCharacterLocker('hoops');
+      }
+    };
 
-    stage.appendChild(footyHero);
-    stage.appendChild(vsMiddle);
-    stage.appendChild(hoopsHero);
+    stage.appendChild(heroCard);
     screen.appendChild(stage);
 
-    // 3. Primary Action Deck: Dominant PLAY Button that opens Mode Selection
+    // 3. Primary Action Deck: Dominant PLAY Button that champions your sport!
     var actionDeck = document.createElement('div');
     actionDeck.className = 'fvh-action-deck';
 
     var playBtn = document.createElement('button');
-    playBtn.className = 'fvh-btn-play-hero';
+    playBtn.className = 'fvh-btn-play-hero ' + curChar;
+    var playTitle = isFooty ? tr('playForFooty') : tr('playForHoops');
+    var playSub = isFooty ? tr('playFootySub') : tr('playHoopsSub');
+
     playBtn.innerHTML =
       '<span class="play-icon">▶</span>' +
-      '<span class="play-text">' + tr('playHero') + '</span>' +
-      '<span class="play-sub">' + tr('chooseMode') + '</span>';
+      '<span class="play-text">' + playTitle + '</span>' +
+      '<span class="play-sub">' + playSub + '</span>';
     playBtn.onclick = function () {
       app.audio.play('click');
       app.showModeSelect();
@@ -8541,6 +8681,13 @@
 
     // Show screen
     app.show(screen, 'menu');
+
+    // Onboarding: Prompt player to choose Team Football or Team Basketball on initial entry
+    if (!d.teamChosen) {
+      setTimeout(function () {
+        showTeamSelectionModal(app, false);
+      }, 350);
+    }
   }
 
 
