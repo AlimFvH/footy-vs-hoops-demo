@@ -507,7 +507,11 @@
       warPrizePoolDesc: 'Victory by Team Football or Basketball determines priority token allocation quota for $FOOTY / $HOOPS on TON!',
       warTokenFactionFooty: 'Token Faction: $FOOTY',
       warTokenFactionHoops: 'Token Faction: $HOOPS',
-      warQualifyingContrib: 'Qualifying contribution for TGE allocation snapshot'
+      warQualifyingContrib: 'Qualifying contribution for TGE allocation snapshot',
+      diffEasyReward: '🟢 Easy AI: +15 Leaderboard pts on victory (0.5x rewards)',
+      diffNormalReward: '🟡 Normal AI: +30 Leaderboard pts on victory (1.0x standard)',
+      diffHardReward: '🔴 Hard AI: +60 Leaderboard pts on victory (2.0x MAX rewards!)',
+      warDiffBreakdown: 'AI Victory Points: Easy +15 · Normal +30 · Hard +60 pts'
     },
     ru: {
       playHero: 'ИГРАТЬ',
@@ -956,7 +960,11 @@
       warPrizePoolDesc: 'Победа команды Футбола или Баскетбола определит приоритетную квоту аллокации токенов $FOOTY / $HOOPS на TON!',
       warTokenFactionFooty: 'Фракция токена: $FOOTY',
       warTokenFactionHoops: 'Фракция токена: $HOOPS',
-      warQualifyingContrib: 'Квалификационный вклад в будущий снимок (Snapshot) аллокации'
+      warQualifyingContrib: 'Квалификационный вклад в будущий снимок (Snapshot) аллокации',
+      diffEasyReward: '🟢 Лёгкий ИИ: +15 очков в Лидерборд за победу (0.5x наград)',
+      diffNormalReward: '🟡 Обычный ИИ: +30 очков в Лидерборд за победу (1.0x стандарт)',
+      diffHardReward: '🔴 Сложный ИИ: +60 очков в Лидерборд за победу (2.0x МАКСИМУМ наград!)',
+      warDiffBreakdown: 'Очки за победу над ИИ: Лёгкий +15 · Обычный +30 · Сложный +60'
     }
   };
 
@@ -6675,16 +6683,27 @@
     athletes.push(myEntry);
 
     function computeScore(ath, c) {
+      var wDiff = ath.winsByDiff || {
+        easy: Math.floor((ath.wins || 0) * 0.25),
+        normal: Math.floor((ath.wins || 0) * 0.5),
+        hard: Math.floor((ath.wins || 0) * 0.25)
+      };
+      // Separate points per AI difficulty: Easy=15, Normal=30, Hard=60
+      var winPoints = (wDiff.easy || 0) * 15 + (wDiff.normal || 0) * 30 + (wDiff.hard || 0) * 60;
+      var goalsPoints = (ath.goals || 0) * 6;
+      var basketsPoints = (ath.baskets || 0) * 3;
+      var xpPoints = Math.floor((ath.xp || 0) / 8);
+
       if (c === 'footy') {
-        return (ath.goals || 0) * 10 + (ath.winsFooty || Math.floor((ath.wins || 0) * 0.5)) * 40;
+        return (ath.goals || 0) * 10 + Math.round(winPoints * 0.55);
       }
       if (c === 'hoops') {
-        return (ath.baskets || 0) * 5 + (ath.winsHoops || Math.floor((ath.wins || 0) * 0.35)) * 40;
+        return (ath.baskets || 0) * 5 + Math.round(winPoints * 0.45);
       }
       if (c === 'coins') {
         return ath.coins || 0;
       }
-      return (ath.wins || 0) * 35 + (ath.goals || 0) * 6 + (ath.baskets || 0) * 3 + Math.floor((ath.xp || 0) / 8);
+      return winPoints + goalsPoints + basketsPoints + xpPoints;
     }
 
     var ranked = athletes.map(function (a) {
@@ -6774,6 +6793,7 @@
       '  <span class="fvh-war-live-pill">🔴 ' + (getActiveLang() === 'ru' ? 'СЕЗОН 1 · ПРЯМОЙ ЭФИР' : 'SEASON 1 · LIVE CLASH') + '</span>' +
       '  <span class="fvh-war-rule-tag">⚡ ' + (getActiveLang() === 'ru' ? 'Кто наберет больше очков — тот победил' : 'Most team points wins the Season') + '</span>' +
       '</div>' +
+      '<div class="fvh-war-diff-subhead">🤖 ' + tr('warDiffBreakdown') + '</div>' +
       '<div class="fvh-war-clash-grid">' +
       '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
       '    <div class="fvh-team-tag">⚽ ' + tr('teamFootball') + '</div>' +
@@ -6848,8 +6868,8 @@
       '  </div>' +
       '  <div class="fvh-war-player-hint">' +
       (getActiveLang() === 'ru' ?
-        'Каждый забитый вами мяч (+10/+5), победа в матче (+40) и XP сразу добавляются к общему счёту вашей команды!' :
-        'Every goal or basket you score (+10/+5), match victory (+40), and earned XP directly boost your team\'s total score!') +
+        'Очки за победу над ИИ: Лёгкий (+15), Обычный (+30), Сложный (+60). Забитый гол/мяч (+6/+3) и XP сразу добавляются к общему счёту вашей команды!' :
+        'AI Victory Points: Easy (+15), Normal (+30), Hard (+60). Scored goals (+6/+3) and earned XP directly boost your team\'s total score!') +
       '  </div>' +
       '</div>';
     body.appendChild(playerCard);
@@ -8893,6 +8913,7 @@
               '<button type="button" class="' + (selDiff === 'hard' ? 'on' : '') + '" data-diff="hard">' + tr('hard') + '</button>' +
             '</div>' +
           '</div>' +
+          '<div class="fvh-diff-reward-pill" id="fvh-diff-reward-info"></div>' +
           '<div class="fvh-ctrl-row fvh-ctrl-boost-row">' +
             '<span class="fvh-ctrl-label">' + tr('catBoosts') + ':</span>' +
             '<div class="fvh-mode-boost-box" id="fvh-mode-boost-trigger" style="cursor:pointer;">' +
@@ -8921,15 +8942,32 @@
       };
     });
 
+    function updateDiffRewardPill(dVal) {
+      var pill = practiceCard.querySelector('#fvh-diff-reward-info');
+      if (!pill) return;
+      if (dVal === 'easy') {
+        pill.className = 'fvh-diff-reward-pill easy';
+        pill.textContent = tr('diffEasyReward');
+      } else if (dVal === 'hard') {
+        pill.className = 'fvh-diff-reward-pill hard';
+        pill.textContent = tr('diffHardReward');
+      } else {
+        pill.className = 'fvh-diff-reward-pill normal';
+        pill.textContent = tr('diffNormalReward');
+      }
+    }
+
     // Interactive Difficulty selector
     practiceCard.querySelectorAll('.seg-diff button').forEach(function (b) {
       b.onclick = function () {
         practiceCard.querySelectorAll('.seg-diff button').forEach(function (x) { x.classList.remove('on'); });
         b.classList.add('on');
         selDiff = b.dataset.diff;
+        updateDiffRewardPill(selDiff);
         app.audio.play('click');
       };
     });
+    updateDiffRewardPill(selDiff);
 
     function updatePracticeBoostBox() {
       var boostBox = practiceCard.querySelector('#fvh-mode-boost-trigger');
@@ -9317,6 +9355,15 @@
         origMatchEnd(sum);
         var pid = getAppPlayerId(app);
         var mOutcome = (sum.winner === 0 ? 'win' : sum.winner === null ? 'draw' : 'loss');
+        var curDiff = (app.lastCfg && app.lastCfg.difficulty) || 'normal';
+
+        app.store.update(function (d) {
+          if (!d.stats) d.stats = {};
+          if (!d.stats.winsByDiff) d.stats.winsByDiff = { easy: 0, normal: 0, hard: 0 };
+          if (mOutcome === 'win') {
+            d.stats.winsByDiff[curDiff] = (d.stats.winsByDiff[curDiff] || 0) + 1;
+          }
+        });
 
         if (!sum.online) {
           safeEconomyApi('/api/economy/reward', {

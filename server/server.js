@@ -2230,19 +2230,30 @@ const server = http.createServer((req, res) => {
       }
     });
 
-    // Score Calculator
+    // Score Calculator with AI Difficulty weighting
     function computeScore(ath, cat) {
+      const wDiff = ath.winsByDiff || {
+        easy: Math.floor((ath.wins || 0) * 0.25),
+        normal: Math.floor((ath.wins || 0) * 0.5),
+        hard: Math.floor((ath.wins || 0) * 0.25)
+      };
+      // Separate points per AI difficulty: Easy=15, Normal=30, Hard=60
+      const winPoints = (wDiff.easy || 0) * 15 + (wDiff.normal || 0) * 30 + (wDiff.hard || 0) * 60;
+      const goalsPoints = (ath.goals || 0) * 6;
+      const basketsPoints = (ath.baskets || 0) * 3;
+      const xpPoints = Math.floor((ath.xp || 0) / 8);
+
       if (cat === 'footy') {
-        return (ath.goals || 0) * 10 + (ath.winsFooty || Math.floor((ath.wins || 0) * 0.5)) * 40;
+        return (ath.goals || 0) * 10 + Math.round(winPoints * 0.55);
       }
       if (cat === 'hoops') {
-        return (ath.baskets || 0) * 5 + (ath.winsHoops || Math.floor((ath.wins || 0) * 0.35)) * 40;
+        return (ath.baskets || 0) * 5 + Math.round(winPoints * 0.45);
       }
       if (cat === 'coins') {
         return ath.coins || 0;
       }
       // default: season trophy points
-      return (ath.wins || 0) * 35 + (ath.goals || 0) * 6 + (ath.baskets || 0) * 3 + Math.floor((ath.xp || 0) / 8);
+      return winPoints + goalsPoints + basketsPoints + xpPoints;
     }
 
     const ranked = athletes.map(ath => {
@@ -2617,6 +2628,14 @@ const server = http.createServer((req, res) => {
 
         player.coins += coinsEarned;
         player.xp += xpEarned;
+        if (!player.stats) player.stats = {};
+        if (!player.stats.winsByDiff) player.stats.winsByDiff = { easy: 0, normal: 0, hard: 0 };
+        if (outcome === 'win') {
+          player.stats.winsByDiff[diff] = (player.stats.winsByDiff[diff] || 0) + 1;
+          player.stats.wins = (player.stats.wins || 0) + 1;
+        }
+        if (meta.mode === 'footy') player.stats.goals = (player.stats.goals || 0) + goals;
+        else if (meta.mode === 'hoops') player.stats.baskets = (player.stats.baskets || 0) + goals;
         player.rewardedMatches.push(matchId);
         player.updatedAt = Date.now();
 
