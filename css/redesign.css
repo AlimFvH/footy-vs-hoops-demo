@@ -4875,3 +4875,332 @@ html, body {
 .fvh-leaderboard-row.row-footy {
   border-left: 3px solid rgba(14, 165, 233, 0.6);
 }
+
+/* ==========================================================================
+   Dual-Token ($FOOTY vs $HOOPS) & TGE Airdrop Allocation Styling
+   ========================================================================== */
+
+.fvh-team-token-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin: 6px 0 8px;
+  text-transform: uppercase;
+}
+
+.fvh-team-token-badge.footy {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(6, 182, 212, 0.15));
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.2);
+}
+
+.fvh-team-token-badge.hoops {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(234, 88, 12, 0.15));
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  color: #fb923c;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+}
+
+.fvh-team-token-desc {
+  font-size: 10px;
+  line-height: 1.35;
+  color: #94a3b8;
+  text-align: center;
+  margin: 4px 0 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fvh-team-token-disclaimer {
+  font-size: 10px;
+  line-height: 1.35;
+  color: #64748b;
+  text-align: center;
+  margin-top: 14px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* War Leaderboard TGE Season Prize Pool Banner */
+.fvh-war-tge-banner {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7));
+  border: 1px solid rgba(147, 51, 234, 0.35);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.fvh-war-tge-title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #c084fc;
+  margin-bottom: 4px;
+}
+
+.fvh-war-tge-desc {
+  font-size: 11px;
+  line-height: 1.35;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
+.fvh-war-tge-factions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fvh-tge-faction-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.fvh-tge-faction-pill.footy {
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.fvh-tge-faction-pill.hoops {
+  background: rgba(249, 115, 22, 0.15);
+  border: 1px solid rgba(251, 146, 60, 0.4);
+  color: #fb923c;
+}
+
+.fvh-tge-faction-vs {
+  font-size: 10px;
+  font-weight: 900;
+  color: #64748b;
+}
+
+.fvh-war-tge-subrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fvh-war-tge-token-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.fvh-war-tge-token-sub {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+/* Profile TGE Airdrop Card */
+.fvh-tge-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(20, 24, 38, 0.92));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.fvh-tge-card.hoops {
+  border-color: rgba(249, 115, 22, 0.25);
+}
+
+.fvh-tge-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fvh-tge-title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #f8fafc;
+}
+
+.fvh-tge-status {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.fvh-tge-token-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.fvh-tge-token-icon {
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fvh-tge-token-icon.footy {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(6, 182, 212, 0.1));
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.3);
+}
+
+.fvh-tge-token-icon.hoops {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(234, 88, 12, 0.1));
+  border: 1px solid rgba(251, 146, 60, 0.5);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+}
+
+.fvh-tge-token-details {
+  flex: 1;
+}
+
+.fvh-tge-token-sym {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.fvh-tge-token-sym.footy { color: #38bdf8; }
+.fvh-tge-token-sym.hoops { color: #fb923c; }
+
+.fvh-tge-token-network {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.fvh-tge-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fvh-tge-stat-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.fvh-tge-stat-label {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.fvh-tge-stat-val {
+  font-size: 16px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.fvh-tge-stat-sub {
+  font-size: 9.5px;
+  color: #64748b;
+  margin-top: 3px;
+  line-height: 1.25;
+}
+
+.fvh-tge-wallet-wrap {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.fvh-tge-wallet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fvh-tge-wallet-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.fvh-tge-wallet-status {
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.fvh-tge-wallet-status.connected {
+  color: #34d399;
+}
+
+.fvh-tge-wallet-status.not-connected {
+  color: #94a3b8;
+}
+
+.fvh-tge-wallet-addr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fvh-tge-addr-text {
+  font-family: monospace;
+  font-size: 12px;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.fvh-tge-security-note {
+  font-size: 10px;
+  line-height: 1.35;
+  color: #94a3b8;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+
+.fvh-tge-legal-note {
+  font-size: 9.5px;
+  line-height: 1.3;
+  color: #64748b;
+  margin-top: 8px;
+  text-align: center;
+}

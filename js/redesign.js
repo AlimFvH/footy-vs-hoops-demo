@@ -477,7 +477,37 @@
       daysLeft: 'd',
       podium1st: 'Arena Champion',
       podium2nd: 'Vice Champion',
-      podium3rd: 'Bronze Medalist'
+      podium3rd: 'Bronze Medalist',
+      teamFootyTokenBadge: 'FUTURE TOKEN: $FOOTY',
+      teamHoopsTokenBadge: 'FUTURE TOKEN: $HOOPS',
+      teamFootyTokenDesc: 'Qualify for the official post-launch $FOOTY token airdrop on TON by scoring goals and winning.',
+      teamHoopsTokenDesc: 'Qualify for the official post-launch $HOOPS token airdrop on TON by scoring baskets and winning.',
+      teamTokenDisclaimer: '* Tokens $FOOTY and $HOOPS are in development and will only be distributed after official TGE launch on TON. In-game FvH Coins are not cryptocurrency.',
+      profileTgeCardTitle: 'FUTURE TGE AIRDROP & FACTION TOKEN',
+      profileTgeStatus: 'Pre-TGE Qualification Active',
+      profileTgeFaction: 'Faction Token',
+      profileTgePoints: 'Qualifying Points',
+      profileTgePointsDesc: 'Points calculated from verified match victories, goals scored, and Battle Pass progression.',
+      profileTgeCurrencyNotice: 'In-game FvH Coins are strictly for the shop and cosmetics. They are not tokens or cryptocurrency.',
+      profileTgeWalletTitle: 'TON Airdrop Wallet',
+      profileTgeWalletConnected: 'Wallet Linked for TGE Snapshot',
+      profileTgeWalletNotConnected: 'Wallet Not Linked (Optional)',
+      profileTgeConnectBtn: '+ Link TON Wallet',
+      profileTgeChangeBtn: 'Change Address',
+      profileTgeDisconnectBtn: 'Unlink',
+      profileTgeModalTitle: 'Link Public TON Wallet',
+      profileTgeModalDesc: 'Enter your public TON wallet address (Tonkeeper, Telegram Wallet) for the future TGE snapshot.',
+      profileTgeAddressPlaceholder: 'EQ... or UQ... or domain.ton',
+      profileTgeSaveBtn: 'Save Public Address',
+      profileTgeSecurityWarning: '🛡️ Security: Enter ONLY your public wallet address. We will NEVER ask for your seed phrase or private keys!',
+      profileTgeLaunchNotice: 'Official token distribution will take place only after public TGE. No real tokens are distributed prior to launch.',
+      profileTgeSeedWarningAlert: 'Security Warning: Do not enter a seed phrase or private key! Enter only your public TON address (EQ... or UQ...).',
+      profileTgeInvalidAddress: 'Please enter a valid public TON address (e.g. EQ..., UQ..., or .ton domain).',
+      warPrizePoolTitle: 'SEASON TGE PRIZE POOL',
+      warPrizePoolDesc: 'Victory by Team Football or Basketball determines priority token allocation quota for $FOOTY / $HOOPS on TON!',
+      warTokenFactionFooty: 'Token Faction: $FOOTY',
+      warTokenFactionHoops: 'Token Faction: $HOOPS',
+      warQualifyingContrib: 'Qualifying contribution for TGE allocation snapshot'
     },
     ru: {
       playHero: 'ИГРАТЬ',
@@ -896,7 +926,37 @@
       daysLeft: 'дн.',
       podium1st: 'Чемпион Арены',
       podium2nd: 'Вице-Чемпион',
-      podium3rd: 'Бронзовый Призёр'
+      podium3rd: 'Бронзовый Призёр',
+      teamFootyTokenBadge: 'БУДУЩИЙ ТОКЕН: $FOOTY',
+      teamHoopsTokenBadge: 'БУДУЩИЙ ТОКЕН: $HOOPS',
+      teamFootyTokenDesc: 'Квалифицируйтесь на официальный эйрдроп токена $FOOTY на TON за голы, победы и активность.',
+      teamHoopsTokenDesc: 'Квалифицируйтесь на официальный эйрдроп токена $HOOPS на TON за данки, победы и активность.',
+      teamTokenDisclaimer: '* Токены $FOOTY и $HOOPS находятся в разработке и станут доступны только после официального TGE на TON. Внутриигровые FvH монеты не являются криптовалютой.',
+      profileTgeCardTitle: 'БУДУЩИЙ TGE ЭЙРДРОП И ТОКЕН ФРАКЦИИ',
+      profileTgeStatus: 'Pre-TGE Квалификация активна',
+      profileTgeFaction: 'Токен вашей фракции',
+      profileTgePoints: 'Квалификационные очки',
+      profileTgePointsDesc: 'Очки рассчитываются из подтвержденных побед, забитых голов/мячей и прогресса Боевого Пропуска.',
+      profileTgeCurrencyNotice: 'Внутриигровые FvH монеты предназначены исключительно для покупок в магазине и не являются криптовалютой.',
+      profileTgeWalletTitle: 'TON Кошелек для эйрдропа',
+      profileTgeWalletConnected: 'Кошелек привязан для TGE Snapshot',
+      profileTgeWalletNotConnected: 'Кошелек не привязан (Опционально)',
+      profileTgeConnectBtn: '+ Привязать TON Кошелек',
+      profileTgeChangeBtn: 'Изменить адрес',
+      profileTgeDisconnectBtn: 'Отвязать',
+      profileTgeModalTitle: 'Привязка публичного TON-кошелька',
+      profileTgeModalDesc: 'Укажите ваш публичный TON-адрес (Tonkeeper, Telegram Wallet) для будущего снимка (snapshot) TGE.',
+      profileTgeAddressPlaceholder: 'EQ... или UQ... или domain.ton',
+      profileTgeSaveBtn: 'Сохранить публичный адрес',
+      profileTgeSecurityWarning: '🛡️ Безопасность: Вводите ТОЛЬКО ваш публичный адрес. Мы НИКОГДА не запрашиваем seed-фразы или приватные ключи!',
+      profileTgeLaunchNotice: 'Официальное распределение токенов произойдет только после публичного TGE. Реальные токены не распределяются до старта.',
+      profileTgeSeedWarningAlert: 'Предупреждение безопасности: Не вводите секретную фразу (seed) или приватный ключ! Вводите только публичный адрес кошелька (EQ... или UQ...).',
+      profileTgeInvalidAddress: 'Пожалуйста, введите корректный публичный TON адрес (например, EQ..., UQ... или .ton домен).',
+      warPrizePoolTitle: 'ПРИЗОВОЙ TGE ПУЛ СЕЗОНА',
+      warPrizePoolDesc: 'Победа команды Футбола или Баскетбола определит приоритетную квоту аллокации токенов $FOOTY / $HOOPS на TON!',
+      warTokenFactionFooty: 'Фракция токена: $FOOTY',
+      warTokenFactionHoops: 'Фракция токена: $HOOPS',
+      warQualifyingContrib: 'Квалификационный вклад в будущий снимок (Snapshot) аллокации'
     }
   };
 
@@ -5176,7 +5236,7 @@
       items: [
         { id: 'std_cyber_megacity', name: 'Neo Tokyo Megacity', icon: '🏙️', type: 'cosmetic' },
         { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', icon: '💫', type: 'cosmetic' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker #10', icon: '🎽', type: 'cosmetic' },
+        { id: 'skin_neon_elite', name: 'Cyber Striker', icon: '🎽', type: 'cosmetic' },
         { id: 'trail_laser', name: 'Laser Trail', icon: '⚡', type: 'cosmetic' },
         { name: '2000 Coins', icon: '🪙', type: 'coins', val: 2000 }
       ]
@@ -5197,7 +5257,7 @@
         { id: 'std_space_orbit', name: 'Orbital Space Colosseum', icon: '🚀', type: 'cosmetic' },
         { id: 'std_floating_islands', name: 'Aetheria Sky Islands', icon: '☁️', type: 'cosmetic' },
         { id: 'std_volcano_caldera', name: 'Magma Caldera Arena', icon: '🌋', type: 'cosmetic' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker #10', icon: '🎽', type: 'cosmetic' },
+        { id: 'skin_neon_elite', name: 'Cyber Striker', icon: '🎽', type: 'cosmetic' },
         { id: 'skin_cyber', name: 'Cyber Blue Jersey', icon: '🎽', type: 'cosmetic' },
         { id: 'skin_shadow', name: 'Shadow Ninja', icon: '🥷', type: 'cosmetic' },
         { id: 'skin_frost', name: 'Frost Giant', icon: '❄️', type: 'cosmetic' },
@@ -5780,7 +5840,7 @@
         { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', rarity: 'rare' },
         { id: 'skin_mars', name: 'Mars Rover Kit', category: 'skins', rarity: 'epic' },
         { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker #10', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_neon_elite', name: 'Cyber Striker', category: 'skins', rarity: 'legendary' },
         { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls', rarity: 'rare' },
         { id: 'ball_hoops_chrome', name: 'Chrome', category: 'balls', rarity: 'epic' },
         { id: 'ball_hoops_midnight', name: 'Midnight', category: 'balls', rarity: 'rare' },
@@ -5799,7 +5859,7 @@
       clash: [
         { id: 'skin_gold', name: 'Golden Legend', category: 'skins', rarity: 'legendary' },
         { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker #10', category: 'skins', rarity: 'legendary' },
+        { id: 'skin_neon_elite', name: 'Cyber Striker', category: 'skins', rarity: 'legendary' },
         { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', rarity: 'legendary' },
         { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', rarity: 'epic' },
         { id: 'ball_footy_solar', name: 'Solar Blaze Ball', category: 'balls', rarity: 'legendary' },
@@ -6753,6 +6813,19 @@
       '</div>';
     body.appendChild(scoreboardCard);
 
+    // 2b. Season TGE Prize Pool Banner ($FOOTY vs $HOOPS on TON)
+    var tgeBanner = document.createElement('div');
+    tgeBanner.className = 'fvh-war-tge-banner';
+    tgeBanner.innerHTML =
+      '<div class="fvh-war-tge-title">💎 ' + tr('warPrizePoolTitle') + '</div>' +
+      '<div class="fvh-war-tge-desc">' + tr('warPrizePoolDesc') + '</div>' +
+      '<div class="fvh-war-tge-factions">' +
+      '  <span class="fvh-tge-faction-pill footy">⚽ ' + tr('warTokenFactionFooty') + '</span>' +
+      '  <span class="fvh-tge-faction-vs">VS</span>' +
+      '  <span class="fvh-tge-faction-pill hoops">🏀 ' + tr('warTokenFactionHoops') + '</span>' +
+      '</div>';
+    body.appendChild(tgeBanner);
+
     // 3. Player Allegiance & Personal Contribution Card
     var myContribScore = (data.player && data.player.score) ? data.player.score : 0;
     var playerCard = document.createElement('div');
@@ -6769,6 +6842,10 @@
       '    <span class="fvh-player-my-badge">' + (getActiveLang() === 'ru' ? 'ВАША КОМАНДА' : 'YOUR TEAM') + '</span>' +
       '  </div>' +
       '  <div class="fvh-war-player-contrib-num">' + tr('yourContribution', { score: myContribScore.toLocaleString() }) + '</div>' +
+      '  <div class="fvh-war-tge-subrow">' +
+      '    <span class="fvh-war-tge-token-pill">💎 ' + (myChar === 'footy' ? tr('warTokenFactionFooty') : tr('warTokenFactionHoops')) + '</span>' +
+      '    <span class="fvh-war-tge-token-sub">' + tr('warQualifyingContrib') + '</span>' +
+      '  </div>' +
       '  <div class="fvh-war-player-hint">' +
       (getActiveLang() === 'ru' ?
         'Каждый забитый вами мяч (+10/+5), победа в матче (+40) и XP сразу добавляются к общему счёту вашей команды!' :
@@ -6969,7 +7046,7 @@
       '</div>' +
       '<div class="fvh-profile-id-info">' +
       '<div class="fvh-profile-title-tag">ALL-STAR ATHLETE</div>' +
-      '<h2 style="margin:2px 0 4px;font-size:22px;">' + (curChar === 'footy' ? 'STRIKER #10' : 'FORWARD #23') + '</h2>' +
+      '<h2 style="margin:2px 0 4px;font-size:22px;">' + (curChar === 'footy' ? 'STRIKER' : 'FORWARD') + '</h2>' +
       '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">' + tr('bpXpNeeded', { cur: bpState.intoLevel, need: bpState.needed, next: Math.min(30, bpState.level + 1) }) + '</div>' +
       '<div class="pbar" style="height:8px;margin:0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
       '</div>';
@@ -7021,6 +7098,139 @@
     };
     metricsCard.appendChild(lbBtn);
     body.appendChild(metricsCard);
+
+    // 3b. Future TGE Airdrop & Faction Token Card ($FOOTY / $HOOPS)
+    var tgeCard = document.createElement('div');
+    tgeCard.className = 'fvh-tge-card ' + curChar;
+
+    var qualifyingScore = (stats.wins || 0) * 40 + (stats.goals || 0) * 10 + (stats.baskets || 0) * 10 + (bpState.level || 1) * 50;
+    var tokenSym = (curChar === 'footy' ? '$FOOTY' : '$HOOPS');
+    var tokenIcon = (curChar === 'footy' ? '⚽' : '🏀');
+    var tokenFactionName = (curChar === 'footy' ? tr('warTokenFactionFooty') : tr('warTokenFactionHoops'));
+    var userWallet = app.store.data.walletAddress || null;
+
+    function renderTgeCardContent() {
+      var isConnected = Boolean(userWallet);
+      var displayAddr = isConnected ? (userWallet.length > 14 ? userWallet.slice(0, 6) + '...' + userWallet.slice(-4) : userWallet) : '';
+
+      tgeCard.innerHTML =
+        '<div class="fvh-tge-head">' +
+        '  <div class="fvh-tge-title">💎 ' + tr('profileTgeCardTitle') + '</div>' +
+        '  <span class="fvh-tge-status">🟢 ' + tr('profileTgeStatus') + '</span>' +
+        '</div>' +
+        '<div class="fvh-tge-token-hero">' +
+        '  <div class="fvh-tge-token-icon ' + curChar + '">' + tokenIcon + '</div>' +
+        '  <div class="fvh-tge-token-details">' +
+        '    <div class="fvh-tge-token-sym ' + curChar + '">' + tokenSym + '</div>' +
+        '    <div class="fvh-tge-token-network">' + tokenFactionName + ' · TON Blockchain</div>' +
+        '  </div>' +
+        '</div>' +
+        '<div class="fvh-tge-stats-grid">' +
+        '  <div class="fvh-tge-stat-box">' +
+        '    <div class="fvh-tge-stat-label">🎯 ' + tr('profileTgePoints') + '</div>' +
+        '    <div class="fvh-tge-stat-val">' + qualifyingScore.toLocaleString() + ' pts</div>' +
+        '    <div class="fvh-tge-stat-sub">' + tr('profileTgePointsDesc') + '</div>' +
+        '  </div>' +
+        '  <div class="fvh-tge-stat-box">' +
+        '    <div class="fvh-tge-stat-label">🪙 FvH Coin</div>' +
+        '    <div class="fvh-tge-stat-val">' + (app.store.data.coins || 0).toLocaleString() + ' FvH</div>' +
+        '    <div class="fvh-tge-stat-sub">' + tr('profileTgeCurrencyNotice') + '</div>' +
+        '  </div>' +
+        '</div>' +
+        '<div class="fvh-tge-wallet-wrap">' +
+        '  <div class="fvh-tge-wallet-head">' +
+        '    <span class="fvh-tge-wallet-title">👛 ' + tr('profileTgeWalletTitle') + '</span>' +
+        '    <span class="fvh-tge-wallet-status ' + (isConnected ? 'connected' : 'not-connected') + '">' +
+        (isConnected ? ('✓ ' + tr('profileTgeWalletConnected')) : tr('profileTgeWalletNotConnected')) +
+        '    </span>' +
+        '  </div>' +
+        (isConnected ?
+          '<div class="fvh-tge-wallet-addr-row">' +
+          '  <span class="fvh-tge-addr-text">' + displayAddr + '</span>' +
+          '  <div style="display:flex;gap:6px;">' +
+          '    <button class="btn small fvh-tge-btn-edit">' + tr('profileTgeChangeBtn') + '</button>' +
+          '    <button class="btn small danger fvh-tge-btn-del">' + tr('profileTgeDisconnectBtn') + '</button>' +
+          '  </div>' +
+          '</div>' :
+          '<button class="btn primary small block fvh-tge-btn-connect">' + tr('profileTgeConnectBtn') + '</button>') +
+        '</div>' +
+        '<div class="fvh-tge-security-note">' + tr('profileTgeSecurityWarning') + '</div>' +
+        '<div class="fvh-tge-legal-note">' + tr('profileTgeLaunchNotice') + '</div>';
+
+      var connectBtn = tgeCard.querySelector('.fvh-tge-btn-connect');
+      if (connectBtn) connectBtn.onclick = openWalletLinkModal;
+
+      var editBtn = tgeCard.querySelector('.fvh-tge-btn-edit');
+      if (editBtn) editBtn.onclick = openWalletLinkModal;
+
+      var delBtn = tgeCard.querySelector('.fvh-tge-btn-del');
+      if (delBtn) delBtn.onclick = function () {
+        app.audio.play('click');
+        app.store.update(function (d) {
+          d.walletAddress = null;
+        });
+        userWallet = null;
+        renderTgeCardContent();
+      };
+    }
+
+    function openWalletLinkModal() {
+      app.audio.play('click');
+      var overlay = document.createElement('div');
+      overlay.className = 'modal-back';
+      var modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+        '  <h3 style="margin:0;font-size:16px;font-weight:900;">👛 ' + tr('profileTgeModalTitle') + '</h3>' +
+        '  <button class="modal-close-x" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
+        '</div>' +
+        '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.4;">' + tr('profileTgeModalDesc') + '</p>' +
+        '<div style="margin-bottom:12px;">' +
+        '  <input type="text" id="fvh-tge-input-wallet" class="fvh-input-wallet" value="' + (userWallet || '') + '" placeholder="' + tr('profileTgeAddressPlaceholder') + '" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.2);color:#fff;font-family:monospace;font-size:13px;">' +
+        '</div>' +
+        '<div style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:8px 10px;margin-bottom:14px;line-height:1.35;">' +
+        tr('profileTgeSecurityWarning') +
+        '</div>' +
+        '<div style="display:flex;gap:8px;">' +
+        '  <button class="btn block fvh-btn-cancel" style="flex:1;">' + (getActiveLang() === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
+        '  <button class="btn primary block fvh-btn-save-wallet" style="flex:2;">' + tr('profileTgeSaveBtn') + '</button>' +
+        '</div>';
+
+      modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+      modal.querySelector('.fvh-btn-cancel').onclick = function () { overlay.remove(); };
+      modal.querySelector('.fvh-btn-save-wallet').onclick = function () {
+        var input = modal.querySelector('#fvh-tge-input-wallet');
+        var val = input ? input.value.trim() : '';
+        if (!val) {
+          app.store.update(function (d) { d.walletAddress = null; });
+          userWallet = null;
+          overlay.remove();
+          renderTgeCardContent();
+          return;
+        }
+        if (val.includes(' ') && val.split(/\s+/).length > 2) {
+          alert(tr('profileTgeSeedWarningAlert'));
+          return;
+        }
+        if (val.length < 8) {
+          alert(tr('profileTgeInvalidAddress'));
+          return;
+        }
+        app.audio.play('claim');
+        app.store.update(function (d) {
+          d.walletAddress = val;
+        });
+        userWallet = val;
+        overlay.remove();
+        renderTgeCardContent();
+      };
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    }
+
+    renderTgeCardContent();
+    body.appendChild(tgeCard);
 
     // 4. Mystery Packs Unopened Inventory
     var packsCard = document.createElement('div');
@@ -8879,23 +9089,28 @@
       '<div class="fvh-team-cards-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
       '  <div class="fvh-team-choice-card footy ' + (curChar === 'footy' ? 'selected' : '') + '" style="cursor:pointer;">' +
       '    <div class="fvh-team-card-badge" style="color:#00f0ff;font-size:12px;font-weight:900;">⚽ ' + tr('teamFootyTitle') + '</div>' +
+      '    <div class="fvh-team-token-badge footy">💎 ' + tr('teamFootyTokenBadge') + '</div>' +
       '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
              getCharacterDisplayHtml('footy') +
       '    </div>' +
       '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamFootySub') + '</div>' +
-      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 10px 0;line-height:1.3;text-align:center;">' + tr('teamFootyDesc') + '</div>' +
+      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 6px 0;line-height:1.3;text-align:center;">' + tr('teamFootyDesc') + '</div>' +
+      '    <div class="fvh-team-token-desc">' + tr('teamFootyTokenDesc') + '</div>' +
       '    <button class="btn block fvh-btn-choose-footy">' + tr('teamFootyBtn') + ' ▶</button>' +
       '  </div>' +
       '  <div class="fvh-team-choice-card hoops ' + (curChar === 'hoops' ? 'selected' : '') + '" style="cursor:pointer;">' +
       '    <div class="fvh-team-card-badge" style="color:#f97316;font-size:12px;font-weight:900;">🏀 ' + tr('teamHoopsTitle') + '</div>' +
+      '    <div class="fvh-team-token-badge hoops">💎 ' + tr('teamHoopsTokenBadge') + '</div>' +
       '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
              getCharacterDisplayHtml('hoops') +
       '    </div>' +
       '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamHoopsSub') + '</div>' +
-      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 10px 0;line-height:1.3;text-align:center;">' + tr('teamHoopsDesc') + '</div>' +
+      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 6px 0;line-height:1.3;text-align:center;">' + tr('teamHoopsDesc') + '</div>' +
+      '    <div class="fvh-team-token-desc">' + tr('teamHoopsTokenDesc') + '</div>' +
       '    <button class="btn block fvh-btn-choose-hoops">' + tr('teamHoopsBtn') + ' ▶</button>' +
       '  </div>' +
-      '</div>';
+      '</div>' +
+      '<div class="fvh-team-token-disclaimer">' + tr('teamTokenDisclaimer') + '</div>';
 
     function selectSide(side) {
       app.audio.play('claim');
@@ -9391,6 +9606,11 @@
     // Dedicated Leaderboard Screen
     app.showLeaderboard = function (cat) {
       app.show(buildLeaderboardPage(app, cat || 'season'), 'leaderboard');
+    };
+
+    // Dedicated Profile Screen
+    app.showProfile = function () {
+      app.show(buildProfilePage(app), 'profile');
     };
 
     // Refresh menu on language change
