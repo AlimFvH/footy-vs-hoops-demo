@@ -344,6 +344,10 @@
       q_sub_chat_desc: 'Connect with players, share highlights, and find rivals',
       q_sub_insta_title: 'Follow on Instagram',
       q_sub_insta_desc: 'Official artwork, game reels, and behind-the-scenes',
+      q_sub_yt_title: 'Subscribe on YouTube',
+      q_sub_yt_desc: 'Match gameplay highlights, tips, and official trailers',
+      q_sub_tiktok_title: 'Follow on TikTok',
+      q_sub_tiktok_desc: 'Trending sports clips, viral goals, and compilations',
       q_share_post_title: 'Share Official Post',
       q_share_post_desc: 'Share the Season 1 Kickoff post to earn rewards',
       q_community_event_title: 'Community Clash Event',
@@ -818,6 +822,10 @@
       q_sub_chat_desc: 'Общайтесь с игроками, делитесь тактиками и находите соперников',
       q_sub_insta_title: 'Подпишись на Instagram',
       q_sub_insta_desc: 'Официальные арты, игровые ролики и события',
+      q_sub_yt_title: 'Подпишись на YouTube',
+      q_sub_yt_desc: 'Хайлайты матчей, обучающие ролики и трейлеры игры',
+      q_sub_tiktok_title: 'Подпишись на TikTok',
+      q_sub_tiktok_desc: 'Трендовые спортивные клипы, голы и яркие моменты',
       q_share_post_title: 'Поделись публикацией',
       q_share_post_desc: 'Опубликуйте новость о старте Сезона 1 в соцсетях',
       q_community_event_title: 'Турнир Сообщества',
@@ -2569,6 +2577,19 @@
         '<rect x="11" y="11" width="18" height="18" rx="5" stroke="#FFFFFF" stroke-width="2" fill="none"/>' +
         '<circle cx="20" cy="20" r="4.5" stroke="#FFFFFF" stroke-width="2" fill="none"/>' +
         '<circle cx="24.8" cy="15.2" r="1.2" fill="#FFFFFF"/>' +
+        '</svg>';
+    } else if (type === 'yt') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="40" height="40" rx="12" fill="#FF0000"/>' +
+        '<path d="M30 16.5C29.7 15.3 28.7 14.3 27.5 14C25.2 13.4 20 13.4 20 13.4C20 13.4 14.8 13.4 12.5 14C11.3 14.3 10.3 15.3 10 16.5C9.4 18.8 9.4 20 9.4 20C9.4 20 9.4 21.2 10 23.5C10.3 24.7 11.3 25.7 12.5 26C14.8 26.6 20 26.6 20 26.6C20 26.6 25.2 26.6 27.5 26C28.7 25.7 29.7 24.7 30 23.5C30.6 21.2 30.6 20 30.6 20C30.6 20 30.6 18.8 30 16.5Z" fill="#FFFFFF"/>' +
+        '<polygon points="17.5,17 24,20 17.5,23" fill="#FF0000"/>' +
+        '</svg>';
+    } else if (type === 'tiktok') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="40" height="40" rx="12" fill="#010101" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>' +
+        '<path d="M24.5 12.5C23.5 14.5 21.8 15.8 19.8 16.1V24.2C19.8 26.8 17.7 28.9 15.1 28.9C12.5 28.9 10.4 26.8 10.4 24.2C10.4 21.6 12.5 19.5 15.1 19.5C15.6 19.5 16.1 19.6 16.6 19.8V16.3C16.1 16.2 15.6 16.1 15.1 16.1C10.6 16.1 7 19.7 7 24.2C7 28.7 10.6 32.3 15.1 32.3C19.6 32.3 23.2 28.7 23.2 24.2V17.9C25.3 19.4 27.9 20.2 30.6 20.2V16.8C27.8 16.8 25.5 14.9 24.5 12.5Z" fill="#25F4EE" transform="translate(-0.8, -0.8)"/>' +
+        '<path d="M24.5 12.5C23.5 14.5 21.8 15.8 19.8 16.1V24.2C19.8 26.8 17.7 28.9 15.1 28.9C12.5 28.9 10.4 26.8 10.4 24.2C10.4 21.6 12.5 19.5 15.1 19.5C15.6 19.5 16.1 19.6 16.6 19.8V16.3C16.1 16.2 15.6 16.1 15.1 16.1C10.6 16.1 7 19.7 7 24.2C7 28.7 10.6 32.3 15.1 32.3C19.6 32.3 23.2 28.7 23.2 24.2V17.9C25.3 19.4 27.9 20.2 30.6 20.2V16.8C27.8 16.8 25.5 14.9 24.5 12.5Z" fill="#FE2C55" transform="translate(0.8, 0.8)"/>' +
+        '<path d="M24.5 12.5C23.5 14.5 21.8 15.8 19.8 16.1V24.2C19.8 26.8 17.7 28.9 15.1 28.9C12.5 28.9 10.4 26.8 10.4 24.2C10.4 21.6 12.5 19.5 15.1 19.5C15.6 19.5 16.1 19.6 16.6 19.8V16.3C16.1 16.2 15.6 16.1 15.1 16.1C10.6 16.1 7 19.7 7 24.2C7 28.7 10.6 32.3 15.1 32.3C19.6 32.3 23.2 28.7 23.2 24.2V17.9C25.3 19.4 27.9 20.2 30.6 20.2V16.8C27.8 16.8 25.5 14.9 24.5 12.5Z" fill="#FFFFFF"/>' +
         '</svg>';
     } else if (type === 'tournament' || type === 'trophy') {
       return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -4897,7 +4918,7 @@
         '<span class="fvh-prime-tag">🌐 ' + tr('socialMissionTitle') + '</span>' +
         '<h2 style="margin:4px 0 2px;font-size:18px;">' + tr('socialMissionSubtitle') + '</h2>' +
         '</div>' +
-        '<div class="fvh-prime-reward">🎁 1,950 ' + getFvhCoinSvg('inline') + '</div>' +
+        '<div class="fvh-prime-reward">🎁 3,200 ' + getFvhCoinSvg('inline') + '</div>' +
         '</div>' +
         '<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">' +
         (lang === 'ru' ? '✓ Подпишитесь на официальные каналы проекта. Награда выдаётся после подтверждения перехода.' : '✓ Follow official project channels. Rewards unlocked upon verified visit.') +
@@ -4909,47 +4930,67 @@
           id: 'q_sub_tg',
           title: tr('q_sub_tg_title'),
           desc: tr('q_sub_tg_desc'),
-          url: 'https://t.me/footy_vs_hoops_news',
+          url: 'https://t.me/FootyHoops',
           coins: 500,
           xp: 150,
           icon: getSocialIconSvg('tg'),
           actionText: tr('subscribeBtn')
         },
         {
-          id: 'q_sub_x',
-          title: tr('q_sub_x_title'),
-          desc: tr('q_sub_x_desc'),
-          url: 'https://x.com/FootyVsHoops',
-          coins: 400,
-          xp: 100,
-          icon: getSocialIconSvg('x'),
-          actionText: tr('followBtn')
-        },
-        {
           id: 'q_sub_chat',
           title: tr('q_sub_chat_title'),
           desc: tr('q_sub_chat_desc'),
-          url: 'https://t.me/footy_vs_hoops_chat',
+          url: 'https://t.me/+zKbH1Po_pdg2MmVi',
           coins: 450,
           xp: 120,
           icon: getSocialIconSvg('chat'),
           actionText: tr('joinBtn')
         },
         {
+          id: 'q_sub_x',
+          title: tr('q_sub_x_title'),
+          desc: tr('q_sub_x_desc'),
+          url: 'https://x.com/footyvshoops',
+          coins: 400,
+          xp: 100,
+          icon: getSocialIconSvg('x'),
+          actionText: tr('followBtn')
+        },
+        {
           id: 'q_sub_insta',
           title: tr('q_sub_insta_title'),
           desc: tr('q_sub_insta_desc'),
-          url: 'https://instagram.com/footy_vs_hoops',
+          url: 'https://www.instagram.com/footyvshoops',
           coins: 400,
           xp: 100,
           icon: getSocialIconSvg('insta'),
           actionText: tr('followBtn')
         },
         {
+          id: 'q_sub_yt',
+          title: tr('q_sub_yt_title'),
+          desc: tr('q_sub_yt_desc'),
+          url: 'https://youtube.com/@footyvshoops-cr',
+          coins: 450,
+          xp: 120,
+          icon: getSocialIconSvg('yt'),
+          actionText: tr('subscribeBtn')
+        },
+        {
+          id: 'q_sub_tiktok',
+          title: tr('q_sub_tiktok_title'),
+          desc: tr('q_sub_tiktok_desc'),
+          url: 'https://www.tiktok.com/@footy_vs_hoops',
+          coins: 400,
+          xp: 100,
+          icon: getSocialIconSvg('tiktok'),
+          actionText: tr('followBtn')
+        },
+        {
           id: 'q_community_event',
           title: tr('q_community_event_title'),
           desc: tr('q_community_event_desc'),
-          url: 'https://footyvshoops.io/tournaments/season1',
+          url: 'https://t.me/FootyHoops',
           coins: 600,
           xp: 200,
           icon: getSocialIconSvg('tournament'),
