@@ -269,11 +269,11 @@
       modeSelectSubtitle: 'Select your competition arena and challenge level',
       clashModeTitle: 'FOOTY vs HOOPS Clash',
       clashModeBadge: '🔥 1v1 RIVALRY SHOWDOWN',
-      clashModeDesc: 'The ultimate sports collision! Football (#10 Striker) clashes head-to-head with Basketball (#23 All-Star) on the arena pitch!',
-      clashPlayFooty: '⚽ PLAY AS FOOTY (#10)',
-      clashPlayHoops: '🏀 PLAY AS HOOPS (#23)',
-      clashFootySub: '⚽ Striker #10 vs 🏀 All-Star #23',
-      clashHoopsSub: '🏀 All-Star #23 vs ⚽ Striker #10',
+      clashModeDesc: 'The ultimate sports collision! Football (Striker) clashes head-to-head with Basketball (All-Star) on the arena pitch!',
+      clashPlayFooty: '⚽ PLAY AS FOOTY',
+      clashPlayHoops: '🏀 PLAY AS HOOPS',
+      clashFootySub: '⚽ Striker vs 🏀 All-Star',
+      clashHoopsSub: '🏀 All-Star vs ⚽ Striker',
       clashStartBtn: 'START 1v1 CLASH SHOWDOWN',
       matchupTitle: 'Cross-Sport Rivalry Matchup:',
       youTeam: 'You',
@@ -281,11 +281,11 @@
       teamSelectTitle: 'FOOTBALL VS BASKETBALL',
       teamSelectSubtitle: 'Choose your side in the legendary clash of two sports!',
       teamFootyTitle: 'TEAM FOOTBALL',
-      teamFootySub: 'Striker #10 · Precision Cleats & Dribbling',
+      teamFootySub: 'Agile Striker · Precision Cleats & Dribbling',
       teamFootyDesc: 'Fight for Football glory! Score incredible goals and prove Football reigns supreme over Basketball!',
       teamFootyBtn: 'CHOOSE FOOTBALL',
       teamHoopsTitle: 'TEAM BASKETBALL',
-      teamHoopsSub: 'All-Star #23 · Slam Dunks & Sniper Shots',
+      teamHoopsSub: 'Power Forward · Slam Dunks & Sniper Shots',
       teamHoopsDesc: 'Fight for Basketball pride! Sink unstoppable buckets and show that Basketball rules the arena!',
       teamHoopsBtn: 'CHOOSE BASKETBALL',
       yourTeamLabel: 'Your Team',
@@ -663,11 +663,11 @@
       modeSelectSubtitle: 'Выберите формат соревнований и уровень соперника',
       clashModeTitle: 'Клэш: Футбол vs Баскетбол',
       clashModeBadge: '🔥 ГЛАВНАЯ БИТВА 1v1',
-      clashModeDesc: 'Культовое столкновение двух видов спорта! Футбольный форвард (#10) сходится лицом к лицу с баскетбольной звездой (#23) на арене!',
-      clashPlayFooty: '⚽ ИГРАТЬ ЗА FOOTY (#10)',
-      clashPlayHoops: '🏀 ИГРАТЬ ЗА HOOPS (#23)',
-      clashFootySub: '⚽ Форвард #10 vs 🏀 Звезда #23',
-      clashHoopsSub: '🏀 Звезда #23 vs ⚽ Форвард #10',
+      clashModeDesc: 'Культовое столкновение двух видов спорта! Футбольный форвард сходится лицом к лицу с баскетбольной звездой на арене!',
+      clashPlayFooty: '⚽ ИГРАТЬ ЗА FOOTY',
+      clashPlayHoops: '🏀 ИГРАТЬ ЗА HOOPS',
+      clashFootySub: '⚽ Форвард vs 🏀 Звезда',
+      clashHoopsSub: '🏀 Звезда vs ⚽ Форвард',
       clashStartBtn: 'НАЧАТЬ КЛЭШ 1v1',
       matchupTitle: 'Противостояние видов спорта:',
       youTeam: 'Вы',
@@ -675,11 +675,11 @@
       teamSelectTitle: 'ФУТБОЛ ПРОТИВ БАСКЕТБОЛА',
       teamSelectSubtitle: 'Выберите свою сторону в легендарной битве двух видов спорта!',
       teamFootyTitle: 'КОМАНДА ФУТБОЛА',
-      teamFootySub: 'Форвард №10 · Фирменные бутсы и техника',
+      teamFootySub: 'Форвард · Фирменные бутсы и техника',
       teamFootyDesc: 'Сражайтесь за честь футбола! Забивайте голы и докажите превосходство футбола над баскетболом!',
       teamFootyBtn: 'ВЫБРАТЬ ФУТБОЛ',
       teamHoopsTitle: 'КОМАНДА БАСКЕТБОЛА',
-      teamHoopsSub: 'Ас №23 · Мощные данки и броски',
+      teamHoopsSub: 'Ас площадки · Мощные данки и броски',
       teamHoopsDesc: 'Сражайтесь за гордость баскетбола! Бросайте в кольцо и докажите мощь баскетбола над футболом!',
       teamHoopsBtn: 'ВЫБРАТЬ БАСКЕТБОЛ',
       yourTeamLabel: 'Ваша команда',
@@ -994,13 +994,188 @@
     return '<svg viewBox="0 0 240 290" fill="none" xmlns="http://www.w3.org/2000/svg" class="fvh-hero-avatar-svg"><defs><radialGradient id="hoopsArenaLight" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#ea580c" stop-opacity="0.22"/><stop offset="50%" stop-color="#9a3412" stop-opacity="0.08"/><stop offset="100%" stop-color="#07030c" stop-opacity="0"/></radialGradient><linearGradient id="hoopsJersey" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff7b00"/><stop offset="35%" stop-color="#ea580c"/><stop offset="75%" stop-color="#c2410c"/><stop offset="100%" stop-color="#7c2d12"/></linearGradient><linearGradient id="hoopsShorts" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#9a3412"/><stop offset="60%" stop-color="#6c230b"/><stop offset="100%" stop-color="#3b1104"/></linearGradient><linearGradient id="hoopsSideStripe" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#ff7b00"/><stop offset="100%" stop-color="#18181b"/></linearGradient><linearGradient id="hoopsSkin" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stop-color="#d97706"/><stop offset="45%" stop-color="#b45309"/><stop offset="85%" stop-color="#854d0e"/><stop offset="100%" stop-color="#5a310c"/></linearGradient><linearGradient id="hoopsSkinDark" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#92400e"/><stop offset="100%" stop-color="#451a03"/></linearGradient><linearGradient id="hoopsSneaker" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ea580c"/><stop offset="50%" stop-color="#18181b"/><stop offset="100%" stop-color="#09090b"/></linearGradient><radialGradient id="hoopsBallGrad" cx="35%" cy="30%" r="65%"><stop offset="0%" stop-color="#ffaa44"/><stop offset="35%" stop-color="#f97316"/><stop offset="70%" stop-color="#c2410c"/><stop offset="90%" stop-color="#7c2d12"/><stop offset="100%" stop-color="#3b1204"/></radialGradient><pattern id="hoopsMesh" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="0.9" fill="#fef08a" opacity="0.25"/></pattern><ellipse id="ballCourtRing" cx="28" cy="28" rx="33" ry="10" stroke="#ff7b00" stroke-width="0.001" fill="none" opacity="0"/></defs><circle cx="120" cy="135" r="115" fill="url(#hoopsArenaLight)"/><ellipse cx="120" cy="274" rx="74" ry="10" fill="#000000" opacity="0.6"/><g><path d="M104 168L92 216L80 252L100 258L110 220L116 168Z" fill="url(#hoopsSkinDark)"/><path d="M102 195L92 218L82 250L100 256L108 222L110 195Z" fill="#f8fafc"/><path d="M101 199L89 201L91 204L103 202Z" fill="#ff7b00"/><path d="M80 250L48 254L46 264L90 264L92 254Z" fill="url(#hoopsSneaker)"/><path d="M46 262L90 262L91 267L45 267Z" fill="#ffffff"/><path d="M45 266L91 266L92 269L44 269Z" fill="#18181b"/></g><g><path d="M136 168L148 216L160 252L140 258L130 220L124 168Z" fill="url(#hoopsSkinDark)"/><path d="M138 195L148 218L158 250L140 256L132 222L130 195Z" fill="#f8fafc"/><path d="M139 199L151 201L149 204L137 202Z" fill="#ff7b00"/><path d="M140 250L172 254L174 264L130 264L128 254Z" fill="url(#hoopsSneaker)"/><path d="M130 262L174 262L175 267L129 267Z" fill="#ffffff"/><path d="M129 266L175 266L176 269L128 269Z" fill="#18181b"/></g><g><path d="M82 130L68 178L115 178L120 144L125 178L168 178L156 130Z" fill="url(#hoopsShorts)"/><path d="M69 134L68 177L78 177L82 134Z" fill="url(#hoopsSideStripe)"/><path d="M167 134L168 177L158 177L154 134Z" fill="url(#hoopsSideStripe)"/><path d="M68 175L115 175L114 178L68 178Z" fill="#ffffff"/><path d="M125 175L168 175L168 178L125 178Z" fill="#ffffff"/><rect x="82" y="128" width="74" height="4.5" rx="1.5" fill="#ea580c"/></g><g><path d="M82 66L66 136L172 136L156 66L142 62L120 70L98 62Z" fill="url(#hoopsJersey)"/><path d="M82 66L66 136L172 136L156 66L142 62L120 70L98 62Z" fill="url(#hoopsMesh)"/><path d="M98 62L120 70L142 62L138 58L120 65L102 58Z" fill="#ffffff"/><path d="M100 63L120 69L140 63L138 61L120 66L102 61Z" fill="#18181b"/><path d="M82 66L76 86L70 84L78 65Z" fill="#ffffff"/><path d="M156 66L162 86L168 84L160 65Z" fill="#ffffff"/><path d="M70 84L66 136L74 136L76 86Z" fill="url(#hoopsSideStripe)"/><path d="M168 84L172 136L164 136L162 86Z" fill="url(#hoopsSideStripe)"/><text x="119" y="86" font-family="\'Arial Black\', Impact, sans-serif" font-size="8.5" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="3">HOOPS</text><text x="120" y="124" font-family="Impact, \'Arial Black\', sans-serif" font-size="38" font-weight="900" fill="#ffffff" stroke="#18181b" stroke-width="1.8" text-anchor="middle" letter-spacing="2">23</text></g><g><circle cx="76" cy="74" r="14" fill="url(#hoopsSkin)"/><path d="M84 76L52 104L62 114L90 86Z" fill="#18181b"/><path d="M52 104L40 114L46 120L58 110Z" fill="url(#hoopsSkin)"/></g><g><circle cx="162" cy="74" r="14" fill="url(#hoopsSkin)"/><path d="M154 70L186 84L192 76L160 62Z" fill="url(#hoopsSkin)"/><path d="M186 84L190 54L178 52L176 80Z" fill="url(#hoopsSkin)"/><path d="M190 54L194 44L182 42L178 52Z" fill="url(#hoopsSkin)"/><rect x="178" y="58" width="12" height="6" rx="1.5" fill="#ff7b00"/></g><path d="M106 56L106 70L132 70L132 56Z" fill="url(#hoopsSkinDark)"/><path d="M110 56L110 70L128 70L128 56Z" fill="url(#hoopsSkin)"/><ellipse cx="119" cy="38" rx="22" ry="24" fill="url(#hoopsSkin)"/><path d="M103 36C103 48 111 56 119 56C127 56 135 48 135 36Z" fill="url(#hoopsSkin)"/><path d="M96 28C96 12 142 12 142 28Z" fill="#09050d"/><rect x="95" y="24" width="48" height="11" rx="2.5" fill="#ff7b00" stroke="#ffffff" stroke-width="0.8"/><rect x="114" y="26.5" width="10" height="6" rx="1.5" fill="#ffffff"/><path d="M105 31Q110 28 115 31" stroke="#18181b" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M123 31Q128 28 133 31" stroke="#18181b" stroke-width="2.6" stroke-linecap="round" fill="none"/><ellipse cx="110" cy="36" rx="4.5" ry="3" fill="#ffffff"/><ellipse cx="128" cy="36" rx="4.5" ry="3" fill="#ffffff"/><circle cx="110" cy="36" r="2.2" fill="#29180c"/><circle cx="128" cy="36" r="2.2" fill="#29180c"/><circle cx="110" cy="36" r="1.1" fill="#090503"/><circle cx="128" cy="36" r="1.1" fill="#090503"/><circle cx="109.2" cy="35.2" r="0.7" fill="#ffffff"/><circle cx="127.2" cy="35.2" r="0.7" fill="#ffffff"/><path d="M119 35L117 44L121 44" stroke="#5a310c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M112 49Q119 55 126 49" stroke="#451a03" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M113 49Q119 54 125 49Z" fill="#ffffff"/><g transform="translate(162, 14)"><circle cx="28" cy="28" r="23" fill="url(#hoopsBallGrad)"/><circle cx="28" cy="28" r="23" stroke="#18181b" stroke-width="1.5" fill="none"/><path d="M5 28H51" stroke="#18181b" stroke-width="2.2" stroke-linecap="round"/><path d="M28 5V51" stroke="#18181b" stroke-width="2.2" stroke-linecap="round"/><path d="M11 11C22 19 22 37 11 45" stroke="#18181b" stroke-width="2" fill="none"/><path d="M45 11C34 19 34 37 45 45" stroke="#18181b" stroke-width="2" fill="none"/><ellipse cx="20" cy="18" rx="5.5" ry="3" fill="#ffffff" opacity="0.45" transform="rotate(-30, 20, 18)"/></g></svg>';
   }
 
-  function getCharacterDisplayHtml(charId) {
+  // Dynamic Hero Jersey Palette Definitions for in-game and menu character customization
+  var HERO_SKIN_PALETTES = {
+    skin_rookie: { h: 205, s: 0.90, lMult: 1.0, darkShorts: true, name: 'Rookie Blue', ru: 'Новичок Синий' },
+    skin_crimson: { h: 358, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Crimson Comet', ru: 'Багровая Комета' },
+    skin_neon: { h: 155, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Neon Striker', ru: 'Неоновый Страйкер' },
+    skin_neon_elite: { h: 185, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Cyber Striker', ru: 'Кибер Страйкер' },
+    skin_frost: { h: 200, s: 0.55, lMult: 1.35, darkShorts: false, name: 'Frost Giant', ru: 'Ледяной Титан' },
+    skin_shadow: { h: 275, s: 0.70, lMult: 0.82, darkShorts: true, name: 'Shadow Ninja', ru: 'Теневой Ниндзя' },
+    skin_solar: { h: 22, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Solar Flare', ru: 'Солнечная Вспышка' },
+    skin_gold: { h: 46, s: 0.95, lMult: 1.18, darkShorts: false, name: 'Golden Legend', ru: 'Золотая Легенда' },
+    skin_cyber: { h: 300, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Cyber Punk', ru: 'Киберпанк' },
+    skin_sunset: { h: 28, s: 0.95, lMult: 1.1, darkShorts: false, name: 'Sunset Gold', ru: 'Закатное Золото' },
+    skin_hydro: { h: 175, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Hydro Striker', ru: 'Гидро Страйкер' },
+    skin_mars: { h: 10, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Mars Rover', ru: 'Марсианский Ровер' },
+    skin_astronaut: { h: 215, s: 0.15, lMult: 1.3, darkShorts: true, name: 'Astronaut Kit', ru: 'Экипировка Астронавта' }
+  };
+
+  var HERO_SKIN_CACHE = {};
+  var HERO_BASE_IMGS = {};
+
+  function heroRgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+    }
+    return { h: h, s: s, l: l };
+  }
+
+  function heroHslToRgb(h, s, l) {
+    var r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      var hue2rgb = function (p, q, t) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      var p = 2 * l - q;
+      h /= 360;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+  }
+
+  function initHeroBaseImages() {
+    if (typeof Image === 'undefined') return;
+    if (!HERO_BASE_IMGS.footy) {
+      var f = new Image();
+      f.crossOrigin = 'anonymous';
+      f.src = 'assets/hero_footy_real.png';
+      HERO_BASE_IMGS.footy = f;
+    }
+    if (!HERO_BASE_IMGS.hoops) {
+      var h = new Image();
+      h.crossOrigin = 'anonymous';
+      h.src = 'assets/hero_hoops_real.png';
+      HERO_BASE_IMGS.hoops = h;
+    }
+  }
+  try { initHeroBaseImages(); } catch (e) {}
+
+  function getRecoloredHeroUrl(charId, skinId) {
+    var isFooty = (charId === 'footy');
+    var defaultSkin = isFooty ? 'skin_rookie' : 'skin_solar';
+    if (!skinId || skinId === defaultSkin) {
+      return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
+    }
+    var cacheKey = charId + '_' + skinId;
+    if (HERO_SKIN_CACHE[cacheKey]) {
+      return HERO_SKIN_CACHE[cacheKey];
+    }
+    initHeroBaseImages();
+    var baseImg = HERO_BASE_IMGS[charId];
+    if (baseImg && baseImg.complete && (baseImg.naturalWidth || baseImg.width)) {
+      try {
+        var cvs = document.createElement('canvas');
+        cvs.width = baseImg.naturalWidth || baseImg.width;
+        cvs.height = baseImg.naturalHeight || baseImg.height;
+        var ctx = cvs.getContext('2d');
+        ctx.drawImage(baseImg, 0, 0);
+
+        var imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+        var data = imgData.data;
+        var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
+
+        for (var y = 0; y < cvs.height; y++) {
+          var yPct = y / cvs.height;
+          if (isFooty) {
+            var isTorsoOrShorts = (yPct >= 0.30 && yPct <= 0.66);
+            var isSocks = (yPct >= 0.67 && yPct <= 0.88);
+            if (!isTorsoOrShorts && !isSocks) continue;
+
+            for (var x = 0; x < cvs.width; x++) {
+              var idx = (y * cvs.width + x) * 4;
+              if (data[idx + 3] < 40) continue;
+              var r = data[idx], g = data[idx + 1], b = data[idx + 2];
+              var hsl = heroRgbToHsl(r, g, b);
+              if (hsl.h >= 160 && hsl.h <= 250 && hsl.s >= 0.18) {
+                var targetH = pal.h;
+                var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
+                var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
+                if (pal.darkShorts && yPct >= 0.54 && yPct <= 0.66) {
+                  targetL *= 0.65;
+                  targetS *= 0.8;
+                }
+                var newRgb = heroHslToRgb(targetH, targetS, targetL);
+                data[idx] = newRgb.r; data[idx + 1] = newRgb.g; data[idx + 2] = newRgb.b;
+              }
+            }
+          } else {
+            // HOOPS
+            var isJerseyOrShorts = (yPct >= 0.28 && yPct <= 0.62);
+            if (!isJerseyOrShorts) continue;
+
+            for (var x = 0; x < cvs.width; x++) {
+              var idx = (y * cvs.width + x) * 4;
+              if (data[idx + 3] < 40) continue;
+              var xPct = x / cvs.width;
+              if (xPct < 0.385 || xPct > 0.635) continue;
+
+              var r = data[idx], g = data[idx + 1], b = data[idx + 2];
+              var hsl = heroRgbToHsl(r, g, b);
+              if ((hsl.h <= 32 || hsl.h >= 345) && hsl.s >= 0.40 && hsl.l <= 0.70) {
+                var targetH = pal.h;
+                var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
+                var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
+                var newRgb = heroHslToRgb(targetH, targetS, targetL);
+                data[idx] = newRgb.r; data[idx + 1] = newRgb.g; data[idx + 2] = newRgb.b;
+              }
+            }
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+        var resUrl = cvs.toDataURL('image/png');
+        HERO_SKIN_CACHE[cacheKey] = resUrl;
+        return resUrl;
+      } catch (e) {
+        console.warn('Hero recolor error:', e);
+      }
+    } else if (baseImg && !baseImg.complete) {
+      baseImg.onload = function () {
+        getRecoloredHeroUrl(charId, skinId);
+        document.querySelectorAll('.fvh-hero-real-img[data-hero="' + charId + '"]').forEach(function (imgEl) {
+          var sk = imgEl.getAttribute('data-skin') || skinId;
+          imgEl.src = getRecoloredHeroUrl(charId, sk);
+        });
+      };
+    }
+    return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
+  }
+
+  function getCharacterDisplayHtml(charId, specificSkinId) {
     var isFooty = charId === 'footy';
-    var imgSrc = isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
+    var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
+    var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
+    var skinId = specificSkinId || eq.skin || (isFooty ? 'skin_rookie' : 'skin_solar');
+    var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var svgFallback = isFooty ? getFootyAvatarSvg() : getHoopsAvatarSvg();
-    return '<div class="fvh-hero-portrait-wrap">' +
-      '<img class="fvh-hero-real-img" src="' + imgSrc + '" alt="' + (isFooty ? 'FOOTY' : 'HOOPS') + '" onerror="this.style.display=\'none\'; if(this.nextElementSibling) this.nextElementSibling.style.display=\'block\';">' +
+    var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
+    var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
+    var skinLabel = (lang === 'ru') ? pal.ru : pal.name;
+
+    return '<div class="fvh-hero-portrait-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;">' +
+      '<img class="fvh-hero-real-img fvh-hero-cutout-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + imgSrc + '" alt="' + (isFooty ? 'FOOTY' : 'HOOPS') + '" onerror="this.style.display=\'none\'; if(this.nextElementSibling) this.nextElementSibling.style.display=\'block\';">' +
       '<div class="fvh-hero-svg-fallback" style="display:none;width:100%;height:100%;">' + svgFallback + '</div>' +
+      '<div class="fvh-hero-active-jersey-tag" style="position:absolute;bottom:0px;font-size:10.5px;font-weight:800;color:#38bdf8;background:rgba(8,16,36,0.85);backdrop-filter:blur(6px);border:1px solid rgba(56,189,248,0.3);border-radius:999px;padding:3px 12px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,0.5);"><span>🎽</span> <span>' + skinLabel + '</span></div>' +
       '</div>';
   }
 
@@ -3755,7 +3930,7 @@
       btnFooty.className = curChar === 'footy' ? 'on' : '';
       btnHoops.className = curChar === 'hoops' ? 'on' : '';
 
-      avatarBox.innerHTML = getCharacterDisplayHtml(curChar);
+      avatarBox.innerHTML = getCharacterDisplayHtml(curChar, app.store.data.equipped && app.store.data.equipped.skin);
       charName.textContent = curChar === 'footy' ? 'FOOTY' : 'HOOPS';
       charRole.textContent = curChar === 'footy' ? tr('footyRole') : tr('hoopsRole');
 
@@ -8151,8 +8326,8 @@
           '</div>' +
           '<div class="fvh-clash-matchup-bar" style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid rgba(255,255,255,0.08);text-align:center;font-size:12px;font-weight:800;">' +
             (isFooty
-              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY #10</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS #23 🏀</span>'
-              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS #23</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY #10 ⚽</span>'
+              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
+              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
             ) +
           '</div>' +
         '</div>' +
@@ -8268,8 +8443,8 @@
           '</div>' +
           '<div class="fvh-practice-matchup" id="fvh-practice-matchup" style="margin-bottom:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:11.5px;font-weight:800;text-align:center;">' +
             (selSport === 'footy'
-              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY (#10)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS (#23) 🏀</span>'
-              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS (#23)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY (#10) ⚽</span>'
+              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
+              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
             ) +
           '</div>' +
           '<div class="fvh-ctrl-row">' +
@@ -8300,8 +8475,8 @@
         var pMatchup = practiceCard.querySelector('#fvh-practice-matchup');
         if (pMatchup) {
           pMatchup.innerHTML = (selSport === 'footy'
-            ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY (#10)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS (#23) 🏀</span>'
-            : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS (#23)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY (#10) ⚽</span>'
+            ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
+            : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
           );
         }
         app.audio.play('click');
@@ -8580,7 +8755,7 @@
     heroCard.className = 'fvh-hero-card solo-hero ' + curChar;
 
     var badgeText = isFooty ? '⚽ ' + tr('teamFootyTitle') : '🏀 ' + tr('teamHoopsTitle');
-    var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS #23' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY #10';
+    var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY';
     var heroRoleText = isFooty ? tr('teamFootySub') : tr('teamHoopsSub');
     var heroLoreDesc = isFooty ? tr('teamFootyDesc') : tr('teamHoopsDesc');
 
@@ -8590,14 +8765,13 @@
       '  <span class="fvh-solo-rival-pill" style="font-size:10.5px;color:#f59e0b;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:999px;font-weight:800;white-space:nowrap;">' + rivalText + '</span>' +
       '</div>' +
       '<div class="fvh-hero-avatar-box solo-avatar-box" style="height:230px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-         getCharacterDisplayHtml(curChar) +
+         getCharacterDisplayHtml(curChar, d.equipped && d.equipped.skin) +
       '</div>' +
-      '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY #10' : '🏀 HOOPS #23') + '</div>' +
+      '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY' : '🏀 HOOPS') + '</div>' +
       '<div class="fvh-hero-role" style="font-size:12.5px;color:var(--text-muted);font-weight:700;margin-top:2px;text-align:center;">' + heroRoleText + '</div>' +
       '<div class="fvh-hero-lore" style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:12px;text-align:center;line-height:1.35;max-width:340px;">' + heroLoreDesc + '</div>' +
-      '<div class="fvh-solo-actions-row" style="display:flex;gap:10px;width:100%;justify-content:center;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="flex:1;padding:8px 10px;font-size:12px;font-weight:800;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;"><span>👕</span> <span>' + tr('openLockerShort') + ' ➔</span></button>' +
-      '  <button type="button" class="btn fvh-solo-switch-btn" style="flex:1;padding:8px 10px;font-size:12px;font-weight:800;border-radius:12px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#f59e0b;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;"><span>🔄</span> <span>' + tr('switchSideShort') + ' ➔</span></button>' +
+      '<div class="fvh-solo-actions-row" style="width:100%;display:flex;justify-content:center;">' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="width:100%;padding:10px 16px;font-size:12.5px;font-weight:900;border-radius:14px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,0.35);"><span>👕</span> <span>' + tr('openLocker') + ' ➔</span></button>' +
       '</div>';
 
     // Clicking gear button opens locker
@@ -8609,13 +8783,6 @@
       } else {
         app.openCharacterLocker('hoops');
       }
-    };
-
-    // Clicking switch team button opens selection modal
-    heroCard.querySelector('.fvh-solo-switch-btn').onclick = function (e) {
-      e.stopPropagation();
-      app.audio.play('click');
-      showTeamSelectionModal(app, true);
     };
 
     // Tapping the card / hero directly opens the locker
@@ -8695,6 +8862,7 @@
   // Hook into App & Page Router
   onAppReady(function (app) {
     window.App = app;
+    window.app = app;
     window.__fvh = app;
     // Initial sync with authoritative backend economy
     syncAuthoritativeEconomy(app);
