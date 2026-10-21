@@ -363,6 +363,25 @@
       joinBtn: 'JOIN CHAT',
       inviteFriendBtn: 'INVITE FRIEND',
       itemLockedToast: 'Item is locked! Purchase it from the Stadium Store.',
+      catCrowd: 'Supporters & Crowd',
+      arenaTabEnvironments: 'Stadiums & Worlds',
+      arenaTabCrowd: 'Supporters & Fans',
+      crowdSelectTitle: 'STADIUM SUPPORTERS & CROWD',
+      crowdSelectSub: 'Choose the fan club style and stadium audience supporting you during matches',
+      selectCrowdBtn: 'EQUIP SUPPORTERS',
+      crowdEquipped: 'ACTIVE SUPPORTERS',
+      crowdFootyUltrasName: 'FOOTY Ultras',
+      crowdFootyUltrasDesc: 'Passionate football fan club with cyan and royal blue scarves, team banners, and club chants.',
+      crowdHoopsAllstarsName: 'HOOPS All-Stars',
+      crowdHoopsAllstarsDesc: 'High-energy basketball arena fans with fiery orange jerseys, foam fingers, and courtside roar.',
+      crowdGlobalFestName: 'Global Festival',
+      crowdGlobalFestDesc: 'International multi-color carnival audience with stadium camera flashes and festive tournament flags.',
+      crowdCyberVipName: 'Cyber Neon VIP',
+      crowdCyberVipDesc: 'Futuristic VIP terrace with luminous cybernetic attire, neon accessories, and hologram lights.',
+      crowdEmeraldForestName: 'Emerald Supporters',
+      crowdEmeraldForestDesc: 'Nature-inspired supporters club waving forest-green and gold scarves in harmony with outdoor arenas.',
+      crowdGoldChampsName: 'Champions Golden Suite',
+      crowdGoldChampsDesc: 'Luxurious black-and-gold stadium grandstand suite with exclusive VIP atmosphere.',
       arenaSelectTitle: 'ARENA ENVIRONMENTS',
       arenaSelectSub: 'Select between classic stadiums with grandstands or open-world scenic biomes',
       arenaDescClassicFooty: 'Traditional stadium with manicured soccer turf, packed cheering grandstands, and floodlights.',
@@ -816,6 +835,25 @@
       followBtn: 'ЧИТАТЬ',
       joinBtn: 'ВСТУПИТЬ В ЧАТ',
       inviteFriendBtn: 'ПРИГЛАСИТЬ ДРУГА',
+      catCrowd: 'Болельщики и Трибуны',
+      arenaTabEnvironments: 'Стадионы и Миры',
+      arenaTabCrowd: 'Болельщики и Трибуны',
+      crowdSelectTitle: 'БОЛЕЛЬЩИКИ И ТРИБУНЫ',
+      crowdSelectSub: 'Выберите стиль трибун и фан-сектор, который поддерживает вас во время матчей',
+      selectCrowdBtn: 'ВЫБРАТЬ БОЛЕЛЬЩИКОВ',
+      crowdEquipped: 'ВЫБРАННЫЕ БОЛЕЛЬЩИКИ',
+      crowdFootyUltrasName: 'Ультрас FOOTY',
+      crowdFootyUltrasDesc: 'Преданный фан-сектор футбола с сине-голубыми шарфами, клубными флагами и речёвками.',
+      crowdHoopsAllstarsName: 'Трибуны HOOPS All-Stars',
+      crowdHoopsAllstarsDesc: 'Заряженный зал баскетбола в огненно-оранжевых майках с фанатскими атрибутами и рёвом трибун.',
+      crowdGlobalFestName: 'Мировой Фестиваль',
+      crowdGlobalFestDesc: 'Яркая международная аудитория в карнавальных цветах со вспышками камер и флагами.',
+      crowdCyberVipName: 'Кибер Неон VIP',
+      crowdCyberVipDesc: 'Футуристическая VIP-ложа со светящимися неоновыми аксессуарами и кибер-подсветкой.',
+      crowdEmeraldForestName: 'Изумрудный Клуб Болельщиков',
+      crowdEmeraldForestDesc: 'Экологичный клуб болельщиков с изумрудно-зелёными и золотыми шарфами.',
+      crowdGoldChampsName: 'Золотая Ложа Чемпионов',
+      crowdGoldChampsDesc: 'Элитная трибуна чемпионов в черно-золотых тонах с атмосферой роскошного финала.',
       arenaSelectTitle: 'ВЫБОР АРЕНЫ',
       arenaSelectSub: 'Выберите домашнюю площадку и атмосферу игрового мира',
       arenaDescClassicFooty: 'Традиционный стадион с ухоженным футбольным газоном, полными трибунами зрителей и прожекторами.',
@@ -2827,6 +2865,72 @@
       '</svg>';
   }
 
+  // Detailed Stadium Supporters & Crowd SVG
+  function getDetailedCrowdSvg(item, size) {
+    var isLg = size === 'large';
+    var isSm = size === 'thumb' || size === 'small';
+    var w = isLg ? 200 : (isSm ? 48 : 76);
+    var h = isLg ? 200 : (isSm ? 48 : 76);
+    var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || 'crowd_footy_ultras';
+    var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
+
+    var c1 = '#00f0ff', c2 = '#0284c7', c3 = '#ffffff', c4 = '#1e293b';
+    var icon = '⚽';
+    if (id === 'crowd_hoops_allstars') {
+      c1 = '#ff6b00'; c2 = '#fb923c'; c3 = '#f59e0b'; c4 = '#18181b'; icon = '🏀';
+    } else if (id === 'crowd_global_fest') {
+      c1 = '#e84a5f'; c2 = '#f6c445'; c3 = '#4fb3ff'; c4 = '#7be08a'; icon = '🌍';
+    } else if (id === 'crowd_cyber_vip') {
+      c1 = '#ff2bd6'; c2 = '#00e5ff'; c3 = '#a855f7'; c4 = '#0f172a'; icon = '⚡';
+    } else if (id === 'crowd_emerald_forest') {
+      c1 = '#10b981'; c2 = '#059669'; c3 = '#065f46'; c4 = '#ffffff'; icon = '🌲';
+    } else if (id === 'crowd_gold_champs') {
+      c1 = '#f6c445'; c2 = '#d97706'; c3 = '#1c1917'; c4 = '#fffbeb'; icon = '👑';
+    }
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs>' +
+      '  <linearGradient id="crwBg_' + uid + '" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">' +
+      '    <stop offset="0%" stop-color="' + c4 + '"/>' +
+      '    <stop offset="100%" stop-color="#0a0e17"/>' +
+      '  </linearGradient>' +
+      '  <linearGradient id="crwG1_' + uid + '" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">' +
+      '    <stop offset="0%" stop-color="' + c1 + '"/>' +
+      '    <stop offset="50%" stop-color="' + c2 + '"/>' +
+      '    <stop offset="100%" stop-color="' + c3 + '"/>' +
+      '  </linearGradient>' +
+      '</defs>' +
+      '<rect width="100" height="100" rx="14" fill="url(#crwBg_' + uid + ')"/>' +
+      '<rect x="6" y="25" width="88" height="12" rx="4" fill="' + c2 + '" opacity="0.3"/>' +
+      '<rect x="6" y="42" width="88" height="14" rx="4" fill="' + c2 + '" opacity="0.45"/>' +
+      '<rect x="6" y="61" width="88" height="16" rx="4" fill="' + c2 + '" opacity="0.6"/>' +
+      '<circle cx="20" cy="20" r="5" fill="' + c1 + '"/>' +
+      '<rect x="15" cy="25" width="10" height="9" rx="3" fill="' + c2 + '"/>' +
+      '<circle cx="40" cy="19" r="5" fill="' + c3 + '"/>' +
+      '<rect x="35" cy="24" width="10" height="10" rx="3" fill="' + c1 + '"/>' +
+      '<circle cx="60" cy="20" r="5" fill="' + c1 + '"/>' +
+      '<rect x="55" cy="25" width="10" height="9" rx="3" fill="' + c2 + '"/>' +
+      '<circle cx="80" cy="19" r="5" fill="' + c3 + '"/>' +
+      '<rect x="75" cy="24" width="10" height="10" rx="3" fill="' + c1 + '"/>' +
+      '<circle cx="28" cy="37" r="6" fill="' + c2 + '"/>' +
+      '<rect x="22" cy="43" width="12" height="11" rx="3" fill="' + c1 + '"/>' +
+      '<circle cx="50" cy="35" r="7" fill="' + c1 + '"/>' +
+      '<rect x="43" cy="42" width="14" height="12" rx="4" fill="url(#crwG1_' + uid + ')"/>' +
+      '<circle cx="72" cy="37" r="6" fill="' + c3 + '"/>' +
+      '<rect x="66" cy="43" width="12" height="11" rx="3" fill="' + c2 + '"/>' +
+      '<circle cx="36" cy="56" r="7" fill="' + c1 + '"/>' +
+      '<rect x="29" cy="63" width="14" height="13" rx="4" fill="' + c2 + '"/>' +
+      '<circle cx="64" cy="56" r="7" fill="' + c2 + '"/>' +
+      '<rect x="57" cy="63" width="14" height="13" rx="4" fill="' + c1 + '"/>' +
+      '<rect x="16" y="78" width="68" height="16" rx="6" fill="url(#crwG1_' + uid + ')"/>' +
+      '<rect x="18" y="80" width="64" height="12" rx="4" fill="' + c4 + '" opacity="0.85"/>' +
+      '<text x="50" y="89" fill="' + c1 + '" font-size="8.5" font-family="sans-serif" font-weight="900" text-anchor="middle" letter-spacing="1">' + icon + ' SUPPORTERS</text>' +
+      '<circle cx="15" cy="12" r="1.5" fill="#ffffff" opacity="0.9"/>' +
+      '<circle cx="85" cy="14" r="2" fill="#ffffff" opacity="0.95"/>' +
+      '<circle cx="48" cy="10" r="1.2" fill="' + c1 + '" opacity="0.8"/>' +
+      '</svg>';
+  }
+
   // Universal Item Artwork Dispatcher (Centralized by stable Item ID)
   function renderItemArtwork(itemOrId, size) {
     if (!itemOrId) return '<div class="fvh-item-fallback">📦</div>';
@@ -2844,7 +2948,8 @@
 
     // Auto-detect category from item ID if unspecified
     if (!cat && id) {
-      if (id.startsWith('boost_')) cat = 'boosts';
+      if (id.startsWith('crowd_')) cat = 'crowd';
+      else if (id.startsWith('boost_')) cat = 'boosts';
       else if (id.startsWith('skin_')) cat = 'skins';
       else if (id.startsWith('ball_')) cat = 'balls';
       else if (id.startsWith('std_') || id.startsWith('arena_')) cat = 'stadiums';
@@ -2857,6 +2962,7 @@
       else if (id === 'coins' || id.startsWith('pkg_coins_') || id.startsWith('coins_') || id.toLowerCase().indexOf('coin') !== -1) cat = 'coins';
     }
 
+    if (cat === 'crowd') return getDetailedCrowdSvg(itemOrId, size);
     if (cat === 'boosts') return getDetailedBoostSvg(itemOrId, size);
     if (cat === 'skins') return getDetailedJerseySvg(itemOrId, size);
     if (cat === 'balls') return getDetailedBallSvg(itemOrId, size);
@@ -4018,6 +4124,7 @@
       { id: 'skins', label: tr('catJerseys') },
       { id: 'balls', label: tr('catBalls') },
       { id: 'stadiums', label: tr('catArenas') },
+      { id: 'crowd', label: tr('catCrowd') },
       { id: 'celebrations', label: tr('catCelebrations') },
       { id: 'boosts', label: tr('catBoosts') }
     ];
@@ -4088,10 +4195,15 @@
       var armedBoostId = app.store.data.armedBoost;
       var armedName = armedBoostId ? trItem(armedBoostId === 'boost_turbo' ? 'Turbo Boots' : armedBoostId === 'boost_lungs' ? 'Iron Lungs' : armedBoostId === 'boost_power' ? 'Sharp Shooter' : armedBoostId === 'boost_coins' ? 'Coin Doubler' : armedBoostId) : tr('noBoostEquipped');
 
+      var activeCrowdId = eq.crowd || (curChar === 'hoops' ? 'crowd_hoops_allstars' : 'crowd_footy_ultras');
+      var crowdObj = CROWD_CATALOG.find(function(c) { return c.id === activeCrowdId; });
+      var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
+
       equipSlotList.innerHTML =
         '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + trItem(eq.skin || 'Rookie Blue') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + trItem(eq['ball.' + curChar] || 'Classic Ball') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + trItem(eq['stadium.' + curChar] || 'Standard Arena') + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + tr('catCrowd') + ':</span><b>' + crowdLabel + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + trItem(eq.celebration || 'Confetti Rain') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('catBoosts') + ':</span><b>' + armedName + '</b></div>';
 
@@ -4132,6 +4244,10 @@
             var isArmed = armed === it.id;
             var isOwnedLegacy = owned.indexOf(it.id) !== -1;
             return ch > 0 || isArmed || isOwnedLegacy;
+          });
+        } else if (curSlot === 'crowd') {
+          matching = CROWD_CATALOG.filter(function (c) {
+            return c.mode === 'all' || c.mode === curChar;
           });
         } else {
           matching = allItems.filter(function (it) {
@@ -4232,15 +4348,15 @@
             itemsGrid.appendChild(boostCard);
             return;
           }
-          var activeSlotKey = item.slot || (item.category === 'balls' ? 'ball.' + curChar : item.category === 'stadiums' ? 'stadium.' + curChar : item.category === 'skins' ? 'skin' : item.category);
-          var isEquipped = eq[activeSlotKey] === item.id;
+          var activeSlotKey = item.slot || (item.category === 'balls' ? 'ball.' + curChar : item.category === 'stadiums' ? 'stadium.' + curChar : item.category === 'skins' ? 'skin' : item.category === 'crowd' ? 'crowd' : item.category);
+          var isEquipped = (eq[activeSlotKey] === item.id) || (item.category === 'crowd' && !eq.crowd && item.isDefault && (item.mode === curChar || item.mode === 'all'));
 
           var itemCard = document.createElement('div');
           var rarClass = item.rarity || 'common';
           itemCard.className = 'card shopc r-' + rarClass + (isEquipped ? ' is-eq' : '');
 
           var localizedRarity = tr('rarity_' + rarClass) || rarClass.toUpperCase();
-          var localizedItemName = trItem(item.name);
+          var localizedItemName = item.category === 'crowd' ? (tr(item.nameKey) || item.name) : trItem(item.name);
 
           itemCard.innerHTML =
             '<div class="thumbwrap"><div class="thumb" style="display:flex;align-items:center;justify-content:center;">' +
@@ -4260,6 +4376,16 @@
             btn.className = 'btn small primary';
             btn.textContent = tr('equip');
             btn.onclick = function () {
+              if (item.category === 'crowd') {
+                app.store.update(function (d) {
+                  if (!d.equipped) d.equipped = {};
+                  d.equipped.crowd = item.id;
+                });
+                app.audio.play('claim');
+                showToast(tr('equipped') + ': ' + localizedItemName);
+                updateView();
+                return;
+              }
               var pid = getAppPlayerId(app);
               safeEconomyApi('/api/economy/equip', {
                 playerId: pid,
@@ -7458,6 +7584,88 @@
     { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
   ];
 
+  // Official Supporters & Stadium Crowd Catalog
+  var CROWD_CATALOG = [
+    {
+      id: 'crowd_footy_ultras',
+      category: 'crowd',
+      name: 'FOOTY Ultras',
+      nameKey: 'crowdFootyUltrasName',
+      descKey: 'crowdFootyUltrasDesc',
+      rarity: 'common',
+      icon: '⚽',
+      colors: ['#00f0ff', '#0284c7', '#ffffff', '#1e293b'],
+      bannerGrad: 'linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #00f0ff 100%)',
+      isDefault: true,
+      mode: 'footy'
+    },
+    {
+      id: 'crowd_hoops_allstars',
+      category: 'crowd',
+      name: 'HOOPS All-Stars',
+      nameKey: 'crowdHoopsAllstarsName',
+      descKey: 'crowdHoopsAllstarsDesc',
+      rarity: 'common',
+      icon: '🏀',
+      colors: ['#ff6b00', '#fb923c', '#f59e0b', '#18181b'],
+      bannerGrad: 'linear-gradient(135deg, #ea580c 0%, #c2410c 50%, #f59e0b 100%)',
+      isDefault: true,
+      mode: 'hoops'
+    },
+    {
+      id: 'crowd_global_fest',
+      category: 'crowd',
+      name: 'Global Festival',
+      nameKey: 'crowdGlobalFestName',
+      descKey: 'crowdGlobalFestDesc',
+      rarity: 'rare',
+      icon: '🌍',
+      colors: ['#e84a5f', '#f6c445', '#4fb3ff', '#7be08a'],
+      bannerGrad: 'linear-gradient(135deg, #e11d48 0%, #7c3aed 50%, #38bdf8 100%)',
+      isDefault: true,
+      mode: 'all'
+    },
+    {
+      id: 'crowd_cyber_vip',
+      category: 'crowd',
+      name: 'Cyber Neon VIP',
+      nameKey: 'crowdCyberVipName',
+      descKey: 'crowdCyberVipDesc',
+      rarity: 'epic',
+      icon: '⚡',
+      colors: ['#ff2bd6', '#00e5ff', '#a855f7', '#0f172a'],
+      bannerGrad: 'linear-gradient(135deg, #d946ef 0%, #4c1d95 50%, #00e5ff 100%)',
+      isDefault: true,
+      mode: 'all'
+    },
+    {
+      id: 'crowd_emerald_forest',
+      category: 'crowd',
+      name: 'Emerald Supporters',
+      nameKey: 'crowdEmeraldForestName',
+      descKey: 'crowdEmeraldForestDesc',
+      rarity: 'rare',
+      icon: '🌲',
+      colors: ['#10b981', '#059669', '#065f46', '#ffffff'],
+      bannerGrad: 'linear-gradient(135deg, #059669 0%, #064e3b 50%, #34d399 100%)',
+      isDefault: true,
+      mode: 'all'
+    },
+    {
+      id: 'crowd_gold_champs',
+      category: 'crowd',
+      name: 'Champions Golden Suite',
+      nameKey: 'crowdGoldChampsName',
+      descKey: 'crowdGoldChampsDesc',
+      rarity: 'legendary',
+      icon: '👑',
+      colors: ['#f6c445', '#d97706', '#1c1917', '#fffbeb'],
+      bannerGrad: 'linear-gradient(135deg, #b45309 0%, #1c1917 50%, #fcd34d 100%)',
+      isDefault: true,
+      mode: 'all'
+    }
+  ];
+
   // High-Reliability Native WebSocket & Server Relay Link for Authoritative Multiplayer
   function RelayLink(matchId, role) {
     this.matchId = matchId;
@@ -8381,8 +8589,9 @@
   };
 
 
-  // Dedicated Full-Screen Arena Selection Page (Gallery of 10 Worlds)
+  // Dedicated Full-Screen Arena & Supporters Selection Page (Gallery of 10 Worlds & 6 Fan Clubs)
   function buildArenaSelectPage(app) {
+    var curSection = 'arenas'; // 'arenas' or 'crowd'
     var curFilter = 'all'; // 'all', 'footy', 'hoops'
     var curChar = app.store.data.selectedCharacter || 'footy';
     var lang = getActiveLang();
@@ -8405,9 +8614,6 @@
     };
 
     var titleBox = document.createElement('div');
-    titleBox.innerHTML =
-      '<h1 style="margin:0;">' + tr('arenaSelectTitle') + '</h1>' +
-      '<small style="color:var(--text-muted);font-size:11px;">' + tr('arenaSelectSub') + '</small>';
 
     head.appendChild(backBtn);
     head.appendChild(titleBox);
@@ -8416,7 +8622,30 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-arena-page-body';
 
-    // Filter Segment: ALL, FOOTBALL (FOOTY), BASKETBALL (HOOPS)
+    // Main Section Tabs: 🏟️ Stadiums & Worlds | 👥 Supporters & Crowd
+    var sectionSeg = document.createElement('div');
+    sectionSeg.className = 'seg fvh-arena-section-seg';
+    sectionSeg.style.marginBottom = '14px';
+    var sectionOptions = [
+      { id: 'arenas', label: '🏟️ ' + tr('arenaTabEnvironments') },
+      { id: 'crowd', label: '👥 ' + tr('arenaTabCrowd') }
+    ];
+    sectionOptions.forEach(function (so) {
+      var btn = document.createElement('button');
+      btn.textContent = so.label;
+      if (so.id === curSection) btn.className = 'on';
+      btn.onclick = function () {
+        curSection = so.id;
+        sectionSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
+        btn.className = 'on';
+        app.audio.play('click');
+        updateSectionView();
+      };
+      sectionSeg.appendChild(btn);
+    });
+    body.appendChild(sectionSeg);
+
+    // Filter Segment for Arenas: ALL, FOOTBALL (FOOTY), BASKETBALL (HOOPS)
     var filterSeg = document.createElement('div');
     filterSeg.className = 'seg';
     filterSeg.style.marginBottom = '16px';
@@ -8445,8 +8674,96 @@
     arenaGrid.className = 'fvh-arena-grid';
     body.appendChild(arenaGrid);
 
+    // Crowd Grid
+    var crowdGrid = document.createElement('div');
+    crowdGrid.className = 'fvh-arena-grid fvh-crowd-grid';
+    crowdGrid.style.display = 'none';
+    body.appendChild(crowdGrid);
+
     page.appendChild(body);
     container.appendChild(page);
+
+    function updateSectionView() {
+      if (curSection === 'arenas') {
+        titleBox.innerHTML =
+          '<h1 style="margin:0;">' + tr('arenaSelectTitle') + '</h1>' +
+          '<small style="color:var(--text-muted);font-size:11px;">' + tr('arenaSelectSub') + '</small>';
+        filterSeg.style.display = 'flex';
+        arenaGrid.style.display = 'grid';
+        crowdGrid.style.display = 'none';
+        renderArenaGrid();
+      } else {
+        titleBox.innerHTML =
+          '<h1 style="margin:0;">' + tr('crowdSelectTitle') + '</h1>' +
+          '<small style="color:var(--text-muted);font-size:11px;">' + tr('crowdSelectSub') + '</small>';
+        filterSeg.style.display = 'none';
+        arenaGrid.style.display = 'none';
+        crowdGrid.style.display = 'grid';
+        renderCrowdGrid();
+      }
+    }
+
+    function renderCrowdGrid() {
+      crowdGrid.innerHTML = '';
+      var eq = app.store.data.equipped || {};
+      var curCrowd = eq.crowd || (curChar === 'hoops' ? 'crowd_hoops_allstars' : 'crowd_footy_ultras');
+
+      CROWD_CATALOG.forEach(function (crowd) {
+        var card = document.createElement('div');
+        var isEquipped = (curCrowd === crowd.id);
+        var rarKey = crowd.rarity || 'common';
+        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
+        var localizedName = tr(crowd.nameKey) || crowd.name;
+        var localizedDesc = tr(crowd.descKey) || crowd.desc || '';
+
+        card.className = 'fvh-arena-card fvh-crowd-card r-' + rarKey + (isEquipped ? ' is-equipped' : ' is-owned');
+
+        var swatchesHtml = crowd.colors.map(function (c) {
+          return '<span class="fvh-crowd-swatch" style="display:inline-block;width:18px;height:18px;border-radius:50%;background:' + c + ';border:2px solid rgba(255,255,255,0.7);box-shadow:0 2px 6px rgba(0,0,0,0.4);"></span>';
+        }).join('');
+
+        card.innerHTML =
+          '<div class="fvh-arena-preview-wrap" style="height:120px;background:' + (crowd.bannerGrad || 'linear-gradient(135deg, #0f172a, #1e293b)') + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
+          renderItemArtwork(crowd, 'large') +
+          '<span class="fvh-arena-badge-mode">' + (crowd.mode === 'footy' ? '⚽ FOOTY' : crowd.mode === 'hoops' ? '🏀 HOOPS' : '🌍 GLOBAL') + '</span>' +
+          (isEquipped ? '<span class="fvh-arena-badge-equipped">✓ ' + tr('crowdEquipped') + '</span>' : '') +
+          '</div>' +
+          '<div class="fvh-arena-info">' +
+          '<div class="fvh-arena-meta-row">' +
+          '<span class="fvh-arena-badge-env default">👥 ' + (lang === 'ru' ? 'ФАН-СЕКТОР' : 'SUPPORTERS') + '</span>' +
+          '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
+          '</div>' +
+          '<h3 class="fvh-arena-title">' + crowd.icon + ' ' + localizedName + '</h3>' +
+          '<div class="fvh-crowd-swatches" style="display:flex;gap:6px;margin:6px 0;">' + swatchesHtml + '</div>' +
+          '<p class="fvh-arena-desc">' + localizedDesc + '</p>' +
+          '</div>' +
+          '<div class="fvh-arena-actions"></div>';
+
+        var actBox = card.querySelector('.fvh-arena-actions');
+        var btn = document.createElement('button');
+
+        if (isEquipped) {
+          btn.className = 'btn small block';
+          btn.disabled = true;
+          btn.textContent = '✓ ' + tr('equipped');
+        } else {
+          btn.className = 'btn small primary block';
+          btn.textContent = tr('selectCrowdBtn');
+          btn.onclick = function () {
+            app.store.update(function (d) {
+              if (!d.equipped) d.equipped = {};
+              d.equipped.crowd = crowd.id;
+            });
+            app.audio.play('claim');
+            showToast(tr('equipped') + ': ' + localizedName);
+            renderCrowdGrid();
+          };
+        }
+
+        actBox.appendChild(btn);
+        crowdGrid.appendChild(card);
+      });
+    }
 
     function renderArenaGrid() {
       arenaGrid.innerHTML = '';
@@ -8531,7 +8848,7 @@
       });
     }
 
-    renderArenaGrid();
+    updateSectionView();
 
     // Persistent Bottom Nav
     container.appendChild(createSharedBottomNav('menu', app));

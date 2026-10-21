@@ -5247,3 +5247,55 @@ html, body {
   margin-bottom: 12px;
   text-align: center;
 }
+
+/* Stadium Supporters & Crowd Selection Cards */
+.fvh-arena-section-seg {
+  display: flex;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fvh-arena-section-seg button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fvh-arena-section-seg button.on {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+}
+
+.fvh-crowd-card {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fvh-crowd-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.fvh-crowd-card.is-equipped {
+  border-color: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+}
+
+.fvh-crowd-swatch {
+  transition: transform 0.2s ease;
+}
+
+.fvh-crowd-card:hover .fvh-crowd-swatch {
+  transform: scale(1.1);
+}

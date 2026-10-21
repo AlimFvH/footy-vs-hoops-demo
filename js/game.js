@@ -6656,6 +6656,11 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         let crowd = { visible: false };
         if (!isDefault) {
             buildThemedEnvironment(root, t, W, L, GD, false, quality);
+            const themedStands = [
+                { alongX: false, sign: -1, offset: W + 3.4, length: 2 * L + 4, rows: 4, center: 0 },
+                { alongX: false, sign: 1, offset: W + 3.4, length: 2 * L + 4, rows: 4, center: 0 }
+            ];
+            crowd = crowdAndStands(root, themedStands, t.crowd || [0xff2bd6, 0x00e5ff, 0xffffff, 0x3b82f6], t.stand || 0x1e2433, quality);
         } else {
             crowd = buildFootballStadiumArchitecture(root, t, W, L, GD, quality);
         }
@@ -6843,6 +6848,11 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         let crowd = { visible: false };
         if (!isDefault) {
             buildThemedEnvironment(root, t, W, L, APRON, true, quality);
+            const themedStands = [
+                { alongX: false, sign: -1, offset: W + APRON + 3.2, length: 2 * L + 2, rows: 4, center: 0 },
+                { alongX: false, sign: 1, offset: W + APRON + 3.2, length: 2 * L + 2, rows: 4, center: 0 }
+            ];
+            crowd = crowdAndStands(root, themedStands, t.crowd || [0xf59e0b, 0xef4444, 0x3b82f6, 0xffffff], t.stand || 0x161c28, quality);
         } else {
             crowd = buildBasketballArenaArchitecture(root, t, W, L, APRON, quality);
         }
@@ -7153,13 +7163,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 const hoopCollar = mk(G.cylinder(0.125, 0.138, 0.05, 10), white, { fabric: true, fine: true });
                 this.torso.add(at(hoopCollar, 0, 0.37, 0));
 
-                // Front Collegiate #23 squad number plate for Basketball
-                const hoopsNum = mk(G.box(0.14, 0.15, 0.025), white, { fine: true });
-                const hoopsNumCore = mk(G.box(0.09, 0.10, 0.03), 0x9a3412, { fine: true });
-                this.torso.add(at(hoopsNum, 0, 0.02, 0.205), at(hoopsNumCore, 0, 0.02, 0.21));
+                // Front Collegiate Team Crest Badge for Basketball (No square box numbers)
+                const hoopsCrest = mk(G.cylinder(0.065, 0.065, 0.02, 6), 0xfb923c, { spec: 0.6, fine: true });
+                const hoopsStar = mk(G.box(0.045, 0.045, 0.025), white, { fine: true });
+                hoopsStar.rotation = [0, 0, Math.PI / 4];
+                this.torso.add(at(hoopsCrest, 0, 0.03, 0.205), at(hoopsStar, 0, 0.03, 0.21));
             }
             else {
-                // Football: Ribbed V-neck collar, dynamic V-chevron kit stripes, and Golden Club Shield
+                // Football: Ribbed V-neck collar, dynamic kit accents, and Golden Club Shield
                 const collar = mk(G.cylinder(0.11, 0.125, 0.06, 10), skin.secondary, { fabric: true, fine: true });
                 this.torso.add(at(collar, 0, 0.375, 0));
                 const collarTrim = mk(G.cylinder(0.114, 0.128, 0.02, 10), trim, { fabric: true, fine: true });
@@ -7172,10 +7183,9 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 chevR.rotation = [0, 0, -0.36];
                 this.torso.add(at(chevL, -0.062, 0.15, 0.205), at(chevR, 0.062, 0.15, 0.205));
 
-                // Front #10 squad number plate
-                const numPlate = mk(G.box(0.13, 0.14, 0.025), white, { fine: true });
-                const numCore = mk(G.box(0.08, 0.09, 0.03), dark, { fine: true });
-                this.torso.add(at(numPlate, 0, -0.02, 0.205), at(numCore, 0, -0.02, 0.21));
+                // Dynamic front aerodynamic kit stripe
+                const centerStripe = mk(G.box(0.05, 0.26, 0.02), trim, { fabric: true, fine: true });
+                this.torso.add(at(centerStripe, 0, -0.02, 0.205));
 
                 // Golden Club Crest on left chest
                 this.torso.add(at(mk(G.cylinder(0.045, 0.045, 0.02, 6), 0xf6c445, { spec: 0.6, fine: true }), 0.12, 0.16, 0.21));
@@ -7184,11 +7194,9 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             // Defined Athletic Neck
             this.torso.add(at(mk(G.cylinder(0.068, 0.076, 0.13, 8), skin.skin, { skin: true }), 0, 0.42, 0));
 
-            // Back Squad Number & Nameplate Bar (High Contrast)
-            this.torso.add(at(mk(G.box(0.22, 0.28, 0.02), trim, { fabric: true }), 0, 0.06, -0.2));
-            this.torso.add(at(mk(G.box(0.12, 0.06, 0.025), dark, { fine: true }), 0, 0.06, -0.205));
-            this.torso.add(at(mk(G.box(0.08, 0.14, 0.025), dark, { fine: true }), 0, -0.02, -0.205));
-            this.torso.add(at(mk(G.box(0.24, 0.045, 0.022), white, { fine: true }), 0, 0.24, -0.195));
+            // Clean Athletic Back Yoke and Aerodynamic Trim
+            this.torso.add(at(mk(G.box(0.24, 0.055, 0.02), trim, { fine: true, fabric: true }), 0, 0.24, -0.195));
+            this.torso.add(at(mk(G.box(0.05, 0.42, 0.02), skin.secondary, { fine: true, fabric: true }), 0, 0.02, -0.20));
 
             if (skin.style !== 'plain') {
                 const band = (y, rz = 0) => {
@@ -7241,34 +7249,78 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.pivot.add(arm);
             }
 
-            // 5. Head, Facial Structure, Cyber-Visor & Headband
+            // 5. Stylized 3D Cartoon Human Athlete: Expressive Eyes, Sculpted Features & Hair
             this.head = new scene_js_3.Node();
             this.head.setPos(0, 1.99, 0);
-            const skull = mk(G.sphere(0.2, 12 + 2 * sg, 9), skin.skin, { skin: true });
+
+            // Sculpted cranium and athletic tapered jaw
+            const skull = mk(G.sphere(0.205, 12 + 2 * sg, 9), skin.skin, { skin: true });
             skull.scale = [0.95, 1.07, 1];
             this.head.add(skull);
-            const jaw = mk(G.sphere(0.15, 8, 6), skin.skin, { skin: true });
-            this.head.add(at(jaw, 0, -0.1, 0.05));
-            const style = this.agent.id % 3;
-            const hair = mk(G.sphere(0.215, 10, 7), skin.hair, { spec: 0.15 });
-            hair.scale = style === 2 ? [0.96, 0.62, 0.98] : [1.0, style === 1 ? 0.95 : 0.8, 1.0];
-            this.head.add(at(hair, 0, style === 2 ? 0.09 : 0.06, -0.035));
-            for (const sx of [-1, 1]) {
-                this.head.add(at(mk(G.sphere(0.04, 6, 4), skin.skin, { fine: true, skin: true }), sx * 0.19, -0.01, 0));
-                this.head.add(at(mk(G.box(0.045, 0.03, 0.02), dark, { fine: true }), sx * 0.075, 0.0, 0.19));
-            }
-            this.head.add(at(mk(G.box(0.04, 0.05, 0.03), skin.skin, { fine: true, skin: true }), 0, -0.04, 0.2));
+            const jaw = mk(G.sphere(0.145, 8, 6), skin.skin, { skin: true });
+            this.head.add(at(jaw, 0, -0.095, 0.06));
 
+            // Stylized Cartoon Cheeks and Ears
+            for (const sx of [-1, 1]) {
+                // Cartoon cheeks
+                this.head.add(at(mk(G.sphere(0.075, 6, 5), skin.skin, { fine: true, skin: true }), sx * 0.11, -0.04, 0.12));
+                // Stylized curved ears
+                this.head.add(at(mk(G.sphere(0.044, 6, 5), skin.skin, { fine: true, skin: true }), sx * 0.198, 0.0, 0.0));
+                this.head.add(at(mk(G.sphere(0.026, 5, 4), dark, { fine: true }), sx * 0.202, 0.0, 0.0));
+            }
+
+            // Expressive 3D Cartoon Human Eyes (White Sclera, Vibrant Colored Iris, Pupil, and Specular Gleam)
+            const irisCol = foot ? 0x00b4d8 : 0x78350f; // Electric cyan for footy, deep warm hazel for hoops
+            for (const sx of [-1, 1]) {
+                // 1. White Eye Sclera
+                this.head.add(at(mk(G.sphere(0.045, 8, 6), white, { fine: true }), sx * 0.074, 0.022, 0.178));
+                // 2. Vibrant Colored Iris
+                this.head.add(at(mk(G.sphere(0.027, 8, 6), irisCol, { fine: true }), sx * 0.074, 0.022, 0.198));
+                // 3. Deep Black Pupil
+                this.head.add(at(mk(G.sphere(0.016, 6, 5), 0x0a0a0a, { fine: true }), sx * 0.074, 0.022, 0.210));
+                // 4. Specular Highlight Glint ("Pixar Eye Glint")
+                this.head.add(at(mk(G.sphere(0.007, 4, 4), white, { emissive: white, fine: true }), sx * 0.074 + 0.010, 0.034, 0.217));
+
+                // Determined Athletic Eyebrows
+                const brow = mk(G.box(0.056, 0.018, 0.024), skin.hair, { fine: true });
+                brow.rotation = [0, 0, sx < 0 ? -0.16 : 0.16];
+                this.head.add(at(brow, sx * 0.074, 0.066, 0.188));
+            }
+
+            // Sculpted Cartoon Nose (Bridge + Tip)
+            this.head.add(at(mk(G.box(0.024, 0.052, 0.026), skin.skin, { fine: true, skin: true }), 0, -0.01, 0.206));
+            this.head.add(at(mk(G.sphere(0.026, 6, 5), skin.skin, { fine: true, skin: true }), 0, -0.038, 0.216));
+
+            // Confident Athletic Smile / Mouth
+            this.head.add(at(mk(G.box(0.068, 0.015, 0.022), 0x8b3a3a, { fine: true }), 0, -0.088, 0.184));
+
+            // Stylized 3D Hair and Authentic Sports Headwear
             if (foot) {
-                // Football: Real athletic haircut fringe and eyebrows (clean natural athlete)
-                const hairFringe = mk(G.box(0.18, 0.05, 0.04), skin.hair, { spec: 0.2, fine: true });
-                this.head.add(at(hairFringe, 0, 0.08, 0.16));
+                // Football: Modern athletic crop fade with 3D swept fringe and sideburns
+                const hairBase = mk(G.sphere(0.22, 10 + sg, 8), skin.hair, { spec: 0.18 });
+                hairBase.scale = [0.98, 0.88, 1.02];
+                this.head.add(at(hairBase, 0, 0.06, -0.03));
+                const hairTop = mk(G.sphere(0.19, 8, 6), skin.hair, { spec: 0.18 });
+                this.head.add(at(hairTop, 0, 0.11, 0.01));
+                const hairFringe = mk(G.box(0.18, 0.065, 0.055), skin.hair, { spec: 0.22, fine: true });
+                hairFringe.rotation = [0.15, 0, 0];
+                this.head.add(at(hairFringe, 0, 0.088, 0.165));
+                for (const sx of [-1, 1]) {
+                    this.head.add(at(mk(G.box(0.025, 0.06, 0.04), skin.hair, { fine: true }), sx * 0.175, 0.015, 0.06));
+                }
             }
             else {
-                // Basketball: Authentic cotton athletic headband with embroidered logo patch
-                const hb = mk(G.cylinder(0.218, 0.218, 0.065, 12), 0xff6b00, { spec: 0.15, fine: true });
-                const hbLogo = mk(G.box(0.06, 0.04, 0.02), white, { fine: true });
-                this.head.add(at(hb, 0, 0.08, 0), at(hbLogo, 0, 0.08, 0.215));
+                // Basketball: Authentic high-fade taper and sports cotton headband
+                const hairBase = mk(G.sphere(0.215, 10 + sg, 8), skin.hair, { spec: 0.18 });
+                hairBase.scale = [0.96, 0.95, 1.0];
+                this.head.add(at(hairBase, 0, 0.075, -0.02));
+                const hairTop = mk(G.box(0.22, 0.09, 0.26), skin.hair, { spec: 0.18 });
+                this.head.add(at(hairTop, 0, 0.135, 0.01));
+
+                // Authentic cotton athletic headband with embroidered logo patch
+                const hb = mk(G.cylinder(0.222, 0.222, 0.064, 14), 0xff6b00, { spec: 0.15, fine: true });
+                const hbLogo = mk(G.box(0.055, 0.038, 0.022), white, { fine: true });
+                this.head.add(at(hb, 0, 0.078, 0), at(hbLogo, 0, 0.078, 0.218));
             }
             this.pivot.add(this.head);
             this.shadowBlob = new scene_js_3.Node(G.plane(1.5 * this.vs, 1.5 * this.vs), (0, scene_js_3.material)({ color: [1, 1, 1], texture: shadowBlobTexture(), unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
@@ -7327,7 +7379,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const yawRate = dt > 0 ? yawStep / dt : 0;
             this.root.rotation[1] = this.yaw;
             let lift = 0;
-            let lean = Math.min(0.28, speed * 0.035);
+            let lean = Math.min(0.36, speed * 0.048);
             let roll = 0;
             let kick = 0;
             let armUp = 0;
@@ -7339,14 +7391,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 kick = Math.sin(kickP * Math.PI);
             }
             if (a.shootCharging) {
-                armUp = 0.6 + a.shootCharge * 0.5;
-                lean = -0.1;
-                crouch = 0.1 * a.shootCharge;
+                armUp = 0.75 + a.shootCharge * 0.55;
+                lean = -0.08;
+                crouch = 0.14 * a.shootCharge;
             }
             if (a.shotT > 0 || a.jumpT > 0) {
                 const jt = a.jumpT > 0 ? 1 - a.jumpT / 0.55 : 0;
-                lift = Math.sin(Math.min(1, jt) * Math.PI) * (this.mode === 'hoops' ? 0.85 : 0);
-                armUp = Math.max(armUp, 2.7);
+                lift = Math.sin(Math.min(1, jt) * Math.PI) * (this.mode === 'hoops' ? 0.95 : 0);
+                armUp = Math.max(armUp, 2.85);
             }
             if (a.celebrateT > 0) {
                 lift = Math.abs(Math.sin(this.t * 9)) * 0.45;
@@ -7359,7 +7411,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const tk = a.tackle;
             let slide = 0;
             if (tk.phase === 'charging') {
-                lean = 0.35 + tk.charge * 0.2;
+                lean = 0.38 + tk.charge * 0.22;
             }
             else if (tk.phase === 'lunge') {
                 slide = 1;
@@ -7386,7 +7438,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             lift = this.ease('lift', lift, 34, dt);
             crouch = this.ease('crouch', crouch, 18, dt);
             const land = this.landT > 0 ? Math.sin((this.landT / 0.2) * Math.PI) * 0.12 : 0;
-            const bob = Math.abs(sp) * amp * 0.06;
+            const bob = Math.abs(sp) * amp * 0.08;
             const bank = this.ease('bank', -Math.max(-0.3, Math.min(0.3, yawRate * 0.028)) * Math.min(1, speed / 4), 9, dt);
             const ph = a.runPhase * 2.6;
             const cs = Math.cos(ph);
@@ -7396,28 +7448,28 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             let kickLeg = 0;
             let kickKnee = 0;
             if (kickP >= 0) {
-                if (kickP < 0.35) {
-                    const w = kickP / 0.35;
-                    kickLeg = 0.75 * w;
-                    kickKnee = 1.5 * w;
+                if (kickP < 0.32) {
+                    const w = kickP / 0.32;
+                    kickLeg = 0.85 * w;
+                    kickKnee = 1.65 * w;
                 }
-                else if (kickP < 0.6) {
-                    const w = (kickP - 0.35) / 0.25;
-                    kickLeg = 0.75 - 2.4 * w;
-                    kickKnee = 1.5 * (1 - w);
+                else if (kickP < 0.58) {
+                    const w = (kickP - 0.32) / 0.26;
+                    kickLeg = 0.85 - 2.85 * w;
+                    kickKnee = 1.65 * (1 - w * 0.9);
                 }
                 else {
-                    const w = (kickP - 0.6) / 0.4;
-                    kickLeg = -1.65 * (1 - 0.6 * w);
-                    kickKnee = 0.25 * w;
+                    const w = (kickP - 0.58) / 0.42;
+                    kickLeg = -2.0 * (1 - 0.7 * w);
+                    kickKnee = 0.2 * (1 - w);
                 }
             }
-            const legAmp = this.mode === 'hoops' ? amp * 0.9 : amp;
+            const legAmp = this.mode === 'hoops' ? amp * 0.92 : amp;
             this.legL.rotation[0] = sp * legAmp + idle;
             this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
             this.legL.rotation[2] = 0;
-            this.kneeL.rotation[0] = amp * (0.15 + 1.05 * Math.max(0, -cs));
-            this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.15 + 1.05 * Math.max(0, cs));
+            this.kneeL.rotation[0] = amp * (0.18 + 1.25 * Math.max(0, -cs));
+            this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.18 + 1.25 * Math.max(0, cs));
             if (crouch > 0.01) {
                 this.legL.rotation[0] -= crouch * 3;
                 this.legR.rotation[0] -= crouch * 3;
@@ -7431,14 +7483,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.kneeR.rotation[0] *= 1 - slide;
             }
             if (land > 0.01) {
-                this.kneeL.rotation[0] += land * 4;
-                this.kneeR.rotation[0] += land * 4;
+                this.kneeL.rotation[0] += land * 4.5;
+                this.kneeR.rotation[0] += land * 4.5;
             }
             const swing = this.mode === 'hoops' && carrying ? 0.25 : amp;
-            this.armL.rotation[0] = -sp * swing * 0.9 - armUp;
-            this.armR.rotation[0] = sp * swing * 0.9 - armUp;
+            this.armL.rotation[0] = -sp * swing * 0.95 - armUp;
+            this.armR.rotation[0] = sp * swing * 0.95 - armUp;
             const raised = Math.min(1, armUp / 2.4);
-            const baseBend = this.ease('elbow', a.shootCharging ? 1.35 : 0.45 + amp * 0.9, 14, dt);
+            const baseBend = this.ease('elbow', a.shootCharging ? 1.42 : 0.5 + amp * 0.95, 14, dt);
             this.elbowL.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, sp));
             this.elbowR.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, -sp));
             if (this.mode === 'hoops' && carrying && armUp < 0.05) {
@@ -7446,15 +7498,15 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.elbowR.rotation[0] = -0.8 + Math.sin(a.runPhase * 7) * 0.45;
             }
             if (a.shotT > 0)
-                this.elbowR.rotation[0] *= 0.2;
+                this.elbowR.rotation[0] *= 0.15;
             const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : armUp > 1 ? 0.15 : 0.12, 14, dt);
-            this.armL.rotation[2] = -spread;
-            this.armR.rotation[2] = spread;
-            this.torso.rotation[1] = torsoTwist - sp * amp * 0.18 + (kickP >= 0 ? kick * 0.35 : 0);
-            this.torso.rotation[2] = sp * amp * 0.05;
-            this.head.position[1] = 1.99 + Math.abs(sp) * amp * 0.03;
-            this.head.rotation[1] = -this.torso.rotation[1] * 0.6 + Math.sin(this.t * 1.3) * 0.05 * (1 - amp);
-            this.head.rotation[0] = -lean * 0.4 + (a.shootCharging || a.shotT > 0 ? -0.25 : 0);
+            this.armL.rotation[2] = -spread + sp * amp * 0.05;
+            this.armR.rotation[2] = spread - sp * amp * 0.05;
+            this.torso.rotation[1] = torsoTwist - sp * amp * 0.26 + (kickP >= 0 ? kick * 0.35 : 0);
+            this.torso.rotation[2] = Math.sin(ph) * amp * 0.065 + (kickP >= 0 ? -0.22 * kick : 0);
+            this.head.position[1] = 1.99 + Math.abs(sp) * amp * 0.035;
+            this.head.rotation[1] = -this.torso.rotation[1] * 0.7 + Math.sin(this.t * 1.3) * 0.04 * (1 - amp);
+            this.head.rotation[0] = -lean * 0.45 + (a.shootCharging || a.shotT > 0 ? -0.3 : 0);
             if (a.human) {
                 this.marker.position[1] = 0.08 * Math.sin(this.t * 4);
                 this.chevron.rotation[1] = this.t * 2.5;
@@ -7645,8 +7697,21 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.celebrateShown = false;
             this.disposed = false;
             const mode = sim.mode;
-            const eq = opts.equipped;
-            const stadium = visualOf(eq[mode === 'footy' ? 'stadium.footy' : 'stadium.hoops'], mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
+            const eq = opts.equipped || {};
+            let stadium = visualOf(eq[mode === 'footy' ? 'stadium.footy' : 'stadium.hoops'], mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
+            const CROWD_PALETTES = {
+                crowd_footy_ultras: { palette: [0x00f0ff, 0x0284c7, 0xffffff, 0x38bdf8, 0x1e293b], stand: 0x1e2433 },
+                crowd_hoops_allstars: { palette: [0xff6b00, 0xfb923c, 0xf59e0b, 0x18181b, 0xffffff], stand: 0x1c1917 },
+                crowd_global_fest: { palette: [0xe84a5f, 0xf6c445, 0x4fb3ff, 0xffffff, 0x7be08a, 0xff8c42, 0x9b6bff], stand: 0x24283b },
+                crowd_cyber_vip: { palette: [0xff2bd6, 0x00e5ff, 0xa855f7, 0x0f172a, 0x38bdf8], stand: 0x0f172a },
+                crowd_emerald_forest: { palette: [0x10b981, 0x059669, 0x065f46, 0xffffff, 0xd1fae5], stand: 0x14532d },
+                crowd_gold_champs: { palette: [0xf6c445, 0xd97706, 0x1c1917, 0xfffbeb, 0xb45309], stand: 0x292524 }
+            };
+            const crowdId = eq.crowd || (mode === 'footy' ? 'crowd_footy_ultras' : 'crowd_hoops_allstars');
+            if (crowdId && CROWD_PALETTES[crowdId]) {
+                const cp = CROWD_PALETTES[crowdId];
+                stadium = Object.assign({}, stadium, { crowd: cp.palette, stand: cp.stand || stadium.stand });
+            }
             this.arena = mode === 'footy' ? (0, arena_js_1.buildFootyArena)(stadium, opts.quality) : (0, arena_js_1.buildCourtArena)(stadium, opts.quality);
             this.scene.root.add(this.arena.root);
             this.arena.apply(this.scene);
