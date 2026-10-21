@@ -431,8 +431,34 @@
       tonConfirmed: 'TON transaction verified on-chain!',
       starsRedirect: 'Opening Telegram Stars checkout...',
       leaderboard: 'Leaderboard',
-      leaderboardTitle: 'LEADERBOARD',
-      leaderboardSubtitle: 'Global ranking of elite athletes in Season 1',
+      leaderboardTitle: 'TEAM WAR: FOOTBALL VS BASKETBALL',
+      leaderboardSubtitle: 'Whichever team has more points wins the Season!',
+      teamFootball: 'TEAM FOOTBALL',
+      teamBasketball: 'TEAM BASKETBALL',
+      teamFootballWins: '⚽ TEAM FOOTBALL IS WINNING!',
+      teamBasketballWins: '🏀 TEAM BASKETBALL IS WINNING!',
+      teamFootballLeads: 'Team Football leads the war!',
+      teamBasketballLeads: 'Team Basketball leads the war!',
+      leadDiffNotice: '+{diff} pts lead over rival team',
+      warClashCallout: 'Play matches to score points and secure your team\'s victory!',
+      yourTeam: 'Your Team',
+      yourContribution: 'Your personal contribution: +{score} pts for your team!',
+      warMvpTitle: 'WAR MVP STANDINGS',
+      warMvpSubtitle: 'Athletes from both factions leading their team to victory',
+      pointsContributed: 'pts',
+      warScoreTotal: 'Total Team Points',
+      warSeasonTimer: 'Season ends in {d}d · Team with most points claims the Championship Cup!',
+      warLiveScoreboard: 'CLASH SCOREBOARD',
+      storeSubFooty: 'FOOTBALL CLUB BOUTIQUE · GEAR FOR FOOTBALLERS',
+      storeSubHoops: 'BASKETBALL CLUB BOUTIQUE · GEAR FOR BASKETBALLERS',
+      storeNoticeFooty: '⚽ You are playing for Team Football. Store strictly displays football items only.',
+      storeNoticeHoops: '🏀 You are playing for Team Basketball. Store strictly displays basketball items only.',
+      onlyForFootball: 'Exclusive for Footballers',
+      onlyForBasketball: 'Exclusive for Basketballers',
+      teamFootballBoutique: 'FOOTBALL CLUB STORE',
+      teamBasketballBoutique: 'BASKETBALL CLUB STORE',
+      teamFootballBoutiqueDesc: 'Official football gear: match balls, cleats, striker kits, and championship pitches.',
+      teamBasketballBoutiqueDesc: 'Official basketball gear: basketballs, sneakers, all-star jerseys, and hardwood courts.',
       tabSeason: '🏆 Season',
       tabFooty: '⚽ Footy',
       tabHoops: '🏀 Hoops',
@@ -824,8 +850,34 @@
       tonConfirmed: 'Транзакция TON успешно подтверждена!',
       starsRedirect: 'Открытие оплаты Telegram Stars...',
       leaderboard: 'Лидерборд',
-      leaderboardTitle: 'ТАБЛИЦА ЛИДЕРОВ',
-      leaderboardSubtitle: 'Глобальный рейтинг сильнейших атлетов Сезона 1',
+      leaderboardTitle: 'БИТВА КОМАНД: ФУТБОЛ VS БАСКЕТБОЛ',
+      leaderboardSubtitle: 'У чьей команды больше очков — та команда победит!',
+      teamFootball: 'КОМАНДА ФУТБОЛА',
+      teamBasketball: 'КОМАНДА БАСКЕТБОЛА',
+      teamFootballWins: '⚽ КОМАНДА ФУТБОЛА ПОБЕЖДАЕТ!',
+      teamBasketballWins: '🏀 КОМАНДА БАСКЕТБОЛА ПОБЕЖДАЕТ!',
+      teamFootballLeads: 'Команда Футбола ведет в битве!',
+      teamBasketballLeads: 'Команда Баскетбола ведет в битве!',
+      leadDiffNotice: '+{diff} очков преимущества над соперником',
+      warClashCallout: 'Играйте матчи, забивайте голы и ведите свою команду к победе!',
+      yourTeam: 'Ваша команда',
+      yourContribution: 'Ваш личный вклад: +{score} очков в победу команды!',
+      warMvpTitle: 'ТОП-АТЛЕТЫ ВЕЛИКОЙ БИТВЫ (MVP)',
+      warMvpSubtitle: 'Атлеты обеих сторон, внесшие наибольший вклад в счет своей команды',
+      pointsContributed: 'очков',
+      warScoreTotal: 'Общий счет команды',
+      warSeasonTimer: 'До конца турнира: {d} дн. · Команда с наибольшим счетом заберет Кубок Сезона!',
+      warLiveScoreboard: 'ТАБЛО БИТВЫ КОМАНД',
+      storeSubFooty: 'ВИТРИНА ФУТБОЛЬНОГО КЛУБА · ТОЛЬКО ДЛЯ ФУТБОЛИСТОВ',
+      storeSubHoops: 'ВИТРИНА БАСКЕТБОЛЬНОГО КЛУБА · ТОЛЬКО ДЛЯ БАСКЕТБОЛИСТОВ',
+      storeNoticeFooty: '⚽ Вы играете за Команду Футбола. В магазине представлена экипировка только для футболистов.',
+      storeNoticeHoops: '🏀 Вы играете за Команду Баскетбола. В магазине представлена экипировка только для баскетболистов.',
+      onlyForFootball: 'Только для футболистов',
+      onlyForBasketball: 'Только для баскетболистов',
+      teamFootballBoutique: 'МАГАЗИН ФУТБОЛЬНОГО КЛУБА',
+      teamBasketballBoutique: 'МАГАЗИН БАСКЕТБОЛЬНОГО КЛУБА',
+      teamFootballBoutiqueDesc: 'Официальная экипировка футболиста: мячи, бутсы, форма нападающего и футбольные поля.',
+      teamBasketballBoutiqueDesc: 'Официальная экипировка баскетболиста: мячи, кроссовки, джерси форварда и баскетбольные корты.',
       tabSeason: '🏆 Сезон',
       tabFooty: '⚽ Футбол',
       tabHoops: '🏀 Баскетбол',
@@ -5163,6 +5215,8 @@
   function buildShopPage(app, initialCategory, inspectId) {
     var curCategory = initialCategory || 'all';
     var isPurchasing = false; // Debounce flag to prevent duplicate purchases
+    var curChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
+    var isFooty = (curChar === 'footy');
 
     var container = document.createElement('div');
     container.className = 'screen solid page-screen has-nav';
@@ -5183,7 +5237,7 @@
     };
 
     var titleBox = document.createElement('div');
-    titleBox.innerHTML = '<h1 style="margin:0;">' + tr('stadiumStore') + '</h1><small style="color:var(--text-muted);letter-spacing:1px;font-size:10px;">' + tr('storeSub') + '</small>';
+    titleBox.innerHTML = '<h1 style="margin:0;">' + tr('stadiumStore') + '</h1><small style="color:var(--text-muted);letter-spacing:1px;font-size:10px;">' + tr(isFooty ? 'storeSubFooty' : 'storeSubHoops') + '</small>';
 
     var walletBox = document.createElement('div');
     walletBox.className = 'fvh-wallet-chips';
@@ -5195,6 +5249,18 @@
 
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
+
+    // Faction Boutique Allegiance Banner
+    var allegianceBanner = document.createElement('div');
+    allegianceBanner.className = 'fvh-shop-allegiance-banner ' + (isFooty ? 'footy' : 'hoops');
+    allegianceBanner.innerHTML =
+      '<div class="fvh-shop-allegiance-icon">' + (isFooty ? '⚽' : '🏀') + '</div>' +
+      '<div class="fvh-shop-allegiance-info">' +
+      '  <div class="fvh-shop-allegiance-title">' + tr(isFooty ? 'teamFootballBoutique' : 'teamBasketballBoutique') + '</div>' +
+      '  <div class="fvh-shop-allegiance-sub">' + tr(isFooty ? 'teamFootballBoutiqueDesc' : 'teamBasketballBoutiqueDesc') + '</div>' +
+      '</div>' +
+      '<div class="fvh-shop-allegiance-badge">' + (isFooty ? tr('onlyForFootball') : tr('onlyForBasketball')) + '</div>';
+    body.appendChild(allegianceBanner);
 
     // 1. Featured Item Hero Spotlight
     var featuredHero = document.createElement('div');
@@ -5951,15 +6017,27 @@
     function renderShop() {
       updateWalletUI();
 
-      // Featured Hero Item (Featured Drop of the Day)
-      var featuredItem = {
+      // Featured Hero Item (Featured Drop of the Day) - Discipline-specific
+      var featuredItem = isFooty ? {
         id: 'skin_neon_elite',
-        name: 'CYBER STRIKER #10',
+        name: 'CYBER STRIKER KIT',
         category: 'skins',
         rarity: 'legendary',
         icon: '🎽',
         price: 650,
-        desc: 'Exclusive high-voltage neon athlete jersey with responsive reactive lighting and custom stadium flare.'
+        desc: (getActiveLang() === 'ru') ?
+          'Эксклюзивная легендарная форма футбольного нападающего с неоновой подсветкой для побед Команды Футбола.' :
+          'Exclusive high-voltage neon soccer kit with responsive reactive lighting for Team Football victories.'
+      } : {
+        id: 'skin_astronaut',
+        name: 'CYBER ALL-STAR KIT',
+        category: 'skins',
+        rarity: 'legendary',
+        icon: '🎽',
+        price: 650,
+        desc: (getActiveLang() === 'ru') ?
+          'Эксклюзивная легендарная форма баскетбольного форварда с реактивной подсветкой для побед Команды Баскетбола.' :
+          'Exclusive high-voltage neon basketball kit with responsive reactive lighting for Team Basketball victories.'
       };
 
       var owned = app.store.data.owned || [];
@@ -6099,9 +6177,14 @@
         return;
       }
 
-      // 1. Dedicated BUNDLES Tab
+      // 1. Dedicated BUNDLES Tab (Filtered strictly by player's sport)
       if (curCategory === 'bundles') {
-        BUNDLE_ITEMS.forEach(function (b) {
+        var visibleBundles = BUNDLE_ITEMS.filter(function (b) {
+          if (isFooty && b.id === 'bundle_hoops_starter') return false;
+          if (!isFooty && b.id === 'bundle_footy_starter') return false;
+          return true;
+        });
+        visibleBundles.forEach(function (b) {
           var ownInfo = checkBundleOwnership(b);
           var bCard = document.createElement('div');
           bCard.className = 'fvh-catalogue-card fvh-bundle-card r-legendary' + (ownInfo.isFullyOwned ? ' owned' : '');
@@ -6141,10 +6224,15 @@
         return;
       }
 
-      // 2. PACKS Tab
+      // 2. PACKS Tab (Filtered strictly by player's sport)
       if (curCategory === 'packs') {
         var packsData = app.store.data.packs || { free: {}, paid: {} };
-        PACKS_DEF.forEach(function (pk) {
+        var visiblePacks = PACKS_DEF.filter(function (pk) {
+          if (isFooty && pk.id === 'hoops') return false;
+          if (!isFooty && pk.id === 'footy') return false;
+          return true;
+        });
+        visiblePacks.forEach(function (pk) {
           var freeCount = (packsData.free && packsData.free[pk.id]) || 0;
           var paidCount = (packsData.paid && packsData.paid[pk.id]) || 0;
           var totalCount = freeCount + paidCount;
@@ -6223,20 +6311,24 @@
       // Fetch standard items from data/shop and ensure scenic arenas are included
       function renderItemsList(allItems) {
         var scenicArenas = [
-          { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
-          { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
-          { id: 'std_space_orbit', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Orbital Space Colosseum', rarity: 'legendary', price: 900, icon: '🚀', desc: tr('scenicSpaceDesc') },
-          { id: 'std_mars_dome', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Mars Bio-Dome Arena', rarity: 'epic', price: 750, icon: '🔴', desc: tr('scenicMarsDesc') },
-          { id: 'std_moon_crater', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Apollo Lunar Arena', rarity: 'rare', price: 680, icon: '🌕', desc: tr('scenicMoonDesc') },
-          { id: 'std_underwater_dome', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Abyssal Ocean Dome', rarity: 'legendary', price: 820, icon: '🫧', desc: tr('scenicUnderwaterDesc') },
-          { id: 'std_cyber_megacity', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Neo Tokyo Megacity', rarity: 'legendary', price: 950, icon: '🏙️', desc: tr('scenicCyberDesc') },
-          { id: 'std_volcano_caldera', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Magma Caldera Arena', rarity: 'epic', price: 850, icon: '🌋', desc: tr('scenicVolcanoDesc') },
-          { id: 'std_floating_islands', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Aetheria Sky Islands', rarity: 'legendary', price: 880, icon: '☁️', desc: tr('scenicFloatingDesc') },
-          { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
+          { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
+          { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
+          { id: 'std_space_orbit', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Orbital Space Colosseum', rarity: 'legendary', price: 900, icon: '🚀', desc: tr('scenicSpaceDesc') },
+          { id: 'std_mars_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Mars Bio-Dome Arena', rarity: 'epic', price: 750, icon: '🔴', desc: tr('scenicMarsDesc') },
+          { id: 'std_moon_crater', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Apollo Lunar Arena', rarity: 'rare', price: 680, icon: '🌕', desc: tr('scenicMoonDesc') },
+          { id: 'std_underwater_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Abyssal Ocean Dome', rarity: 'legendary', price: 820, icon: '🫧', desc: tr('scenicUnderwaterDesc') },
+          { id: 'std_cyber_megacity', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Neo Tokyo Megacity', rarity: 'legendary', price: 950, icon: '🏙️', desc: tr('scenicCyberDesc') },
+          { id: 'std_volcano_caldera', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Magma Caldera Arena', rarity: 'epic', price: 850, icon: '🌋', desc: tr('scenicVolcanoDesc') },
+          { id: 'std_floating_islands', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Aetheria Sky Islands', rarity: 'legendary', price: 880, icon: '☁️', desc: tr('scenicFloatingDesc') },
+          { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
         ];
         scenicArenas.forEach(function (sa) {
-          if (!allItems.some(function (i) { return i.id === sa.id; })) {
+          var existing = allItems.find(function (i) { return i.id === sa.id; });
+          if (!existing) {
             allItems.push(sa);
+          } else {
+            existing.slot = 'stadium.' + curChar;
+            existing.mode = curChar;
           }
         });
 
@@ -6248,7 +6340,12 @@
 
         // If category is "all", also show the bundles at the top of the store
         if (curCategory === 'all') {
-          BUNDLE_ITEMS.forEach(function (b) {
+          var visibleAllBundles = BUNDLE_ITEMS.filter(function (b) {
+            if (isFooty && b.id === 'bundle_hoops_starter') return false;
+            if (!isFooty && b.id === 'bundle_footy_starter') return false;
+            return true;
+          });
+          visibleAllBundles.forEach(function (b) {
             var ownInfo = checkBundleOwnership(b);
             var bCard = document.createElement('div');
             bCard.className = 'fvh-catalogue-card fvh-bundle-card r-legendary' + (ownInfo.isFullyOwned ? ' owned' : '');
@@ -6285,7 +6382,28 @@
           });
         }
 
+        // Discipline-specific catalog filter
+        function isItemAllowedForCurrentAthlete(it) {
+          if (isFooty) {
+            // Player is Football: strictly NO basketball items
+            if (it.mode === 'hoops') return false;
+            if (it.category === 'basketball') return false;
+            if (it.slot && it.slot === 'ball.hoops') return false;
+            if (it.id && (it.id.startsWith('ball_hoops') || it.id === 'ball_cyber_neon' || it.id === 'ball_tidal')) return false;
+            if (it.id && (it.id === 'std_hoops_street' || it.id === 'std_hoops_neon' || it.id === 'std_hoops_gold' || it.id === 'std_hoops_sky')) return false;
+          } else {
+            // Player is Basketball: strictly NO football items
+            if (it.mode === 'footy') return false;
+            if (it.category === 'football') return false;
+            if (it.slot && it.slot === 'ball.footy') return false;
+            if (it.id && (it.id.startsWith('ball_footy') || it.id === 'ball_earthrise')) return false;
+            if (it.id && (it.id === 'std_footy_classic' || it.id === 'std_footy_night' || it.id === 'std_footy_golden' || it.id === 'std_footy_neon')) return false;
+          }
+          return true;
+        }
+
         var filtered = allItems.filter(function (it) {
+          if (!isItemAllowedForCurrentAthlete(it)) return false;
           if (curCategory === 'all') return true;
           return it.category === curCategory;
         });
@@ -6383,21 +6501,25 @@
     if (cat === 'footy') return '⚽';
     if (cat === 'hoops') return '🏀';
     if (cat === 'coins') return getFvhCoinSvg('inline');
-    return '🏆';
+    return tr('pointsContributed');
   }
 
   function createPodiumColHtml(ath, place, cat) {
     var pClass = 'p' + place;
     var crownHtml = place === 1 ? '<div class="fvh-podium-crown">👑</div>' : '';
     var medalEmoji = place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉';
-    var avatarSvg = ath.char === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg();
-    var unit = getCategoryUnit(cat);
+    var isHoops = (ath.char === 'hoops');
+    var avatarSvg = isHoops ? getHoopsAvatarSvg() : getFootyAvatarSvg();
+    var teamTag = isHoops ?
+      '<span class="fvh-podium-team-tag hoops">🏀 ' + tr('hoopsChar') + '</span>' :
+      '<span class="fvh-podium-team-tag footy">⚽ ' + tr('footyChar') + '</span>';
 
-    return '<div class="fvh-podium-col ' + pClass + '">' +
+    return '<div class="fvh-podium-col ' + pClass + (isHoops ? ' is-hoops' : ' is-footy') + '">' +
       crownHtml +
-      '<div class="fvh-podium-avatar-box">' + avatarSvg + '</div>' +
+      '<div class="fvh-podium-avatar-box ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' + avatarSvg + '</div>' +
       '<div class="fvh-podium-name" title="' + ath.name + '">' + ath.name + '</div>' +
-      '<div class="fvh-podium-score">' + ath.score.toLocaleString() + ' ' + unit + '</div>' +
+      teamTag +
+      '<div class="fvh-podium-score">' + ath.score.toLocaleString() + ' <small style="font-size:10px;opacity:0.8;">' + tr('pointsContributed') + '</small></div>' +
       '<div class="fvh-podium-pedestal">' +
       '  <span class="fvh-podium-num">#' + place + '</span>' +
       '  <span class="fvh-podium-medal">' + medalEmoji + '</span>' +
@@ -6407,7 +6529,7 @@
 
   function fetchLeaderboardData(cat, app, cb) {
     var pid = getAppPlayerId(app);
-    var url = '/api/leaderboard?category=' + encodeURIComponent(cat) + (pid ? '&playerId=' + encodeURIComponent(pid) : '');
+    var url = '/api/leaderboard?category=' + encodeURIComponent(cat || 'season') + (pid ? '&playerId=' + encodeURIComponent(pid) : '');
 
     var handled = false;
     function finish(d) {
@@ -6453,8 +6575,8 @@
     var myChar = myData.selectedCharacter || 'footy';
 
     var athletes = [
-      { id: 'ath_apex', name: 'ApexStriker #10', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
-      { id: 'ath_dunk', name: 'DunkPhenom #23', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
+      { id: 'ath_apex', name: 'ApexStriker', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
+      { id: 'ath_dunk', name: 'DunkPhenom', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
       { id: 'ath_viper', name: 'ViperVolley', char: 'footy', club: 'Rio Electro', wins: 41, goals: 98, baskets: 24, coins: 6800, xp: 2200, badge: 'PRO' },
       { id: 'ath_rim', name: 'RimCrusher_Pro', char: 'hoops', club: 'Brooklyn Alley', wins: 39, goals: 18, baskets: 136, coins: 6400, xp: 2100, badge: 'ELITE' },
       { id: 'ath_golden', name: 'GoldenBoot_Alim', char: 'footy', club: 'Emirates Arena', wins: 36, goals: 86, baskets: 30, coins: 9200, xp: 1950, badge: 'CHAMP' },
@@ -6477,7 +6599,7 @@
 
     var myEntry = {
       id: 'me',
-      name: myData.playerName || (myChar === 'footy' ? 'STRIKER #10 (ВЫ)' : 'FORWARD #23 (ВЫ)'),
+      name: myData.playerName || (myChar === 'footy' ? 'STRIKER (ВЫ)' : 'FORWARD (ВЫ)'),
       char: myChar,
       club: 'FvH Global Club',
       wins: myStats.wins || 0,
@@ -6506,7 +6628,7 @@
     }
 
     var ranked = athletes.map(function (a) {
-      return Object.assign({}, a, { score: computeScore(a, cat) });
+      return Object.assign({}, a, { score: computeScore(a, cat || 'season') });
     });
     ranked.sort(function (a, b) { return b.score - a.score; });
     ranked.forEach(function (a, idx) { a.rank = idx + 1; });
@@ -6522,15 +6644,220 @@
       };
     }
 
+    var footballTotal = 1485200;
+    var basketballTotal = 1428900;
+    ranked.forEach(function (a) {
+      if (a.char === 'hoops') {
+        basketballTotal += a.score;
+      } else {
+        footballTotal += a.score;
+      }
+    });
+    var totalWarScore = footballTotal + basketballTotal;
+    var footballPct = Math.round((footballTotal / totalWarScore) * 1000) / 10;
+    var basketballPct = Math.round((100 - footballPct) * 10) / 10;
+    var winningTeam = footballTotal >= basketballTotal ? 'footy' : 'hoops';
+    var leadDiff = Math.abs(footballTotal - basketballTotal);
+
     cb({
       ok: true,
-      category: cat,
-      seasonName: 'Season 1: Cyber Arena',
+      category: cat || 'season',
+      seasonName: (getActiveLang() === 'ru') ? 'Сезон 1: Битва Команд' : 'Season 1: Football vs Basketball War',
       seasonDaysLeft: 14,
+      teamFootball: {
+        id: 'footy',
+        name: (getActiveLang() === 'ru') ? 'Команда Футбола' : 'Team Football',
+        score: footballTotal,
+        pct: footballPct,
+        athletes: 7240
+      },
+      teamBasketball: {
+        id: 'hoops',
+        name: (getActiveLang() === 'ru') ? 'Команда Баскетбола' : 'Team Basketball',
+        score: basketballTotal,
+        pct: basketballPct,
+        athletes: 7180
+      },
+      winningTeam: winningTeam,
+      leadDiff: leadDiff,
       totalAthletes: 14374,
       top: ranked.slice(0, 50),
       player: playerRankInfo
     });
+  }
+
+  function renderWarScoreboardAndRankings(body, data, app) {
+    var teamFooty = data.teamFootball || { score: 1485200, pct: 51.2 };
+    var teamHoops = data.teamBasketball || { score: 1428900, pct: 48.8 };
+    var winningTeam = data.winningTeam || (teamFooty.score >= teamHoops.score ? 'footy' : 'hoops');
+    var leadDiff = data.leadDiff || Math.abs(teamFooty.score - teamHoops.score);
+    var isFootyWinning = (winningTeam === 'footy');
+    var myChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
+
+    // 1. Victory Callout Banner
+    var victoryBanner = document.createElement('div');
+    victoryBanner.className = 'fvh-war-victory-banner ' + winningTeam;
+    victoryBanner.innerHTML =
+      '<div class="fvh-war-trophy-wrap">🏆</div>' +
+      '<div class="fvh-war-victory-info">' +
+      '  <div class="fvh-war-victory-badge">' + (isFootyWinning ? tr('teamFootballWins') : tr('teamBasketballWins')) + '</div>' +
+      '  <div class="fvh-war-victory-lead">' + tr('leadDiffNotice', { diff: leadDiff.toLocaleString() }) + '</div>' +
+      '  <div class="fvh-war-victory-timer">⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }) + '</div>' +
+      '</div>';
+    body.appendChild(victoryBanner);
+
+    // 2. Scoreboard Clash Card
+    var scoreboardCard = document.createElement('div');
+    scoreboardCard.className = 'fvh-war-scoreboard-card';
+    scoreboardCard.innerHTML =
+      '<div class="fvh-war-scoreboard-head">' +
+      '  <span class="fvh-war-live-pill">🔴 ' + (getActiveLang() === 'ru' ? 'СЕЗОН 1 · ПРЯМОЙ ЭФИР' : 'SEASON 1 · LIVE CLASH') + '</span>' +
+      '  <span class="fvh-war-rule-tag">⚡ ' + (getActiveLang() === 'ru' ? 'Кто наберет больше очков — тот победил' : 'Most team points wins the Season') + '</span>' +
+      '</div>' +
+      '<div class="fvh-war-clash-grid">' +
+      '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
+      '    <div class="fvh-team-tag">⚽ ' + tr('teamFootball') + '</div>' +
+      '    <div class="fvh-team-score-num">' + teamFooty.score.toLocaleString() + '</div>' +
+      '    <div class="fvh-team-meta">' +
+      '      <span class="fvh-team-pct">' + teamFooty.pct + '%</span>' +
+      '      <span class="fvh-team-status ' + (isFootyWinning ? 'lead' : 'behind') + '">' +
+      (isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
+      '      </span>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="fvh-war-vs-divider">' +
+      '    <div class="fvh-war-vs-badge">VS</div>' +
+      '  </div>' +
+      '  <div class="fvh-war-team-panel hoops ' + (!isFootyWinning ? 'is-leading' : '') + '">' +
+      '    <div class="fvh-team-tag">🏀 ' + tr('teamBasketball') + '</div>' +
+      '    <div class="fvh-team-score-num">' + teamHoops.score.toLocaleString() + '</div>' +
+      '    <div class="fvh-team-meta">' +
+      '      <span class="fvh-team-pct">' + teamHoops.pct + '%</span>' +
+      '      <span class="fvh-team-status ' + (!isFootyWinning ? 'lead' : 'behind') + '">' +
+      (!isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
+      '      </span>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="fvh-war-tug-wrap">' +
+      '  <div class="fvh-war-tug-track">' +
+      '    <div class="fvh-war-tug-fill footy" style="width:' + teamFooty.pct + '%;"></div>' +
+      '    <div class="fvh-war-tug-spark"></div>' +
+      '    <div class="fvh-war-tug-fill hoops" style="width:' + teamHoops.pct + '%;"></div>' +
+      '  </div>' +
+      '  <div class="fvh-war-tug-labels">' +
+      '    <span style="color:#38bdf8;font-weight:900;">⚽ ' + teamFooty.pct + '%</span>' +
+      '    <span style="color:var(--text-muted);font-size:11px;">' + (getActiveLang() === 'ru' ? 'Линия противостояния' : 'Frontline tug-of-war') + '</span>' +
+      '    <span style="color:#fb923c;font-weight:900;">🏀 ' + teamHoops.pct + '%</span>' +
+      '  </div>' +
+      '</div>';
+    body.appendChild(scoreboardCard);
+
+    // 3. Player Allegiance & Personal Contribution Card
+    var myContribScore = (data.player && data.player.score) ? data.player.score : 0;
+    var playerCard = document.createElement('div');
+    playerCard.className = 'fvh-war-player-card ' + myChar;
+    playerCard.innerHTML =
+      '<div class="fvh-war-player-avatar ' + (myChar === 'hoops' ? 'hoops-halo' : 'footy-halo') + '">' +
+      (myChar === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
+      '</div>' +
+      '<div class="fvh-war-player-info">' +
+      '  <div class="fvh-war-player-side-row">' +
+      '    <span class="fvh-player-side-badge ' + myChar + '">' +
+      (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) +
+      '    </span>' +
+      '    <span class="fvh-player-my-badge">' + (getActiveLang() === 'ru' ? 'ВАША КОМАНДА' : 'YOUR TEAM') + '</span>' +
+      '  </div>' +
+      '  <div class="fvh-war-player-contrib-num">' + tr('yourContribution', { score: myContribScore.toLocaleString() }) + '</div>' +
+      '  <div class="fvh-war-player-hint">' +
+      (getActiveLang() === 'ru' ?
+        'Каждый забитый вами мяч (+10/+5), победа в матче (+40) и XP сразу добавляются к общему счёту вашей команды!' :
+        'Every goal or basket you score (+10/+5), match victory (+40), and earned XP directly boost your team\'s total score!') +
+      '  </div>' +
+      '</div>';
+    body.appendChild(playerCard);
+
+    // 4. MVP Standings Header
+    var mvpHeader = document.createElement('div');
+    mvpHeader.className = 'fvh-war-mvp-head';
+    mvpHeader.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:20px 0 12px;">' +
+      '  <div>' +
+      '    <h3 style="margin:0 0 2px;font-size:16px;font-weight:900;color:var(--text-pure);">' + tr('warMvpTitle') + '</h3>' +
+      '    <div style="font-size:11.5px;color:var(--text-muted);">' + tr('warMvpSubtitle') + '</div>' +
+      '  </div>' +
+      '  <span style="font-size:11px;font-weight:800;color:#fde047;background:rgba(255,200,0,0.15);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,200,0,0.3);">' +
+      '    ТОП-50 MVP' +
+      '  </span>' +
+      '</div>';
+    body.appendChild(mvpHeader);
+
+    // 5. Top 3 Podium
+    var topAthletes = data.top || [];
+    var top1 = topAthletes[0];
+    var top2 = topAthletes[1];
+    var top3 = topAthletes[2];
+    var rest = topAthletes.slice(3);
+
+    var podium = document.createElement('div');
+    podium.className = 'fvh-podium-wrap';
+    podium.innerHTML =
+      (top2 ? createPodiumColHtml(top2, 2, 'season') : '') +
+      (top1 ? createPodiumColHtml(top1, 1, 'season') : '') +
+      (top3 ? createPodiumColHtml(top3, 3, 'season') : '');
+    body.appendChild(podium);
+
+    // 6. Ranks 4 to 50
+    var rowsWrap = document.createElement('div');
+    rowsWrap.className = 'fvh-leaderboard-rows';
+    rest.forEach(function (ath) {
+      var isHoops = (ath.char === 'hoops');
+      var row = document.createElement('div');
+      row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '') + (isHoops ? ' row-hoops' : ' row-footy');
+      row.innerHTML =
+        '<div class="fvh-lb-rank">#' + ath.rank + '</div>' +
+        '<div class="fvh-lb-avatar ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' +
+        (isHoops ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
+        '</div>' +
+        '<div class="fvh-lb-info">' +
+        '  <div class="fvh-lb-name">' +
+        ath.name + (ath.isCurrentUser ? ' <span class="fvh-me-badge">' + (getActiveLang() === 'ru' ? 'ВЫ' : 'YOU') + '</span>' : '') +
+        '  </div>' +
+        '  <div class="fvh-lb-club">' +
+        '    <span class="fvh-team-pill ' + (isHoops ? 'hoops' : 'footy') + '">' + (isHoops ? '🏀 ' + tr('teamBasketball') : '⚽ ' + tr('teamFootball')) + '</span>' +
+        '    · ' + (ath.club || 'FvH Club') +
+        '  </div>' +
+        '</div>' +
+        '<div class="fvh-lb-score">' +
+        '  <span class="fvh-lb-val">' + ath.score.toLocaleString() + '</span> ' +
+        '  <span class="fvh-lb-unit" style="font-size:10px;color:var(--text-muted);">' + tr('pointsContributed') + '</span>' +
+        '</div>';
+      rowsWrap.appendChild(row);
+    });
+    body.appendChild(rowsWrap);
+
+    // 7. Docked Current Player Bar
+    if (data.player) {
+      var sticky = document.createElement('div');
+      sticky.className = 'fvh-leaderboard-sticky-player ' + myChar;
+      sticky.innerHTML =
+        '<div class="fvh-lb-sticky-rank">#' + data.player.rank + '</div>' +
+        '<div class="fvh-lb-sticky-avatar ' + (myChar === 'hoops' ? 'hoops-halo' : 'footy-halo') + '">' +
+        (myChar === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
+        '</div>' +
+        '<div class="fvh-lb-sticky-info">' +
+        '  <div class="fvh-lb-sticky-title">' +
+        (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) + ' · ' + tr('yourRank') +
+        '  </div>' +
+        '  <div class="fvh-lb-sticky-sub">' +
+        (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : (getActiveLang() === 'ru' ? 'Лидер дивизиона!' : 'Division Leader!')) +
+        '  </div>' +
+        '</div>' +
+        '<div class="fvh-lb-sticky-score">' +
+        '  <b>' + data.player.score.toLocaleString() + '</b> ' + tr('pointsContributed') +
+        '</div>';
+      body.appendChild(sticky);
+    }
   }
 
   function buildLeaderboardPage(app, initialCategory) {
@@ -6564,119 +6891,20 @@
     page.appendChild(body);
     container.appendChild(page);
 
-    function renderCategory(cat) {
-      curCategory = cat;
-      body.innerHTML = '';
+    function renderWarLeaderboard() {
+      body.innerHTML =
+        '<div style="text-align:center;padding:48px 20px;color:var(--text-muted);">' +
+        '  <div style="font-size:36px;margin-bottom:10px;animation:fvhPulse 1.2s infinite;">⚡</div>' +
+        '  <div style="font-weight:900;letter-spacing:1px;font-size:14px;color:var(--text-pure);">' + (getActiveLang() === 'ru' ? 'СИНХРОНИЗАЦИЯ БИТВЫ КОМАНД...' : 'SYNCING TEAM WAR...') + '</div>' +
+        '</div>';
 
-      // 1. Season Banner with Countdown & Live Pill
-      var banner = document.createElement('div');
-      banner.className = 'fvh-leaderboard-banner';
-      banner.innerHTML =
-        '<div class="fvh-leaderboard-banner-left">' +
-        '  <span class="fvh-live-pulse-badge">🔴 LIVE GLOBAL</span>' +
-        '  <h2 style="margin:4px 0 2px;font-size:18px;font-weight:900;">' + tr('leaderboardSubtitle') + '</h2>' +
-        '  <div style="font-size:12px;color:var(--text-muted);">' + tr('seasonEndsIn') + ' <b>14 ' + tr('daysLeft') + '</b> · 14,370+ атлетов</div>' +
-        '</div>' +
-        '<div class="fvh-leaderboard-banner-icon">🏆</div>';
-      body.appendChild(banner);
-
-      // 2. Segmented Category Tabs
-      var tabsWrap = document.createElement('div');
-      tabsWrap.className = 'fvh-tabs-segmented';
-      var tabs = [
-        { id: 'season', label: tr('tabSeason') },
-        { id: 'footy', label: tr('tabFooty') },
-        { id: 'hoops', label: tr('tabHoops') },
-        { id: 'coins', label: tr('tabCoins') }
-      ];
-      tabs.forEach(function (t) {
-        var tBtn = document.createElement('button');
-        tBtn.className = 'fvh-tab-seg' + (t.id === curCategory ? ' active' : '');
-        tBtn.textContent = t.label;
-        tBtn.onclick = function () {
-          if (curCategory !== t.id) {
-            app.audio.play('click');
-            renderCategory(t.id);
-          }
-        };
-        tabsWrap.appendChild(tBtn);
-      });
-      body.appendChild(tabsWrap);
-
-      // Loading placeholder or fetch
-      var listWrap = document.createElement('div');
-      listWrap.className = 'fvh-leaderboard-content';
-      listWrap.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Загрузка рейтинга...</div>';
-      body.appendChild(listWrap);
-
-      fetchLeaderboardData(cat, app, function (data) {
-        renderLeaderboardList(listWrap, data, cat);
+      fetchLeaderboardData('season', app, function (data) {
+        body.innerHTML = '';
+        renderWarScoreboardAndRankings(body, data, app);
       });
     }
 
-    function renderLeaderboardList(wrap, data, cat) {
-      wrap.innerHTML = '';
-      var topAthletes = data.top || [];
-      if (topAthletes.length === 0) {
-        wrap.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">' + tr('emptyCategory') + '</div>';
-        return;
-      }
-
-      var top1 = topAthletes[0];
-      var top2 = topAthletes[1];
-      var top3 = topAthletes[2];
-      var rest = topAthletes.slice(3);
-
-      // Top 3 Podium
-      var podium = document.createElement('div');
-      podium.className = 'fvh-podium-wrap';
-      podium.innerHTML =
-        (top2 ? createPodiumColHtml(top2, 2, cat) : '') +
-        (top1 ? createPodiumColHtml(top1, 1, cat) : '') +
-        (top3 ? createPodiumColHtml(top3, 3, cat) : '');
-      wrap.appendChild(podium);
-
-      // Ranks 4 to 50 List
-      var list = document.createElement('div');
-      list.className = 'fvh-leaderboard-rows';
-      rest.forEach(function (ath) {
-        var row = document.createElement('div');
-        row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '');
-        row.innerHTML =
-          '<div class="fvh-lb-rank">#' + ath.rank + '</div>' +
-          '<div class="fvh-lb-avatar">' + (ath.char === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) + '</div>' +
-          '<div class="fvh-lb-info">' +
-          '  <div class="fvh-lb-name">' + ath.name + (ath.isCurrentUser ? ' <span class="fvh-me-badge">ВЫ</span>' : '') + '</div>' +
-          '  <div class="fvh-lb-club">' + (ath.club || 'FvH Club') + ' · <span class="fvh-badge-tier">' + (ath.badge || 'PRO') + '</span></div>' +
-          '</div>' +
-          '<div class="fvh-lb-score">' +
-          '  <span class="fvh-lb-val">' + ath.score.toLocaleString() + '</span> ' +
-          '  <span class="fvh-lb-unit">' + getCategoryUnit(cat) + '</span>' +
-          '</div>';
-        list.appendChild(row);
-      });
-      wrap.appendChild(list);
-
-      // Sticky Bottom Bar for Current Player
-      if (data.player) {
-        var sticky = document.createElement('div');
-        sticky.className = 'fvh-leaderboard-sticky-player';
-        var myChar = app.store.data.selectedCharacter || 'footy';
-        sticky.innerHTML =
-          '<div class="fvh-lb-sticky-rank">#' + data.player.rank + '</div>' +
-          '<div class="fvh-lb-sticky-avatar">' + (myChar === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) + '</div>' +
-          '<div class="fvh-lb-sticky-info">' +
-          '  <div class="fvh-lb-sticky-title">' + tr('yourRank') + '</div>' +
-          '  <div class="fvh-lb-sticky-sub">' + (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : 'Лидер дивизиона!') + '</div>' +
-          '</div>' +
-          '<div class="fvh-lb-sticky-score">' +
-          '  <b>' + data.player.score.toLocaleString() + '</b> ' + getCategoryUnit(cat) +
-          '</div>';
-        wrap.appendChild(sticky);
-      }
-    }
-
-    renderCategory(curCategory);
+    renderWarLeaderboard();
     container.appendChild(createSharedBottomNav('leaderboard', app));
     return container;
   }
@@ -9153,6 +9381,11 @@
     // Dedicated Arena Selection Gallery
     app.showArenas = function () {
       app.show(buildArenaSelectPage(app), 'arenas');
+    };
+
+    // Dedicated Shop Screen
+    app.showShop = function (cat, inspectId) {
+      app.show(buildShopPage(app, cat || 'all', inspectId), 'shop');
     };
 
     // Dedicated Leaderboard Screen

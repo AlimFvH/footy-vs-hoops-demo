@@ -2180,8 +2180,8 @@ const server = http.createServer((req, res) => {
 
     // Thematic pool of simulated global athletes
     const athletes = [
-      { id: 'ath_apex', name: 'ApexStriker #10', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
-      { id: 'ath_dunk', name: 'DunkPhenom #23', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
+      { id: 'ath_apex', name: 'ApexStriker', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
+      { id: 'ath_dunk', name: 'DunkPhenom', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
       { id: 'ath_viper', name: 'ViperVolley', char: 'footy', club: 'Rio Electro', wins: 41, goals: 98, baskets: 24, coins: 6800, xp: 2200, badge: 'PRO' },
       { id: 'ath_rim', name: 'RimCrusher_Pro', char: 'hoops', club: 'Brooklyn Alley', wins: 39, goals: 18, baskets: 136, coins: 6400, xp: 2100, badge: 'ELITE' },
       { id: 'ath_golden', name: 'GoldenBoot_Alim', char: 'footy', club: 'Emirates Arena', wins: 36, goals: 86, baskets: 30, coins: 9200, xp: 1950, badge: 'CHAMP' },
@@ -2257,6 +2257,21 @@ const server = http.createServer((req, res) => {
       ath.isCurrentUser = Boolean(qPlayerId && ath.id === qPlayerId);
     });
 
+    let footballTotal = 1485200;
+    let basketballTotal = 1428900;
+    ranked.forEach(a => {
+      if (a.char === 'hoops') {
+        basketballTotal += a.score;
+      } else {
+        footballTotal += a.score;
+      }
+    });
+    const totalWarScore = footballTotal + basketballTotal;
+    const footballPct = Math.round((footballTotal / totalWarScore) * 1000) / 10;
+    const basketballPct = Math.round((100 - footballPct) * 10) / 10;
+    const winningTeam = footballTotal >= basketballTotal ? 'footy' : 'hoops';
+    const leadDiff = Math.abs(footballTotal - basketballTotal);
+
     let playerRankInfo = null;
     if (qPlayerId) {
       const pIdx = ranked.findIndex(a => a.id === qPlayerId);
@@ -2274,8 +2289,24 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 200, {
       ok: true,
       category: qCategory,
-      seasonName: 'Season 1: Cyber Arena',
+      seasonName: 'Season 1: Football vs Basketball War',
       seasonDaysLeft: 14,
+      teamFootball: {
+        id: 'footy',
+        name: 'Team Football',
+        score: footballTotal,
+        pct: footballPct,
+        athletes: 7240
+      },
+      teamBasketball: {
+        id: 'hoops',
+        name: 'Team Basketball',
+        score: basketballTotal,
+        pct: basketballPct,
+        athletes: 7180
+      },
+      winningTeam: winningTeam,
+      leadDiff: leadDiff,
       totalAthletes: 14280 + Object.keys(state.players).length,
       top: ranked.slice(0, 50),
       player: playerRankInfo

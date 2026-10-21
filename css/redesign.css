@@ -4372,3 +4372,506 @@ html, body {
   text-align: right;
   flex-shrink: 0;
 }
+
+/* ==========================================================================
+   Shop Faction Allegiance Banner & Discipline Filtering
+   ========================================================================== */
+.fvh-shop-allegiance-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.fvh-shop-allegiance-banner.footy {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(10, 20, 40, 0.95) 100%);
+  border-color: rgba(6, 182, 212, 0.45);
+  box-shadow: 0 4px 18px rgba(6, 182, 212, 0.15);
+}
+
+.fvh-shop-allegiance-banner.hoops {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(30, 15, 10, 0.95) 100%);
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: 0 4px 18px rgba(249, 115, 22, 0.15);
+}
+
+.fvh-shop-allegiance-icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.fvh-shop-allegiance-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fvh-shop-allegiance-title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--text-pure);
+  margin-bottom: 2px;
+}
+
+.fvh-shop-allegiance-banner.footy .fvh-shop-allegiance-title {
+  color: #38bdf8;
+}
+
+.fvh-shop-allegiance-banner.hoops .fvh-shop-allegiance-title {
+  color: #fb923c;
+}
+
+.fvh-shop-allegiance-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.fvh-shop-allegiance-badge {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fvh-shop-allegiance-banner.footy .fvh-shop-allegiance-badge {
+  background: rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  color: #67e8f9;
+}
+
+.fvh-shop-allegiance-banner.hoops .fvh-shop-allegiance-badge {
+  background: rgba(249, 115, 22, 0.2);
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  color: #fdba74;
+}
+
+/* ==========================================================================
+   Unified Football vs Basketball War Leaderboard
+   ========================================================================== */
+.fvh-war-victory-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.fvh-war-victory-banner.footy {
+  background: linear-gradient(135deg, rgba(8, 40, 70, 0.95) 0%, rgba(6, 18, 36, 0.98) 100%);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+}
+
+.fvh-war-victory-banner.hoops {
+  background: linear-gradient(135deg, rgba(60, 24, 10, 0.95) 0%, rgba(28, 12, 6, 0.98) 100%);
+  border: 2px solid #fb923c;
+  box-shadow: 0 0 24px rgba(251, 146, 60, 0.35);
+}
+
+.fvh-war-trophy-wrap {
+  font-size: 42px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.6));
+}
+
+.fvh-war-victory-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fvh-war-victory-badge {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+  margin-bottom: 3px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.fvh-war-victory-banner.footy .fvh-war-victory-badge {
+  color: #67e8f9;
+}
+
+.fvh-war-victory-banner.hoops .fvh-war-victory-badge {
+  color: #fed7aa;
+}
+
+.fvh-war-victory-lead {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fde047;
+  margin-bottom: 3px;
+}
+
+.fvh-war-victory-timer {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Scoreboard Clash Card */
+.fvh-war-scoreboard-card {
+  background: linear-gradient(135deg, rgba(18, 22, 42, 0.95) 0%, rgba(10, 12, 24, 0.98) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.fvh-war-scoreboard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fvh-war-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+.fvh-war-rule-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fde047;
+}
+
+.fvh-war-clash-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.fvh-war-team-panel {
+  flex: 1;
+  padding: 12px 10px;
+  border-radius: 14px;
+  text-align: center;
+  border: 1.5px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.fvh-war-team-panel.footy {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.15) 0%, rgba(8, 47, 73, 0.25) 100%);
+  border-color: rgba(14, 165, 233, 0.4);
+}
+
+.fvh-war-team-panel.footy.is-leading {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+}
+
+.fvh-war-team-panel.hoops {
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.15) 0%, rgba(67, 20, 7, 0.25) 100%);
+  border-color: rgba(249, 115, 22, 0.4);
+}
+
+.fvh-war-team-panel.hoops.is-leading {
+  border-color: #fb923c;
+  box-shadow: 0 0 16px rgba(251, 146, 60, 0.35);
+}
+
+.fvh-team-tag {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.fvh-war-team-panel.footy .fvh-team-tag {
+  color: #38bdf8;
+}
+
+.fvh-war-team-panel.hoops .fvh-team-tag {
+  color: #fb923c;
+}
+
+.fvh-team-score-num {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+  margin-bottom: 4px;
+  font-family: monospace;
+}
+
+.fvh-team-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.fvh-team-pct {
+  color: var(--text-muted);
+}
+
+.fvh-team-status.lead {
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.2);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 9.5px;
+}
+
+.fvh-team-status.behind {
+  color: var(--text-muted);
+  font-size: 9.5px;
+}
+
+.fvh-war-vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.fvh-war-vs-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #facc15 0%, #ca8a04 100%);
+  color: #050811;
+  font-weight: 900;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.5);
+  letter-spacing: 0.5px;
+}
+
+/* Tug of War Bar */
+.fvh-war-tug-wrap {
+  margin-top: 4px;
+}
+
+.fvh-war-tug-track {
+  height: 12px;
+  border-radius: 999px;
+  background: #090e1a;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.fvh-war-tug-fill.footy {
+  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.fvh-war-tug-fill.hoops {
+  background: linear-gradient(90deg, #fb923c 0%, #ea580c 100%);
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.fvh-war-tug-spark {
+  width: 6px;
+  background: #fff;
+  box-shadow: 0 0 10px #fff, 0 0 20px #fde047;
+  height: 100%;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.fvh-war-tug-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+/* Player Allegiance & Contribution Card */
+.fvh-war-player-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(22, 28, 52, 0.95) 0%, rgba(12, 14, 28, 0.98) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.fvh-war-player-card.footy {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.18);
+}
+
+.fvh-war-player-card.hoops {
+  border-color: rgba(251, 146, 60, 0.5);
+  box-shadow: 0 0 18px rgba(251, 146, 60, 0.18);
+}
+
+.fvh-war-player-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #090e1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+}
+
+.fvh-war-player-avatar.footy-halo {
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+}
+
+.fvh-war-player-avatar.hoops-halo {
+  border-color: #fb923c;
+  box-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
+}
+
+.fvh-war-player-avatar svg {
+  width: 90%;
+  height: 90%;
+}
+
+.fvh-war-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fvh-war-player-side-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.fvh-player-side-badge {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.fvh-player-side-badge.footy {
+  color: #38bdf8;
+}
+
+.fvh-player-side-badge.hoops {
+  color: #fb923c;
+}
+
+.fvh-player-my-badge {
+  background: #facc15;
+  color: #050811;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.fvh-war-player-contrib-num {
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #fde047;
+  margin-bottom: 2px;
+}
+
+.fvh-war-player-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Podium & Rows Enhancements */
+.fvh-podium-team-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.fvh-podium-team-tag.footy {
+  background: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.4);
+}
+
+.fvh-podium-team-tag.hoops {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+}
+
+.fvh-team-pill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.fvh-team-pill.footy {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.fvh-team-pill.hoops {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.hoops-halo {
+  border: 2px solid #fb923c !important;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.5) !important;
+}
+
+.footy-halo {
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
+}
+
+.fvh-leaderboard-row.row-hoops {
+  border-left: 3px solid rgba(249, 115, 22, 0.6);
+}
+
+.fvh-leaderboard-row.row-footy {
+  border-left: 3px solid rgba(14, 165, 233, 0.6);
+}
