@@ -2234,8 +2234,8 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    // Seed the two authentic players if empty so the leaderboard is never blank
-    if (athletes.length === 0) {
+    // Always ensure the two core authentic athletes (Alim & Brother) are in the competition if not already present
+    if (!athletes.find(a => a.id === 'alim_footy' || a.name.includes('Alim'))) {
       athletes.push({
         id: 'alim_footy',
         name: 'Alim (Footy #10)',
@@ -2249,6 +2249,8 @@ const server = http.createServer((req, res) => {
         xp: 450,
         badge: 'CAPTAIN'
       });
+    }
+    if (!athletes.find(a => a.id === 'brother_hoops' || a.name.includes('Brother'))) {
       athletes.push({
         id: 'brother_hoops',
         name: 'Brother (Hoops #23)',

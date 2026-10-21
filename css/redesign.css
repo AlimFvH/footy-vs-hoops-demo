@@ -4150,10 +4150,13 @@ html, body {
 
 .fvh-podium-col {
   flex: 1;
+  max-width: 130px;
+  min-width: 90px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .fvh-podium-avatar-box {

@@ -4319,8 +4319,6 @@
 
     function updateView() {
       title.textContent = tr('lockerTitle', { char: curChar === 'footy' ? tr('footyChar') : tr('hoopsChar') });
-      btnFooty.className = curChar === 'footy' ? 'on' : '';
-      btnHoops.className = curChar === 'hoops' ? 'on' : '';
 
       avatarBox.innerHTML = getCharacterDisplayHtml(curChar, app.store.data.equipped && app.store.data.equipped.skin);
       charName.textContent = curChar === 'footy' ? 'FOOTY' : 'HOOPS';
@@ -6944,7 +6942,7 @@
 
   function fetchLeaderboardData(cat, app, cb) {
     var pid = getAppPlayerId(app);
-    var url = '/api/leaderboard?category=' + encodeURIComponent(cat || 'season') + (pid ? '&playerId=' + encodeURIComponent(pid) : '');
+    var url = getApiUrl('/api/leaderboard?category=' + encodeURIComponent(cat || 'season') + (pid ? '&playerId=' + encodeURIComponent(pid) : ''));
 
     var handled = false;
     function finish(d) {
@@ -6958,7 +6956,7 @@
       var timeoutId = setTimeout(function () {
         if (controller) controller.abort();
         fallbackClientLeaderboard(cat, app, finish);
-      }, 1800);
+      }, 6000);
 
       fetch(url, { signal: controller ? controller.signal : undefined })
         .then(function (res) {
@@ -6991,22 +6989,57 @@
 
     var athletes = [];
 
+    var myName = (myData.profile && myData.profile.nickname) || myData.playerName || 'Alim';
+    var isMyAlim = myName.toLowerCase().includes('alim');
+
     var myEntry = {
       id: 'me',
-      name: myData.playerName || (myChar === 'footy' ? 'STRIKER (ВЫ)' : 'FORWARD (ВЫ)'),
+      name: myName,
       char: myChar,
-      club: 'FvH Global Club',
-      wins: myStats.wins || 0,
-      goals: myStats.goals || 0,
-      baskets: myStats.baskets || 0,
-      winsFooty: myStats.winsFooty || Math.floor((myStats.wins || 0) * 0.5),
-      winsHoops: myStats.winsHoops || Math.floor((myStats.wins || 0) * 0.35),
-      coins: myCoins,
-      xp: myXp,
-      badge: 'ACTIVE',
+      club: (myChar === 'footy' ? 'Footy United' : 'Hoops Squad'),
+      wins: myStats.wins || 6,
+      goals: myStats.goals || 14,
+      baskets: myStats.baskets || 4,
+      winsByDiff: { easy: 2, normal: 3, hard: 1 },
+      coins: myCoins || 1200,
+      xp: myXp || 450,
+      badge: 'CAPTAIN',
       isCurrentUser: true
     };
     athletes.push(myEntry);
+
+    // Always include Brother on opposite team so leaderboard has full competition and podium
+    athletes.push({
+      id: 'brother_hoops',
+      name: 'Brother (Hoops #23)',
+      char: (myChar === 'footy' ? 'hoops' : 'footy'),
+      club: (myChar === 'footy' ? 'Hoops Squad' : 'Footy United'),
+      wins: 5,
+      goals: 3,
+      baskets: 18,
+      winsByDiff: { easy: 2, normal: 2, hard: 1 },
+      coins: 1100,
+      xp: 420,
+      badge: 'ALL-STAR',
+      isCurrentUser: false
+    });
+
+    if (!isMyAlim) {
+      athletes.push({
+        id: 'alim_footy',
+        name: 'Alim (Footy #10)',
+        char: 'footy',
+        club: 'Footy United',
+        wins: 6,
+        goals: 14,
+        baskets: 2,
+        winsByDiff: { easy: 2, normal: 3, hard: 1 },
+        coins: 1200,
+        xp: 450,
+        badge: 'CAPTAIN',
+        isCurrentUser: false
+      });
+    }
 
     function computeScore(ath, c) {
       var wDiff = ath.winsByDiff || {
@@ -9692,12 +9725,7 @@
     // 1. Top Bar: Clean Minimalist Console Header with Official Emblem
     var topbar = document.createElement('header');
     topbar.className = 'fvh-topbar';
-    topbar.innerHTML =
-      '<div class="fvh-topbar-brand" style="cursor:pointer;" title="FOOTY vs HOOPS">' +
-      getOfficialEmblemHtml() +
-      '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
-      '</div>' +
-      var playerDisplayName = (d.profile && d.profile.nickname) || d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Alim';
+    var playerDisplayName = (d.profile && d.profile.nickname) || d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Alim';
       var shortName = playerDisplayName.length > 9 ? (playerDisplayName.slice(0, 8) + '…') : playerDisplayName;
       topbar.innerHTML =
         '<div class="fvh-topbar-brand" style="cursor:pointer;" title="FOOTY vs HOOPS">' +
