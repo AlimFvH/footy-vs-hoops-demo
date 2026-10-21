@@ -66,7 +66,7 @@
       quickMatch: 'QUICK MATCH',
       privateMatch: 'PRIVATE 1v1',
       practiceAI: 'PRACTICE VS AI',
-      characters: 'HEROES',
+      characters: 'WARDROBE',
       battlePass: 'BATTLE PASS',
       battlePassShort: 'PASS',
       quests: 'MISSIONS',
@@ -539,7 +539,7 @@
       quickMatch: 'БЫСТРЫЙ МАТЧ',
       privateMatch: 'ПРИВАТНЫЙ 1v1',
       practiceAI: 'ТРЕНИРОВКА',
-      characters: 'ГЕРОИ',
+      characters: 'ГАРДЕРОБ',
       battlePass: 'БОЕВОЙ ПРОПУСК',
       battlePassShort: 'ПРОПУСК',
       quests: 'ЗАДАНИЯ',
@@ -2539,6 +2539,53 @@
   // ==========================================
   // Official High-Fidelity 3D FvH Coin Generator
   // ==========================================
+  
+  function getSocialIconSvg(type) {
+    if (type === 'tg') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs><linearGradient id="tgGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs>' +
+        '<rect width="40" height="40" rx="12" fill="url(#tgGrad)"/>' +
+        '<path d="M10 20.2L28.5 12.8C29.4 12.4 30.2 13 29.9 13.9L26.7 29.1C26.5 30 25.5 30.3 24.8 29.8L20.2 26.4L18 28.5C17.6 28.9 17.3 29.2 16.5 29.2L16.8 24.6L25.2 17C25.6 16.6 25.1 16.4 24.6 16.7L14.2 23.3L9.7 21.9C8.7 21.6 8.7 20.7 10 20.2Z" fill="#FFFFFF"/>' +
+        '</svg>';
+    } else if (type === 'x') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs><linearGradient id="xGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#090d16"/></linearGradient></defs>' +
+        '<rect width="40" height="40" rx="12" fill="url(#xGrad)" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>' +
+        '<path d="M24.2 12H27.5L20.3 20.2L28.8 31.4H22.1L16.9 24.5L10.9 31.4H7.6L15.3 22.6L7.1 12H13.9L18.6 18.2L24.2 12ZM23 29.4H24.8L12.9 13.9H10.9L23 29.4Z" fill="#FFFFFF"/>' +
+        '</svg>';
+    } else if (type === 'chat') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs><linearGradient id="chatGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00f0ff"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs>' +
+        '<rect width="40" height="40" rx="12" fill="url(#chatGrad)"/>' +
+        '<path d="M12 14C12 11.8 13.8 10 16 10H24C26.2 10 28 11.8 28 14V21C28 23.2 26.2 25 24 25H18L13.5 28.5C12.8 29 12 28.5 12 27.7V25C12 25 12 24.5 12 24V14Z" fill="#FFFFFF"/>' +
+        '<circle cx="16" cy="17.5" r="1.5" fill="#0284c7"/>' +
+        '<circle cx="20" cy="17.5" r="1.5" fill="#0284c7"/>' +
+        '<circle cx="24" cy="17.5" r="1.5" fill="#0284c7"/>' +
+        '</svg>';
+    } else if (type === 'insta') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs><linearGradient id="instaGrad" x1="0" y1="40" x2="40" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FFDC80"/><stop offset="25%" stop-color="#F77737"/><stop offset="50%" stop-color="#E1306C"/><stop offset="75%" stop-color="#C13584"/><stop offset="100%" stop-color="#5851DB"/></linearGradient></defs>' +
+        '<rect width="40" height="40" rx="12" fill="url(#instaGrad)"/>' +
+        '<rect x="11" y="11" width="18" height="18" rx="5" stroke="#FFFFFF" stroke-width="2" fill="none"/>' +
+        '<circle cx="20" cy="20" r="4.5" stroke="#FFFFFF" stroke-width="2" fill="none"/>' +
+        '<circle cx="24.8" cy="15.2" r="1.2" fill="#FFFFFF"/>' +
+        '</svg>';
+    } else if (type === 'tournament' || type === 'trophy') {
+      return '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs><linearGradient id="trGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></linearGradient>' +
+        '<linearGradient id="goldCup" x1="0" y1="0" x2="0" y2="20" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FFF3B0"/><stop offset="50%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFA500"/></linearGradient></defs>' +
+        '<rect width="40" height="40" rx="12" fill="url(#trGrad)"/>' +
+        '<path d="M14 11H26V18C26 21.3 23.3 24 20 24C16.7 24 14 21.3 14 18V11Z" fill="url(#goldCup)"/>' +
+        '<path d="M14 13H11C9.9 13 9 13.9 9 15C9 17.5 10.8 19.5 13.2 19.9L14 19.9V18.1L13.1 17.9C11.8 17.6 11 16.5 11 15.2C11 14.7 11.4 14.5 11.8 14.5H14V13Z" fill="url(#goldCup)"/>' +
+        '<path d="M26 13H29C30.1 13 31 13.9 31 15C31 17.5 29.2 19.5 26.8 19.9L26 19.9V18.1L26.9 17.9C28.2 17.6 29 16.5 29 15.2C29 14.7 28.6 14.5 28.2 14.5H26V13Z" fill="url(#goldCup)"/>' +
+        '<path d="M18.5 24H21.5V27.5H18.5V24Z" fill="url(#goldCup)"/>' +
+        '<path d="M13.5 28H26.5V30.5C26.5 31.1 26 31.5 25.5 31.5H14.5C13.9 31.5 13.5 31.1 13.5 30.5V28Z" fill="#FFF3B0"/>' +
+        '<polygon points="20,13.8 20.8,16 23.1,16 21.3,17.4 22,19.6 20,18.2 18,19.6 18.7,17.4 16.9,16 19.2,16" fill="#FFFFFF"/>' +
+        '</svg>';
+    }
+    return '';
+  }
+
   function getFvhCoinSvg(size, extraOpts) {
     var isInline = size === 'inline';
     var isLg = size === 'large';
@@ -4865,7 +4912,7 @@
           url: 'https://t.me/footy_vs_hoops_news',
           coins: 500,
           xp: 150,
-          icon: '📢',
+          icon: getSocialIconSvg('tg'),
           actionText: tr('subscribeBtn')
         },
         {
@@ -4875,7 +4922,7 @@
           url: 'https://x.com/FootyVsHoops',
           coins: 400,
           xp: 100,
-          icon: '🐦',
+          icon: getSocialIconSvg('x'),
           actionText: tr('followBtn')
         },
         {
@@ -4885,7 +4932,7 @@
           url: 'https://t.me/footy_vs_hoops_chat',
           coins: 450,
           xp: 120,
-          icon: '💬',
+          icon: getSocialIconSvg('chat'),
           actionText: tr('joinBtn')
         },
         {
@@ -4895,7 +4942,7 @@
           url: 'https://instagram.com/footy_vs_hoops',
           coins: 400,
           xp: 100,
-          icon: '📸',
+          icon: getSocialIconSvg('insta'),
           actionText: tr('followBtn')
         },
         {
@@ -4905,7 +4952,7 @@
           url: 'https://footyvshoops.io/tournaments/season1',
           coins: 600,
           xp: 200,
-          icon: '🏆',
+          icon: getSocialIconSvg('tournament'),
           actionText: tr('verifyClaimBtn')
         }
       ];
