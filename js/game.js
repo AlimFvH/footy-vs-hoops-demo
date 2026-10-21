@@ -7652,12 +7652,37 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.arena.apply(this.scene);
             renderer.clearColor = (0, math_js_10.rgb)(stadium.fog);
             this.frame = visualOf(eq.frame, 'frame_default');
-            const skin = visualOf(eq.skin, 'skin_rookie');
-            const oppSkin = pickOpponentSkin(skin);
+            const playerChar = (opts && opts.char) ? opts.char : (mode === 'hoops' ? 'hoops' : 'footy');
+            const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
+            const skin = visualOf(eq.skin, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
+            // Signature Cross-Sport Kits for Football vs Basketball Rivalry
+            const hoopsOppKit = {
+                primary: 0xff6b00,
+                secondary: 0x14151a,
+                shorts: 0x14151a,
+                skin: 0xc68642,
+                hair: 0x101010,
+                boots: 0xff6b00,
+                accent: 0xffffff,
+                style: 'hoops'
+            };
+            const footyOppKit = {
+                primary: 0x00c8ff,
+                secondary: 0x0a1e3f,
+                shorts: 0x0a1e3f,
+                skin: 0xdfa070,
+                hair: 0x221810,
+                boots: 0x00c8ff,
+                accent: 0xffffff,
+                style: 'footy'
+            };
+            const oppSkin = (oppChar === 'hoops') ? hoopsOppKit : footyOppKit;
             const keeperHome = Object.assign(Object.assign({}, characters_js_1.KEEPER_SKIN), { primary: 0x2bd96b, secondary: 0x0a3a1c });
             for (const a of sim.agents) {
-                const s = a.role === 'keeper' ? (a.team === 0 ? keeperHome : characters_js_1.KEEPER_SKIN) : a.team === 0 ? skin : oppSkin;
-                const c = new characters_js_1.Character(a, s, mode, 1.0, opts.quality);
+                const isTeam0 = (a.team === 0);
+                const charSport = a.role === 'keeper' ? 'footy' : (isTeam0 ? playerChar : oppChar);
+                const s = a.role === 'keeper' ? (isTeam0 ? keeperHome : characters_js_1.KEEPER_SKIN) : (isTeam0 ? skin : oppSkin);
+                const c = new characters_js_1.Character(a, s, charSport, 1.0, opts.quality);
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
@@ -12844,14 +12869,18 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.hold = holdAtStart;
             this.passiveBoostConsumed = false;
             this.turboSpentInMatch = false;
-            this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e) }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
+            const charPick = cfg.char || save.selectedCharacter || (cfg.mode === 'hoops' ? 'hoops' : 'footy');
+            this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
             this.input.capture = !cfg.demo;
             this.input.releaseAll();
             if (!cfg.demo) {
                 this.hud.setMode(cfg.mode, save.settings.keys);
-                if (online)
-                    this.hud.setNames(online.info.myName, online.info.oppName);
+                const isFooty = (charPick === 'footy');
+                const youTxt = online ? (isFooty ? `⚽ ${online.info.myName}` : `🏀 ${online.info.myName}`) : (isFooty ? '⚽ FOOTY' : '🏀 HOOPS');
+                const oppTxt = online ? (isFooty ? `🏀 ${online.info.oppName}` : `⚽ ${online.info.oppName}`) : (isFooty ? '🏀 HOOPS' : '⚽ FOOTY');
+                this.hud.setNames(youTxt, oppTxt);
                 this.hud.resetState();
+                this.hud.showBanner(isFooty ? '⚔️ FOOTY vs HOOPS ⚔️' : '⚔️ HOOPS vs FOOTY ⚔️', 'big', 1600);
                 this.hud.setBoost(cfg, save);
                 this.hud.onBoostTrigger = () => {
                     if (!this.running || this.paused || this.ended || !this.sim) return;

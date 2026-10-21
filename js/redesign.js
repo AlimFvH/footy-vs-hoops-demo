@@ -265,6 +265,17 @@
       q_hoops_master_desc: 'Win 10 Basketball matches',
       modeSelectTitle: 'GAME MODES',
       modeSelectSubtitle: 'Select your competition arena and challenge level',
+      clashModeTitle: 'FOOTY vs HOOPS Clash',
+      clashModeBadge: '🔥 1v1 RIVALRY SHOWDOWN',
+      clashModeDesc: 'The ultimate sports collision! Football (#10 Striker) clashes head-to-head with Basketball (#23 All-Star) on the arena pitch!',
+      clashPlayFooty: '⚽ PLAY AS FOOTY (#10)',
+      clashPlayHoops: '🏀 PLAY AS HOOPS (#23)',
+      clashFootySub: '⚽ Striker #10 vs 🏀 All-Star #23',
+      clashHoopsSub: '🏀 All-Star #23 vs ⚽ Striker #10',
+      clashStartBtn: 'START 1v1 CLASH SHOWDOWN',
+      matchupTitle: 'Cross-Sport Rivalry Matchup:',
+      youTeam: 'You',
+      cpuTeam: 'Opponent',
       quickMatchTitle: 'Quick Match',
       quickMatchBadge: 'ONLINE 1v1',
       quickMatchDesc: 'Real-time online matchmaking against live athletes worldwide.',
@@ -332,10 +343,11 @@
       followBtn: 'FOLLOW',
       joinBtn: 'JOIN CHAT',
       inviteFriendBtn: 'INVITE FRIEND',
+      itemLockedToast: 'Item is locked! Purchase it from the Stadium Store.',
       arenaSelectTitle: 'ARENA ENVIRONMENTS',
-      arenaSelectSub: 'Выбирайте классические стадионы с трибунами или открытые тематические миры',
-    arenaDescClassicFooty: 'Традиционный стадион с ухоженным футбольным газоном, полными трибунами зрителей и прожекторами.',
-    arenaDescClassicHoops: 'Классический городской стадион с деревянным паркетом, трибунами, зрителями и атмосферой матча.',
+      arenaSelectSub: 'Select between classic stadiums with grandstands or open-world scenic biomes',
+      arenaDescClassicFooty: 'Traditional stadium with manicured soccer turf, packed cheering grandstands, and floodlights.',
+      arenaDescClassicHoops: 'Classic urban stadium with polished hardwood court, cheering crowds, and authentic match ambience.',
       selectArenaBtn: 'EQUIP ARENA',
       buyArenaBtn: 'UNLOCK IN STORE',
       arenaEquipped: 'EQUIPPED ARENA',
@@ -628,6 +640,17 @@
       q_hoops_master_desc: 'Выиграйте 10 матчей в баскетболе',
       modeSelectTitle: 'ВЫБОР РЕЖИМА',
       modeSelectSubtitle: 'Выберите формат соревнований и уровень соперника',
+      clashModeTitle: 'Клэш: Футбол vs Баскетбол',
+      clashModeBadge: '🔥 ГЛАВНАЯ БИТВА 1v1',
+      clashModeDesc: 'Культовое столкновение двух видов спорта! Футбольный форвард (#10) сходится лицом к лицу с баскетбольной звездой (#23) на арене!',
+      clashPlayFooty: '⚽ ИГРАТЬ ЗА FOOTY (#10)',
+      clashPlayHoops: '🏀 ИГРАТЬ ЗА HOOPS (#23)',
+      clashFootySub: '⚽ Форвард #10 vs 🏀 Звезда #23',
+      clashHoopsSub: '🏀 Звезда #23 vs ⚽ Форвард #10',
+      clashStartBtn: 'НАЧАТЬ КЛЭШ 1v1',
+      matchupTitle: 'Противостояние видов спорта:',
+      youTeam: 'Вы',
+      cpuTeam: 'Соперник',
       quickMatchTitle: 'Быстрый матч',
       quickMatchBadge: 'ОНЛАЙН 1v1',
       quickMatchDesc: 'Моментальный поиск реального соперника в глобальной сети.',
@@ -697,6 +720,8 @@
       inviteFriendBtn: 'ПРИГЛАСИТЬ ДРУГА',
       arenaSelectTitle: 'ВЫБОР АРЕНЫ',
       arenaSelectSub: 'Выберите домашнюю площадку и атмосферу игрового мира',
+      arenaDescClassicFooty: 'Традиционный стадион с ухоженным футбольным газоном, полными трибунами зрителей и прожекторами.',
+      arenaDescClassicHoops: 'Классический городской стадион с деревянным паркетом, трибунами, зрителями и атмосферой матча.',
       selectArenaBtn: 'ВЫБРАТЬ АРЕНУ',
       buyArenaBtn: 'ОТКРЫТЬ В МАГАЗИНЕ',
       arenaEquipped: 'ВЫБРАННАЯ АРЕНА',
@@ -8064,6 +8089,68 @@
     grid.className = 'fvh-mode-grid';
 
     // -------------------------------------------------------------
+    // CARD 0: Flagship Cross-Sport Clash: Футбол vs Баскетбол (FOOTY vs HOOPS)
+    // -------------------------------------------------------------
+    var clashCard = document.createElement('div');
+    clashCard.className = 'fvh-mode-card clash-card';
+
+    var clashSide = curChar;
+
+    function renderClashCardUI() {
+      var isFooty = clashSide === 'footy';
+      clashCard.innerHTML =
+        '<div class="fvh-mode-card-header">' +
+          '<span class="fvh-mode-badge clash">🔥 ' + tr('clashModeBadge') + '</span>' +
+          '<span class="fvh-mode-server-status" style="color:#f59e0b;"><span class="status-dot" style="background:#f59e0b;"></span> ⚔️ 1v1 Rivalry</span>' +
+        '</div>' +
+        '<div class="fvh-mode-card-body">' +
+          '<div class="fvh-mode-title" style="color:#f59e0b;font-size:17px;font-weight:900;">' + tr('clashModeTitle') + '</div>' +
+          '<div class="fvh-mode-desc">' + tr('clashModeDesc') + '</div>' +
+          '<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:10px;margin-bottom:6px;font-weight:800;">' + tr('youTeam') + ':</div>' +
+          '<div class="fvh-clash-team-selector" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+            '<button type="button" class="fvh-clash-choice-btn footy-choice ' + (isFooty ? 'on' : '') + '">' + tr('clashPlayFooty') + '<br><small style="font-size:10px;opacity:0.85;">' + tr('clashFootySub') + '</small></button>' +
+            '<button type="button" class="fvh-clash-choice-btn hoops-choice ' + (!isFooty ? 'on' : '') + '">' + tr('clashPlayHoops') + '<br><small style="font-size:10px;opacity:0.85;">' + tr('clashHoopsSub') + '</small></button>' +
+          '</div>' +
+          '<div class="fvh-clash-matchup-bar" style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid rgba(255,255,255,0.08);text-align:center;font-size:12px;font-weight:800;">' +
+            (isFooty
+              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY #10</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS #23 🏀</span>'
+              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS #23</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY #10 ⚽</span>'
+            ) +
+          '</div>' +
+        '</div>' +
+        '<div class="fvh-mode-card-actions" style="margin-top:12px;">' +
+          '<button class="btn primary block fvh-btn-start-clash" style="background:linear-gradient(90deg,#00f0ff 0%,#f59e0b 50%,#f97316 100%);color:#090d16;font-weight:900;letter-spacing:0.5px;box-shadow:0 0 20px rgba(245,158,11,0.35);border:none;">⚔️ ' + tr('clashStartBtn') + ' ▶</button>' +
+        '</div>';
+
+      clashCard.querySelector('.footy-choice').onclick = function () {
+        app.audio.play('click');
+        clashSide = 'footy';
+        renderClashCardUI();
+      };
+      clashCard.querySelector('.hoops-choice').onclick = function () {
+        app.audio.play('click');
+        clashSide = 'hoops';
+        renderClashCardUI();
+      };
+      clashCard.querySelector('.fvh-btn-start-clash').onclick = function () {
+        app.audio.play('click');
+        app.store.update(function (d) {
+          d.selectedCharacter = clashSide;
+        });
+        app.launch({
+          mode: clashSide,
+          char: clashSide,
+          difficulty: curSettings.difficulty || 'normal',
+          minutes: 2,
+          boostId: app.store.data.armedBoost
+        }, false);
+      };
+    }
+
+    renderClashCardUI();
+    grid.appendChild(clashCard);
+
+    // -------------------------------------------------------------
     // CARD 1: Quick Match (Быстрый матч - Онлайн 1v1)
     // -------------------------------------------------------------
     var quickCard = document.createElement('div');
@@ -8141,6 +8228,12 @@
               '<button type="button" class="' + (selSport === 'hoops' ? 'on' : '') + '" data-sport="hoops">🏀 HOOPS</button>' +
             '</div>' +
           '</div>' +
+          '<div class="fvh-practice-matchup" id="fvh-practice-matchup" style="margin-bottom:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:11.5px;font-weight:800;text-align:center;">' +
+            (selSport === 'footy'
+              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY (#10)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS (#23) 🏀</span>'
+              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS (#23)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY (#10) ⚽</span>'
+            ) +
+          '</div>' +
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('difficulty') + ':</span>' +
             '<div class="seg seg-diff">' +
@@ -8166,6 +8259,13 @@
         practiceCard.querySelectorAll('.seg-sport button').forEach(function (x) { x.classList.remove('on'); });
         b.classList.add('on');
         selSport = b.dataset.sport;
+        var pMatchup = practiceCard.querySelector('#fvh-practice-matchup');
+        if (pMatchup) {
+          pMatchup.innerHTML = (selSport === 'footy'
+            ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY (#10)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS (#23) 🏀</span>'
+            : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS (#23)</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY (#10) ⚽</span>'
+          );
+        }
         app.audio.play('click');
       };
     });
@@ -8232,6 +8332,7 @@
       });
       app.launch({
         mode: selSport,
+        char: selSport,
         difficulty: selDiff,
         minutes: selMinutes,
         boostId: app.store.data.armedBoost
