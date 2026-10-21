@@ -2367,6 +2367,47 @@ const server = http.createServer((req, res) => {
   // ==========================================
 
   // 1. Authoritative Player Economy State
+  
+  // Telegram Channel / Chat Subscription Verification Endpoint
+  if (pathname === '/api/social/verify-telegram' && req.method === 'POST') {
+    return readJsonBody(req, async (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
+      const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
+      const target = String(data.target || 'channel').trim(); // 'channel' or 'chat'
+      const token = process.env.TELEGRAM_BOT_TOKEN || '8354664806:AAHnIjETn8jMISGsvpNs6zkU35_q340vuXk';
+
+      if (!telegramUserId) {
+        return sendJson(res, 200, { ok: true, verified: true, reason: 'browser_user' });
+      }
+
+      // Target chat ID: @FootyHoops channel or linked chat
+      const chatId = (target === 'chat') ? '-1004427370833' : '@FootyHoops';
+
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${encodeURIComponent(chatId)}&user_id=${encodeURIComponent(telegramUserId)}`, {
+          signal: AbortSignal.timeout ? AbortSignal.timeout(3500) : undefined
+        });
+        const tgData = await tgRes.json();
+        if (tgData && tgData.ok && tgData.result) {
+          const status = tgData.result.status;
+          const isMember = (status === 'member' || status === 'administrator' || status === 'creator' || status === 'restricted');
+          return sendJson(res, 200, {
+            ok: true,
+            verified: isMember,
+            status: status,
+            target: target
+          });
+        }
+        // If chat member check returns error or user left
+        return sendJson(res, 200, { ok: true, verified: false, status: (tgData && tgData.result && tgData.result.status) || 'left', target });
+      } catch (fetchErr) {
+        // Fallback gracefully if Telegram API is unreachable from local node
+        console.warn('Telegram getChatMember check timeout/error:', fetchErr.message);
+        return sendJson(res, 200, { ok: true, verified: true, fallback: true });
+      }
+    });
+  }
+
   if (pathname === '/api/economy/state' && req.method === 'GET') {
     const qPlayerId = parsedUrl.query.playerId;
     if (!qPlayerId) {

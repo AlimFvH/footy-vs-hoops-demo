@@ -999,7 +999,7 @@
       profileTgeModalTitle: 'Привязка публичного TON-кошелька',
       profileTgeModalDesc: 'Укажите ваш публичный TON-адрес (Tonkeeper, Telegram Wallet) для будущего снимка (snapshot) TGE.',
       profileTgeAddressPlaceholder: 'EQ... или UQ... или domain.ton',
-      profileTgeSaveBtn: 'Сохранить публичный адрес',
+      profileTgeSaveBtn: 'Сохранить адрес',
       profileTgeSecurityWarning: '🛡️ Безопасность: Вводите ТОЛЬКО ваш публичный адрес. Мы НИКОГДА не запрашиваем seed-фразы или приватные ключи!',
       profileTgeLaunchNotice: 'Официальное распределение токенов произойдет только после публичного TGE. Реальные токены не распределяются до старта.',
       profileTgeSeedWarningAlert: 'Предупреждение безопасности: Не вводите секретную фразу (seed) или приватный ключ! Вводите только публичный адрес кошелька (EQ... или UQ...).',
@@ -3362,6 +3362,17 @@
 
   function claimBattlePassTier(app, lvl, track, onDone) {
     var bpState = getBattlePassState(app.store);
+    var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+    var playerName = (tgUser && (tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : ''))) ||
+                     app.store.data.playerName ||
+                     (typeof localStorage !== 'undefined' && localStorage.getItem('fvh_player_name')) ||
+                     'Alim';
+    var playerUsername = tgUser && tgUser.username ? ('@' + tgUser.username) : '';
+    var userPhotoUrl = (tgUser && tgUser.photo_url) || app.store.data.photoUrl || null;
+    var avatarImgHtml = userPhotoUrl
+      ? '<img src="' + userPhotoUrl + '" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'
+      : '<img src="assets/avatar_crest.png" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.onerror=null;this.parentElement.innerHTML=\'' + (curChar === 'footy' ? getFootyAvatarSvg() : getHoopsAvatarSvg()).replace(/'/g, "\\'") + '\';" />';
+    var roleLabel = curChar === 'footy' ? '⚽ Team Footy · #10 Striker' : '🏀 Team Hoops · #23 Forward';
     track = track || 'free';
 
     if (lvl > bpState.level) {
@@ -4988,16 +4999,6 @@
           xp: 100,
           icon: getSocialIconSvg('tiktok'),
           actionText: tr('followBtn')
-        },
-        {
-          id: 'q_community_event',
-          title: tr('q_community_event_title'),
-          desc: tr('q_community_event_desc'),
-          url: 'https://t.me/FootyHoops',
-          coins: 600,
-          xp: 200,
-          icon: getSocialIconSvg('tournament'),
-          actionText: tr('verifyClaimBtn')
         }
       ];
 
@@ -5058,17 +5059,17 @@
           btn.innerHTML = tr('claim') + ' ' + getFvhCoinSvg('inline') + ' ' + task.coins;
           btn.onclick = function () {
             app.store.update(function (d) {
-              if (!d.equipped) d.equipped = {};
-              if (arena.isDefault) {
-                d.equipped[slotKey] = arena.id;
-              } else {
-                // Themed arena equips for both football and basketball
-                d.equipped['stadium.footy'] = arena.id;
-                d.equipped['stadium.hoops'] = arena.id;
+              if (!d.claimedQuests) d.claimedQuests = {};
+              d.claimedQuests[task.id] = true;
+              d.coins = (d.coins || 0) + task.coins;
+              d.xp = (d.xp || 0) + task.xp;
+              if (d.socialState && d.socialState[task.id]) {
+                d.socialState[task.id].status = 'claimed';
               }
             });
             app.audio.play('claim');
-            showToast(lang === 'ru' ? ('🎉 +' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('🎉 +' + task.coins + ' Coins, +' + task.xp + ' XP!'));
+            showToast(lang === 'ru' ? ('+' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('+' + task.coins + ' Coins, +' + task.xp + ' XP!'));
+            syncAuthoritativeEconomy(app);
             renderSocialQuests();
           };
         } else if (isVerifying) {
@@ -6299,7 +6300,7 @@
             stage.innerHTML = '';
             var congratsTitle = document.createElement('h2');
             congratsTitle.style.cssText = 'margin:0 0 4px;font-size:22px;color:#fde047;letter-spacing:0.5px;';
-            congratsTitle.textContent = (getActiveLang() === 'ru') ? '🎉 НАГРАДЫ ИЗ ПАКА!' : '🎉 PACK REWARDS!';
+            congratsTitle.textContent = (getActiveLang() === 'ru') ? 'НАГРАДЫ ИЗ ПАКА!' : 'PACK REWARDS!';
 
             var cardsContainer = document.createElement('div');
             cardsContainer.className = 'fvh-pack-cards-reveal';
@@ -7487,7 +7488,7 @@
         '</div>' +
         '<div style="display:flex;gap:8px;">' +
         '  <button class="btn block fvh-btn-cancel" style="flex:1;">' + (getActiveLang() === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
-        '  <button class="btn primary block fvh-btn-save-wallet" style="flex:2;">' + tr('profileTgeSaveBtn') + '</button>' +
+        '  <button class="btn primary block fvh-btn-save-wallet" style="flex:2;white-space:nowrap;font-size:13px;padding:10px 6px;min-width:0;">' + tr('profileTgeSaveBtn') + '</button>' +
         '</div>';
 
       modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
@@ -7813,89 +7814,131 @@
     }
   ];
 
-  // High-Reliability Native WebSocket & Server Relay Link for Authoritative Multiplayer
+  // High-Performance Native WebSocket & Optimized Throttled Relay Link
   function RelayLink(matchId, role) {
     this.matchId = matchId;
     this.role = role;
     this.h = {};
     this.open = true;
     this.closed = false;
-    this.rtt = 25;
-    var self = this;
-
-    // 1. Native WebSocket connection for sub-10ms real-time state sync
+    this.rtt = 18;
     this.ws = null;
     this.wsOpen = false;
-    try {
-      if (typeof WebSocket !== 'undefined') {
-        var wsProto = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
-        var wsUrl = wsProto + '//' + window.location.host + '/ws/match?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role);
-        var ws = new WebSocket(wsUrl);
-        this.ws = ws;
+    this.outQueue = [];
+    this.lastPostTime = 0;
+    this.pendingPost = null;
+    this.pollInterval = null;
+    var self = this;
 
-        ws.onopen = function () {
-          if (self.closed) { ws.close(); return; }
-          self.wsOpen = true;
-        };
-
-        ws.onmessage = function (evt) {
-          if (self.closed) return;
-          try {
-            var parsed = JSON.parse(evt.data);
-            var m = parsed.packet || parsed;
-            if (!m.k && parsed.type) {
-              m = { k: parsed.type, i: parsed.data, s: parsed.data, l: parsed.data };
-            }
-            if (self.h.onMessage) self.h.onMessage(m, 'fast');
-          } catch (e) {}
-        };
-
-        ws.onerror = function () {
-          self.wsOpen = false;
-        };
-
-        ws.onclose = function () {
-          self.wsOpen = false;
-        };
-      }
-    } catch (e) {
-      this.wsOpen = false;
-    }
-
-    // 2. High-Frequency HTTP Polling Fallback (ensures reliability even if WebSocket is filtered)
-    this.pollInterval = setInterval(function () {
+    function connectWs() {
       if (self.closed) return;
-      // If WebSocket is actively streaming, keep polling minimal
-      if (self.wsOpen && Math.random() > 0.08) return;
+      try {
+        if (typeof WebSocket !== 'undefined') {
+          var wsProto = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+          var wsUrl = wsProto + '//' + window.location.host + '/ws/match?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role);
+          var ws = new WebSocket(wsUrl);
+          self.ws = ws;
 
-      fetch(getApiUrl('/api/match/relay?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role)))
-        .then(function (r) { return r.json(); })
-        .then(function (res) {
-          if (res && res.ok && Array.isArray(res.messages)) {
-            res.messages.forEach(function (msg) {
-              var m = msg.packet || msg;
-              if (!m.k && msg.type) {
-                m = { k: msg.type, i: msg.data, s: msg.data, l: msg.data };
+          ws.onopen = function () {
+            if (self.closed) { ws.close(); return; }
+            self.wsOpen = true;
+            if (self.pollInterval) {
+              clearInterval(self.pollInterval);
+              self.pollInterval = null;
+            }
+          };
+
+          ws.onmessage = function (evt) {
+            if (self.closed) return;
+            try {
+              var parsed = JSON.parse(evt.data);
+              var m = parsed.packet || parsed;
+              if (!m.k && parsed.type) {
+                m = { k: parsed.type, i: parsed.data, s: parsed.data, l: parsed.data };
               }
               if (self.h.onMessage) self.h.onMessage(m, 'fast');
-            });
-          }
-        }).catch(function () {});
-    }, 40); // 25Hz polling fallback
+            } catch (e) {}
+          };
+
+          ws.onerror = function () {
+            self.wsOpen = false;
+            startHttpFallback();
+          };
+
+          ws.onclose = function () {
+            self.wsOpen = false;
+            if (!self.closed) {
+              startHttpFallback();
+              setTimeout(connectWs, 1500);
+            }
+          };
+        }
+      } catch (e) {
+        self.wsOpen = false;
+        startHttpFallback();
+      }
+    }
+
+    function startHttpFallback() {
+      if (self.pollInterval || self.closed) return;
+      // Controlled 10Hz polling (100ms) - completely eliminates network flooding!
+      self.pollInterval = setInterval(function () {
+        if (self.closed || self.wsOpen) return;
+        fetch(getApiUrl('/api/match/relay?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role)))
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (res && res.ok && Array.isArray(res.messages)) {
+              res.messages.forEach(function (msg) {
+                var m = msg.packet || msg;
+                if (!m.k && msg.type) {
+                  m = { k: msg.type, i: msg.data, s: msg.data, l: msg.data };
+                }
+                if (self.h.onMessage) self.h.onMessage(m, 'fast');
+              });
+            }
+          }).catch(function () {});
+      }, 100);
+    }
+
+    connectWs();
+    setTimeout(function () {
+      if (!self.wsOpen && !self.closed) startHttpFallback();
+    }, 600);
   }
 
   RelayLink.prototype.sendCtl = function (m) {
     if (this.closed) return;
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws && this.wsOpen && this.ws.readyState === WebSocket.OPEN) {
       try {
         this.ws.send(JSON.stringify(m));
         return;
-      } catch (e) {}
+      } catch (e) {
+        this.wsOpen = false;
+      }
     }
+    // Batch HTTP sends to max 10 requests/sec when WS is down
+    var now = Date.now();
+    this.outQueue.push(m);
+    var self = this;
+    if (now - this.lastPostTime > 90) {
+      this.flushHttp();
+    } else if (!this.pendingPost) {
+      this.pendingPost = setTimeout(function () {
+        self.pendingPost = null;
+        self.flushHttp();
+      }, 95);
+    }
+  };
+
+  RelayLink.prototype.flushHttp = function () {
+    if (this.closed || !this.outQueue.length) return;
+    var batch = this.outQueue.slice();
+    this.outQueue = [];
+    this.lastPostTime = Date.now();
     fetch(getApiUrl('/api/match/relay'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId: this.matchId, role: this.role, packet: m })
+      body: JSON.stringify({ matchId: this.matchId, role: this.role, packet: batch[batch.length - 1], batch: batch })
     }).catch(function () {});
   };
 
@@ -7906,7 +7949,14 @@
   RelayLink.prototype.close = function () {
     this.closed = true;
     this.open = false;
-    if (this.pollInterval) clearInterval(this.pollInterval);
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+    if (this.pendingPost) {
+      clearTimeout(this.pendingPost);
+      this.pendingPost = null;
+    }
     if (this.ws) {
       try { this.ws.close(); } catch (e) {}
     }

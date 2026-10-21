@@ -12406,7 +12406,7 @@ define("net/link", ["require", "exports", "net/support", "net/codec"], function 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.PeerLink = exports.DEFAULT_ICE = void 0;
-    exports.DEFAULT_ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] }];
+    exports.DEFAULT_ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478', 'stun:stun.services.mozilla.com:3478', 'stun:stun.qq.com:3478'] }];
     class PeerLink {
         constructor(ice = exports.DEFAULT_ICE) {
             this.ctl = null;
