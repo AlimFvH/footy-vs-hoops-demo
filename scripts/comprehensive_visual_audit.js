@@ -148,14 +148,14 @@ async function main() {
   await new Promise(r => setTimeout(r, 600));
   await snap('04_wardrobe_footy_jerseys');
 
-  // 6. Wardrobe: Supporters & Crowd tab
+  // 6. Wardrobe: Balls tab
   await evaluate(`
     (function() {
-      window.app.openCharacterLocker('footy', 'crowd');
+      window.app.openCharacterLocker('footy', 'balls');
     })()
   `);
   await new Promise(r => setTimeout(r, 600));
-  await snap('05_wardrobe_crowd_tab');
+  await snap('05_wardrobe_footy_balls');
 
   // 7. Wardrobe: Basketball player
   await evaluate(`
@@ -166,7 +166,7 @@ async function main() {
   await new Promise(r => setTimeout(r, 600));
   await snap('06_wardrobe_hoops_jerseys');
 
-  // 8. Arena Gallery: Stadiums tab
+  // 8. Arena Gallery: All Arenas
   await evaluate(`
     (function() {
       window.app.showArenas();
@@ -175,15 +175,15 @@ async function main() {
   await new Promise(r => setTimeout(r, 600));
   await snap('07_arena_gallery_stadiums');
 
-  // 9. Arena Gallery: Crowd / Supporters tab
+  // 9. Arena Gallery: Filtered by Basketball
   await evaluate(`
     (function() {
-      var buttons = document.querySelectorAll('.fvh-arena-section-seg button');
-      if (buttons.length > 1) buttons[1].click();
+      var buttons = document.querySelectorAll('.page-body .seg button');
+      if (buttons.length > 2) buttons[2].click();
     })()
   `);
   await new Promise(r => setTimeout(r, 600));
-  await snap('08_arena_gallery_crowd');
+  await snap('08_arena_gallery_hoops');
 
   // 10. Store: Filtered for Football
   await evaluate(`

@@ -7702,6 +7702,94 @@
       "rewardedMatches": [],
       "createdAt": 1792582907084,
       "updatedAt": 1792582907088
+    },
+    "fvh_1d045hd9": {
+      "playerId": "fvh_1d045hd9",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti",
+        "skin_solar"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default",
+        "skin.footy": "skin_rookie",
+        "skin.hoops": "skin_solar"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792584057736,
+      "updatedAt": 1792584057741
+    },
+    "fvh_m1utfyqu": {
+      "playerId": "fvh_m1utfyqu",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti",
+        "skin_solar"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default",
+        "skin.footy": "skin_rookie",
+        "skin.hoops": "skin_solar"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792584311856,
+      "updatedAt": 1792584311861
     }
   },
   "economyLedger": [

@@ -383,6 +383,7 @@
       crowdGoldChampsName: 'Champions Golden Suite',
       crowdGoldChampsDesc: 'Luxurious black-and-gold stadium grandstand suite with exclusive VIP atmosphere.',
       arenaSelectTitle: 'ARENA ENVIRONMENTS',
+      homeArena: 'HOME ARENA',
       arenaSelectSub: 'Select between classic stadiums with grandstands or open-world scenic biomes',
       arenaDescClassicFooty: 'Traditional stadium with manicured soccer turf, packed cheering grandstands, and floodlights.',
       arenaDescClassicHoops: 'Classic urban stadium with polished hardwood court, cheering crowds, and authentic match ambience.',
@@ -855,6 +856,7 @@
       crowdGoldChampsName: 'Золотая Ложа Чемпионов',
       crowdGoldChampsDesc: 'Элитная трибуна чемпионов в черно-золотых тонах с атмосферой роскошного финала.',
       arenaSelectTitle: 'ВЫБОР АРЕНЫ',
+      homeArena: 'ДОМАШНЯЯ АРЕНА',
       arenaSelectSub: 'Выберите домашнюю площадку и атмосферу игрового мира',
       arenaDescClassicFooty: 'Традиционный стадион с ухоженным футбольным газоном, полными трибунами зрителей и прожекторами.',
       arenaDescClassicHoops: 'Классический городской стадион с деревянным паркетом, трибунами, зрителями и атмосферой матча.',
@@ -4177,7 +4179,6 @@
       { id: 'skins', label: tr('catJerseys') },
       { id: 'balls', label: tr('catBalls') },
       { id: 'stadiums', label: tr('catArenas') },
-      { id: 'crowd', label: tr('catCrowd') },
       { id: 'celebrations', label: tr('catCelebrations') },
       { id: 'boosts', label: tr('catBoosts') }
     ];
@@ -4263,7 +4264,6 @@
         '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + getItemLabelById(activeArenaId, 'Standard Arena') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('catCrowd') + ':</span><b>' + crowdLabel + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + getItemLabelById(activeCelId, 'Confetti') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('catBoosts') + ':</span><b>' + armedName + '</b></div>';
 
@@ -8664,9 +8664,7 @@
 
   // Dedicated Full-Screen Arena & Supporters Selection Page (Gallery of 10 Worlds & 6 Fan Clubs)
   function buildArenaSelectPage(app) {
-    var curSection = 'arenas'; // 'arenas' or 'crowd'
     var curFilter = 'all'; // 'all', 'footy', 'hoops'
-    var curChar = app.store.data.selectedCharacter || 'footy';
     var lang = getActiveLang();
 
     var container = document.createElement('div');
@@ -8687,6 +8685,9 @@
     };
 
     var titleBox = document.createElement('div');
+    titleBox.innerHTML =
+      '<h1 style="margin:0;">' + tr('arenaSelectTitle') + '</h1>' +
+      '<small style="color:var(--text-muted);font-size:11px;">' + tr('arenaSelectSub') + '</small>';
 
     head.appendChild(backBtn);
     head.appendChild(titleBox);
@@ -8694,29 +8695,6 @@
 
     var body = document.createElement('div');
     body.className = 'page-body fvh-arena-page-body';
-
-    // Main Section Tabs: 🏟️ Stadiums & Worlds | 👥 Supporters & Crowd
-    var sectionSeg = document.createElement('div');
-    sectionSeg.className = 'seg fvh-arena-section-seg';
-    sectionSeg.style.marginBottom = '14px';
-    var sectionOptions = [
-      { id: 'arenas', label: '🏟️ ' + tr('arenaTabEnvironments') },
-      { id: 'crowd', label: '👥 ' + tr('arenaTabCrowd') }
-    ];
-    sectionOptions.forEach(function (so) {
-      var btn = document.createElement('button');
-      btn.textContent = so.label;
-      if (so.id === curSection) btn.className = 'on';
-      btn.onclick = function () {
-        curSection = so.id;
-        sectionSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
-        btn.className = 'on';
-        app.audio.play('click');
-        updateSectionView();
-      };
-      sectionSeg.appendChild(btn);
-    });
-    body.appendChild(sectionSeg);
 
     // Filter Segment for Arenas: ALL, FOOTBALL (FOOTY), BASKETBALL (HOOPS)
     var filterSeg = document.createElement('div');
@@ -8747,96 +8725,8 @@
     arenaGrid.className = 'fvh-arena-grid';
     body.appendChild(arenaGrid);
 
-    // Crowd Grid
-    var crowdGrid = document.createElement('div');
-    crowdGrid.className = 'fvh-arena-grid fvh-crowd-grid';
-    crowdGrid.style.display = 'none';
-    body.appendChild(crowdGrid);
-
     page.appendChild(body);
     container.appendChild(page);
-
-    function updateSectionView() {
-      if (curSection === 'arenas') {
-        titleBox.innerHTML =
-          '<h1 style="margin:0;">' + tr('arenaSelectTitle') + '</h1>' +
-          '<small style="color:var(--text-muted);font-size:11px;">' + tr('arenaSelectSub') + '</small>';
-        filterSeg.style.display = 'flex';
-        arenaGrid.style.display = 'grid';
-        crowdGrid.style.display = 'none';
-        renderArenaGrid();
-      } else {
-        titleBox.innerHTML =
-          '<h1 style="margin:0;">' + tr('crowdSelectTitle') + '</h1>' +
-          '<small style="color:var(--text-muted);font-size:11px;">' + tr('crowdSelectSub') + '</small>';
-        filterSeg.style.display = 'none';
-        arenaGrid.style.display = 'none';
-        crowdGrid.style.display = 'grid';
-        renderCrowdGrid();
-      }
-    }
-
-    function renderCrowdGrid() {
-      crowdGrid.innerHTML = '';
-      var eq = app.store.data.equipped || {};
-      var curCrowd = eq.crowd || (curChar === 'hoops' ? 'crowd_hoops_allstars' : 'crowd_footy_ultras');
-
-      CROWD_CATALOG.forEach(function (crowd) {
-        var card = document.createElement('div');
-        var isEquipped = (curCrowd === crowd.id);
-        var rarKey = crowd.rarity || 'common';
-        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
-        var localizedName = tr(crowd.nameKey) || crowd.name;
-        var localizedDesc = tr(crowd.descKey) || crowd.desc || '';
-
-        card.className = 'fvh-arena-card fvh-crowd-card r-' + rarKey + (isEquipped ? ' is-equipped' : ' is-owned');
-
-        var swatchesHtml = crowd.colors.map(function (c) {
-          return '<span class="fvh-crowd-swatch" style="display:inline-block;width:18px;height:18px;border-radius:50%;background:' + c + ';border:2px solid rgba(255,255,255,0.7);box-shadow:0 2px 6px rgba(0,0,0,0.4);"></span>';
-        }).join('');
-
-        card.innerHTML =
-          '<div class="fvh-arena-preview-wrap" style="height:120px;background:' + (crowd.bannerGrad || 'linear-gradient(135deg, #0f172a, #1e293b)') + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-          renderItemArtwork(crowd, 'large') +
-          '<span class="fvh-arena-badge-mode">' + (crowd.mode === 'footy' ? '⚽ FOOTY' : crowd.mode === 'hoops' ? '🏀 HOOPS' : '🌍 GLOBAL') + '</span>' +
-          (isEquipped ? '<span class="fvh-arena-badge-equipped">✓ ' + tr('crowdEquipped') + '</span>' : '') +
-          '</div>' +
-          '<div class="fvh-arena-info">' +
-          '<div class="fvh-arena-meta-row">' +
-          '<span class="fvh-arena-badge-env default">👥 ' + (lang === 'ru' ? 'ФАН-СЕКТОР' : 'SUPPORTERS') + '</span>' +
-          '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-          '</div>' +
-          '<h3 class="fvh-arena-title">' + crowd.icon + ' ' + localizedName + '</h3>' +
-          '<div class="fvh-crowd-swatches" style="display:flex;gap:6px;margin:6px 0;">' + swatchesHtml + '</div>' +
-          '<p class="fvh-arena-desc">' + localizedDesc + '</p>' +
-          '</div>' +
-          '<div class="fvh-arena-actions"></div>';
-
-        var actBox = card.querySelector('.fvh-arena-actions');
-        var btn = document.createElement('button');
-
-        if (isEquipped) {
-          btn.className = 'btn small block';
-          btn.disabled = true;
-          btn.textContent = '✓ ' + tr('equipped');
-        } else {
-          btn.className = 'btn small primary block';
-          btn.textContent = tr('selectCrowdBtn');
-          btn.onclick = function () {
-            app.store.update(function (d) {
-              if (!d.equipped) d.equipped = {};
-              d.equipped.crowd = crowd.id;
-            });
-            app.audio.play('claim');
-            showToast(tr('equipped') + ': ' + localizedName);
-            renderCrowdGrid();
-          };
-        }
-
-        actBox.appendChild(btn);
-        crowdGrid.appendChild(card);
-      });
-    }
 
     function renderArenaGrid() {
       arenaGrid.innerHTML = '';
@@ -8898,7 +8788,6 @@
               if (arena.isDefault) {
                 d.equipped[slotKey] = arena.id;
               } else {
-                // Themed arena equips for both football and basketball
                 d.equipped['stadium.footy'] = arena.id;
                 d.equipped['stadium.hoops'] = arena.id;
               }
@@ -8921,7 +8810,7 @@
       });
     }
 
-    updateSectionView();
+    renderArenaGrid();
 
     // Persistent Bottom Nav
     container.appendChild(createSharedBottomNav('menu', app));
@@ -9086,6 +8975,10 @@
 
   // Dedicated Full-Screen Mode Selection Page
   function buildModeSelectPage(app) {
+    var curChar = app.store.data.selectedCharacter || 'footy';
+    var curSettings = app.store.data.settings || {};
+    var lang = getActiveLang();
+
     var container = document.createElement('div');
     container.className = 'screen solid page-screen has-nav fvh-mode-select-screen';
     container.dataset.id = 'mode';
@@ -9093,7 +8986,7 @@
     var page = document.createElement('div');
     page.className = 'page';
 
-    // Header with Back button
+    // Page Head
     var head = document.createElement('div');
     head.className = 'page-head';
     var backBtn = document.createElement('button');
@@ -9109,33 +9002,24 @@
     head.appendChild(title);
     page.appendChild(head);
 
+    // Page Body
     var body = document.createElement('div');
     body.className = 'page-body fvh-mode-page-body';
 
-    var subtitle = document.createElement('div');
-    subtitle.className = 'fvh-mode-subtitle';
-    subtitle.textContent = tr('modeSelectSubtitle');
-    body.appendChild(subtitle);
-
-    var curChar = app.store.data.selectedCharacter || 'footy';
-    var curSettings = (app.store.data.settings) || {};
-    var lang = getActiveLang();
-
-    // Active Arena Shortcut Pill
-    var eq = app.store.data.equipped || {};
-    var curArenaId = eq['stadium.' + curChar] || (curChar === 'footy' ? 'std_ocean_sunset' : 'std_forest_redwood');
-    var curArenaDef = SCENIC_ARENAS_CATALOG.find(function (a) { return a.id === curArenaId; }) || SCENIC_ARENAS_CATALOG[0];
+    // Arena Selection Banner at top of Mode Selection
+    var currentArenaId = (app.store.data.equipped && (app.store.data.equipped['stadium.' + curChar] || app.store.data.equipped.stadium)) || (curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
+    var currentArenaDef = SCENIC_ARENAS_CATALOG.find(function (a) { return a.id === currentArenaId; }) || (curChar === 'hoops' ? { name: 'Street Classic', icon: '🏀' } : { name: 'Classic Grass', icon: '🏟️' });
 
     var arenaBanner = document.createElement('div');
     arenaBanner.className = 'fvh-mode-arena-banner';
-    arenaBanner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;margin-bottom:14px;cursor:pointer;';
+    arenaBanner.style.cursor = 'pointer';
     arenaBanner.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;">' +
-      '<span style="font-size:24px;">' + curArenaDef.icon + '</span>' +
-      '<div>' +
-      '<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">' + (lang === 'ru' ? 'Домашняя Арена' : 'Home Arena') + '</div>' +
-      '<div style="font-size:14px;font-weight:800;color:#fff;">' + trItem(curArenaDef.name) + '</div>' +
-      '</div>' +
+      '<div class="fvh-mode-arena-left">' +
+      '  <span class="fvh-mode-arena-icon">' + (currentArenaDef.icon || '🏟️') + '</span>' +
+      '  <div>' +
+      '    <div class="fvh-mode-arena-sub">' + tr('homeArena') + '</div>' +
+      '    <div class="fvh-mode-arena-name">' + trItem(currentArenaDef.name) + '</div>' +
+      '  </div>' +
       '</div>' +
       '<button class="btn small primary" style="white-space:nowrap;">🏟️ ' + tr('arenaSelectTitle') + ' ➔</button>';
 
@@ -9145,126 +9029,12 @@
     };
     body.appendChild(arenaBanner);
 
-    // Mode Grid Container (3 Prominent Cards, Responsive down to 375px)
+    // Mode Grid Container (3 Cards: Practice vs AI, Online 1v1, Private Match)
     var grid = document.createElement('div');
     grid.className = 'fvh-mode-grid';
 
     // -------------------------------------------------------------
-    // CARD 0: Flagship Cross-Sport Clash: Футбол vs Баскетбол (FOOTY vs HOOPS)
-    // -------------------------------------------------------------
-    var clashCard = document.createElement('div');
-    clashCard.className = 'fvh-mode-card clash-card';
-
-    var clashSide = curChar;
-
-    function renderClashCardUI() {
-      var isFooty = clashSide === 'footy';
-      clashCard.innerHTML =
-        '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge clash">🔥 ' + tr('clashModeBadge') + '</span>' +
-          '<span class="fvh-mode-server-status" style="color:#f59e0b;"><span class="status-dot" style="background:#f59e0b;"></span> ⚔️ 1v1 Rivalry</span>' +
-        '</div>' +
-        '<div class="fvh-mode-card-body">' +
-          '<div class="fvh-mode-title" style="color:#f59e0b;font-size:17px;font-weight:900;">' + tr('clashModeTitle') + '</div>' +
-          '<div class="fvh-mode-desc">' + tr('clashModeDesc') + '</div>' +
-          '<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:10px;margin-bottom:6px;font-weight:800;">' + tr('youTeam') + ':</div>' +
-          '<div class="fvh-clash-team-selector" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-            '<button type="button" class="fvh-clash-choice-btn footy-choice ' + (isFooty ? 'on' : '') + '">' + tr('clashPlayFooty') + '<br><small style="font-size:10px;opacity:0.85;">' + tr('clashFootySub') + '</small></button>' +
-            '<button type="button" class="fvh-clash-choice-btn hoops-choice ' + (!isFooty ? 'on' : '') + '">' + tr('clashPlayHoops') + '<br><small style="font-size:10px;opacity:0.85;">' + tr('clashHoopsSub') + '</small></button>' +
-          '</div>' +
-          '<div class="fvh-clash-matchup-bar" style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.35);border-radius:8px;border:1px solid rgba(255,255,255,0.08);text-align:center;font-size:12px;font-weight:800;">' +
-            (isFooty
-              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
-              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 6px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
-            ) +
-          '</div>' +
-        '</div>' +
-        '<div class="fvh-mode-card-actions" style="margin-top:12px;">' +
-          '<button class="btn primary block fvh-btn-start-clash" style="background:linear-gradient(90deg,#00f0ff 0%,#f59e0b 50%,#f97316 100%);color:#090d16;font-weight:900;letter-spacing:0.5px;box-shadow:0 0 20px rgba(245,158,11,0.35);border:none;">⚔️ ' + tr('clashStartBtn') + ' ▶</button>' +
-        '</div>';
-
-      clashCard.querySelector('.footy-choice').onclick = function () {
-        app.audio.play('click');
-        clashSide = 'footy';
-        renderClashCardUI();
-      };
-      clashCard.querySelector('.hoops-choice').onclick = function () {
-        app.audio.play('click');
-        clashSide = 'hoops';
-        renderClashCardUI();
-      };
-      clashCard.querySelector('.fvh-btn-start-clash').onclick = function () {
-        app.audio.play('click');
-        app.store.update(function (d) {
-          d.selectedCharacter = clashSide;
-        });
-        app.launch({
-          mode: clashSide,
-          char: clashSide,
-          difficulty: curSettings.difficulty || 'normal',
-          minutes: 2,
-          boostId: app.store.data.armedBoost
-        }, false);
-      };
-    }
-
-    renderClashCardUI();
-    grid.appendChild(clashCard);
-
-    // -------------------------------------------------------------
-    // CARD 1: Quick Match (Быстрый матч - Онлайн 1v1)
-    // -------------------------------------------------------------
-    var quickCard = document.createElement('div');
-    quickCard.className = 'fvh-mode-card quick-card';
-    quickCard.innerHTML =
-      '<div class="fvh-mode-card-header">' +
-        '<span class="fvh-mode-badge online">⚡ ' + tr('quickMatchBadge') + '</span>' +
-        '<span class="fvh-mode-server-status"><span class="status-dot"></span> P2P Live</span>' +
-      '</div>' +
-      '<div class="fvh-mode-card-body">' +
-        '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
-        '<div class="fvh-mode-desc">' + tr('quickMatchDesc') + '</div>' +
-      '</div>' +
-      '<div class="fvh-mode-card-actions">' +
-        '<button class="btn primary block fvh-btn-matchmaking">⚡ ' + tr('quickMatchBtn') + '</button>' +
-      '</div>';
-
-    quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
-      app.audio.play('click');
-      showQuickMatchSearchModal(app, curChar);
-    };
-    grid.appendChild(quickCard);
-
-    // -------------------------------------------------------------
-    // CARD 2: Private Match (Приватный матч - 1v1 с другом)
-    // -------------------------------------------------------------
-    var privateCard = document.createElement('div');
-    privateCard.className = 'fvh-mode-card private-card';
-    privateCard.innerHTML =
-      '<div class="fvh-mode-card-header">' +
-        '<span class="fvh-mode-badge private">🔑 ' + tr('privateMatchBadge') + '</span>' +
-      '</div>' +
-      '<div class="fvh-mode-card-body">' +
-        '<div class="fvh-mode-title">' + tr('privateMatchTitle') + '</div>' +
-        '<div class="fvh-mode-desc">' + tr('privateMatchDesc') + '</div>' +
-      '</div>' +
-      '<div class="fvh-mode-card-actions two-btn">' +
-        '<button class="btn block fvh-btn-create-room">🏠 ' + tr('privateMatchCreate') + '</button>' +
-        '<button class="btn block fvh-btn-join-room">🔗 ' + tr('privateMatchJoin') + '</button>' +
-      '</div>';
-
-    privateCard.querySelector('.fvh-btn-create-room').onclick = function () {
-      app.audio.play('click');
-      showCreateRoomModal(app, curChar);
-    };
-    privateCard.querySelector('.fvh-btn-join-room').onclick = function () {
-      app.audio.play('click');
-      showJoinRoomModal(app, curChar);
-    };
-    grid.appendChild(privateCard);
-
-    // -------------------------------------------------------------
-    // CARD 3: Practice vs AI (Тренировка с ИИ)
+    // CARD 1: Single Match vs AI (Матч против ИИ)
     // -------------------------------------------------------------
     var practiceCard = document.createElement('div');
     practiceCard.className = 'fvh-mode-card practice-card';
@@ -9275,12 +9045,12 @@
 
     practiceCard.innerHTML =
       '<div class="fvh-mode-card-header">' +
-        '<span class="fvh-mode-badge practice">🤖 ' + tr('practiceAIBadge') + '</span>' +
+        '<span class="fvh-mode-badge practice">🤖 ' + (lang === 'ru' ? 'МАТЧ ПРОТИВ ИИ' : 'MATCH VS AI') + '</span>' +
         '<span class="fvh-mode-instant-pill">⚡ ' + tr('offlineNotice') + '</span>' +
       '</div>' +
       '<div class="fvh-mode-card-body">' +
-        '<div class="fvh-mode-title">' + tr('practiceAITitle') + '</div>' +
-        '<div class="fvh-mode-desc">' + tr('practiceAIDesc') + '</div>' +
+        '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +
+        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь против компьютерного соперника, оттачивайте мастерство и зарабатывайте очки в Битву Команд!' : 'Battle against AI opponent, master your skills, and earn Team War leaderboard points!') + '</div>' +
         '<div class="fvh-mode-controls">' +
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
@@ -9312,7 +9082,7 @@
         '</div>' +
       '</div>' +
       '<div class="fvh-mode-card-actions">' +
-        '<button class="btn primary block fvh-btn-start-practice">▶ ' + tr('startPracticeBtn') + '</button>' +
+        '<button class="btn primary block fvh-btn-start-practice">▶ ' + (lang === 'ru' ? 'НАЧАТЬ МАТЧ' : 'START MATCH') + '</button>' +
       '</div>';
 
     // Interactive Sport selector
@@ -9417,7 +9187,60 @@
         boostId: app.store.data.armedBoost
       }, false);
     };
+
     grid.appendChild(practiceCard);
+
+    // -------------------------------------------------------------
+    // CARD 2: Quick Match (Быстрый матч - Онлайн 1v1)
+    // -------------------------------------------------------------
+    var quickCard = document.createElement('div');
+    quickCard.className = 'fvh-mode-card quick-card';
+    quickCard.innerHTML =
+      '<div class="fvh-mode-card-header">' +
+        '<span class="fvh-mode-badge online">⚡ ' + tr('quickMatchBadge') + '</span>' +
+        '<span class="fvh-mode-server-status"><span class="status-dot"></span> P2P Live</span>' +
+      '</div>' +
+      '<div class="fvh-mode-card-body">' +
+        '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
+        '<div class="fvh-mode-desc">' + tr('quickMatchDesc') + '</div>' +
+      '</div>' +
+      '<div class="fvh-mode-card-actions">' +
+        '<button class="btn primary block fvh-btn-matchmaking">⚡ ' + tr('quickMatchBtn') + '</button>' +
+      '</div>';
+
+    quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
+      app.audio.play('click');
+      showQuickMatchSearchModal(app, curChar);
+    };
+    grid.appendChild(quickCard);
+
+    // -------------------------------------------------------------
+    // CARD 3: Private Match (Приватный матч - 1v1 с другом)
+    // -------------------------------------------------------------
+    var privateCard = document.createElement('div');
+    privateCard.className = 'fvh-mode-card private-card';
+    privateCard.innerHTML =
+      '<div class="fvh-mode-card-header">' +
+        '<span class="fvh-mode-badge private">🔑 ' + tr('privateMatchBadge') + '</span>' +
+      '</div>' +
+      '<div class="fvh-mode-card-body">' +
+        '<div class="fvh-mode-title">' + tr('privateMatchTitle') + '</div>' +
+        '<div class="fvh-mode-desc">' + tr('privateMatchDesc') + '</div>' +
+      '</div>' +
+      '<div class="fvh-mode-card-actions two-btn">' +
+        '<button class="btn block fvh-btn-create-room">🏠 ' + tr('privateMatchCreate') + '</button>' +
+        '<button class="btn block fvh-btn-join-room">🔗 ' + tr('privateMatchJoin') + '</button>' +
+      '</div>';
+
+    privateCard.querySelector('.fvh-btn-create-room').onclick = function () {
+      app.audio.play('click');
+      showCreateRoomModal(app, curChar);
+    };
+    privateCard.querySelector('.fvh-btn-join-room').onclick = function () {
+      app.audio.play('click');
+      showJoinRoomModal(app, curChar);
+    };
+    grid.appendChild(privateCard);
 
     body.appendChild(grid);
     page.appendChild(body);
