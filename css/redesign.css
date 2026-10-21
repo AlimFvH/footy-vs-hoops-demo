@@ -5299,3 +5299,19 @@ html, body {
 .fvh-crowd-card:hover .fvh-crowd-swatch {
   transform: scale(1.1);
 }
+
+
+/* Mobile responsive in-match controls hints bar */
+@media (max-width: 480px) {
+  .key-hints {
+    font-size: 10px !important;
+    gap: 6px !important;
+    padding: 4px 10px !important;
+    max-width: 95vw !important;
+    box-sizing: border-box !important;
+  }
+  .key-hints kbd {
+    padding: 2px 4px !important;
+    font-size: 9.5px !important;
+  }
+}

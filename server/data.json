@@ -7535,6 +7535,173 @@
       "rewardedMatches": [],
       "createdAt": 1792580947667,
       "updatedAt": 1792580947671
+    },
+    "fvh_r2dm6u3r": {
+      "playerId": "fvh_r2dm6u3r",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792581362560,
+      "updatedAt": 1792581362565
+    },
+    "fvh_qfmcjll2": {
+      "playerId": "fvh_qfmcjll2",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792581642503,
+      "updatedAt": 1792581642508
+    },
+    "fvh_f5i149r7": {
+      "playerId": "fvh_f5i149r7",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792581814483,
+      "updatedAt": 1792581814487
+    },
+    "fvh_k2trnvjh": {
+      "playerId": "fvh_k2trnvjh",
+      "coins": 500,
+      "xp": 0,
+      "owned": [
+        "skin_rookie",
+        "std_footy_classic",
+        "std_hoops_street",
+        "ball_footy_classic",
+        "ball_hoops_street",
+        "frame_default",
+        "trail_default",
+        "cel_confetti",
+        "skin_solar"
+      ],
+      "equipped": {
+        "skin": "skin_rookie",
+        "ball.footy": "ball_footy_classic",
+        "ball.hoops": "ball_hoops_street",
+        "stadium.footy": "std_footy_classic",
+        "stadium.hoops": "std_hoops_street",
+        "celebration": "cel_confetti",
+        "trail": "trail_default",
+        "frame": "frame_default",
+        "skin.footy": "skin_rookie",
+        "skin.hoops": "skin_solar"
+      },
+      "boostCharges": {},
+      "armedBoost": null,
+      "packs": {
+        "free": {},
+        "paid": {}
+      },
+      "battlePass": {
+        "claimedFree": [],
+        "claimedPremium": [],
+        "isPremium": false,
+        "premiumUnlockedAt": null
+      },
+      "claimedQuests": [],
+      "rewardedMatches": [],
+      "createdAt": 1792582907084,
+      "updatedAt": 1792582907088
     }
   },
   "economyLedger": [

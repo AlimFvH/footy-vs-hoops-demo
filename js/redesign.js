@@ -450,7 +450,7 @@
       tonConfirmed: 'TON transaction verified on-chain!',
       starsRedirect: 'Opening Telegram Stars checkout...',
       leaderboard: 'Leaderboard',
-      leaderboardTitle: 'TEAM WAR: FOOTBALL VS BASKETBALL',
+      leaderboardTitle: 'TEAM WAR',
       leaderboardSubtitle: 'Whichever team has more points wins the Season!',
       teamFootball: 'TEAM FOOTBALL',
       teamBasketball: 'TEAM BASKETBALL',
@@ -922,7 +922,7 @@
       tonConfirmed: 'Транзакция TON успешно подтверждена!',
       starsRedirect: 'Открытие оплаты Telegram Stars...',
       leaderboard: 'Лидерборд',
-      leaderboardTitle: 'БИТВА КОМАНД: ФУТБОЛ VS БАСКЕТБОЛ',
+      leaderboardTitle: 'БИТВА КОМАНД',
       leaderboardSubtitle: 'У чьей команды больше очков — та команда победит!',
       teamFootball: 'КОМАНДА ФУТБОЛА',
       teamBasketball: 'КОМАНДА БАСКЕТБОЛА',
@@ -1128,6 +1128,48 @@
     return name;
   }
 
+  function getItemLabelById(id, fallback) {
+    if (!id) return fallback || '';
+    var lang = getActiveLang();
+    if (typeof HERO_SKIN_PALETTES !== 'undefined' && HERO_SKIN_PALETTES[id]) {
+      return lang === 'ru' ? HERO_SKIN_PALETTES[id].ru : HERO_SKIN_PALETTES[id].name;
+    }
+    if (typeof CROWD_CATALOG !== 'undefined') {
+      var cr = CROWD_CATALOG.find(function(c) { return c.id === id; });
+      if (cr) return tr(cr.nameKey) || cr.name;
+    }
+    if (typeof BOOST_CATALOG !== 'undefined') {
+      var bs = BOOST_CATALOG.find(function(b) { return b.id === id; });
+      if (bs) return tr(bs.nameKey) || bs.name;
+    }
+    var idToName = {
+      'skin_rookie': 'Rookie Blue',
+      'skin_solar': 'Solar Flare',
+      'std_footy_classic': 'Classic Grass',
+      'std_footy_night': 'Night Arena',
+      'std_footy_golden': 'Golden Hour',
+      'std_footy_neon': 'Neon Turf',
+      'std_hoops_street': 'Street Classic',
+      'std_hoops_night': 'Neon Night',
+      'std_hoops_gold': 'Gold Hardwood',
+      'std_hoops_matrix': 'Matrix Court',
+      'ball_footy_classic': 'Classic Football',
+      'ball_hoops_street': 'Classic Basketball',
+      'cel_confetti': 'Confetti Burst',
+      'cel_fireworks': 'Fireworks',
+      'cel_shockwave': 'Shockwave',
+      'cel_flame': 'Flame Burst',
+      'cel_gold_rain': 'Gold Rain'
+    };
+    if (idToName[id]) {
+      return trItem(idToName[id]);
+    }
+    if (ITEM_I18N && ITEM_I18N[lang] && ITEM_I18N[lang][id]) {
+      return ITEM_I18N[lang][id];
+    }
+    return trItem(id) || fallback || id;
+  }
+
   function showToast(text) {
     var existing = document.querySelector('.toast-ui');
     if (existing) existing.remove();
@@ -1328,6 +1370,8 @@
     var defaultSkin = isFooty ? 'skin_rookie' : 'skin_solar';
     var charSpecificSkin = isFooty ? (eq['skin.footy'] || (eq.skin !== 'skin_solar' ? eq.skin : null)) : (eq['skin.hoops'] || (eq.skin !== 'skin_rookie' ? eq.skin : null));
     var skinId = specificSkinId || charSpecificSkin || defaultSkin;
+    if (isFooty && skinId === 'skin_solar') skinId = 'skin_rookie';
+    if (!isFooty && skinId === 'skin_rookie') skinId = 'skin_solar';
     var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var svgFallback = isFooty ? getFootyAvatarSvg() : getHoopsAvatarSvg();
     var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
@@ -4208,12 +4252,19 @@
       var crowdObj = CROWD_CATALOG.find(function(c) { return c.id === activeCrowdId; });
       var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
 
+      var curCharSkin = curChar === 'hoops'
+        ? (eq['skin.hoops'] || (eq.skin && eq.skin !== 'skin_rookie' ? eq.skin : 'skin_solar'))
+        : (eq['skin.footy'] || (eq.skin && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'));
+      var activeBallId = eq['ball.' + curChar] || (curChar === 'hoops' ? 'ball_hoops_street' : 'ball_footy_classic');
+      var activeArenaId = eq['stadium.' + curChar] || (curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
+      var activeCelId = eq.celebration || 'cel_confetti';
+
       equipSlotList.innerHTML =
-        '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + trItem(eq.skin || 'Rookie Blue') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + trItem(eq['ball.' + curChar] || 'Classic Ball') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + trItem(eq['stadium.' + curChar] || 'Standard Arena') + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + getItemLabelById(activeArenaId, 'Standard Arena') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('catCrowd') + ':</span><b>' + crowdLabel + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + trItem(eq.celebration || 'Confetti Rain') + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + getItemLabelById(activeCelId, 'Confetti') + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('catBoosts') + ':</span><b>' + armedName + '</b></div>';
 
       // Load matching items for current slot (OWNED ITEMS ONLY)
@@ -4261,8 +4312,12 @@
         } else {
           matching = allItems.filter(function (it) {
             if (it.category !== curSlot) return false;
-            if (it.mode && it.mode !== curChar) return false;
-            var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault);
+            if (it.mode && it.mode !== 'all' && it.mode !== curChar) return false;
+            if (it.category === 'skins') {
+              if (curChar === 'hoops' && it.id === 'skin_rookie') return false;
+              if (curChar === 'footy' && it.id === 'skin_solar') return false;
+            }
+            var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie');
             return isOwned;
           });
         }
@@ -4358,7 +4413,11 @@
             return;
           }
           var activeSlotKey = item.slot || (item.category === 'balls' ? 'ball.' + curChar : item.category === 'stadiums' ? 'stadium.' + curChar : item.category === 'skins' ? 'skin' : item.category === 'crowd' ? 'crowd' : item.category);
-          var isEquipped = (eq[activeSlotKey] === item.id) || (item.category === 'crowd' && !eq.crowd && item.isDefault && (item.mode === curChar || item.mode === 'all'));
+          var isEquipped = (item.category === 'skins')
+            ? (curCharSkin === item.id)
+            : (item.category === 'crowd')
+              ? (activeCrowdId === item.id)
+              : (eq[activeSlotKey] === item.id);
 
           var itemCard = document.createElement('div');
           var rarClass = item.rarity || 'common';
@@ -4408,7 +4467,12 @@
                 }
                 app.store.update(function (d) {
                   if (!d.equipped) d.equipped = {};
-                  d.equipped[activeSlotKey] = item.id; if (item.id === 'std_ocean_sunset') { d.equipped['stadium.footy'] = 'std_ocean_sunset'; d.equipped['stadium.hoops'] = 'std_ocean_sunset'; }
+                  d.equipped[activeSlotKey] = item.id;
+                  if (item.category === 'skins') {
+                    d.equipped['skin.' + curChar] = item.id;
+                    d.equipped.skin = item.id;
+                  }
+                  if (item.id === 'std_ocean_sunset') { d.equipped['stadium.footy'] = 'std_ocean_sunset'; d.equipped['stadium.hoops'] = 'std_ocean_sunset'; }
                 });
                 app.audio.play('click');
                 showToast(tr('equipped') + ': ' + localizedItemName);
@@ -7631,7 +7695,7 @@
       icon: '🌍',
       colors: ['#e84a5f', '#f6c445', '#4fb3ff', '#7be08a'],
       bannerGrad: 'linear-gradient(135deg, #e11d48 0%, #7c3aed 50%, #38bdf8 100%)',
-      isDefault: true,
+      isDefault: false,
       mode: 'all'
     },
     {
@@ -7644,7 +7708,7 @@
       icon: '⚡',
       colors: ['#ff2bd6', '#00e5ff', '#a855f7', '#0f172a'],
       bannerGrad: 'linear-gradient(135deg, #d946ef 0%, #4c1d95 50%, #00e5ff 100%)',
-      isDefault: true,
+      isDefault: false,
       mode: 'all'
     },
     {
@@ -7657,7 +7721,7 @@
       icon: '🌲',
       colors: ['#10b981', '#059669', '#065f46', '#ffffff'],
       bannerGrad: 'linear-gradient(135deg, #059669 0%, #064e3b 50%, #34d399 100%)',
-      isDefault: true,
+      isDefault: false,
       mode: 'all'
     },
     {
@@ -7670,7 +7734,7 @@
       icon: '👑',
       colors: ['#f6c445', '#d97706', '#1c1917', '#fffbeb'],
       bannerGrad: 'linear-gradient(135deg, #b45309 0%, #1c1917 50%, #fcd34d 100%)',
-      isDefault: true,
+      isDefault: false,
       mode: 'all'
     }
   ];
@@ -9428,6 +9492,7 @@
 
   // Onboarding & Sport Team Selection Modal (Football vs Basketball)
   function showTeamSelectionModal(app, canClose) {
+    window.showTeamSelectionModal = showTeamSelectionModal;
     if (document.querySelector('.fvh-team-modal-back')) return;
 
     var overlay = document.createElement('div');
@@ -9572,7 +9637,7 @@
       '  <span class="fvh-solo-rival-pill" style="font-size:10.5px;color:#f59e0b;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:999px;font-weight:800;white-space:nowrap;">' + rivalText + '</span>' +
       '</div>' +
       '<div class="fvh-hero-avatar-box solo-avatar-box" style="height:230px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-         getCharacterDisplayHtml(curChar, d.equipped && d.equipped.skin) +
+         getCharacterDisplayHtml(curChar, curChar === 'hoops' ? (d.equipped && (d.equipped['skin.hoops'] || (d.equipped.skin !== 'skin_rookie' ? d.equipped.skin : null))) : (d.equipped && (d.equipped['skin.footy'] || (d.equipped.skin !== 'skin_solar' ? d.equipped.skin : null)))) +
       '</div>' +
       '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY' : '🏀 HOOPS') + '</div>' +
       '<div class="fvh-hero-role" style="font-size:12.5px;color:var(--text-muted);font-weight:700;margin-top:2px;text-align:center;">' + heroRoleText + '</div>' +

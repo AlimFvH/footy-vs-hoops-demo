@@ -4827,10 +4827,14 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             if (i.isDefault && i.slot !== 'boost')
                 eq[i.slot] = i.id;
         }
+        eq['skin.footy'] = 'skin_rookie';
+        eq['skin.hoops'] = 'skin_solar';
         return eq;
     }
     function defaultOwned() {
-        return exports.ITEMS.filter((i) => i.isDefault).map((i) => i.id);
+        const owned = exports.ITEMS.filter((i) => i.isDefault).map((i) => i.id);
+        if (!owned.includes('skin_solar')) owned.push('skin_solar');
+        return owned;
     }
     function boostEffectsOf(id) {
         var _a, _b, _c, _d, _e, _f;
@@ -7719,7 +7723,10 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.frame = visualOf(eq.frame, 'frame_default');
             const playerChar = (opts && opts.char) ? opts.char : (mode === 'hoops' ? 'hoops' : 'footy');
             const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
-            const skin = visualOf(eq.skin, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
+            const charSkinId = playerChar === 'hoops'
+                ? (eq['skin.hoops'] || (eq.skin && eq.skin !== 'skin_rookie' ? eq.skin : 'skin_solar'))
+                : (eq['skin.footy'] || (eq.skin && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'));
+            const skin = visualOf(charSkinId, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
             // Signature Cross-Sport Kits for Football vs Basketball Rivalry
             const hoopsOppKit = {
                 primary: 0xff6b00,
