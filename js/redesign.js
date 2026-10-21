@@ -3336,6 +3336,9 @@
     var d = app.store.data;
     safeEconomyApi('/api/economy/sync', {
       playerId: pid,
+      playerName: d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Athlete',
+      stats: d.stats || {},
+      selectedCharacter: d.selectedCharacter || 'footy',
       owned: d.owned || [],
       equipped: d.equipped || {},
       coins: d.coins || 0,
@@ -6929,28 +6932,7 @@
     var myXp = myData.xp || 0;
     var myChar = myData.selectedCharacter || 'footy';
 
-    var athletes = [
-      { id: 'ath_apex', name: 'ApexStriker', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
-      { id: 'ath_dunk', name: 'DunkPhenom', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
-      { id: 'ath_viper', name: 'ViperVolley', char: 'footy', club: 'Rio Electro', wins: 41, goals: 98, baskets: 24, coins: 6800, xp: 2200, badge: 'PRO' },
-      { id: 'ath_rim', name: 'RimCrusher_Pro', char: 'hoops', club: 'Brooklyn Alley', wins: 39, goals: 18, baskets: 136, coins: 6400, xp: 2100, badge: 'ELITE' },
-      { id: 'ath_golden', name: 'GoldenBoot_Alim', char: 'footy', club: 'Emirates Arena', wins: 36, goals: 86, baskets: 30, coins: 9200, xp: 1950, badge: 'CHAMP' },
-      { id: 'ath_orbital', name: 'OrbitalSniper', char: 'hoops', club: 'Apollo Lunar', wins: 34, goals: 22, baskets: 118, coins: 5900, xp: 1800, badge: 'ELITE' },
-      { id: 'ath_shadow', name: 'ShadowStriker', char: 'footy', club: 'Kyoto Ninjas', wins: 31, goals: 74, baskets: 16, coins: 5100, xp: 1650, badge: 'PRO' },
-      { id: 'ath_blaze', name: 'BlazeCrossover', char: 'hoops', club: 'Chicago Fire', wins: 29, goals: 14, baskets: 98, coins: 4800, xp: 1520, badge: 'PRO' },
-      { id: 'ath_frost', name: 'FrostKeeper', char: 'footy', club: 'Nordic Frost', wins: 26, goals: 62, baskets: 12, coins: 4300, xp: 1400, badge: 'VET' },
-      { id: 'ath_air', name: 'AirJordan_99', char: 'hoops', club: 'Skyline Stars', wins: 25, goals: 10, baskets: 88, coins: 4100, xp: 1320, badge: 'PRO' },
-      { id: 'ath_turbo', name: 'TurboWinger', char: 'footy', club: 'Monaco Speed', wins: 23, goals: 55, baskets: 18, coins: 3800, xp: 1210, badge: 'VET' },
-      { id: 'ath_swish', name: 'SwishMaster', char: 'hoops', club: 'L.A. Beach', wins: 21, goals: 8, baskets: 76, coins: 3500, xp: 1100, badge: 'PRO' },
-      { id: 'ath_cyber', name: 'CyberGoalie', char: 'footy', club: 'Neo Seoul', wins: 19, goals: 44, baskets: 14, coins: 3200, xp: 990, badge: 'VET' },
-      { id: 'ath_alley', name: 'AlleyOop_King', char: 'hoops', club: 'Miami Court', wins: 18, goals: 6, baskets: 64, coins: 3000, xp: 910, badge: 'PRO' },
-      { id: 'ath_striker', name: 'RedwoodStriker', char: 'footy', club: 'California Pines', wins: 16, goals: 38, baskets: 10, coins: 2700, xp: 820, badge: 'VET' },
-      { id: 'ath_dunk2', name: 'HalfCourtHero', char: 'hoops', club: 'Rooftop Hoops', wins: 14, goals: 4, baskets: 52, coins: 2400, xp: 740, badge: 'ROOKIE' },
-      { id: 'ath_magma', name: 'MagmaStriker', char: 'footy', club: 'Caldera FC', wins: 13, goals: 32, baskets: 8, coins: 2200, xp: 680, badge: 'ROOKIE' },
-      { id: 'ath_aether', name: 'AetheriaHoops', char: 'hoops', club: 'Sky High Club', wins: 11, goals: 2, baskets: 42, coins: 1900, xp: 590, badge: 'ROOKIE' },
-      { id: 'ath_crystal', name: 'CrystalDribbler', char: 'footy', club: 'Prism United', wins: 9, goals: 22, baskets: 6, coins: 1600, xp: 480, badge: 'ROOKIE' },
-      { id: 'ath_rookie', name: 'RookiePhenom', char: 'hoops', club: 'Street League', wins: 7, goals: 1, baskets: 28, coins: 1300, xp: 390, badge: 'ROOKIE' }
-    ];
+    var athletes = [];
 
     var myEntry = {
       id: 'me',
@@ -7010,18 +6992,22 @@
       };
     }
 
-    var footballTotal = 1485200;
-    var basketballTotal = 1428900;
+    var footballTotal = 0;
+    var basketballTotal = 0;
+    var footyCount = 0;
+    var hoopsCount = 0;
     ranked.forEach(function (a) {
       if (a.char === 'hoops') {
-        basketballTotal += a.score;
+        basketballTotal += (a.score || 0);
+        hoopsCount++;
       } else {
-        footballTotal += a.score;
+        footballTotal += (a.score || 0);
+        footyCount++;
       }
     });
     var totalWarScore = footballTotal + basketballTotal;
-    var footballPct = Math.round((footballTotal / totalWarScore) * 1000) / 10;
-    var basketballPct = Math.round((100 - footballPct) * 10) / 10;
+    var footballPct = totalWarScore > 0 ? Math.round((footballTotal / totalWarScore) * 1000) / 10 : 50;
+    var basketballPct = totalWarScore > 0 ? Math.round((100 - footballPct) * 10) / 10 : 50;
     var winningTeam = footballTotal >= basketballTotal ? 'footy' : 'hoops';
     var leadDiff = Math.abs(footballTotal - basketballTotal);
 
@@ -7035,26 +7021,26 @@
         name: (getActiveLang() === 'ru') ? 'Команда Футбола' : 'Team Football',
         score: footballTotal,
         pct: footballPct,
-        athletes: 7240
+        athletes: footyCount
       },
       teamBasketball: {
         id: 'hoops',
         name: (getActiveLang() === 'ru') ? 'Команда Баскетбола' : 'Team Basketball',
         score: basketballTotal,
         pct: basketballPct,
-        athletes: 7180
+        athletes: hoopsCount
       },
       winningTeam: winningTeam,
       leadDiff: leadDiff,
-      totalAthletes: 14374,
+      totalAthletes: ranked.length,
       top: ranked.slice(0, 50),
       player: playerRankInfo
     });
   }
 
   function renderWarScoreboardAndRankings(body, data, app) {
-    var teamFooty = data.teamFootball || { score: 1485200, pct: 51.2 };
-    var teamHoops = data.teamBasketball || { score: 1428900, pct: 48.8 };
+    var teamFooty = data.teamFootball || { score: 0, pct: 50 };
+    var teamHoops = data.teamBasketball || { score: 0, pct: 50 };
     var winningTeam = data.winningTeam || (teamFooty.score >= teamHoops.score ? 'footy' : 'hoops');
     var leadDiff = data.leadDiff || Math.abs(teamFooty.score - teamHoops.score);
     var isFootyWinning = (winningTeam === 'footy');
@@ -9134,7 +9120,7 @@
     practiceCard.innerHTML =
       '<div class="fvh-mode-card-header">' +
         '<span class="fvh-mode-badge practice">🤖 ' + (lang === 'ru' ? 'МАТЧ ПРОТИВ ИИ' : 'MATCH VS AI') + '</span>' +
-        '<span class="fvh-mode-instant-pill">⚡ ' + tr('offlineNotice') + '</span>' +
+        '<span class="fvh-mode-instant-pill">⚡ ' + (lang === 'ru' ? 'ОФФЛАЙН' : 'OFFLINE') + '</span>' +
       '</div>' +
       '<div class="fvh-mode-card-body">' +
         '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +

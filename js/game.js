@@ -5099,6 +5099,10 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const list = Array.isArray(slides) ? slides : [slides];
         const n = Math.max(1, list.length);
         const pw = W / n;
+        const curLang = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) ||
+                        (typeof window !== 'undefined' && window.app && window.app.store && window.app.store.data && window.app.store.data.settings && window.app.store.data.settings.lang) ||
+                        'ru';
+        const isEnglish = curLang.startsWith('en');
         list.forEach((s, i) => {
             var _a;
             const x0 = i * pw;
@@ -5118,10 +5122,16 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.fillRect(x0 + 10, H - 14, pw - 20, 6);
             g.shadowBlur = 0;
 
+            // Localize ad board text dynamically
+            let slideText = s.text || '';
+            if (slideText.includes('Здесь может быть') || slideText.toUpperCase().includes('YOUR AD HERE')) {
+                slideText = isEnglish ? 'YOUR AD HERE' : 'ЗДЕСЬ МОЖЕТ БЫТЬ ТВОЯ РЕКЛАМА';
+            }
+
             // Main Text (Bold, crisp, proportional)
             let fs = s.sub ? 64 : 80;
             g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
-            while (g.measureText(s.text).width > pw - 60 && fs > 26) {
+            while (g.measureText(slideText).width > pw - 60 && fs > 26) {
                 fs -= 2;
                 g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
             }
@@ -5130,7 +5140,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.shadowColor = accentHex;
             g.shadowBlur = 14;
             g.fillStyle = hex((_a = s.color) !== null && _a !== void 0 ? _a : 0xffffff);
-            g.fillText(s.text, x0 + pw / 2, s.sub ? 58 : H / 2);
+            g.fillText(slideText, x0 + pw / 2, s.sub ? 58 : H / 2);
 
             // Subtitle
             if (s.sub) {
@@ -5929,7 +5939,18 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         return crowd;
     }
     function ledMaterials(bg, longLen, endLen, sportType) {
-        const slides = (sportType === 'hoops' ? ads_js_1.AD_CONFIG.hoopsSlides : ads_js_1.AD_CONFIG.footySlides) || ads_js_1.AD_CONFIG.slides;
+        const rawSlides = (sportType === 'hoops' ? ads_js_1.AD_CONFIG.hoopsSlides : ads_js_1.AD_CONFIG.footySlides) || ads_js_1.AD_CONFIG.slides;
+        const curLang = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) ||
+                        (typeof window !== 'undefined' && window.app && window.app.store && window.app.store.data && window.app.store.data.settings && window.app.store.data.settings.lang) ||
+                        'ru';
+        const isEnglish = curLang.startsWith('en');
+        const slides = rawSlides.map(function(s) {
+            let txt = s.text;
+            if (txt && (txt.includes('Здесь может быть') || txt.toUpperCase().includes('YOUR AD HERE'))) {
+                txt = isEnglish ? 'YOUR AD HERE' : 'ЗДЕСЬ МОЖЕТ БЫТЬ ТВОЯ РЕКЛАМА';
+            }
+            return Object.assign({}, s, { text: txt });
+        });
         // Pre-create textures for all rotated slides
         const textures = slides.map(function(s) {
             return new scene_js_1.Texture((0, textures_js_1.makeLedTexture)([s], bg), { repeat: true, mipmap: true, srgb: true });
@@ -6906,7 +6927,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CameraRig = exports.CLOSE_UP = void 0;
     const NDC_LIMIT = 0.9;
-    exports.CLOSE_UP = { footy: 0.95, hoops: 0.9 };
+    exports.CLOSE_UP = { footy: 0.88, hoops: 0.85 };
     class CameraRig {
         constructor(mode, aspect, halfW, halfL) {
             this.mode = mode;
@@ -6920,7 +6941,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.snap = true;
             this.zoom = 1;
             this.cam.fov = mode === 'footy' ? 38 : 40;
-            this.elev = ((mode === 'footy' ? 56 : 58) * Math.PI) / 180;
+            this.elev = ((mode === 'footy' ? 44 : 45) * Math.PI) / 180;
             this.fitHalfZ = mode === 'footy' ? 14 : 8.4;
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
@@ -6952,7 +6973,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             const dy = Math.sin(this.elev);
             const dz = Math.cos(this.elev);
             c.position = [tx, dy * d, tz + dz * d];
-            c.target = [tx, 0, tz];
+            c.target = [tx, 0.75, tz];
             c.update();
             for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
                 const p = (0, math_js_7.project)(c.viewProj, tx + sx * hx, 0, tz + sz * hz);
@@ -11751,7 +11772,15 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         setMode(mode, keys) {
             this.root.dataset.mode = mode;
             const steal = mode === 'hoops';
-            this.btnTackle.querySelector('.lbl').textContent = steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle');
+            const tackleLbl = this.btnTackle.querySelector('.lbl');
+            if (tackleLbl) tackleLbl.textContent = steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle');
+            const shootLbl = this.btnShoot.querySelector('.lbl');
+            if (shootLbl) shootLbl.textContent = (0, index_js_1.t)('hud.shoot');
+            const sprintLbl = this.btnSprint.querySelector('.lbl');
+            if (sprintLbl) sprintLbl.textContent = (0, index_js_1.t)('hud.sprint');
+            const stamSpan = this.staminaWrap.querySelector('span');
+            if (stamSpan) stamSpan.textContent = (0, index_js_1.t)('hud.stamina');
+            this.pauseBtn.setAttribute('aria-label', (0, index_js_1.t)('hud.pause'));
             this.youLbl.textContent = (0, index_js_1.t)('hud.you');
             this.cpuLbl.textContent = (0, index_js_1.t)('hud.cpu');
             this.hints.textContent = '';

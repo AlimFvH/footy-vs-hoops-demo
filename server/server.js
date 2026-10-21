@@ -2178,57 +2178,91 @@ const server = http.createServer((req, res) => {
     const qCategory = String(parsedUrl.query.category || 'season').toLowerCase();
     const qPlayerId = String(parsedUrl.query.playerId || '').trim();
 
-    // Thematic pool of simulated global athletes
-    const athletes = [
-      { id: 'ath_apex', name: 'ApexStriker', char: 'footy', club: 'Tokyo Cyber FC', wins: 48, goals: 112, baskets: 32, coins: 8400, xp: 2600, badge: 'PRO' },
-      { id: 'ath_dunk', name: 'DunkPhenom', char: 'hoops', club: 'Neon Heights', wins: 45, goals: 28, baskets: 148, coins: 7900, xp: 2450, badge: 'ALL-STAR' },
-      { id: 'ath_viper', name: 'ViperVolley', char: 'footy', club: 'Rio Electro', wins: 41, goals: 98, baskets: 24, coins: 6800, xp: 2200, badge: 'PRO' },
-      { id: 'ath_rim', name: 'RimCrusher_Pro', char: 'hoops', club: 'Brooklyn Alley', wins: 39, goals: 18, baskets: 136, coins: 6400, xp: 2100, badge: 'ELITE' },
-      { id: 'ath_golden', name: 'GoldenBoot_Alim', char: 'footy', club: 'Emirates Arena', wins: 36, goals: 86, baskets: 30, coins: 9200, xp: 1950, badge: 'CHAMP' },
-      { id: 'ath_orbital', name: 'OrbitalSniper', char: 'hoops', club: 'Apollo Lunar', wins: 34, goals: 22, baskets: 118, coins: 5900, xp: 1800, badge: 'ELITE' },
-      { id: 'ath_shadow', name: 'ShadowStriker', char: 'footy', club: 'Kyoto Ninjas', wins: 31, goals: 74, baskets: 16, coins: 5100, xp: 1650, badge: 'PRO' },
-      { id: 'ath_blaze', name: 'BlazeCrossover', char: 'hoops', club: 'Chicago Fire', wins: 29, goals: 14, baskets: 98, coins: 4800, xp: 1520, badge: 'PRO' },
-      { id: 'ath_frost', name: 'FrostKeeper', char: 'footy', club: 'Nordic Frost', wins: 26, goals: 62, baskets: 12, coins: 4300, xp: 1400, badge: 'VET' },
-      { id: 'ath_air', name: 'AirJordan_99', char: 'hoops', club: 'Skyline Stars', wins: 25, goals: 10, baskets: 88, coins: 4100, xp: 1320, badge: 'PRO' },
-      { id: 'ath_turbo', name: 'TurboWinger', char: 'footy', club: 'Monaco Speed', wins: 23, goals: 55, baskets: 18, coins: 3800, xp: 1210, badge: 'VET' },
-      { id: 'ath_swish', name: 'SwishMaster', char: 'hoops', club: 'L.A. Beach', wins: 21, goals: 8, baskets: 76, coins: 3500, xp: 1100, badge: 'PRO' },
-      { id: 'ath_cyber', name: 'CyberGoalie', char: 'footy', club: 'Neo Seoul', wins: 19, goals: 44, baskets: 14, coins: 3200, xp: 990, badge: 'VET' },
-      { id: 'ath_alley', name: 'AlleyOop_King', char: 'hoops', club: 'Miami Court', wins: 18, goals: 6, baskets: 64, coins: 3000, xp: 910, badge: 'PRO' },
-      { id: 'ath_striker', name: 'RedwoodStriker', char: 'footy', club: 'California Pines', wins: 16, goals: 38, baskets: 10, coins: 2700, xp: 820, badge: 'VET' },
-      { id: 'ath_dunk2', name: 'HalfCourtHero', char: 'hoops', club: 'Rooftop Hoops', wins: 14, goals: 4, baskets: 52, coins: 2400, xp: 740, badge: 'ROOKIE' },
-      { id: 'ath_magma', name: 'MagmaStriker', char: 'footy', club: 'Caldera FC', wins: 13, goals: 32, baskets: 8, coins: 2200, xp: 680, badge: 'ROOKIE' },
-      { id: 'ath_aether', name: 'AetheriaHoops', char: 'hoops', club: 'Sky High Club', wins: 11, goals: 2, baskets: 42, coins: 1900, xp: 590, badge: 'ROOKIE' },
-      { id: 'ath_crystal', name: 'CrystalDribbler', char: 'footy', club: 'Prism United', wins: 9, goals: 22, baskets: 6, coins: 1600, xp: 480, badge: 'ROOKIE' },
-      { id: 'ath_rookie', name: 'RookiePhenom', char: 'hoops', club: 'Street League', wins: 7, goals: 1, baskets: 28, coins: 1300, xp: 390, badge: 'ROOKIE' }
-    ];
-
-    // Merge in real registered players from state.players
+    // Authoritative pool of registered real players only
+    const athletes = [];
     Object.keys(state.players).forEach(pid => {
+      // Exclude automated mocha / unit test benchmark runners
+      if (pid.startsWith('test_') || pid.startsWith('e2e_') || pid.startsWith('scammer_') || pid.startsWith('host_') || pid.startsWith('guest_') || pid.startsWith('player_e2e_')) {
+        return;
+      }
       const p = state.players[pid];
       const pStats = p.stats || {};
-      const curChar = (p.equipped && p.equipped.skin && p.equipped.skin.includes('hoops')) ? 'hoops' : 'footy';
-      const existing = athletes.find(a => a.id === pid);
-      if (existing) {
-        existing.coins = p.coins || existing.coins;
-        existing.xp = p.xp || existing.xp;
-        existing.wins = pStats.wins || existing.wins;
-        existing.goals = pStats.goals || existing.goals;
-        existing.baskets = pStats.baskets || existing.baskets;
-      } else {
+      const hasName = Boolean(p.playerName || p.telegramUser);
+      const hasStats = Boolean(pStats.wins > 0 || pStats.goals > 0 || pStats.baskets > 0);
+      const isQueryUser = Boolean(qPlayerId && pid === qPlayerId);
+      if (!hasName && !hasStats && !isQueryUser) {
+        return;
+      }
+      const curChar = (p.equipped && p.equipped.skin && p.equipped.skin.includes('hoops')) 
+        ? 'hoops' 
+        : (p.selectedCharacter || 'footy');
+      
+      const displayName = p.playerName || (p.telegramUser && (p.telegramUser.first_name || p.telegramUser.username)) || ('Athlete ' + pid.slice(4, 8).toUpperCase());
+
+      athletes.push({
+        id: pid,
+        name: displayName,
+        char: curChar,
+        club: curChar === 'hoops' ? 'Hoops Squad' : 'Footy United',
+        wins: pStats.wins || 0,
+        goals: pStats.goals || 0,
+        baskets: pStats.baskets || 0,
+        winsByDiff: pStats.winsByDiff || { easy: 0, normal: 0, hard: 0 },
+        coins: p.coins || 0,
+        xp: p.xp || 0,
+        badge: (pStats.wins > 10 ? 'PRO' : (pStats.wins > 0 ? 'VET' : 'ACTIVE'))
+      });
+    });
+
+    // Ensure the querying player is included even before first sync
+    if (qPlayerId && !athletes.find(a => a.id === qPlayerId)) {
+      const p = state.players[qPlayerId];
+      if (p) {
         athletes.push({
-          id: pid,
-          name: p.playerName || ('Player ' + pid.slice(4, 9).toUpperCase()),
-          char: curChar,
-          club: 'FvH Global Club',
-          wins: pStats.wins || 0,
-          goals: pStats.goals || 0,
-          baskets: pStats.baskets || 0,
+          id: qPlayerId,
+          name: p.playerName || 'Athlete (You)',
+          char: (p.selectedCharacter || 'footy'),
+          club: (p.selectedCharacter === 'hoops' ? 'Hoops Squad' : 'Footy United'),
+          wins: (p.stats && p.stats.wins) || 0,
+          goals: (p.stats && p.stats.goals) || 0,
+          baskets: (p.stats && p.stats.baskets) || 0,
+          winsByDiff: (p.stats && p.stats.winsByDiff) || { easy: 0, normal: 0, hard: 0 },
           coins: p.coins || 0,
           xp: p.xp || 0,
           badge: 'ACTIVE'
         });
       }
-    });
+    }
+
+    // Seed the two authentic players if empty so the leaderboard is never blank
+    if (athletes.length === 0) {
+      athletes.push({
+        id: 'alim_footy',
+        name: 'Alim (Footy #10)',
+        char: 'footy',
+        club: 'Footy United',
+        wins: 6,
+        goals: 14,
+        baskets: 2,
+        winsByDiff: { easy: 2, normal: 3, hard: 1 },
+        coins: 1200,
+        xp: 450,
+        badge: 'CAPTAIN'
+      });
+      athletes.push({
+        id: 'brother_hoops',
+        name: 'Brother (Hoops #23)',
+        char: 'hoops',
+        club: 'Hoops Squad',
+        wins: 5,
+        goals: 3,
+        baskets: 18,
+        winsByDiff: { easy: 1, normal: 3, hard: 1 },
+        coins: 1100,
+        xp: 420,
+        badge: 'ALL-STAR'
+      });
+    }
 
     // Score Calculator with AI Difficulty weighting
     function computeScore(ath, cat) {
@@ -2268,18 +2302,22 @@ const server = http.createServer((req, res) => {
       ath.isCurrentUser = Boolean(qPlayerId && ath.id === qPlayerId);
     });
 
-    let footballTotal = 1485200;
-    let basketballTotal = 1428900;
+    let footballTotal = 0;
+    let basketballTotal = 0;
+    let footballAthletes = 0;
+    let basketballAthletes = 0;
     ranked.forEach(a => {
       if (a.char === 'hoops') {
-        basketballTotal += a.score;
+        basketballTotal += (a.score || 0);
+        basketballAthletes++;
       } else {
-        footballTotal += a.score;
+        footballTotal += (a.score || 0);
+        footballAthletes++;
       }
     });
     const totalWarScore = footballTotal + basketballTotal;
-    const footballPct = Math.round((footballTotal / totalWarScore) * 1000) / 10;
-    const basketballPct = Math.round((100 - footballPct) * 10) / 10;
+    const footballPct = totalWarScore > 0 ? Math.round((footballTotal / totalWarScore) * 1000) / 10 : 50;
+    const basketballPct = totalWarScore > 0 ? Math.round((100 - footballPct) * 10) / 10 : 50;
     const winningTeam = footballTotal >= basketballTotal ? 'footy' : 'hoops';
     const leadDiff = Math.abs(footballTotal - basketballTotal);
 
@@ -2307,18 +2345,18 @@ const server = http.createServer((req, res) => {
         name: 'Team Football',
         score: footballTotal,
         pct: footballPct,
-        athletes: 7240
+        athletes: footballAthletes
       },
       teamBasketball: {
         id: 'hoops',
         name: 'Team Basketball',
         score: basketballTotal,
         pct: basketballPct,
-        athletes: 7180
+        athletes: basketballAthletes
       },
       winningTeam: winningTeam,
       leadDiff: leadDiff,
-      totalAthletes: 14280 + Object.keys(state.players).length,
+      totalAthletes: ranked.length,
       top: ranked.slice(0, 50),
       player: playerRankInfo
     });
@@ -2390,6 +2428,24 @@ const server = http.createServer((req, res) => {
       }
       if (data.xp && typeof data.xp === 'number' && data.xp > player.xp) {
         player.xp = data.xp;
+      }
+      if (data.playerName && typeof data.playerName === 'string') {
+        player.playerName = data.playerName.trim().slice(0, 32);
+      }
+      if (data.stats && typeof data.stats === 'object') {
+        if (!player.stats) player.stats = {};
+        player.stats.wins = Math.max(player.stats.wins || 0, Number(data.stats.wins) || 0);
+        player.stats.goals = Math.max(player.stats.goals || 0, Number(data.stats.goals) || 0);
+        player.stats.baskets = Math.max(player.stats.baskets || 0, Number(data.stats.baskets) || 0);
+        if (data.stats.winsByDiff && typeof data.stats.winsByDiff === 'object') {
+          if (!player.stats.winsByDiff) player.stats.winsByDiff = { easy: 0, normal: 0, hard: 0 };
+          player.stats.winsByDiff.easy = Math.max(player.stats.winsByDiff.easy || 0, Number(data.stats.winsByDiff.easy) || 0);
+          player.stats.winsByDiff.normal = Math.max(player.stats.winsByDiff.normal || 0, Number(data.stats.winsByDiff.normal) || 0);
+          player.stats.winsByDiff.hard = Math.max(player.stats.winsByDiff.hard || 0, Number(data.stats.winsByDiff.hard) || 0);
+        }
+      }
+      if (data.selectedCharacter) {
+        player.selectedCharacter = data.selectedCharacter;
       }
       player.updatedAt = Date.now();
       persistState();
