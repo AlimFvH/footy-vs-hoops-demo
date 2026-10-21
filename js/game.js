@@ -4918,17 +4918,25 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const [c, g] = makeCanvas(Math.round(pw * PPM_F), Math.round(pd * PPM_F));
         const X = (x) => (x + pw / 2) * PPM_F;
         const Z = (z) => (z + pd / 2) * PPM_F;
-        const stripes = 14;
+        const stripes = 16;
         const sh = c.height / stripes;
+        // Alternating lush mower stripes with subtle gradient edge
         for (let i = 0; i < stripes; i++) {
-            g.fillStyle = hex(i % 2 ? t.pitchA : t.pitchB);
+            const col = hex(i % 2 ? t.pitchA : t.pitchB);
+            g.fillStyle = col;
             g.fillRect(0, i * sh, c.width, sh + 1);
+            // Subtle soft mower transition shadow
+            g.fillStyle = 'rgba(0,0,0,0.04)';
+            g.fillRect(0, i * sh, c.width, 2);
+            g.fillStyle = 'rgba(255,255,255,0.03)';
+            g.fillRect(0, (i + 1) * sh - 2, c.width, 2);
         }
-        for (let i = 0; i < 9000; i++) {
-            g.fillStyle = `rgba(0,0,0,${Math.random() * 0.05})`;
-            g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 5);
-            g.fillStyle = `rgba(255,255,255,${Math.random() * 0.035})`;
-            g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 4);
+        // Lush organic grass blade micro-texture
+        for (let i = 0; i < 12000; i++) {
+            const gx = Math.random() * c.width;
+            const gy = Math.random() * c.height;
+            g.fillStyle = i % 2 === 0 ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+            g.fillRect(gx, gy, 1.8, Math.random() * 5 + 2);
         }
         g.strokeStyle = hex(t.line);
         g.fillStyle = hex(t.line);
@@ -4991,13 +4999,26 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const planks = Math.round((2 * (W + basketball_js_1.BB.APRON)) / 0.28);
         const px0 = X(-W - basketball_js_1.BB.APRON);
         const pwid = (2 * (W + basketball_js_1.BB.APRON) * PPM_B) / planks;
+        const courtTopZ = Z(-L - basketball_js_1.BB.APRON);
+        const courtBotZ = Z(L + basketball_js_1.BB.APRON);
+        const courtLen = courtBotZ - courtTopZ;
+        // High-gloss parquet hardwood planks with staggered plank butt joints
         for (let i = 0; i < planks; i++) {
             g.fillStyle = hex(i % 2 ? t.woodA : t.woodB);
-            g.fillRect(px0 + i * pwid, Z(-L - basketball_js_1.BB.APRON), pwid + 1, (2 * (L + basketball_js_1.BB.APRON)) * PPM_B);
+            g.fillRect(px0 + i * pwid, courtTopZ, pwid + 1, courtLen);
+            // Staggered butt joints every ~1.6m
+            const shift = (i % 4) * 0.25;
+            for (let y = courtTopZ + shift * 1.6 * PPM_B; y < courtBotZ; y += 1.6 * PPM_B) {
+                g.fillStyle = 'rgba(0,0,0,0.14)';
+                g.fillRect(px0 + i * pwid, y, pwid + 1, 1.5);
+                g.fillStyle = 'rgba(255,255,255,0.06)';
+                g.fillRect(px0 + i * pwid, y + 1.5, pwid + 1, 1);
+            }
         }
-        for (let i = 0; i < 2500; i++) {
-            g.fillStyle = `rgba(0,0,0,${Math.random() * 0.07})`;
-            g.fillRect(px0 + Math.random() * planks * pwid, Z(-L - basketball_js_1.BB.APRON) + Math.random() * 2 * (L + basketball_js_1.BB.APRON) * PPM_B, 1.5, 24);
+        // Subtle wood grain noise
+        for (let i = 0; i < 3500; i++) {
+            g.fillStyle = `rgba(0,0,0,${Math.random() * 0.08})`;
+            g.fillRect(px0 + Math.random() * planks * pwid, courtTopZ + Math.random() * courtLen, 1.5, Math.random() * 20 + 8);
         }
         g.fillStyle = 'rgba(0,0,0,0.28)';
         const ox = X(-W);
@@ -5818,6 +5839,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return c;
     }
 });
+
 define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/scene", "data/ads", "sim/basketball", "sim/football", "render/textures"], function (require, exports, G, math_js_6, scene_js_1, ads_js_1, basketball_js_2, football_js_2, textures_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -7050,6 +7072,62 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
     exports.PLAYER_SCALE = 1.22;
     exports.FOOTY_GROW = 1.28;
     const lin = (c, k = 1) => (0, math_js_8.rgb)(c).map((v) => Math.min(1, v * k));
+
+    // Helper: Build crisp 3D squad numbers (#10 for Footy, #23 for Hoops, #1 for Keeper)
+    function build3DNumber(numStr, color, accentColor, fineList) {
+        const group = new scene_js_3.Node();
+        const numColor = lin(color);
+        const rimColor = accentColor ? lin(accentColor) : [1, 1, 1];
+        const segMat = (0, scene_js_3.material)({
+            color: numColor,
+            emissive: accentColor ? lin(accentColor, 0.35) : numColor.map(v => v * 0.25),
+            spec: 0.65,
+            shininess: 45,
+            castShadow: false
+        });
+        const bar = (w, h, x, y) => {
+            const n = new scene_js_3.Node(G.box(w, h, 0.022), segMat);
+            n.setPos(x, y, 0);
+            if (fineList) fineList.push(n);
+            group.add(n);
+        };
+        const drawDigit = (digit, ox) => {
+            const bw = 0.024; // stroke width
+            const dw = 0.072; // digit width
+            const dh = 0.160; // digit height
+            const hw = dw / 2;
+            const hh = dh / 2;
+            if (digit === '1') {
+                bar(bw * 1.1, dh, ox, 0); // main vertical stem
+                bar(bw * 0.9, bw * 1.2, ox - hw * 0.45, hh - bw * 0.6); // top serif notch
+                bar(dw * 0.8, bw * 0.8, ox, -hh + bw * 0.4); // bottom serif foot
+            } else if (digit === '0') {
+                bar(dw, bw, ox, hh - bw / 2); // top
+                bar(dw, bw, ox, -hh + bw / 2); // bottom
+                bar(bw, dh - bw * 2, ox - hw + bw / 2, 0); // left
+                bar(bw, dh - bw * 2, ox + hw - bw / 2, 0); // right
+            } else if (digit === '2') {
+                bar(dw, bw, ox, hh - bw / 2); // top
+                bar(bw, hh - bw, ox + hw - bw / 2, hh / 2); // top-right
+                bar(dw, bw, ox, 0); // mid
+                bar(bw, hh - bw, ox - hw + bw / 2, -hh / 2); // bot-left
+                bar(dw, bw, ox, -hh + bw / 2); // bottom
+            } else if (digit === '3') {
+                bar(dw, bw, ox, hh - bw / 2); // top
+                bar(dw, bw, ox, 0); // mid
+                bar(dw, bw, ox, -hh + bw / 2); // bottom
+                bar(bw, dh - bw * 2, ox + hw - bw / 2, 0); // right
+            }
+        };
+        if (numStr.length === 1) {
+            drawDigit(numStr[0], 0);
+        } else if (numStr.length === 2) {
+            drawDigit(numStr[0], -0.048);
+            drawDigit(numStr[1], 0.048);
+        }
+        return group;
+    }
+
     class Character {
         constructor(agent, skin, mode, scaleMul = 1, quality = 1) {
             var _a;
@@ -7188,11 +7266,16 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 const hoopCollar = mk(G.cylinder(0.125, 0.138, 0.05, 10), white, { fabric: true, fine: true });
                 this.torso.add(at(hoopCollar, 0, 0.37, 0));
 
-                // Front Collegiate Team Crest Badge for Basketball (No square box numbers)
+                // Front Collegiate Team Crest Badge for Basketball
                 const hoopsCrest = mk(G.cylinder(0.065, 0.065, 0.02, 6), 0xfb923c, { spec: 0.6, fine: true });
                 const hoopsStar = mk(G.box(0.045, 0.045, 0.025), white, { fine: true });
                 hoopsStar.rotation = [0, 0, Math.PI / 4];
                 this.torso.add(at(hoopsCrest, 0, 0.03, 0.205), at(hoopsStar, 0, 0.03, 0.21));
+
+                // 3D SQUAD NUMBER #23 ON JERSEY BACK (Visible in in-game matches!)
+                const num23Node = build3DNumber('23', trim, skin.secondary, this.fine);
+                num23Node.rotation = [0, Math.PI, 0];
+                this.torso.add(at(num23Node, 0, 0.05, -0.21));
             }
             else {
                 // Football: Ribbed V-neck collar, dynamic kit accents, and Golden Club Shield
@@ -7214,6 +7297,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
                 // Golden Club Crest on left chest
                 this.torso.add(at(mk(G.cylinder(0.045, 0.045, 0.02, 6), 0xf6c445, { spec: 0.6, fine: true }), 0.12, 0.16, 0.21));
+
+                // 3D SQUAD NUMBER #10 ON JERSEY BACK (Or #1 for Keeper)
+                const isKeeper = agent && agent.role === 'keeper';
+                const squadNum = isKeeper ? '1' : '10';
+                const numNode = build3DNumber(squadNum, trim, skin.secondary, this.fine);
+                numNode.rotation = [0, Math.PI, 0];
+                this.torso.add(at(numNode, 0, 0.05, -0.21));
             }
 
             // Defined Athletic Neck
@@ -7223,6 +7313,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             this.torso.add(at(mk(G.box(0.24, 0.055, 0.02), trim, { fine: true, fabric: true }), 0, 0.24, -0.195));
             this.torso.add(at(mk(G.box(0.05, 0.42, 0.02), skin.secondary, { fine: true, fabric: true }), 0, 0.02, -0.20));
 
+            // Custom pattern rendering for equipped skin styles
             if (skin.style !== 'plain') {
                 const band = (y, rz = 0) => {
                     const bd = mk(G.cylinder(0.265, 0.255, 0.11, 10), skin.secondary, { fabric: true });
@@ -7232,14 +7323,27 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     return bd;
                 };
                 if (skin.style === 'stripes') {
-                    const b1 = mk(G.box(0.1, 0.7, 0.4), skin.secondary, { fabric: true });
-                    b1.scale = [1, 0.95, 0.86];
-                    this.torso.add(b1);
+                    // Triple vertical pro racing stripes down chest
+                    for (const sx of [-0.09, 0, 0.09]) {
+                        const strp = mk(G.box(0.04, 0.68, 0.022), skin.secondary, { fabric: true });
+                        this.torso.add(at(strp, sx, 0, 0.202));
+                    }
                 }
-                else if (skin.style === 'hoops')
+                else if (skin.style === 'hoops') {
                     this.torso.add(band(0.1), band(-0.14));
-                else
+                }
+                else if (skin.style === 'sash') {
+                    // Bold diagonal athletic sash across torso
+                    const sashFront = mk(G.box(0.38, 0.08, 0.022), skin.secondary, { fabric: true });
+                    sashFront.rotation = [0, 0, -0.65];
+                    this.torso.add(at(sashFront, 0, 0.02, 0.204));
+                    const sashBack = mk(G.box(0.38, 0.08, 0.022), skin.secondary, { fabric: true });
+                    sashBack.rotation = [0, 0, 0.65];
+                    this.torso.add(at(sashBack, 0, 0.02, -0.204));
+                }
+                else {
                     this.torso.add(band(0.0, 0.55));
+                }
             }
             this.pivot.add(this.torso);
 
@@ -7404,7 +7508,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const yawRate = dt > 0 ? yawStep / dt : 0;
             this.root.rotation[1] = this.yaw;
             let lift = 0;
-            let lean = Math.min(0.36, speed * 0.048);
+            let lean = Math.min(0.38, speed * 0.052);
             let roll = 0;
             let kick = 0;
             let armUp = 0;
