@@ -5068,19 +5068,14 @@
         var card = document.createElement('div');
         var isClaimed = claimed.indexOf(task.id) !== -1;
         var st = socialState[task.id] || { status: 'available' };
+        var isTgTask = (task.id === 'q_sub_tg_news' || task.id === 'q_sub_tg_chat');
         var isVerifying = st.status === 'verifying';
+        var isPendingReview = st.status === 'pending_review';
         var isReady = st.status === 'ready' && !isClaimed;
 
-        // Auto-resolve verification if 8 seconds elapsed
-        if (isVerifying && st.startTime && Date.now() - st.startTime > 8000) {
-          st.status = 'ready';
-          app.store.update(function (d) {
-            if (!d.socialState) d.socialState = {};
-            d.socialState[task.id] = { status: 'ready' };
-          });
-          isVerifying = false;
-          isReady = true;
-        }
+        // NOTE: Auto-grant exploit timer (8s bypass) is strictly removed.
+        // Telegram tasks require server verification via Telegram Bot API.
+        // External social tasks require moderator verification (pending_review).
 
         card.className = 'fvh-mission-card' + (isReady ? ' ready' : '') + (isClaimed ? ' completed' : '');
 
@@ -5088,6 +5083,8 @@
           '<span style="color:#10b981;font-weight:700;">✓ ' + tr('completed') + '</span>' :
           isReady ?
           '<span style="color:#f59e0b;font-weight:700;">⚡ ' + tr('verifyClaimBtn') + '</span>' :
+          isPendingReview ?
+          '<span style="color:#f59e0b;font-weight:700;">⏳ ' + (lang === 'ru' ? 'На проверке (до 24ч)' : 'Under Review (24h)') + '</span>' :
           isVerifying ?
           '<span style="color:#38bdf8;font-weight:700;">⏳ ' + (lang === 'ru' ? 'Проверка...' : 'Verifying...') + '</span>' :
           '<span style="color:var(--text-muted);">' + (lang === 'ru' ? 'Доступно' : 'Available') + '</span>';
@@ -5131,30 +5128,18 @@
             syncAuthoritativeEconomy(app);
             renderSocialQuests();
           };
-        } else if (isVerifying) {
+        } else if (isPendingReview) {
           btn.className = 'btn small';
           btn.disabled = true;
-          btn.textContent = (lang === 'ru' ? '⏳ Проверка' : '⏳ Checking');
-          // Auto refresh after delay
-          setTimeout(function () {
-            renderSocialQuests();
-          }, 3500);
-        } else {
+          btn.textContent = (lang === 'ru' ? '⏳ На проверке' : '⏳ In Review');
+        } else if (isVerifying && isTgTask) {
           btn.className = 'btn small primary';
-          btn.textContent = task.actionText + ' ↗';
+          btn.textContent = (lang === 'ru' ? '🔄 Проверить' : '🔄 Verify');
           btn.onclick = function () {
-            window.open(task.url, '_blank');
             var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
-            var isTgTask = (task.id === 'q_sub_tg_news' || task.id === 'q_sub_tg_chat');
-
-            app.store.update(function (d) {
-              if (!d.socialState) d.socialState = {};
-              d.socialState[task.id] = { status: 'verifying', startTime: Date.now() };
-            });
-            app.audio.play('click');
-
-            if (isTgTask && tgUser && tgUser.id) {
-              showToast(lang === 'ru' ? 'Проверяем подписку в Telegram...' : 'Verifying Telegram subscription...');
+            if (tgUser && tgUser.id) {
+              btn.disabled = true;
+              btn.textContent = '...';
               fetch(getApiUrl('/api/social/verify-telegram'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -5169,15 +5154,66 @@
                     d.socialState[task.id] = { status: 'ready' };
                   });
                   showToast(lang === 'ru' ? '✓ Подписка подтверждена! Награда готова.' : '✓ Subscription verified! Reward ready.');
-                  renderSocialQuests();
                 } else {
-                  showToast(lang === 'ru' ? 'Пожалуйста, подпишитесь на канал/чат, чтобы забрать награду!' : 'Please subscribe to channel/chat to claim reward!');
+                  showToast(lang === 'ru' ? 'Подписка не обнаружена. Пожалуйста, подпишитесь!' : 'Subscription not found. Please join channel/chat!');
                 }
+                renderSocialQuests();
               }).catch(function () {
                 renderSocialQuests();
               });
             } else {
-              showToast(lang === 'ru' ? 'Канал открыт! Идёт верификация...' : 'Channel opened! Verification started...');
+              window.open(task.url, '_blank');
+            }
+          };
+        } else {
+          btn.className = 'btn small primary';
+          btn.textContent = task.actionText + ' ↗';
+          btn.onclick = function () {
+            window.open(task.url, '_blank');
+            var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+
+            if (isTgTask) {
+              app.store.update(function (d) {
+                if (!d.socialState) d.socialState = {};
+                d.socialState[task.id] = { status: 'verifying', startTime: Date.now() };
+              });
+              app.audio.play('click');
+
+              if (tgUser && tgUser.id) {
+                showToast(lang === 'ru' ? 'Проверяем подписку в Telegram...' : 'Verifying Telegram subscription...');
+                fetch(getApiUrl('/api/social/verify-telegram'), {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    telegramUserId: tgUser.id,
+                    target: (task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
+                  })
+                }).then(function (r) { return r.json(); }).then(function (res) {
+                  if (res && res.verified) {
+                    app.store.update(function (d) {
+                      if (!d.socialState) d.socialState = {};
+                      d.socialState[task.id] = { status: 'ready' };
+                    });
+                    showToast(lang === 'ru' ? '✓ Подписка подтверждена! Награда готова.' : '✓ Subscription verified! Reward ready.');
+                    renderSocialQuests();
+                  } else {
+                    showToast(lang === 'ru' ? 'Канал открыт! Нажмите «Проверить» после подписки.' : 'Channel opened! Tap "Verify" after joining.');
+                    renderSocialQuests();
+                  }
+                }).catch(function () {
+                  renderSocialQuests();
+                });
+              } else {
+                showToast(lang === 'ru' ? 'Канал открыт! Нажмите «Проверить» после подписки.' : 'Channel opened! Tap "Verify" after joining.');
+                renderSocialQuests();
+              }
+            } else {
+              app.store.update(function (d) {
+                if (!d.socialState) d.socialState = {};
+                d.socialState[task.id] = { status: 'pending_review', startTime: Date.now() };
+              });
+              app.audio.play('click');
+              showToast(lang === 'ru' ? 'Ссылка открыта! Заявка отправлена на модерацию (до 24ч).' : 'Link opened! Submitted for manual review (up to 24h).');
               renderSocialQuests();
             }
           };
@@ -5186,6 +5222,14 @@
         actBox.appendChild(btn);
         missionList.appendChild(card);
       });
+
+      // Honest verification disclosure notice
+      var noticeBox = document.createElement('div');
+      noticeBox.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-top:14px;font-size:11px;color:var(--text-muted);line-height:1.45;';
+      noticeBox.innerHTML = lang === 'ru'
+        ? '💡 <b>Правила верификации:</b> Задания в Telegram проверяются автоматически через Bot API и начисляются мгновенно. Задания в сторонних соцсетях (X, YouTube, Instagram, TikTok, WhatsApp) проверяются модератором в течение 24 часов.'
+        : '💡 <b>Verification Rules:</b> Telegram community tasks are verified automatically via the Bot API with instant payouts. External social platforms (X, YouTube, Instagram, TikTok, WhatsApp) are audited by moderators within 24 hours.';
+      missionList.appendChild(noticeBox);
 
       contentArea.appendChild(missionList);
     }
@@ -5238,7 +5282,6 @@
           '</div>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
           '<button class="btn small ref-share-btn">🚀 Telegram Share</button>' +
-          '<button class="btn small ref-simulate-btn" style="opacity:0.75;">🎮 +1 ' + (lang === 'ru' ? 'Тест-друг' : 'Test Friend') + '</button>' +
           '</div>' +
           '</div>' +
 
@@ -5291,38 +5334,6 @@
             var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(refLink) + '&text=' + encodeURIComponent('Play FOOTY vs HOOPS with me! Compete in fast-paced arcade matches and earn crypto rewards!');
             window.open(shareUrl, '_blank');
             app.audio.play('click');
-          };
-        }
-
-        // Bind Simulate Button (Tests backend qualify flow)
-        var simBtn = hubWrap.querySelector('.ref-simulate-btn');
-        if (simBtn) {
-          simBtn.onclick = function () {
-            simBtn.disabled = true;
-            simBtn.textContent = '...';
-            var demoFriendId = 'demo_friend_' + Math.floor(1000 + Math.random() * 9000);
-            fetch(getApiUrl('/api/referrals/register'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ friendId: demoFriendId, referralCode: refCode })
-            }).then(function () {
-              return fetch(getApiUrl('/api/referrals/qualify'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ friendId: demoFriendId })
-              });
-            }).then(function () {
-              app.audio.play('claim');
-              showToast(lang === 'ru' ? '🎉 Новый квалифицированный друг добавлен!' : '🎉 Qualified friend registered!');
-              loadStats();
-            }).catch(function (e) {
-              console.warn(e);
-              // Local fallback simulation
-              app.store.update(function (d) {
-                d.referralCount = (d.referralCount || 0) + 1;
-              });
-              loadStats();
-            });
           };
         }
 
@@ -10365,7 +10376,8 @@
         // Native Telegram BackButton
         if (tg.BackButton) {
           tg.BackButton.onClick(function () {
-            if (app.state !== 'menu') {
+            // Live match controls pause dialog via game engine; never exit directly from match state
+            if (app.state !== 'menu' && app.state !== 'match' && (!app.game || !app.game.running)) {
               app.showMenu();
             }
           });
@@ -10380,6 +10392,8 @@
         try {
           if (state === 'menu') {
             window.Telegram.WebApp.BackButton.hide();
+          } else if (state === 'match') {
+            // Live match controls its own Telegram BackButton via telegram.enterMatch
           } else {
             window.Telegram.WebApp.BackButton.show();
           }
@@ -10516,6 +10530,24 @@
 
     // Initial render or URL parameter
     var params = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : null;
+    var startParam = (params ? (params.get('tgWebAppStartParam') || params.get('startapp') || params.get('start_param')) : null);
+    if (!startParam && typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+      startParam = window.Telegram.WebApp.initDataUnsafe.start_param || null;
+    }
+
+    // Auto-register referral code from Telegram start_param
+    if (startParam && startParam.startsWith('ref_')) {
+      var refCodeFromParam = startParam.slice(4).trim();
+      var pid = getAppPlayerId(app);
+      if (refCodeFromParam && pid) {
+        fetch(getApiUrl('/api/referrals/register'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ friendId: pid, referralCode: refCodeFromParam })
+        }).catch(function () {});
+      }
+    }
+
     var targetPage = params ? params.get('page') : null;
     var targetChar = params ? params.get('char') : null;
     var targetSlot = params ? params.get('slot') : null;
@@ -10526,17 +10558,24 @@
 
     var privateroom = params ? params.get('privateroom') : null;
 
-    var targetLaunch = params ? params.get('launch') : null;
+    var targetLaunch = (params ? params.get('launch') : null) ||
+      (startParam === 'launch_footy' || startParam === 'footy' ? 'footy' : null) ||
+      (startParam === 'launch_hoops' || startParam === 'hoops' ? 'hoops' : null);
+
+    if (startParam && startParam.startsWith('room_')) {
+      privateroom = startParam.slice(5).trim();
+    }
 
     if (targetLaunch) {
       setTimeout(function () {
         app.launch({
           mode: targetLaunch,
+          char: targetLaunch,
           difficulty: 'normal',
           minutes: 2,
           boostId: null
         }, false);
-      }, 250);
+      }, 350);
     } else if (targetPage === 'characters') {
       app.show(buildCharactersPage(app, targetChar || 'footy', targetSlot), 'characters');
     } else if (targetPage === 'quests') {

@@ -7883,9 +7883,15 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
-            this.ballVisual = visualOf(eq[mode === 'footy' ? 'ball.footy' : 'ball.hoops'], mode === 'footy' ? 'ball_footy_classic' : 'ball_hoops_street');
+            const fallbackBall = (mode === 'footy') ? 'ball_footy_classic' : 'ball_hoops_street';
+            const ballSlot = (mode === 'footy') ? 'ball.footy' : 'ball.hoops';
+            let chosenBallId = eq[ballSlot] || (mode === 'footy' ? (eq.ball !== 'ball_hoops_street' ? eq.ball : null) : (eq.ball !== 'ball_footy_classic' ? eq.ball : null)) || fallbackBall;
+            this.ballVisual = visualOf(chosenBallId, fallbackBall);
+            if (!this.ballVisual.mode) {
+                this.ballVisual.mode = mode;
+            }
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            const r = sim.ball.r;
+            const r = (sim && sim.ball && typeof sim.ball.r === 'number' && sim.ball.r > 0) ? sim.ball.r : (mode === 'footy' ? 0.22 : 0.30);
             this.ball = new scene_js_5.Node(G.sphere(r, 20, 14), (0, scene_js_5.material)({ texture: bt, spec: 0.5, shininess: 40, castShadow: true, rim: 0.15, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.35) : [0, 0, 0] }));
             this.ballShadow = new scene_js_5.Node(G.plane(1, 1), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.ballGlow = new scene_js_5.Node(G.ring(r * 1.5, r * 2.3, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
@@ -8010,18 +8016,21 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 c.setLod(lowEnd || d > 52 ? 1 : 0);
             });
             const b = sim.ball;
-            this.ball.setPos(b.x, b.y, b.z);
-            this.ball.rotation[0] += (b.vz / b.r) * dt;
-            this.ball.rotation[2] -= (b.vx / b.r) * dt;
-            const h = Math.max(0, b.y - b.r);
-            const bs = (b.r * 3.2 + 0.3) * Math.max(0.35, 1 - h * 0.07);
-            this.ballShadow.setPos(b.x, 0.025, b.z);
-            this.ballShadow.setScale(bs);
-            this.ballShadow.material.alpha = Math.max(0.25, 0.9 - h * 0.08);
-            this.ballGlow.setPos(b.x, 0.04, b.z);
-            this.ballGlow.setScale(1 + 0.12 * Math.sin(this.time * 6));
-            const sp = Math.hypot(b.vx, b.vy, b.vz);
-            this.fx.ballTrail(b.x, b.y, b.z, sp);
+            if (b && typeof b.x === 'number' && !isNaN(b.x)) {
+                this.ball.setPos(b.x, b.y, b.z);
+                const br = (typeof b.r === 'number' && b.r > 0) ? b.r : (mode === 'footy' ? 0.22 : 0.30);
+                if (!isNaN(b.vz)) this.ball.rotation[0] += (b.vz / br) * dt;
+                if (!isNaN(b.vx)) this.ball.rotation[2] -= (b.vx / br) * dt;
+                const h = Math.max(0, b.y - br);
+                const bs = (br * 3.2 + 0.3) * Math.max(0.35, 1 - h * 0.07);
+                this.ballShadow.setPos(b.x, 0.025, b.z);
+                this.ballShadow.setScale(bs);
+                this.ballShadow.material.alpha = Math.max(0.25, 0.9 - h * 0.08);
+                this.ballGlow.setPos(b.x, 0.04, b.z);
+                this.ballGlow.setScale(1 + 0.12 * Math.sin(this.time * 6));
+                const sp = Math.hypot(b.vx || 0, b.vy || 0, b.vz || 0);
+                this.fx.ballTrail(b.x, b.y, b.z, sp);
+            }
             this.fx.update(dt);
             this.scene.time = this.time;
             this.scene.crowdWave = 0.04 + this.excite * 0.35;

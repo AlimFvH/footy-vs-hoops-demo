@@ -1179,27 +1179,32 @@ const server = http.createServer((req, res) => {
       if (role === 'host') relay.lastHostTick = Date.now();
       else relay.lastGuestTick = Date.now();
 
-      // Enqueue packet with preserved envelope
-      relay[targetRole].push({
-        packet: packet,
-        type: packet.k || packet.type,
-        data: packet.s || packet.i || packet.l || packet.data || packet,
-        timestamp: Date.now()
-      });
+      // Enqueue packets with preserved envelope (support batched HTTP packets)
+      const packets = Array.isArray(data.batch) && data.batch.length > 0 ? data.batch : [packet];
 
-      // Keep recent 30 packets in memory
-      if (relay[targetRole].length > 30) {
-        relay[targetRole].shift();
+      for (const pkt of packets) {
+        if (!pkt) continue;
+        relay[targetRole].push({
+          packet: pkt,
+          type: pkt.k || pkt.type,
+          data: pkt.s || pkt.i || pkt.l || pkt.data || pkt,
+          timestamp: Date.now()
+        });
+
+        // If peer is connected via native WebSocket relay, forward immediately
+        if (state.wsClients && state.wsClients[matchId] && state.wsClients[matchId][targetRole]) {
+          const peerWs = state.wsClients[matchId][targetRole];
+          if (peerWs && !peerWs.destroyed && peerWs.writable) {
+            try {
+              peerWs.write(makeWsTextFrame(JSON.stringify(pkt)));
+            } catch (e) {}
+          }
+        }
       }
 
-      // If peer is connected via native WebSocket relay, forward immediately
-      if (state.wsClients && state.wsClients[matchId] && state.wsClients[matchId][targetRole]) {
-        const peerWs = state.wsClients[matchId][targetRole];
-        if (peerWs && !peerWs.destroyed && peerWs.writable) {
-          try {
-            peerWs.write(makeWsTextFrame(JSON.stringify(packet)));
-          } catch (e) {}
-        }
+      // Keep recent 40 packets in memory
+      while (relay[targetRole].length > 40) {
+        relay[targetRole].shift();
       }
 
       return sendJson(res, 200, { ok: true, success: true });
