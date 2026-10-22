@@ -2232,7 +2232,8 @@ const server = http.createServer((req, res) => {
         baskets: pStats.baskets || 0,
         winsByDiff: pStats.winsByDiff || { easy: 0, normal: 0, hard: 0 },
         coins: p.coins || 0,
-        xp: p.xp || 0
+        xp: p.xp || 0,
+        photoUrl: p.photoUrl || (p.telegramUser && (p.telegramUser.photo_url || p.telegramUser.photoUrl)) || null
       });
     });
 
@@ -2258,7 +2259,8 @@ const server = http.createServer((req, res) => {
           baskets: pStats.baskets || 0,
           winsByDiff: pStats.winsByDiff || { easy: 0, normal: 0, hard: 0 },
           coins: p.coins || 0,
-          xp: p.xp || 0
+          xp: p.xp || 0,
+          photoUrl: p.photoUrl || (p.telegramUser && (p.telegramUser.photo_url || p.telegramUser.photoUrl)) || null
         });
       }
     }
@@ -2277,7 +2279,8 @@ const server = http.createServer((req, res) => {
         baskets: 2,
         winsByDiff: { easy: 2, normal: 3, hard: 1 },
         coins: 1200,
-        xp: 450
+        xp: 450,
+        photoUrl: 'assets/hero_footy_cartoon.png'
       });
     }
     if (!athletes.find(a => a.id === 'brother_hoops' || a.name.includes('Brother'))) {
@@ -2293,7 +2296,8 @@ const server = http.createServer((req, res) => {
         baskets: 18,
         winsByDiff: { easy: 1, normal: 3, hard: 1 },
         coins: 1100,
-        xp: 420
+        xp: 420,
+        photoUrl: 'assets/hero_hoops_cartoon.png'
       });
     }
 
@@ -2538,6 +2542,15 @@ const server = http.createServer((req, res) => {
       }
       if (data.selectedCharacter) {
         player.selectedCharacter = data.selectedCharacter;
+      }
+      if (data.photoUrl && typeof data.photoUrl === 'string') {
+        player.photoUrl = data.photoUrl.trim().slice(0, 500);
+      }
+      if (data.telegramUser && typeof data.telegramUser === 'object') {
+        player.telegramUser = Object.assign(player.telegramUser || {}, data.telegramUser);
+        if (data.telegramUser.photo_url || data.telegramUser.photoUrl) {
+          player.photoUrl = (data.telegramUser.photo_url || data.telegramUser.photoUrl).trim().slice(0, 500);
+        }
       }
       player.updatedAt = Date.now();
       persistState();

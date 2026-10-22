@@ -6006,3 +6006,218 @@ html, body {
     justify-content: center !important;
   }
 }
+
+/* ==========================================================================
+   FINAL RELEASE UI POLISH & AVATAR / ALIGNMENT REPAIRS
+   ========================================================================== */
+
+/* Universal Tactile Button Micro-Interactions */
+button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
+  transform: scale(0.96) !important;
+  filter: brightness(1.15) !important;
+  transition: transform 0.08s ease, filter 0.08s ease !important;
+}
+
+/* Avatar Images (Profile, Podium, Leaderboard Rows, Topbar) */
+.fvh-avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 15% !important;
+  border-radius: 50% !important;
+  display: block !important;
+}
+
+.fvh-topbar-avatar-mini {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 240, 255, 0.5);
+}
+
+.fvh-topbar-avatar-mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  display: block;
+}
+
+/* Screenshot 1 Fix: Boosts Grid & Card Alignment */
+.fvh-boost-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+  min-height: 250px !important;
+  box-sizing: border-box !important;
+}
+
+.fvh-boost-card .nm {
+  min-height: 38px !important;
+  max-height: 38px !important;
+  line-height: 1.25 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin-top: 4px !important;
+}
+
+.fvh-boost-card .fvh-boost-effect-desc {
+  min-height: 34px !important;
+  font-size: 11px !important;
+  line-height: 1.3 !important;
+  color: var(--text-muted) !important;
+  margin: 4px 0 10px !important;
+  flex-grow: 1 !important;
+}
+
+.fvh-boost-card .btn {
+  margin-top: auto !important;
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 800 !important;
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+}
+
+/* Screenshot 2 Fix: Floating Badge Elimination */
+.fvh-packs-count-pill {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(0, 240, 255, 0.18) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(0, 240, 255, 0.4) !important;
+}
+
+/* Screenshot 3 Fix: Podium Padding & Avatar Fit */
+.fvh-podium-wrap {
+  padding-top: 32px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.fvh-podium-avatar-box {
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.fvh-podium-col.p1 .fvh-podium-avatar-box {
+  width: 76px !important;
+  height: 76px !important;
+}
+
+.fvh-podium-avatar-box img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 15% !important;
+  border-radius: 50% !important;
+  display: block !important;
+}
+
+.fvh-lb-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.fvh-lb-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 15% !important;
+  border-radius: 50% !important;
+  display: block !important;
+}
+
+.fvh-lb-sticky-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.fvh-lb-sticky-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 15% !important;
+  border-radius: 50% !important;
+  display: block !important;
+}
+
+/* Screenshot 4 Fix: Custom Arena Preview in Banner */
+.fvh-mode-arena-thumb-preview {
+  width: 52px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  border: 1.5px solid rgba(0, 240, 255, 0.45) !important;
+  background: #020617 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25) !important;
+}
+
+.fvh-mode-arena-thumb-preview svg {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Topbar Mobile Hardening (<360px) */
+@media (max-width: 360px) {
+  .fvh-topbar-brand .logo-text {
+    display: none !important;
+  }
+  .fvh-topbar-brand {
+    margin-right: 4px !important;
+  }
+  .fvh-topbar {
+    padding: 6px 8px !important;
+    overflow: visible !important;
+  }
+  .fvh-topbar-stats {
+    gap: 3px !important;
+  }
+  .fvh-btn-topbar-profile {
+    max-width: 80px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}

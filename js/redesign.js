@@ -88,7 +88,7 @@
       settings: 'SETTINGS',
       rivalryTitle: '$FOOTY vs $HOOPS Rivalry',
       rivalryFormula: '40% Volume · 40% Market Cap · 20% Holders',
-      rivalryDemoNote: 'DEMO FEED · Live on-chain oracle syncing in production',
+      rivalryDemoNote: '🔴 LIVE COMPETITION · Matches scored by athletes in real time directly shape the team balance',
       rivalryTickerSub: 'Rivalry 40/40/20',
       bpSeason: 'Season 1: Kickoff Clash',
       bpTier: 'Level {lvl} / 30',
@@ -585,7 +585,7 @@
       settings: 'ОПЦИИ',
       rivalryTitle: 'Соперничество $FOOTY vs $HOOPS',
       rivalryFormula: '40% Объём · 40% Капитализация · 20% Холдеры',
-      rivalryDemoNote: 'ДЕМО ДАННЫЕ · Живой ончейн-фид в разработке',
+      rivalryDemoNote: '🔴 СЕЗОН 1 В ПРЯМОМ ЭФИРЕ · Результаты матчей игроков в реальном времени влияют на баланс сил команд',
       rivalryTickerSub: 'Соперничество 40/40/20',
       bpSeason: 'Сезон 1: Стартовый свисток',
       bpTier: 'Уровень {lvl} / 30',
@@ -1244,6 +1244,47 @@
   }
 
 
+
+  // ==========================================
+  // Tactical Haptic Feedback & Unified Avatars
+  // ==========================================
+
+  function triggerHaptic(type) {
+    try {
+      if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+        if (type === 'success') {
+          window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        } else if (type === 'error') {
+          window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+        } else if (type === 'heavy') {
+          window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+        } else if (type === 'medium') {
+          window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        } else {
+          window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Centralized High-Quality Sports Avatar Renderer
+  // Handles: Telegram user profile picture -> Authoritative sync photoUrl -> 3D Cartoon Hero fallback
+  function getPlayerAvatarHtml(opts) {
+    opts = opts || {};
+    var char = opts.character || opts.char || 'footy';
+    var isHoops = (char === 'hoops');
+    var fallbackImg = isHoops ? 'assets/hero_hoops_cartoon.png' : 'assets/hero_footy_cartoon.png';
+    var photo = opts.photoUrl || opts.photo_url || null;
+    var extraClass = opts.extraClass ? (' ' + opts.extraClass) : '';
+    var alt = escapeHtml(opts.alt || opts.name || char);
+
+    if (photo && typeof photo === 'string' && photo.trim()) {
+      var safePhoto = escapeHtml(photo.trim());
+      return '<img src="' + safePhoto + '" class="fvh-avatar-img' + extraClass + '" alt="' + alt + '" onerror="this.onerror=null;this.src=\'' + fallbackImg + '\';" />';
+    }
+    return '<img src="' + fallbackImg + '" class="fvh-avatar-img' + extraClass + '" alt="' + alt + '" />';
+  }
+  window.getPlayerAvatarHtml = getPlayerAvatarHtml;
 
   // ==========================================
   // High-Fidelity Cyber-Sports Character Avatars
@@ -3396,6 +3437,8 @@
       equipped: d.equipped || {},
       coins: d.coins || 0,
       xp: d.xp || 0,
+      photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl) || null,
+      telegramUser: d.telegramUser || null,
       isPremium: Boolean(d.battlePass && d.battlePass.isPremium)
     }).then(function (res) {
       if (res && res.ok) {
@@ -4098,7 +4141,9 @@
         freeCard.className = 'fvh-bp-level-card fvh-bp-card-free' +
           (isLevelReached ? ' unlocked' : '') +
           (isFreeClaimed ? ' claimed' : '');
-        freeCard.style.minHeight = '180px';
+        freeCard.style.height = '210px';
+        freeCard.style.minHeight = '210px';
+        freeCard.style.maxHeight = '210px';
         freeCard.style.display = 'flex';
         freeCard.style.flexDirection = 'column';
         freeCard.style.justifyContent = 'space-between';
@@ -4119,6 +4164,13 @@
         var freeActionBtn = document.createElement('button');
         freeActionBtn.style.marginTop = 'auto';
         freeActionBtn.style.width = '100%';
+        freeActionBtn.style.height = '36px';
+        freeActionBtn.style.minHeight = '36px';
+        freeActionBtn.style.maxHeight = '36px';
+        freeActionBtn.style.display = 'flex';
+        freeActionBtn.style.alignItems = 'center';
+        freeActionBtn.style.justifyContent = 'center';
+        freeActionBtn.style.boxSizing = 'border-box';
         freeActionBtn.style.flexShrink = '0';
         if (isFreeClaimed) {
           freeActionBtn.className = 'btn small';
@@ -4148,7 +4200,9 @@
         vipCard.className = 'fvh-bp-level-card fvh-bp-card-vip' +
           (isVipAvailable ? ' unlocked' : '') +
           (isVipClaimed ? ' claimed' : '');
-        vipCard.style.minHeight = '180px';
+        vipCard.style.height = '210px';
+        vipCard.style.minHeight = '210px';
+        vipCard.style.maxHeight = '210px';
         vipCard.style.display = 'flex';
         vipCard.style.flexDirection = 'column';
         vipCard.style.justifyContent = 'space-between';
@@ -4175,6 +4229,13 @@
         var vipActionBtn = document.createElement('button');
         vipActionBtn.style.marginTop = 'auto';
         vipActionBtn.style.width = '100%';
+        vipActionBtn.style.height = '36px';
+        vipActionBtn.style.minHeight = '36px';
+        vipActionBtn.style.maxHeight = '36px';
+        vipActionBtn.style.display = 'flex';
+        vipActionBtn.style.alignItems = 'center';
+        vipActionBtn.style.justifyContent = 'center';
+        vipActionBtn.style.boxSizing = 'border-box';
         vipActionBtn.style.flexShrink = '0';
         if (!bpState.isPremium) {
           vipActionBtn.className = 'btn small';
@@ -5726,12 +5787,7 @@
       '<div class="fvh-shop-allegiance-badge">' + (isFooty ? tr('onlyForFootball') : tr('onlyForBasketball')) + '</div>';
     body.appendChild(allegianceBanner);
 
-    // 1. Featured Item Hero Spotlight
-    var featuredHero = document.createElement('div');
-    featuredHero.className = 'fvh-featured-hero';
-    body.appendChild(featuredHero);
-
-    // 2. Category Selector Tabs (Added Bundles Category)
+    // 1. Category Selector Tabs (Added Bundles Category)
     var catSeg = document.createElement('div');
     catSeg.className = 'seg fvh-shop-categories';
     catSeg.style.marginBottom = '16px';
@@ -6481,129 +6537,6 @@
     function renderShop() {
       updateWalletUI();
 
-      // Featured Hero Item (Featured Drop of the Day) - Discipline-specific
-      var featuredItem = isFooty ? {
-        id: 'skin_neon_elite',
-        name: 'CYBER STRIKER KIT',
-        category: 'skins',
-        rarity: 'legendary',
-        icon: '🎽',
-        price: 650,
-        desc: (getActiveLang() === 'ru') ?
-          'Эксклюзивная легендарная форма футбольного нападающего с неоновой подсветкой для побед Команды Футбола.' :
-          'Exclusive high-voltage neon soccer kit with responsive reactive lighting for Team Football victories.'
-      } : {
-        id: 'skin_astronaut',
-        name: 'CYBER ALL-STAR KIT',
-        category: 'skins',
-        rarity: 'legendary',
-        icon: '🎽',
-        price: 650,
-        desc: (getActiveLang() === 'ru') ?
-          'Эксклюзивная легендарная форма баскетбольного форварда с реактивной подсветкой для побед Команды Баскетбола.' :
-          'Exclusive high-voltage neon basketball kit with responsive reactive lighting for Team Basketball victories.'
-      };
-
-      var owned = app.store.data.owned || [];
-      var isFeatOwned = owned.indexOf(featuredItem.id) !== -1;
-      var localizedFeatRarity = tr('rarity_legendary');
-
-      featuredHero.innerHTML =
-        '<div class="fvh-featured-glow"></div>' +
-        '<div class="fvh-featured-badge">⚡ ' + tr('featuredTitle') + '</div>' +
-        '<div class="fvh-featured-content">' +
-        '<div class="fvh-featured-preview">' +
-        renderItemArtwork(featuredItem, 'large') +
-        '<span class="rar legendary" style="margin-top:6px;">' + localizedFeatRarity + '</span>' +
-        '</div>' +
-        '<div class="fvh-featured-details">' +
-        '<h2 class="fvh-featured-name">' + featuredItem.name + '</h2>' +
-        '<p class="fvh-featured-desc">' + featuredItem.desc + '</p>' +
-        (function() {
-          var eq = app.store.data.equipped || {};
-          var activeCharSkin = isFooty ? (eq['skin.footy'] || eq.skin) : (eq['skin.hoops'] || eq.skin);
-          var isEquipped = (activeCharSkin === featuredItem.id);
-          var actionBtnHtml = '';
-          if (isEquipped) {
-            actionBtnHtml = '<button class="btn small feat-equip-btn" style="background:rgba(16,185,129,0.18);border:1px solid #10b981;color:#10b981;" disabled>✓ ' + tr('equipped') + '</button>';
-          } else if (isFeatOwned) {
-            actionBtnHtml = '<button class="btn small primary feat-equip-btn">👕 ' + tr('equip') + '</button>';
-          } else {
-            actionBtnHtml = '<button class="btn primary small feat-buy-btn">' + tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + featuredItem.price + '</button>';
-          }
-          return '<div class="fvh-featured-actions">' +
-            actionBtnHtml +
-            '<button class="btn small feat-inspect-btn">🔍 ' + tr('inspect') + '</button>' +
-            '</div>';
-        })() +
-        '</div>' +
-        '</div>';
-
-      var buyFeat = featuredHero.querySelector('.feat-buy-btn');
-      if (buyFeat) {
-        buyFeat.onclick = function () {
-          if (isPurchasing) return;
-          var coins = app.store.data.coins || 0;
-          if (coins < featuredItem.price) {
-            app.audio.play('error');
-            showToast(tr('notEnoughCoins'));
-            return;
-          }
-          isPurchasing = true;
-          var pid = getAppPlayerId(app);
-          safeEconomyApi('/api/economy/purchase', {
-            playerId: pid,
-            itemId: featuredItem.id,
-            idempotencyKey: 'feat_' + pid + '_' + featuredItem.id + '_' + Date.now()
-          }).then(function (res) {
-            isPurchasing = false;
-            if (res && res.ok) {
-              app.store.update(function (d) {
-                d.coins = res.coins;
-                d.xp = res.xp;
-                d.owned = res.owned;
-                d.packs = res.packs;
-              });
-            } else {
-              app.store.update(function (d) {
-                d.coins -= featuredItem.price;
-                if (!d.owned) d.owned = [];
-                if (d.owned.indexOf(featuredItem.id) === -1) {
-                  d.owned.push(featuredItem.id);
-                }
-              });
-            }
-            app.audio.play('claim');
-            showToast(tr('purchaseSuccess') + ' (' + featuredItem.name + ')');
-            renderShop();
-          });
-        };
-      }
-
-      var equipFeat = featuredHero.querySelector('.feat-equip-btn:not([disabled])');
-      if (equipFeat) {
-        equipFeat.onclick = function () {
-          app.store.update(function (d) {
-            if (!d.equipped) d.equipped = {};
-            if (isFooty) {
-              d.equipped['skin.footy'] = featuredItem.id;
-            } else {
-              d.equipped['skin.hoops'] = featuredItem.id;
-            }
-            d.equipped.skin = featuredItem.id;
-          });
-          app.audio.play('claim');
-          showToast(tr('equipped') + ': ' + featuredItem.name);
-          renderShop();
-        };
-      }
-      var inspFeat = featuredHero.querySelector('.feat-inspect-btn');
-      if (inspFeat) {
-        inspFeat.onclick = function () {
-          openItemInspector(featuredItem);
-        };
-      }
-
       // Render Catalogue Items
       catalogueGrid.innerHTML = '';
 
@@ -7010,7 +6943,7 @@
     var crownHtml = place === 1 ? '<div class="fvh-podium-crown">👑</div>' : '';
     var medalEmoji = place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉';
     var isHoops = (ath.char === 'hoops');
-    var avatarSvg = isHoops ? getHoopsAvatarSvg() : getFootyAvatarSvg();
+    var avatarHtml = getPlayerAvatarHtml({ photoUrl: ath.photoUrl, character: ath.char, extraClass: 'podium-avatar', alt: ath.name });
     var teamTag = isHoops ?
       '<span class="fvh-podium-team-tag hoops">🏀 ' + tr('hoopsChar') + '</span>' :
       '<span class="fvh-podium-team-tag footy">⚽ ' + tr('footyChar') + '</span>';
@@ -7022,7 +6955,7 @@
 
     return '<div class="fvh-podium-col ' + pClass + (isHoops ? ' is-hoops' : ' is-footy') + '">' +
       crownHtml +
-      '<div class="fvh-podium-avatar-box ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' + avatarSvg + '</div>' +
+      '<div class="fvh-podium-avatar-box ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' + avatarHtml + '</div>' +
       '<div class="fvh-podium-name" title="' + escapeHtml(ath.name) + '">' + escapeHtml(ath.name) + '</div>' +
       teamTag +
       '<div class="fvh-podium-tier-pill" style="color:' + tier.color + ';border-color:' + tier.color + '60;">' + tier.badge + '</div>' +
@@ -7093,6 +7026,7 @@
     var myTotalM = myWins + myLosses;
     var myWinRate = myTotalM > 0 ? Math.round((myWins / myTotalM) * 100) : 86;
 
+    var myPhoto = (myData.telegramUser && (myData.telegramUser.photo_url || myData.telegramUser.photoUrl)) || myData.photoUrl || null;
     var myEntry = {
       id: 'me',
       name: myName,
@@ -7106,6 +7040,7 @@
       winsByDiff: { easy: 2, normal: 3, hard: 1 },
       coins: myCoins || 1200,
       xp: myXp || 450,
+      photoUrl: myPhoto,
       isCurrentUser: true
     };
     athletes.push(myEntry);
@@ -7124,6 +7059,7 @@
       winsByDiff: { easy: 2, normal: 2, hard: 1 },
       coins: 1100,
       xp: 420,
+      photoUrl: 'assets/hero_hoops_cartoon.png',
       isCurrentUser: false
     });
 
@@ -7141,6 +7077,7 @@
         winsByDiff: { easy: 2, normal: 3, hard: 1 },
         coins: 1200,
         xp: 450,
+        photoUrl: 'assets/hero_footy_cartoon.png',
         isCurrentUser: false
       });
     }
@@ -7422,7 +7359,7 @@
         row.innerHTML =
           '<div class="fvh-lb-rank">#' + ath.rank + '</div>' +
           '<div class="fvh-lb-avatar ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' +
-          (isHoops ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
+          getPlayerAvatarHtml({ photoUrl: ath.photoUrl, character: ath.char, extraClass: 'row-avatar', alt: ath.name }) +
           '</div>' +
           '<div class="fvh-lb-info">' +
           '  <div class="fvh-lb-name">' +
@@ -7468,7 +7405,7 @@
       sticky.innerHTML =
         '<div class="fvh-lb-sticky-rank">#' + data.player.rank + '</div>' +
         '<div class="fvh-lb-sticky-avatar ' + (myChar === 'hoops' ? 'hoops-halo' : 'footy-halo') + '">' +
-        (myChar === 'hoops' ? getHoopsAvatarSvg() : getFootyAvatarSvg()) +
+        getPlayerAvatarHtml({ photoUrl: (data.player && data.player.photoUrl) || (app.store && app.store.data && app.store.data.photoUrl), character: myChar, extraClass: 'docked-avatar' }) +
         '</div>' +
         '<div class="fvh-lb-sticky-info">' +
         '  <div class="fvh-lb-sticky-title">' +
@@ -7581,17 +7518,33 @@
     var wH = Math.max(0, Number(s.winsHoops !== undefined ? s.winsHoops : wByMode.hoops) || 0);
     var wC = Math.max(0, Number(s.winsClash !== undefined ? s.winsClash : wByMode.clash) || 0);
 
+    // Reconcile legacy clash matches into dual Football vs Basketball disciplines
+    if (mC > 0) {
+      if (char === 'hoops') {
+        mH += mC;
+      } else {
+        mF += mC;
+      }
+      mC = 0;
+    }
+    if (wC > 0) {
+      if (char === 'hoops') {
+        wH += wC;
+      } else {
+        wF += wC;
+      }
+      wC = 0;
+    }
+
     mF = Math.max(mF, wF);
     mH = Math.max(mH, wH);
-    mC = Math.max(mC, wC);
 
-    var sumModes = mF + mH + mC;
+    var sumModes = mF + mH;
     if (sumModes !== totalCompleted) {
       if (sumModes === 0 && totalCompleted > 0) {
-        if (wF > 0 || wH > 0 || wC > 0) {
+        if (wF > 0 || wH > 0) {
           mF = wF;
           mH = wH;
-          mC = wC;
         } else if (char === 'hoops') {
           mH = totalCompleted;
           wH = wins;
@@ -7599,7 +7552,7 @@
           mF = totalCompleted;
           wF = wins;
         }
-        sumModes = mF + mH + mC;
+        sumModes = mF + mH;
       }
       if (sumModes < totalCompleted) {
         if (char === 'hoops') {
@@ -7612,7 +7565,7 @@
       }
     }
 
-    var sumWins = wF + wH + wC;
+    var sumWins = wF + wH;
     if (sumWins < wins) {
       var diffW = wins - sumWins;
       if (char === 'hoops') {
@@ -7622,15 +7575,14 @@
         wF += diffW;
         mF = Math.max(mF, wF);
       }
-      totalCompleted = Math.max(totalCompleted, mF + mH + mC);
+      totalCompleted = Math.max(totalCompleted, mF + mH);
     }
 
     var winRate = totalCompleted > 0 ? Math.round((wins / totalCompleted) * 100) : 0;
 
-    var sumM = Math.max(1, mF + mH + mC);
-    var pctF = totalCompleted > 0 ? Math.round((mF / sumM) * 100) : 0;
-    var pctH = totalCompleted > 0 ? Math.round((mH / sumM) * 100) : 0;
-    var pctC = totalCompleted > 0 ? Math.max(0, 100 - pctF - pctH) : 0;
+    var sumM = Math.max(1, mF + mH);
+    var pctF = totalCompleted > 0 ? Math.round((mF / sumM) * 100) : 50;
+    var pctH = 100 - pctF;
 
     return {
       matches: totalCompleted,
@@ -7641,13 +7593,13 @@
       winRate: winRate,
       matchesFooty: mF,
       matchesHoops: mH,
-      matchesClash: mC,
+      matchesClash: 0,
       winsFooty: wF,
       winsHoops: wH,
-      winsClash: wC,
+      winsClash: 0,
       pctFooty: pctF,
       pctHoops: pctH,
-      pctClash: pctC,
+      pctClash: 0,
       goals: Math.max(0, Number(s.goals) || 0),
       baskets: Math.max(0, Number(s.baskets !== undefined ? s.baskets : s.points) || 0)
     };
@@ -7735,10 +7687,7 @@
     idCard.innerHTML =
       '<div class="fvh-profile-avatar-wrap">' +
       '  <div class="fvh-profile-avatar-thumb" style="overflow:hidden;border-radius:50%;">' +
-           (function() {
-         var heroImgSrc = getRecoloredHeroUrl(curChar, app.store.data.equipped && (app.store.data.equipped['skin.' + curChar] || app.store.data.equipped.skin));
-         return '<img src="' + heroImgSrc + '" class="fvh-profile-hero-avatar-img" alt="' + curChar + '" onerror="this.onerror=null;this.src=\'' + (curChar === 'footy' ? 'assets/hero_footy_cartoon.png' : 'assets/hero_hoops_cartoon.png') + '\';" />';
-       })() +
+           getPlayerAvatarHtml({ photoUrl: userPhotoUrl, character: curChar, extraClass: 'profile-avatar' }) +
       '  </div>' +
       '  <div class="fvh-profile-lvl-badge">LVL ' + bpState.level + '</div>' +
       '</div>' +
@@ -7806,7 +7755,7 @@
       };
     }
 
-    // 2. Career Records & Tri-Color Win Rate
+    // 2. Career Records & Dual-Sport Football vs Basketball Win Rate
     var statsCard = document.createElement('div');
     statsCard.className = 'fvh-card-panel';
     statsCard.innerHTML =
@@ -7818,15 +7767,13 @@
       '<div class="fvh-kpi-item rate"><small>' + tr('winRate') + '</small><b>' + winPct + '%</b></div>' +
       '</div>' +
       '<div style="margin-top:14px;">' +
-      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;">' +
-      '<span>⚽ ' + tr('football') + ' (' + wF + ')</span>' +
-      '<span>🏀 ' + tr('basketball') + ' (' + wH + ')</span>' +
-      '<span>⚡ Clash (' + wC + ')</span>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:800;">' +
+      '<span style="color:#38bdf8;">⚽ ' + tr('football') + ' (' + wF + ')</span>' +
+      '<span style="color:#fb923c;">🏀 ' + tr('basketball') + ' (' + wH + ')</span>' +
       '</div>' +
-      '<div class="fvh-tri-bar">' +
-      '<div class="fvh-tri-footy" style="width:' + pctF + '%;" title="' + tr('football') + ': ' + pctF + '%"></div>' +
-      '<div class="fvh-tri-hoops" style="width:' + pctH + '%;" title="' + tr('basketball') + ': ' + pctH + '%"></div>' +
-      '<div class="fvh-tri-clash" style="width:' + pctC + '%;" title="Clash: ' + pctC + '%"></div>' +
+      '<div class="fvh-dual-bar" style="height:10px;border-radius:6px;overflow:hidden;background:#0f172a;display:flex;border:1px solid rgba(255,255,255,0.1);">' +
+      '<div class="fvh-dual-footy" style="width:' + pctF + '%;background:linear-gradient(90deg,#0284c7,#00f0ff);transition:width 0.3s ease;" title="' + tr('football') + ': ' + pctF + '%"></div>' +
+      '<div class="fvh-dual-hoops" style="width:' + pctH + '%;background:linear-gradient(90deg,#f97316,#ea580c);transition:width 0.3s ease;" title="' + tr('basketball') + ': ' + pctH + '%"></div>' +
       '</div>' +
       '</div>';
     body.appendChild(statsCard);
@@ -7997,7 +7944,7 @@
     packsCard.innerHTML =
       '<div class="fvh-panel-head" style="display:flex;justify-content:space-between;align-items:center;">' +
       '<span>🎁 ' + tr('packsInventory') + '</span>' +
-      '<span class="badge">' + tr('packsAvailable', { n: totalPacksCount }) + '</span>' +
+      (totalPacksCount > 0 ? '<span class="fvh-packs-count-pill">' + tr('packsAvailable', { n: totalPacksCount }) + '</span>' : '') +
       '</div>' +
       '<p style="color:var(--text-muted);font-size:12px;margin:4px 0 12px;">' + tr('storeSub') + '</p>' +
       (totalPacksCount > 0 ?
@@ -9599,13 +9546,13 @@
     arenaBanner.style.cursor = 'pointer';
     arenaBanner.innerHTML =
       '<div class="fvh-mode-arena-left">' +
-      '  <span class="fvh-mode-arena-icon">' + (currentArenaDef.icon || '🏟️') + '</span>' +
+      '  <div class="fvh-mode-arena-thumb-preview">' + renderItemArtwork(currentArenaDef, 'thumb') + '</div>' +
       '  <div class="fvh-mode-arena-text-block">' +
       '    <div class="fvh-mode-arena-sub">' + tr('homeArena') + '</div>' +
       '    <div class="fvh-mode-arena-name" title="' + escapeHtml(trItem(currentArenaDef.name)) + '">' + trItem(currentArenaDef.name) + '</div>' +
       '  </div>' +
       '</div>' +
-      '<button class="btn small primary fvh-mode-arena-btn">🏟️ ' + tr('arenaSelectTitle') + ' ➔</button>';
+      '<button class="btn small primary fvh-mode-arena-btn">' + tr('arenaSelectTitle') + ' ➔</button>';
 
     arenaBanner.onclick = function () {
       app.audio.play('click');
@@ -10037,7 +9984,7 @@
         '<div class="fvh-topbar-stats">' +
         '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
         '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
-        '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '">👤 ' + escapeHtml(shortName) + '</button>' +
+        '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: d.selectedCharacter || 'footy', extraClass: 'mini-avatar' }) + '</span>' + escapeHtml(shortName) + '</button>' +
         '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
         '</div>';
     screen.appendChild(topbar);
@@ -10359,12 +10306,16 @@
             if (!d.profile.nickname || d.profile.nickname.startsWith('Athlete #') || d.profile.nickname === 'Player') {
               d.profile.nickname = tgName;
             }
+            if (u.photo_url) {
+              d.photoUrl = u.photo_url;
+            }
             d.telegramUser = {
               id: u.id,
               username: u.username || '',
               firstName: u.first_name || '',
               lastName: u.last_name || '',
-              languageCode: u.language_code || ''
+              languageCode: u.language_code || '',
+              photoUrl: u.photo_url || ''
             };
             if (u.language_code && (!d.settings || !d.settings.lang || d.settings.lang === 'auto')) {
               if (!d.settings) d.settings = {};
@@ -10381,6 +10332,24 @@
               app.showMenu();
             }
           });
+        }
+
+        // Haptic-enabled tactile feedback
+        if (app && app.audio && !app.audio._hapticWrapped) {
+          var origPlay = app.audio.play.bind(app.audio);
+          app.audio.play = function (name) {
+            if (name === 'claim' || name === 'purchase' || name === 'goal') {
+              triggerHaptic('success');
+            } else if (name === 'error') {
+              triggerHaptic('error');
+            } else if (name === 'kick' || name === 'shoot' || name === 'whistle') {
+              triggerHaptic('medium');
+            } else {
+              triggerHaptic('light');
+            }
+            return origPlay(name);
+          };
+          app.audio._hapticWrapped = true;
         }
       } catch (tgErr) {
         console.warn('Telegram WebApp initialization error:', tgErr);
