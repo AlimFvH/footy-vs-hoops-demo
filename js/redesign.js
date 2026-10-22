@@ -4656,25 +4656,6 @@
       }
     }
 
-    btnFooty.onclick = function () {
-      curChar = 'footy';
-      app.audio.play('click');
-      updateView();
-    };
-    btnHoops.onclick = function () {
-      curChar = 'hoops';
-      app.audio.play('click');
-      updateView();
-    };
-    selectBtn.onclick = function () {
-      app.store.update(function (d) {
-        d.selectedCharacter = curChar;
-      });
-      app.audio.play('claim');
-      showToast(tr('selected') + ': ' + (curChar === 'footy' ? 'FOOTY' : 'HOOPS'));
-      updateView();
-    };
-
     updateView();
 
     // Persistent Unified Bottom Navigation
@@ -5703,10 +5684,16 @@
     };
 
     var titleBox = document.createElement('div');
-    titleBox.innerHTML = '<h1 style="margin:0;">' + tr('stadiumStore') + '</h1><small style="color:var(--text-muted);letter-spacing:1px;font-size:10px;">' + tr(isFooty ? 'storeSubFooty' : 'storeSubHoops') + '</small>';
+    titleBox.className = 'fvh-shop-title-box';
+    titleBox.style.flex = '1 1 auto';
+    titleBox.style.minWidth = '0';
+    titleBox.style.padding = '0 6px';
+    titleBox.innerHTML = '<h1 style="margin:0;font-size:clamp(16px, 4.8vw, 22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('stadiumStore') + '</h1><small style="color:var(--text-muted);letter-spacing:0.5px;font-size:10.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr(isFooty ? 'storeSubFooty' : 'storeSubHoops') + '</small>';
 
     var walletBox = document.createElement('div');
     walletBox.className = 'fvh-wallet-chips';
+    walletBox.style.flexShrink = '0';
+    walletBox.style.marginLeft = 'auto';
 
     head.appendChild(backBtn);
     head.appendChild(titleBox);
@@ -6521,12 +6508,23 @@
         '<div class="fvh-featured-details">' +
         '<h2 class="fvh-featured-name">' + featuredItem.name + '</h2>' +
         '<p class="fvh-featured-desc">' + featuredItem.desc + '</p>' +
-        '<div class="fvh-featured-actions">' +
-        (isFeatOwned ?
-          '<button class="btn small" disabled>✓ ' + tr('ownedInLocker') + '</button>' :
-          '<button class="btn primary small feat-buy-btn">' + tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + featuredItem.price + '</button>') +
-        '<button class="btn small feat-inspect-btn">' + tr('inspect') + '</button>' +
-        '</div>' +
+        (function() {
+          var eq = app.store.data.equipped || {};
+          var activeCharSkin = isFooty ? (eq['skin.footy'] || eq.skin) : (eq['skin.hoops'] || eq.skin);
+          var isEquipped = (activeCharSkin === featuredItem.id);
+          var actionBtnHtml = '';
+          if (isEquipped) {
+            actionBtnHtml = '<button class="btn small feat-equip-btn" style="background:rgba(16,185,129,0.18);border:1px solid #10b981;color:#10b981;" disabled>✓ ' + tr('equipped') + '</button>';
+          } else if (isFeatOwned) {
+            actionBtnHtml = '<button class="btn small primary feat-equip-btn">👕 ' + tr('equip') + '</button>';
+          } else {
+            actionBtnHtml = '<button class="btn primary small feat-buy-btn">' + tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + featuredItem.price + '</button>';
+          }
+          return '<div class="fvh-featured-actions">' +
+            actionBtnHtml +
+            '<button class="btn small feat-inspect-btn">🔍 ' + tr('inspect') + '</button>' +
+            '</div>';
+        })() +
         '</div>' +
         '</div>';
 
@@ -6571,6 +6569,23 @@
         };
       }
 
+      var equipFeat = featuredHero.querySelector('.feat-equip-btn:not([disabled])');
+      if (equipFeat) {
+        equipFeat.onclick = function () {
+          app.store.update(function (d) {
+            if (!d.equipped) d.equipped = {};
+            if (isFooty) {
+              d.equipped['skin.footy'] = featuredItem.id;
+            } else {
+              d.equipped['skin.hoops'] = featuredItem.id;
+            }
+            d.equipped.skin = featuredItem.id;
+          });
+          app.audio.play('claim');
+          showToast(tr('equipped') + ': ' + featuredItem.name);
+          renderShop();
+        };
+      }
       var inspFeat = featuredHero.querySelector('.feat-inspect-btn');
       if (inspFeat) {
         inspFeat.onclick = function () {
@@ -7524,6 +7539,109 @@
     return container;
   }
 
+  // Authoritative Career Statistics Reconciliation Engine
+  function reconcileCareerStats(rawStats, selectedChar) {
+    var s = rawStats || {};
+    var char = selectedChar || 'footy';
+
+    var wins = Math.max(0, Number(s.wins) || 0);
+    var losses = Math.max(0, Number(s.losses) || 0);
+    var draws = Math.max(0, Number(s.draws) || 0);
+
+    // Total completed matches must reconcile with wins + losses + draws
+    var rawPlayed = Math.max(0, Number(s.played !== undefined ? s.played : s.matches) || 0);
+    var totalCompleted = Math.max(rawPlayed, wins + losses + draws);
+
+    if (totalCompleted > (wins + losses + draws) && losses === 0) {
+      losses = totalCompleted - wins - draws;
+    }
+    if (totalCompleted < wins) {
+      totalCompleted = wins + losses + draws;
+    }
+
+    var pByMode = s.playedByMode || {};
+    var wByMode = s.winsByMode || {};
+
+    var mF = Math.max(0, Number(s.matchesFooty !== undefined ? s.matchesFooty : pByMode.footy) || 0);
+    var mH = Math.max(0, Number(s.matchesHoops !== undefined ? s.matchesHoops : pByMode.hoops) || 0);
+    var mC = Math.max(0, Number(s.matchesClash !== undefined ? s.matchesClash : pByMode.clash) || 0);
+
+    var wF = Math.max(0, Number(s.winsFooty !== undefined ? s.winsFooty : wByMode.footy) || 0);
+    var wH = Math.max(0, Number(s.winsHoops !== undefined ? s.winsHoops : wByMode.hoops) || 0);
+    var wC = Math.max(0, Number(s.winsClash !== undefined ? s.winsClash : wByMode.clash) || 0);
+
+    mF = Math.max(mF, wF);
+    mH = Math.max(mH, wH);
+    mC = Math.max(mC, wC);
+
+    var sumModes = mF + mH + mC;
+    if (sumModes !== totalCompleted) {
+      if (sumModes === 0 && totalCompleted > 0) {
+        if (wF > 0 || wH > 0 || wC > 0) {
+          mF = wF;
+          mH = wH;
+          mC = wC;
+        } else if (char === 'hoops') {
+          mH = totalCompleted;
+          wH = wins;
+        } else {
+          mF = totalCompleted;
+          wF = wins;
+        }
+        sumModes = mF + mH + mC;
+      }
+      if (sumModes < totalCompleted) {
+        if (char === 'hoops') {
+          mH += (totalCompleted - sumModes);
+        } else {
+          mF += (totalCompleted - sumModes);
+        }
+      } else if (sumModes > totalCompleted) {
+        totalCompleted = sumModes;
+      }
+    }
+
+    var sumWins = wF + wH + wC;
+    if (sumWins < wins) {
+      var diffW = wins - sumWins;
+      if (char === 'hoops') {
+        wH += diffW;
+        mH = Math.max(mH, wH);
+      } else {
+        wF += diffW;
+        mF = Math.max(mF, wF);
+      }
+      totalCompleted = Math.max(totalCompleted, mF + mH + mC);
+    }
+
+    var winRate = totalCompleted > 0 ? Math.round((wins / totalCompleted) * 100) : 0;
+
+    var sumM = Math.max(1, mF + mH + mC);
+    var pctF = totalCompleted > 0 ? Math.round((mF / sumM) * 100) : 0;
+    var pctH = totalCompleted > 0 ? Math.round((mH / sumM) * 100) : 0;
+    var pctC = totalCompleted > 0 ? Math.max(0, 100 - pctF - pctH) : 0;
+
+    return {
+      matches: totalCompleted,
+      played: totalCompleted,
+      wins: wins,
+      losses: losses,
+      draws: draws,
+      winRate: winRate,
+      matchesFooty: mF,
+      matchesHoops: mH,
+      matchesClash: mC,
+      winsFooty: wF,
+      winsHoops: wH,
+      winsClash: wC,
+      pctFooty: pctF,
+      pctHoops: pctH,
+      pctClash: pctC,
+      goals: Math.max(0, Number(s.goals) || 0),
+      baskets: Math.max(0, Number(s.baskets !== undefined ? s.baskets : s.points) || 0)
+    };
+  }
+
   // Build Profile Screen
   function buildProfilePage(app) {
     var container = document.createElement('div');
@@ -7554,23 +7672,38 @@
     body.className = 'page-body fvh-profile-container';
 
     var curChar = app.store.data.selectedCharacter || 'footy';
-    var stats = app.store.data.stats || {
-      matches: 0, wins: 0, losses: 0, goals: 0, baskets: 0,
-      winsFooty: 0, winsHoops: 0, winsClash: 0
-    };
+    var stats = app.store.data.stats || {};
+    var reconciled = reconcileCareerStats(stats, curChar);
 
-    var totalMatches = stats.matches || 0;
-    var totalWins = stats.wins || 0;
-    var totalLosses = Math.max(0, totalMatches - totalWins);
-    var winPct = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
+    // Auto-migrate persisted store data if inconsistent
+    if (stats.matches !== reconciled.matches || stats.played !== reconciled.played) {
+      app.store.update(function (d) {
+        if (!d.stats) d.stats = {};
+        d.stats.matches = reconciled.matches;
+        d.stats.played = reconciled.played;
+        d.stats.wins = reconciled.wins;
+        d.stats.losses = reconciled.losses;
+        d.stats.draws = reconciled.draws;
+        d.stats.matchesFooty = reconciled.matchesFooty;
+        d.stats.matchesHoops = reconciled.matchesHoops;
+        d.stats.matchesClash = reconciled.matchesClash;
+        d.stats.winsFooty = reconciled.winsFooty;
+        d.stats.winsHoops = reconciled.winsHoops;
+        d.stats.winsClash = reconciled.winsClash;
+      });
+    }
 
-    var wF = stats.winsFooty || Math.floor(totalWins * 0.5);
-    var wH = stats.winsHoops || Math.floor(totalWins * 0.35);
-    var wC = stats.winsClash || Math.max(0, totalWins - wF - wH);
-    var sumW = Math.max(1, wF + wH + wC);
-    var pctF = Math.round((wF / sumW) * 100);
-    var pctH = Math.round((wH / sumW) * 100);
-    var pctC = Math.max(0, 100 - pctF - pctH);
+    var totalMatches = reconciled.matches;
+    var totalWins = reconciled.wins;
+    var totalLosses = reconciled.losses;
+    var winPct = reconciled.winRate;
+
+    var wF = reconciled.matchesFooty;
+    var wH = reconciled.matchesHoops;
+    var wC = reconciled.matchesClash;
+    var pctF = reconciled.pctFooty;
+    var pctH = reconciled.pctHoops;
+    var pctC = reconciled.pctClash;
 
     var bpState = getBattlePassState(app.store);
 
@@ -7591,7 +7724,10 @@
     idCard.innerHTML =
       '<div class="fvh-profile-avatar-wrap">' +
       '  <div class="fvh-profile-avatar-thumb" style="overflow:hidden;border-radius:50%;">' +
-           (userPhotoUrl ? '<img src="' + userPhotoUrl + '" style="width:100%;height:100%;object-fit:cover;" />' : (curChar === 'footy' ? getFootyAvatarSvg() : getHoopsAvatarSvg())) +
+           (function() {
+         var heroImgSrc = getRecoloredHeroUrl(curChar, app.store.data.equipped && (app.store.data.equipped['skin.' + curChar] || app.store.data.equipped.skin));
+         return '<img src="' + heroImgSrc + '" class="fvh-profile-hero-avatar-img" alt="' + curChar + '" onerror="this.onerror=null;this.src=\'' + (curChar === 'footy' ? 'assets/hero_footy_cartoon.png' : 'assets/hero_hoops_cartoon.png') + '\';" />';
+       })() +
       '  </div>' +
       '  <div class="fvh-profile-lvl-badge">LVL ' + bpState.level + '</div>' +
       '</div>' +
@@ -9453,12 +9589,12 @@
     arenaBanner.innerHTML =
       '<div class="fvh-mode-arena-left">' +
       '  <span class="fvh-mode-arena-icon">' + (currentArenaDef.icon || '🏟️') + '</span>' +
-      '  <div>' +
+      '  <div class="fvh-mode-arena-text-block">' +
       '    <div class="fvh-mode-arena-sub">' + tr('homeArena') + '</div>' +
-      '    <div class="fvh-mode-arena-name">' + trItem(currentArenaDef.name) + '</div>' +
+      '    <div class="fvh-mode-arena-name" title="' + escapeHtml(trItem(currentArenaDef.name)) + '">' + trItem(currentArenaDef.name) + '</div>' +
       '  </div>' +
       '</div>' +
-      '<button class="btn small primary" style="white-space:nowrap;">🏟️ ' + tr('arenaSelectTitle') + ' ➔</button>';
+      '<button class="btn small primary fvh-mode-arena-btn">🏟️ ' + tr('arenaSelectTitle') + ' ➔</button>';
 
     arenaBanner.onclick = function () {
       app.audio.play('click');
