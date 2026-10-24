@@ -1484,12 +1484,14 @@
 
     var showJerseyTag = opts.showJerseyTag !== undefined ? opts.showJerseyTag : true;
     var tagHtml = showJerseyTag ?
-      '<div class="fvh-hero-active-jersey-tag" style="position:absolute;bottom:0px;font-size:10.5px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.85);backdrop-filter:blur(6px);border:1px solid ' + (isFooty ? 'rgba(56,189,248,0.3)' : 'rgba(251,146,60,0.3)') + ';border-radius:999px;padding:3px 12px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,0.5);"><span>🎽</span> <span>' + skinLabel + '</span></div>'
+      '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:10px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span>🎽</span> <span>' + skinLabel + '</span></div>'
       : '';
 
     return '<div class="fvh-hero-portrait-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;">' +
+      '<div class="fvh-hero-figure-container" style="display:flex;align-items:center;justify-content:center;max-height:calc(100% - 36px);width:100%;">' +
       '<img class="fvh-hero-real-img fvh-hero-cutout-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + imgSrc + '" alt="' + (isFooty ? 'FOOTY' : 'HOOPS') + '" onerror="this.style.display=\'none\'; if(this.nextElementSibling) this.nextElementSibling.style.display=\'block\';">' +
       '<div class="fvh-hero-svg-fallback" style="display:none;width:100%;height:100%;">' + svgFallback + '</div>' +
+      '</div>' +
       tagHtml +
       '</div>';
   }
@@ -3272,29 +3274,29 @@
         freeReward = Object.assign({}, pickFree);
       }
 
-      // Premium VIP Track Reward (Exclusive Arenas, Kits, Balls, Celebrations & VIP Coins)
+      // Premium VIP Track Reward (Exclusive Arenas, Kits, Balls & VIP Coins)
       var premiumReward;
       if (i === 1) premiumReward = { type: 'cosmetic', name: 'Cyber Blue Jersey', icon: '🎽', itemId: 'skin_cyber' };
       else if (i === 2) premiumReward = { type: 'coins', name: '300 VIP Coins', icon: '🪙', val: 300 };
       else if (i === 3) premiumReward = { type: 'cosmetic', name: 'Neon Blaze Ball', icon: '💫', itemId: 'ball_hoops_blaze' };
       else if (i === 4) premiumReward = { type: 'coins', name: '500 VIP Coins', icon: '🪙', val: 500 };
-      else if (i === 5) premiumReward = { type: 'cosmetic', name: 'Gold Rain Celebration', icon: '✨', itemId: 'cel_goldrain' };
+      else if (i === 5) premiumReward = { type: 'coins', name: '700 VIP Coins', icon: '🪙', val: 700 };
       else if (i === 6) premiumReward = { type: 'coins', name: '600 VIP Coins', icon: '🪙', val: 600 };
       else if (i === 7) premiumReward = { type: 'cosmetic', name: 'Solar Blaze Ball', icon: '☀️', itemId: 'ball_footy_solar' };
       else if (i === 8) premiumReward = { type: 'pack', name: 'Ultimate Clash Pack', icon: '⚡', packId: 'clash' };
       else if (i === 9) premiumReward = { type: 'coins', name: '750 VIP Coins', icon: '🪙', val: 750 };
-      else if (i === 10) premiumReward = { type: 'cosmetic', name: 'Coastal Sunset Court', icon: '🏖️', itemId: 'arena_coastal' };
+      else if (i === 10) premiumReward = { type: 'cosmetic', name: 'Coastal Sunset Court', icon: '🏖️', itemId: 'std_ocean_sunset' };
       else if (i === 11) premiumReward = { type: 'cosmetic', name: 'Rainbow Trail', icon: '🌈', itemId: 'trail_rainbow' };
       else if (i === 12) premiumReward = { type: 'coins', name: '1000 VIP Coins', icon: '🪙', val: 1000 };
       else if (i === 13) premiumReward = { type: 'cosmetic', name: 'Mars Rover Kit', icon: '🚀', itemId: 'skin_mars' };
       else if (i === 14) premiumReward = { type: 'coins', name: '1200 VIP Coins', icon: '🪙', val: 1200 };
-      else if (i === 15) premiumReward = { type: 'cosmetic', name: 'Mars Bio-Dome Arena', icon: '🪐', itemId: 'arena_mars' };
+      else if (i === 15) premiumReward = { type: 'cosmetic', name: 'Mars Bio-Dome Arena', icon: '🪐', itemId: 'std_mars_dome' };
       else if (i === 16) premiumReward = { type: 'cosmetic', name: 'Laser Trail', icon: '⚡', itemId: 'trail_laser' };
       else if (i === 17) premiumReward = { type: 'coins', name: '1500 VIP Coins', icon: '🪙', val: 1500 };
-      else if (i === 18) premiumReward = { type: 'cosmetic', name: 'Victory Fireworks', icon: '🎆', itemId: 'cel_fireworks' };
+      else if (i === 18) premiumReward = { type: 'coins', name: '1600 VIP Coins', icon: '🪙', val: 1600 };
       else if (i === 19) premiumReward = { type: 'coins', name: '1800 VIP Coins', icon: '🪙', val: 1800 };
-      else if (i === 20) premiumReward = { type: 'cosmetic', name: 'Apollo Lunar Arena', icon: '🌙', itemId: 'arena_moon' };
-      else if (i === 21) premiumReward = { type: 'cosmetic', name: 'Star Confetti', icon: '🌟', itemId: 'cel_confetti' };
+      else if (i === 20) premiumReward = { type: 'cosmetic', name: 'Apollo Lunar Arena', icon: '🌙', itemId: 'std_moon_crater' };
+      else if (i === 21) premiumReward = { type: 'cosmetic', name: 'Magma Caldera Arena', icon: '🌋', itemId: 'std_volcano_caldera' };
       else if (i === 22) premiumReward = { type: 'coins', name: '2000 VIP Coins', icon: '🪙', val: 2000 };
       else if (i === 23) premiumReward = { type: 'cosmetic', name: 'Earthrise Ball', icon: '🌍', itemId: 'ball_earthrise' };
       else if (i === 24) premiumReward = { type: 'coins', name: '2500 VIP Coins', icon: '🪙', val: 2500 };
@@ -4295,13 +4297,8 @@
     return container;
   }
 
-  // Boost Items Catalog (4 Distinct Boosts)
-  var BOOST_CATALOG = [
-    { id: 'boost_turbo', category: 'boosts', slot: 'boost', name: 'Turbo Boots', rarity: 'common', price: 60, icon: '👟', type: 'active', duration: '12s', descKey: 'boostTurboDesc' },
-    { id: 'boost_lungs', category: 'boosts', slot: 'boost', name: 'Iron Lungs', rarity: 'common', price: 70, icon: '🫁', type: 'passive', duration: 'match', descKey: 'boostLungsDesc' },
-    { id: 'boost_power', category: 'boosts', slot: 'boost', name: 'Sharp Shooter', rarity: 'rare', price: 110, icon: '🎯', type: 'passive', duration: 'match', descKey: 'boostPowerDesc' },
-    { id: 'boost_coins', category: 'boosts', slot: 'boost', name: 'Coin Doubler', rarity: 'epic', price: 150, icon: '🪙', type: 'passive', duration: 'match', descKey: 'boostCoinsDesc' }
-  ];
+  // Boost Items Catalog (Boosts completely removed)
+  var BOOST_CATALOG = [];
   window.BOOST_CATALOG = BOOST_CATALOG;
 
   // Build Characters & Wardrobe Page
@@ -4403,9 +4400,7 @@
     var slots = [
       { id: 'skins', label: tr('catJerseys') },
       { id: 'balls', label: tr('catBalls') },
-      { id: 'stadiums', label: tr('catArenas') },
-      { id: 'celebrations', label: tr('catCelebrations') },
-      { id: 'boosts', label: tr('catBoosts') }
+      { id: 'stadiums', label: tr('catArenas') }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
@@ -4444,14 +4439,13 @@
       var eq = app.store.data.equipped || {};
       var owned = app.store.data.owned || [];
 
-      // Sanitize equipped items to prevent unowned cosmetics from staying equipped (Prompt 4 Section 6)
+      // Sanitize equipped items to prevent unowned cosmetics from staying equipped
       var defaultSlotItems = {
         skin: 'skin_rookie',
         'ball.footy': 'ball_footy_classic',
         'ball.hoops': 'ball_hoops_street',
         'stadium.footy': 'std_footy_classic',
         'stadium.hoops': 'std_hoops_street',
-        celebration: 'cel_confetti',
         trail: 'trail_default',
         frame: 'frame_default'
       };
@@ -4467,9 +4461,6 @@
         app.store.update(function (d) { d.equipped = eq; });
       }
 
-      var armedBoostId = app.store.data.armedBoost;
-      var armedName = armedBoostId ? trItem(armedBoostId === 'boost_turbo' ? 'Turbo Boots' : armedBoostId === 'boost_lungs' ? 'Iron Lungs' : armedBoostId === 'boost_power' ? 'Sharp Shooter' : armedBoostId === 'boost_coins' ? 'Coin Doubler' : armedBoostId) : tr('noBoostEquipped');
-
       var activeCrowdId = eq.crowd || (curChar === 'hoops' ? 'crowd_hoops_allstars' : 'crowd_footy_ultras');
       var crowdObj = CROWD_CATALOG.find(function(c) { return c.id === activeCrowdId; });
       var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
@@ -4479,21 +4470,21 @@
         : (eq['skin.footy'] || (eq.skin && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'));
       var activeBallId = eq['ball.' + curChar] || (curChar === 'hoops' ? 'ball_hoops_street' : 'ball_footy_classic');
       var activeArenaId = eq['stadium.' + curChar] || (curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
-      var activeCelId = eq.celebration || 'cel_confetti';
 
       equipSlotList.innerHTML =
         '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
         '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + getItemLabelById(activeArenaId, 'Standard Arena') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotCelebration') + ':</span><b>' + getItemLabelById(activeCelId, 'Confetti') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('catBoosts') + ':</span><b>' + armedName + '</b></div>';
+        '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + getItemLabelById(activeArenaId, 'Standard Arena') + '</b></div>';
 
       // Load matching items for current slot (OWNED ITEMS ONLY)
       itemsGrid.innerHTML = '';
-      function renderMatchingItems(allItems) {
-        BOOST_CATALOG.forEach(function (bc) {
-          if (!allItems.some(function (i) { return i.id === bc.id; })) {
-            allItems.push(Object.assign({}, bc, { desc: tr(bc.descKey) }));
+      function renderMatchingItems(providedItems) {
+        var baseCatalog = buildDefaultShopCatalog(curChar);
+        var allItems = (providedItems && providedItems.length > 0) ? providedItems.slice() : baseCatalog;
+
+        baseCatalog.forEach(function (bi) {
+          if (!allItems.some(function (i) { return i.id === bi.id; })) {
+            allItems.push(bi);
           }
         });
 
@@ -4515,18 +4506,9 @@
           }
         });
 
-        var boostCharges = app.store.data.boostCharges || {};
-        var armed = app.store.data.armedBoost;
         var owned = app.store.data.owned || [];
         var matching;
-        if (curSlot === 'boosts') {
-          matching = BOOST_CATALOG.filter(function (it) {
-            var ch = boostCharges[it.id] || 0;
-            var isArmed = armed === it.id;
-            var isOwnedLegacy = owned.indexOf(it.id) !== -1;
-            return ch > 0 || isArmed || isOwnedLegacy;
-          });
-        } else if (curSlot === 'crowd') {
+        if (curSlot === 'crowd') {
           matching = CROWD_CATALOG.filter(function (c) {
             return c.mode === 'all' || c.mode === curChar;
           });
@@ -4547,9 +4529,9 @@
           var emptyBox = document.createElement('div');
           emptyBox.className = 'fvh-empty-locker';
           emptyBox.innerHTML =
-            '<div class="fvh-empty-icon">' + (curSlot === 'boosts' ? '⚡' : '🎒') + '</div>' +
-            '<div class="fvh-empty-title">' + (curSlot === 'boosts' ? tr('catBoosts') : tr('emptyCategory')) + '</div>' +
-            '<div class="fvh-empty-desc">' + (curSlot === 'boosts' ? tr('emptyBoostsDesc') : tr('emptyCategoryDesc')) + '</div>';
+            '<div class="fvh-empty-icon">🎒</div>' +
+            '<div class="fvh-empty-title">' + tr('emptyCategory') + '</div>' +
+            '<div class="fvh-empty-desc">' + tr('emptyCategoryDesc') + '</div>';
           var shopBtn = document.createElement('button');
           shopBtn.className = 'btn primary small fvh-empty-btn';
           shopBtn.textContent = '🛒 ' + tr('goToShop');
@@ -4563,76 +4545,6 @@
         }
 
         matching.forEach(function (item) {
-          if (curSlot === 'boosts') {
-            var isArmed = armed === item.id;
-            var ch = boostCharges[item.id] || 0;
-            var boostCard = document.createElement('div');
-            var rarClass = item.rarity || 'common';
-            boostCard.className = 'card shopc fvh-boost-card r-' + rarClass + (isArmed ? ' is-eq' : '');
-
-            var localizedRarity = tr('rarity_' + rarClass) || rarClass.toUpperCase();
-            var localizedItemName = trItem(item.name);
-            var typeTag = item.type === 'active'
-              ? '<span class="fvh-boost-type-tag active">⚡ ' + tr('boostActiveType') + '</span>'
-              : '<span class="fvh-boost-type-tag passive">🛡️ ' + tr('boostPassiveType') + '</span>';
-            var durationTag = '<span style="font-size:10px;color:var(--text-muted);font-weight:700;">⏱️ ' + (item.type === 'active' ? '12s' : 'Match') + '</span>';
-            var chargesPill = '<span class="fvh-boost-charges-tag">' + tr('boostCharges', { n: ch }) + '</span>';
-
-            boostCard.innerHTML =
-              '<div class="thumbwrap"><div class="thumb" style="display:flex;align-items:center;justify-content:center;">' +
-              renderItemArtwork(item, 'thumb') +
-              '</div>' +
-              (isArmed ? '<span class="st st-eq">✓ ' + tr('boostArmed') + '</span>' : '') +
-              '</div>' +
-              '<div class="nm">' + localizedItemName + '</div>' +
-              '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0;">' +
-              typeTag + durationTag + chargesPill +
-              '</div>' +
-              '<div class="fvh-boost-effect-desc">' + (item.desc || '') + '</div>';
-
-            var bBtn = document.createElement('button');
-            if (isArmed) {
-              bBtn.className = 'btn small';
-              bBtn.textContent = '✕ ' + tr('boostDisarm');
-              bBtn.onclick = function () {
-                var pid = getAppPlayerId(app);
-                safeEconomyApi('/api/economy/equip', {
-                  playerId: pid,
-                  slot: 'boost',
-                  itemId: 'none'
-                }).then(function () {
-                  app.store.update(function (d) { d.armedBoost = null; });
-                  app.audio.play('click');
-                  showToast(tr('boostDisarm') + ': ' + localizedItemName);
-                  updateView();
-                });
-              };
-            } else {
-              bBtn.className = 'btn small primary';
-              bBtn.textContent = tr('boostArm');
-              bBtn.onclick = function () {
-                var pid = getAppPlayerId(app);
-                safeEconomyApi('/api/economy/equip', {
-                  playerId: pid,
-                  slot: 'boost',
-                  itemId: item.id
-                }).then(function (res) {
-                  if (res && res.error === 'item_not_owned') {
-                    app.audio.play('error');
-                    showToast('⚠️ No charges remaining');
-                    return;
-                  }
-                  app.store.update(function (d) { d.armedBoost = item.id; });
-                  app.audio.play('click');
-                  showToast(tr('boostArmed') + ': ' + localizedItemName);
-                  updateView();
-                });
-              };
-            }
-            boostCard.appendChild(bBtn);
-            itemsGrid.appendChild(boostCard);
-            return;
-          }
           var activeSlotKey = item.slot || (item.category === 'balls' ? 'ball.' + curChar : item.category === 'stadiums' ? 'stadium.' + curChar : item.category === 'skins' ? 'skin' : item.category === 'crowd' ? 'crowd' : item.category);
           var isEquipped = (item.category === 'skins')
             ? (curCharSkin === item.id)
@@ -4706,14 +4618,21 @@
         });
       }
 
+      var itemsLoaded = false;
       if (typeof window.require === 'function') {
         try {
           window.require(['data/shop'], function (shopMod) {
-            renderMatchingItems((shopMod && shopMod.ITEMS) || []);
+            if (shopMod && shopMod.ITEMS && shopMod.ITEMS.length > 0) {
+              itemsLoaded = true;
+              renderMatchingItems(shopMod.ITEMS);
+            }
           });
         } catch (e) {
           console.warn('Failed to load shop items', e);
         }
+      }
+      if (!itemsLoaded) {
+        renderMatchingItems(buildDefaultShopCatalog(curChar));
       }
     }
 
@@ -4819,8 +4738,12 @@
     }
 
     function getClaimedList() {
-      if (!app.store.data.claimedQuests) {
-        app.store.data.claimedQuests = [];
+      if (!Array.isArray(app.store.data.claimedQuests)) {
+        if (app.store.data.claimedQuests && typeof app.store.data.claimedQuests === 'object') {
+          app.store.data.claimedQuests = Object.keys(app.store.data.claimedQuests);
+        } else {
+          app.store.data.claimedQuests = [];
+        }
       }
       return app.store.data.claimedQuests;
     }
@@ -5129,7 +5052,7 @@
         var card = document.createElement('div');
         var isClaimed = claimed.indexOf(task.id) !== -1;
         var st = socialState[task.id] || { status: 'available' };
-        var isTgTask = (task.id === 'q_sub_tg_news' || task.id === 'q_sub_tg_chat');
+        var isTgTask = (task.id === 'q_sub_tg' || task.id === 'q_sub_chat' || task.id === 'q_sub_tg_news' || task.id === 'q_sub_tg_chat');
         var isVerifying = st.status === 'verifying';
         var isPendingReview = st.status === 'pending_review';
         var isReady = st.status === 'ready' && !isClaimed;
@@ -5175,19 +5098,57 @@
           btn.className = 'btn small primary';
           btn.innerHTML = tr('claim') + ' ' + getFvhCoinSvg('inline') + ' ' + task.coins;
           btn.onclick = function () {
-            app.store.update(function (d) {
-              if (!d.claimedQuests) d.claimedQuests = {};
-              d.claimedQuests[task.id] = true;
-              d.coins = (d.coins || 0) + task.coins;
-              d.xp = (d.xp || 0) + task.xp;
-              if (d.socialState && d.socialState[task.id]) {
-                d.socialState[task.id].status = 'claimed';
-              }
+            btn.disabled = true;
+            var curPlayerId = (app.store && app.store.data && app.store.data.playerId) || 'local_player';
+            fetch(getApiUrl('/api/economy/reward'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                playerId: curPlayerId,
+                rewardType: 'quest',
+                questId: task.id
+              })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              app.store.update(function (d) {
+                if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
+                if (d.claimedQuests.indexOf(task.id) === -1) {
+                  d.claimedQuests.push(task.id);
+                }
+                if (res && typeof res.coins === 'number') {
+                  d.coins = res.coins;
+                } else {
+                  d.coins = (d.coins || 0) + task.coins;
+                }
+                if (res && typeof res.xp === 'number') {
+                  d.xp = res.xp;
+                } else {
+                  d.xp = (d.xp || 0) + task.xp;
+                }
+                if (d.socialState && d.socialState[task.id]) {
+                  d.socialState[task.id].status = 'claimed';
+                }
+              });
+              app.audio.play('claim');
+              showToast(lang === 'ru' ? ('+' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('+' + task.coins + ' Coins, +' + task.xp + ' XP!'));
+              syncAuthoritativeEconomy(app);
+              renderSocialQuests();
+            }).catch(function () {
+              app.store.update(function (d) {
+                if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
+                if (d.claimedQuests.indexOf(task.id) === -1) {
+                  d.claimedQuests.push(task.id);
+                }
+                d.coins = (d.coins || 0) + task.coins;
+                d.xp = (d.xp || 0) + task.xp;
+                if (d.socialState && d.socialState[task.id]) {
+                  d.socialState[task.id].status = 'claimed';
+                }
+              });
+              app.audio.play('claim');
+              showToast(lang === 'ru' ? ('+' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('+' + task.coins + ' Coins, +' + task.xp + ' XP!'));
+              syncAuthoritativeEconomy(app);
+              renderSocialQuests();
             });
-            app.audio.play('claim');
-            showToast(lang === 'ru' ? ('+' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('+' + task.coins + ' Coins, +' + task.xp + ' XP!'));
-            syncAuthoritativeEconomy(app);
-            renderSocialQuests();
           };
         } else if (isPendingReview) {
           btn.className = 'btn small';
@@ -5206,7 +5167,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   telegramUserId: tgUser.id,
-                  target: (task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
+                  target: (task.id === 'q_sub_chat' || task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
                 })
               }).then(function (r) { return r.json(); }).then(function (res) {
                 if (res && res.verified) {
@@ -5247,7 +5208,7 @@
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     telegramUserId: tgUser.id,
-                    target: (task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
+                    target: (task.id === 'q_sub_chat' || task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
                   })
                 }).then(function (r) { return r.json(); }).then(function (res) {
                   if (res && res.verified) {
@@ -5730,6 +5691,60 @@
     }
   ];
 
+  // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
+  function buildDefaultShopCatalog(curChar) {
+    return [
+      // Standard & Premium Jerseys
+      { id: 'skin_rookie', name: 'Rookie Blue', category: 'skins', slot: 'skin', rarity: 'common', price: 0, isDefault: true },
+      { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', slot: 'skin', rarity: 'common', price: 120 },
+      { id: 'skin_neon', name: 'Neon Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 260 },
+      { id: 'skin_frost', name: 'Frost Giant', category: 'skins', slot: 'skin', rarity: 'rare', price: 280 },
+      { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', slot: 'skin', rarity: 'epic', price: 480 },
+      { id: 'skin_solar', name: 'Solar Flare', category: 'skins', slot: 'skin', rarity: 'epic', price: 520 },
+      { id: 'skin_gold', name: 'Golden Legend', category: 'skins', slot: 'skin', rarity: 'legendary', price: 950 },
+      { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', slot: 'skin', rarity: 'legendary', price: 1100 },
+      { id: 'skin_sunset', name: 'Sunset Gold Jersey', category: 'skins', slot: 'skin', rarity: 'rare', price: 340 },
+      { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', slot: 'skin', rarity: 'rare', price: 360 },
+
+      // Football Balls
+      { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_footy_neon', name: 'Cyan Core', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 150 },
+      { id: 'ball_footy_inferno', name: 'Solar Blaze', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 320 },
+      { id: 'ball_footy_gold', name: 'Aura', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 550 },
+      { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 650 },
+
+      // Basketball Balls
+      { id: 'ball_hoops_street', name: 'Street Grip', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 200 },
+      { id: 'ball_hoops_chrome', name: 'Chrome Spark', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 480 },
+      { id: 'ball_hoops_midnight', name: 'Midnight Matte', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 720 },
+      { id: 'ball_tidal', name: 'Tidal Wave Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 600 },
+      { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 800 },
+
+      // Standard Arenas
+      { id: 'std_footy_classic', name: 'Classic Grass', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+      { id: 'std_footy_night', name: 'Night Arena', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'rare', price: 300 },
+      { id: 'std_footy_golden', name: 'Golden Hour', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'epic', price: 520 },
+      { id: 'std_footy_neon', name: 'Neon Turf', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'legendary', price: 900 },
+      { id: 'std_hoops_street', name: 'Street Classic', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+      { id: 'std_hoops_neon', name: 'Neon Night', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'rare', price: 320 },
+      { id: 'std_hoops_gold', name: 'Gold Hardwood', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'epic', price: 540 },
+      { id: 'std_hoops_sky', name: 'Skyline Rooftop', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'legendary', price: 880 },
+
+      // Scenic 10 World Arenas
+      { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
+      { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
+      { id: 'std_space_orbit', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Orbital Space Colosseum', rarity: 'legendary', price: 900, icon: '🚀', desc: tr('scenicSpaceDesc') },
+      { id: 'std_mars_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Mars Bio-Dome Arena', rarity: 'epic', price: 750, icon: '🔴', desc: tr('scenicMarsDesc') },
+      { id: 'std_moon_crater', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Apollo Lunar Arena', rarity: 'rare', price: 680, icon: '🌕', desc: tr('scenicMoonDesc') },
+      { id: 'std_underwater_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Abyssal Ocean Dome', rarity: 'legendary', price: 820, icon: '🫧', desc: tr('scenicUnderwaterDesc') },
+      { id: 'std_cyber_megacity', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Neo Tokyo Megacity', rarity: 'legendary', price: 950, icon: '🏙️', desc: tr('scenicCyberDesc') },
+      { id: 'std_volcano_caldera', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Magma Caldera Arena', rarity: 'epic', price: 850, icon: '🌋', desc: tr('scenicVolcanoDesc') },
+      { id: 'std_floating_islands', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Aetheria Sky Islands', rarity: 'legendary', price: 880, icon: '☁️', desc: tr('scenicFloatingDesc') },
+      { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
+    ];
+  }
+
   // Build Editorial Shop & Sports Boutique Page
   function buildShopPage(app, initialCategory, inspectId) {
     var curCategory = initialCategory || 'all';
@@ -5798,8 +5813,6 @@
       { id: 'skins', label: tr('catJerseys') },
       { id: 'balls', label: tr('catBalls') },
       { id: 'stadiums', label: tr('catArenas') },
-      { id: 'celebrations', label: tr('catCelebrations') },
-      { id: 'boosts', label: tr('catBoosts') },
       { id: 'packs', label: tr('catPacks') }
     ];
     categories.forEach(function (c) {
@@ -6004,14 +6017,12 @@
       var modal = document.createElement('div');
       modal.className = 'modal fvh-item-modal';
 
-      var owned = app.store.data.owned || [];
-      var isBoost = (item.category === 'boosts');
-      var boostCharges = (app.store.data.boostCharges && app.store.data.boostCharges[item.id]) || 0;
-      var isArmed = (app.store.data.armedBoost === item.id);
-      var isOwned = isBoost ? (boostCharges > 0 || isArmed) : (owned.indexOf(item.id) !== -1 || item.isDefault);
-      var charMode = app.store.data.selectedCharacter || 'footy';
-      var slotKey = item.slot || (item.category === 'balls' ? 'ball.' + charMode : item.category === 'stadiums' ? 'stadium.' + charMode : item.category === 'skins' ? 'skin' : item.category);
-      var isEquipped = isBoost ? isArmed : (app.store.data.equipped && app.store.data.equipped[slotKey] === item.id);
+      var owned = (app.store && app.store.data && app.store.data.owned) || [];
+      var charMode = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
+      var slotKey = item.slot || (item.category === 'balls' ? 'ball.' + charMode : item.category === 'stadiums' ? 'stadium.' + charMode : item.category === 'skins' ? (charMode === 'hoops' ? 'skin.hoops' : 'skin.footy') : item.category);
+      var curEquipped = (app.store && app.store.data && app.store.data.equipped) || {};
+      var isEquipped = (curEquipped[slotKey] === item.id) || (item.category === 'skins' && (curEquipped.skin === item.id || curEquipped['skin.' + charMode] === item.id));
+      var isOwned = (owned.indexOf(item.id) !== -1 || Boolean(item.isDefault) || (charMode === 'hoops' && item.id === 'skin_solar') || (charMode === 'footy' && item.id === 'skin_rookie'));
       var rarKey = item.rarity || 'common';
       var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
       var localizedItemName = trItem(item.name);
@@ -6020,35 +6031,9 @@
       if (item.category === 'stadiums') categoryLabel = tr('catArenas');
       else if (item.category === 'skins') categoryLabel = tr('catJerseys');
       else if (item.category === 'balls') categoryLabel = tr('catBalls');
-      else if (item.category === 'boosts') categoryLabel = tr('catBoosts');
       else if (item.category === 'packs') categoryLabel = tr('catPacks');
       else if (item.category) categoryLabel = tr('cat' + item.category.charAt(0).toUpperCase() + item.category.slice(1)) || item.category;
       else categoryLabel = tr('storeSub');
-
-      var boostExtraInfo = '';
-      if (isBoost) {
-        var bDef = BOOST_CATALOG.find(function (b) { return b.id === item.id; });
-        if (bDef) {
-          if (!item.type) item.type = bDef.type;
-          if (!item.duration) item.duration = bDef.duration;
-          if (!item.descKey) item.descKey = bDef.descKey;
-          if (!item.desc) item.desc = tr(bDef.descKey);
-        }
-        var isAct = item.type === 'active' || item.id === 'boost_turbo';
-        var typeBadge = isAct
-          ? '<span class="fvh-boost-type-tag active">⚡ ' + tr('boostActiveType') + ' (12s)</span>'
-          : '<span class="fvh-boost-type-tag passive">🛡️ ' + tr('boostPassiveType') + ' (Match)</span>';
-        var chargesTag = '<span class="fvh-boost-charges-tag">' + tr('boostCharges', { n: boostCharges }) + '</span>';
-        var boostExpl = isAct ? tr('boostActiveDesc') : tr('boostPassiveDesc');
-        boostExtraInfo =
-          '<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin:6px 0 10px;">' +
-          typeBadge + chargesTag +
-          '</div>' +
-          '<div style="font-size:11.5px;color:var(--text-muted);background:rgba(255,255,255,0.05);border-radius:8px;padding:8px 12px;margin:8px 0;line-height:1.4;text-align:left;">' +
-          (isAct ? '⚡ <b>' + tr('boostActiveType') + '</b>: ' : '🛡️ <b>' + tr('boostPassiveType') + '</b>: ') + boostExpl +
-          '<br><span style="color:#fde047;font-size:10.5px;">🔒 Disabled in online multiplayer (fair play).</span>' +
-          '</div>';
-      }
 
       modal.innerHTML =
         '<div class="fvh-sheet-handle"></div>' +
@@ -6061,7 +6046,6 @@
         '</div>' +
         '<h2 class="fvh-item-modal-title">' + localizedItemName + '</h2>' +
         '<div class="fvh-item-modal-category">' + categoryLabel + (item.mode ? ' · ' + (item.mode === 'footy' ? tr('football') : tr('basketball')) : '') + '</div>' +
-        boostExtraInfo +
         '<p class="fvh-item-modal-desc">' + (item.desc || (localizedItemName + ' — ' + tr('storeSub'))) + '</p>' +
         '<div class="fvh-item-modal-actions"></div>';
 
@@ -6075,96 +6059,7 @@
 
       var actionsBox = modal.querySelector('.fvh-item-modal-actions');
 
-      if (isBoost) {
-        if (boostCharges > 0) {
-          var armBtn = document.createElement('button');
-          if (isArmed) {
-            armBtn.className = 'btn block';
-            armBtn.textContent = '✕ ' + tr('boostDisarm');
-            armBtn.onclick = function () {
-              var pid = getAppPlayerId(app);
-              safeEconomyApi('/api/economy/equip', {
-                playerId: pid,
-                slot: 'boost',
-                itemId: 'none'
-              }).then(function () {
-                app.store.update(function (d) { d.armedBoost = null; });
-                app.audio.play('click');
-                showToast(tr('boostDisarm') + ': ' + localizedItemName);
-                overlay.remove();
-                renderShop();
-              });
-            };
-          } else {
-            armBtn.className = 'btn primary block';
-            armBtn.textContent = '⚡ ' + tr('boostArm');
-            armBtn.onclick = function () {
-              var pid = getAppPlayerId(app);
-              safeEconomyApi('/api/economy/equip', {
-                playerId: pid,
-                slot: 'boost',
-                itemId: item.id
-              }).then(function (res) {
-                if (res && res.error === 'item_not_owned') {
-                  app.audio.play('error');
-                  showToast('⚠️ No charges remaining');
-                  return;
-                }
-                app.store.update(function (d) { d.armedBoost = item.id; });
-                app.audio.play('claim');
-                showToast(tr('boostArmed') + ': ' + localizedItemName);
-                overlay.remove();
-                renderShop();
-              });
-            };
-          }
-          actionsBox.appendChild(armBtn);
-        }
-
-        var buyChargeBtn = document.createElement('button');
-        buyChargeBtn.className = (boostCharges === 0 ? 'btn primary block' : 'btn block');
-        buyChargeBtn.style.marginTop = boostCharges > 0 ? '8px' : '0';
-        buyChargeBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price + ' (+1 ' + tr('boostCharges', { n: 1 }) + ')';
-        buyChargeBtn.onclick = function () {
-          if (isPurchasing) return;
-          var coins = app.store.data.coins || 0;
-          if (coins < item.price) {
-            app.audio.play('error');
-            showToast(tr('notEnoughCoins'));
-            return;
-          }
-          isPurchasing = true;
-          var pid = getAppPlayerId(app);
-          safeEconomyApi('/api/economy/purchase', {
-            playerId: pid,
-            itemId: item.id,
-            idempotencyKey: 'boost_' + pid + '_' + item.id + '_' + Date.now()
-          }).then(function (res) {
-            isPurchasing = false;
-            if (res && res.ok) {
-              app.store.update(function (d) {
-                d.coins = res.coins;
-                d.xp = res.xp;
-                d.owned = res.owned;
-                d.packs = res.packs;
-                d.boostCharges = res.boostCharges;
-                d.armedBoost = res.armedBoost;
-              });
-            } else {
-              app.store.update(function (d) {
-                d.coins -= item.price;
-                if (!d.boostCharges) d.boostCharges = {};
-                d.boostCharges[item.id] = (d.boostCharges[item.id] || 0) + 1;
-              });
-            }
-            app.audio.play('claim');
-            showToast(tr('purchaseSuccess') + ' (' + localizedItemName + ' +1)');
-            overlay.remove();
-            renderShop();
-          });
-        };
-        actionsBox.appendChild(buyChargeBtn);
-      } else if (isEquipped) {
+      if (isEquipped) {
         var eqBtn = document.createElement('button');
         eqBtn.className = 'btn block';
         eqBtn.disabled = true;
@@ -6189,6 +6084,10 @@
             app.store.update(function (d) {
               if (!d.equipped) d.equipped = {};
               d.equipped[slotKey] = item.id;
+              if (item.category === 'skins') {
+                d.equipped['skin.' + charMode] = item.id;
+                d.equipped.skin = item.id;
+              }
             });
             app.audio.play('claim');
             showToast(tr('equipped') + ': ' + localizedItemName);
@@ -6198,24 +6097,23 @@
         };
         actionsBox.appendChild(equipBtn);
       } else {
-        var buyBtn = document.createElement('button');
-        buyBtn.className = 'btn primary block';
-        buyBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price;
-        buyBtn.onclick = function () {
+        var buyItemBtn = document.createElement('button');
+        buyItemBtn.className = 'btn primary block';
+        buyItemBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price;
+        buyItemBtn.onclick = function () {
           if (isPurchasing) return;
-          var coins = app.store.data.coins || 0;
+          var coins = (app.store && app.store.data && app.store.data.coins) || 0;
           if (coins < item.price) {
             app.audio.play('error');
             showToast(tr('notEnoughCoins'));
             return;
           }
-
           isPurchasing = true;
           var pid = getAppPlayerId(app);
           safeEconomyApi('/api/economy/purchase', {
             playerId: pid,
             itemId: item.id,
-            idempotencyKey: 'buy_' + pid + '_' + item.id + '_' + Date.now()
+            idempotencyKey: 'item_' + pid + '_' + item.id + '_' + Date.now()
           }).then(function (res) {
             isPurchasing = false;
             if (res && res.ok) {
@@ -6225,34 +6123,20 @@
                 d.owned = res.owned;
                 d.packs = res.packs;
               });
-              app.audio.play('claim');
-              showToast(tr('purchaseSuccess') + ' (' + localizedItemName + ')');
-              overlay.remove();
-              renderShop();
-            } else if (res && res.error === 'already_owned') {
-              showToast(tr('inCollection'));
-              overlay.remove();
-              renderShop();
-            } else if (res && res.error === 'insufficient_funds') {
-              app.audio.play('error');
-              showToast(tr('notEnoughCoins'));
             } else {
-              // Local fallback if offline
               app.store.update(function (d) {
                 d.coins -= item.price;
                 if (!d.owned) d.owned = [];
-                if (d.owned.indexOf(item.id) === -1) {
-                  d.owned.push(item.id);
-                }
+                if (d.owned.indexOf(item.id) === -1) d.owned.push(item.id);
               });
-              app.audio.play('claim');
-              showToast(tr('purchaseSuccess') + ' (' + localizedItemName + ')');
-              overlay.remove();
-              renderShop();
             }
+            app.audio.play('claim');
+            showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
+            overlay.remove();
+            renderShop();
           });
         };
-        actionsBox.appendChild(buyBtn);
+        actionsBox.appendChild(buyItemBtn);
       }
 
       overlay.appendChild(modal);
@@ -6263,7 +6147,7 @@
     var PACKS_DEF = [
       { id: 'footy', category: 'packs', name: 'Footy Striker Pack', price: 250, icon: '⚽', desc: 'Guaranteed 2 football cards + bonus chance for legendary gear.' },
       { id: 'hoops', category: 'packs', name: 'Hoops All-Star Pack', price: 250, icon: '🏀', desc: 'Guaranteed 2 basketball cards + bonus chance for neon cosmetics.' },
-      { id: 'clash', category: 'packs', name: 'Ultimate Clash Pack', price: 500, icon: '⚡', desc: 'High-tier pack with rare celebrations, stadiums, and high coin drops.' }
+      { id: 'clash', category: 'packs', name: 'Ultimate Clash Pack', price: 500, icon: '⚡', desc: 'High-tier pack with rare stadiums, balls, and high coin drops.' }
     ];
 
     
@@ -6289,9 +6173,6 @@
         { id: 'std_footy_night', name: 'Night Arena', category: 'stadiums', rarity: 'rare' },
         { id: 'std_footy_golden', name: 'Golden Hour', category: 'stadiums', rarity: 'rare' },
         { id: 'std_footy_neon', name: 'Neon Turf', category: 'stadiums', rarity: 'epic' },
-        { id: 'cel_confetti', name: 'Confetti Burst', category: 'celebrations', rarity: 'rare' },
-        { id: 'cel_fireworks', name: 'Fireworks', category: 'celebrations', rarity: 'rare' },
-        { id: 'cel_flames', name: 'Flame Burst', category: 'celebrations', rarity: 'epic' },
         { id: 'trail_fire', name: 'Fire Trail', category: 'trails', rarity: 'rare' },
         { id: 'trail_laser', name: 'Laser Trail', category: 'trails', rarity: 'legendary' }
       ],
@@ -6310,9 +6191,6 @@
         { id: 'std_hoops_neon', name: 'Neon Night', category: 'stadiums', rarity: 'epic' },
         { id: 'std_hoops_gold', name: 'Gold Hardwood', category: 'stadiums', rarity: 'epic' },
         { id: 'std_ocean_sunset', name: 'Coastal Sunset Court', category: 'stadiums', rarity: 'epic' },
-        { id: 'cel_shockwave', name: 'Shockwave', category: 'celebrations', rarity: 'rare' },
-        { id: 'cel_goldrain', name: 'Gold Rain', category: 'celebrations', rarity: 'legendary' },
-        { id: 'cel_lightning', name: 'Lightning Storm', category: 'celebrations', rarity: 'legendary' },
         { id: 'trail_ice', name: 'Ice Trail', category: 'trails', rarity: 'rare' },
         { id: 'trail_rainbow', name: 'Rainbow Trail', category: 'trails', rarity: 'epic' }
       ],
@@ -6335,9 +6213,6 @@
         { id: 'std_volcano_caldera', name: 'Magma Caldera Arena', category: 'stadiums', rarity: 'epic' },
         { id: 'std_floating_islands', name: 'Aetheria Sky Islands', category: 'stadiums', rarity: 'legendary' },
         { id: 'std_crystal_cavern', name: 'Prismatic Crystal Cave', category: 'stadiums', rarity: 'epic' },
-        { id: 'cel_goldrain', name: 'Gold Rain', category: 'celebrations', rarity: 'legendary' },
-        { id: 'cel_lightning', name: 'Lightning Storm', category: 'celebrations', rarity: 'legendary' },
-        { id: 'cel_fireworks', name: 'Fireworks', category: 'celebrations', rarity: 'rare' },
         { id: 'trail_rainbow', name: 'Rainbow Trail', category: 'trails', rarity: 'epic' },
         { id: 'trail_laser', name: 'Laser Trail', category: 'trails', rarity: 'legendary' },
         { id: 'frame_bronze', name: 'Bronze Frame', category: 'frames', rarity: 'rare' },
@@ -6733,8 +6608,20 @@
         return;
       }
 
-      // Fetch standard items from data/shop and ensure scenic arenas are included
-      function renderItemsList(allItems) {
+      // Fetch standard items and ensure scenic arenas are included
+      function renderItemsList(providedItems) {
+        var baseCatalog = buildDefaultShopCatalog(curChar);
+        var allItems = (providedItems && providedItems.length > 0) ? providedItems.slice() : baseCatalog;
+        var owned = (app.store && app.store.data && app.store.data.owned) || [];
+
+        // Merge any missing items from baseCatalog
+        baseCatalog.forEach(function (bi) {
+          if (!allItems.some(function (i) { return i.id === bi.id; })) {
+            allItems.push(bi);
+          }
+        });
+
+        // Ensure scenic arenas are included and assigned to curChar
         var scenicArenas = [
           { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
           { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
@@ -6754,12 +6641,6 @@
           } else {
             existing.slot = 'stadium.' + curChar;
             existing.mode = curChar;
-          }
-        });
-
-        BOOST_CATALOG.forEach(function (bc) {
-          if (!allItems.some(function (i) { return i.id === bc.id; })) {
-            allItems.push(Object.assign({}, bc, { desc: tr(bc.descKey) }));
           }
         });
 
@@ -6834,39 +6715,24 @@
         });
 
         if (filtered.length === 0 && curCategory !== 'all') {
-          catalogueGrid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;padding:24px 0;text-align:center;">' + tr('inCollection') + ': 0</div>';
+          catalogueGrid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;padding:36px 0;text-align:center;">' +
+            '<div style="font-size:32px;margin-bottom:8px;">📦</div>' +
+            '<div style="font-weight:800;font-size:14px;color:#fff;">' + (lang === 'ru' ? 'В этой категории пока нет товаров' : 'No items found in this category') + '</div>' +
+            '</div>';
           return;
         }
 
         filtered.forEach(function (it) {
-          var isBoost = (it.category === 'boosts');
-          var boostCharges = (app.store.data.boostCharges && app.store.data.boostCharges[it.id]) || 0;
-          var isArmed = (app.store.data.armedBoost === it.id);
-          var isOwned = isBoost ? (boostCharges > 0 || isArmed) : (owned.indexOf(it.id) !== -1 || it.isDefault);
+          var isOwned = (owned.indexOf(it.id) !== -1 || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie'));
           var card = document.createElement('div');
           var rarKey = it.rarity || 'common';
           var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
           var localizedItemName = trItem(it.name);
 
-          card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '') + (isBoost ? ' fvh-boost-card' : '');
+          card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '');
 
-          var tagHtml = '';
-          if (isBoost) {
-            if (isArmed) {
-              tagHtml = '<span class="fvh-card-owned-tag" style="background:#3b82f6;color:#fff;">✓ ' + tr('boostArmed') + '</span>';
-            } else if (boostCharges > 0) {
-              tagHtml = '<span class="fvh-card-owned-tag">' + tr('boostCharges', { n: boostCharges }) + '</span>';
-            }
-          } else if (isOwned) {
-            tagHtml = '<span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>';
-          }
-
-          var priceLabel = '';
-          if (isBoost) {
-            priceLabel = getFvhCoinSvg('inline') + ' <span style="vertical-align:middle;margin-left:4px;">' + it.price + '</span>' + (boostCharges > 0 ? ' · ' + tr('boostCharges', { n: boostCharges }) : '');
-          } else {
-            priceLabel = isOwned ? tr('inCollection') : (getFvhCoinSvg('inline') + ' <span style="vertical-align:middle;margin-left:4px;">' + it.price + '</span>');
-          }
+          var tagHtml = isOwned ? '<span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '';
+          var priceLabel = isOwned ? tr('inCollection') : (getFvhCoinSvg('inline') + ' <span style="vertical-align:middle;margin-left:4px;">' + it.price + '</span>');
 
           card.innerHTML =
             '<div class="fvh-card-head">' +
@@ -6888,14 +6754,21 @@
         });
       }
 
+      var itemsLoaded = false;
       if (typeof window.require === 'function') {
         try {
           window.require(['data/shop'], function (shopMod) {
-            renderItemsList((shopMod && shopMod.ITEMS) || []);
+            if (shopMod && shopMod.ITEMS && shopMod.ITEMS.length > 0) {
+              itemsLoaded = true;
+              renderItemsList(shopMod.ITEMS);
+            }
           });
         } catch (e) {
           console.warn('Failed to load shop items', e);
         }
+      }
+      if (!itemsLoaded) {
+        renderItemsList(buildDefaultShopCatalog(curChar));
       }
     }
 
@@ -9348,162 +9221,6 @@
     return container;
   }
 
-  // Boost Selector Modal for Practice & Match Setup
-  function showModeBoostSelectorModal(app, onArmedChange) {
-    var overlay = document.createElement('div');
-    overlay.className = 'modal-back fvh-sheet-back';
-    var modal = document.createElement('div');
-    modal.className = 'modal fvh-item-modal';
-    modal.style.maxWidth = '460px';
-
-    var lang = getActiveLang();
-    var armed = app.store.data.armedBoost;
-    var charges = app.store.data.boostCharges || {};
-
-    var listHtml = BOOST_CATALOG.map(function (b) {
-      var ch = charges[b.id] || 0;
-      var isArmed = (armed === b.id);
-      var isAct = b.type === 'active';
-      return '<div class="fvh-boost-select-item ' + (isArmed ? 'is-armed' : '') + '" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid ' + (isArmed ? '#38bdf8' : 'rgba(255,255,255,0.08)') + ';margin-bottom:8px;">' +
-        '  <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
-        '    <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(b, 'thumb') + '</div>' +
-        '    <div style="min-width:0;text-align:left;">' +
-        '      <div style="display:flex;align-items:center;gap:6px;">' +
-        '        <span style="font-weight:800;font-size:13px;color:#fff;">' + trItem(b.name) + '</span>' +
-        '        <span class="fvh-boost-type-tag ' + b.type + '" style="font-size:9px;padding:1px 5px;">' + (isAct ? '⚡ ' + tr('boostActiveType') : '🛡️ ' + tr('boostPassiveType')) + '</span>' +
-        '      </div>' +
-        '      <div style="font-size:11px;color:var(--text-muted);margin:2px 0;">' + tr(b.descKey) + '</div>' +
-        '      <div style="font-size:10px;color:' + (ch > 0 ? '#4ade80' : 'var(--text-muted)') + ';font-weight:700;">' + tr('boostCharges', { n: ch }) + (isAct ? ' · 12s Overdrive' : ' · ' + (lang === 'ru' ? 'Весь матч' : 'Full Match')) + '</div>' +
-        '    </div>' +
-        '  </div>' +
-        '  <div style="margin-left:8px;flex-shrink:0;">' +
-        (isArmed
-          ? '<button class="btn small disarm-btn" data-id="' + b.id + '">✕ ' + tr('boostDisarm') + '</button>'
-          : ch > 0
-            ? '<button class="btn small primary arm-btn" data-id="' + b.id + '">⚡ ' + tr('boostArm') + '</button>'
-            : '<button class="btn small buy-btn" data-id="' + b.id + '" style="font-size:11px;">🛒 ' + tr('boostBuyMore') + '</button>'
-        ) +
-        '  </div>' +
-        '</div>';
-    }).join('');
-
-    modal.innerHTML =
-      '<div class="fvh-sheet-handle"></div>' +
-      '<div class="fvh-item-modal-head">' +
-      '<span class="rar epic">⚡ ' + tr('catBoosts').toUpperCase() + '</span>' +
-      '<button class="modal-close-x" aria-label="Close">✕</button>' +
-      '</div>' +
-      '<h2 style="margin:4px 0 6px;font-size:18px;color:#fff;">' + tr('selectBoostPrompt') + '</h2>' +
-      '<div style="font-size:11.5px;color:var(--text-muted);background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.4;text-align:left;">' +
-      '💡 <b>' + (lang === 'ru' ? 'Как работают бусты' : 'How Boosts Work') + ':</b><br>' +
-      '• <b>' + tr('boostActiveType') + '</b>: ' + tr('boostActiveDesc') + '.<br>' +
-      '• <b>' + tr('boostPassiveType') + '</b>: ' + tr('boostPassiveDesc') + '.<br>' +
-      '<span style="color:#fde047;font-size:10.5px;">✓ ' + (lang === 'ru' ? 'Заряд расходуется ТОЛЬКО после старта матча (при отмене заряд не теряется).' : 'Charge is consumed ONLY upon match start (never if cancelled).') + '</span>' +
-      '</div>' +
-      '<div class="fvh-boost-modal-list" style="max-height:280px;overflow-y:auto;margin-bottom:12px;">' +
-      listHtml +
-      '</div>' +
-      '<div style="display:flex;gap:8px;">' +
-      (armed ? '<button class="btn block clear-boost-btn">✕ ' + tr('noBoostEquipped') + '</button>' : '') +
-      '<button class="btn primary block close-modal-btn">' + tr('close') + '</button>' +
-      '</div>';
-
-    modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
-    var closeBtn = modal.querySelector('.close-modal-btn');
-    if (closeBtn) closeBtn.onclick = function () { overlay.remove(); };
-    overlay.onclick = function (e) { if (e.target === overlay) overlay.remove(); };
-
-    var clearBtn = modal.querySelector('.clear-boost-btn');
-    if (clearBtn) {
-      clearBtn.onclick = function () {
-        var pid = getAppPlayerId(app);
-        safeEconomyApi('/api/economy/equip', { playerId: pid, slot: 'boost', itemId: 'none' }).then(function () {
-          app.store.update(function (d) { d.armedBoost = null; });
-          app.audio.play('click');
-          overlay.remove();
-          if (onArmedChange) onArmedChange();
-        });
-      };
-    }
-
-    modal.querySelectorAll('.arm-btn').forEach(function (btn) {
-      btn.onclick = function () {
-        var bId = btn.dataset.id;
-        var pid = getAppPlayerId(app);
-        safeEconomyApi('/api/economy/equip', { playerId: pid, slot: 'boost', itemId: bId }).then(function (res) {
-          if (res && res.error === 'item_not_owned') {
-            app.audio.play('error');
-            showToast('⚠️ No charges remaining');
-            return;
-          }
-          app.store.update(function (d) { d.armedBoost = bId; });
-          app.audio.play('claim');
-          var bDef = BOOST_CATALOG.find(function (x) { return x.id === bId; });
-          showToast(tr('boostArmed') + ': ' + trItem(bDef ? bDef.name : bId));
-          overlay.remove();
-          if (onArmedChange) onArmedChange();
-        });
-      };
-    });
-
-    modal.querySelectorAll('.disarm-btn').forEach(function (btn) {
-      btn.onclick = function () {
-        var pid = getAppPlayerId(app);
-        safeEconomyApi('/api/economy/equip', { playerId: pid, slot: 'boost', itemId: 'none' }).then(function () {
-          app.store.update(function (d) { d.armedBoost = null; });
-          app.audio.play('click');
-          overlay.remove();
-          if (onArmedChange) onArmedChange();
-        });
-      };
-    });
-
-    modal.querySelectorAll('.buy-btn').forEach(function (btn) {
-      btn.onclick = function () {
-        var bId = btn.dataset.id;
-        var bDef = BOOST_CATALOG.find(function (x) { return x.id === bId; });
-        if (!bDef) return;
-        var coins = app.store.data.coins || 0;
-        if (coins < bDef.price) {
-          app.audio.play('error');
-          showToast(tr('notEnoughCoins'));
-          return;
-        }
-        var pid = getAppPlayerId(app);
-        safeEconomyApi('/api/economy/purchase', {
-          playerId: pid,
-          itemId: bId,
-          idempotencyKey: 'mode_boost_' + pid + '_' + bId + '_' + Date.now()
-        }).then(function (res) {
-          if (res && res.ok) {
-            app.store.update(function (d) {
-              d.coins = res.coins;
-              d.xp = res.xp;
-              d.owned = res.owned;
-              d.packs = res.packs;
-              d.boostCharges = res.boostCharges;
-              d.armedBoost = bId;
-            });
-          } else {
-            app.store.update(function (d) {
-              d.coins -= bDef.price;
-              if (!d.boostCharges) d.boostCharges = {};
-              d.boostCharges[bId] = (d.boostCharges[bId] || 0) + 1;
-              d.armedBoost = bId;
-            });
-          }
-          app.audio.play('claim');
-          showToast(tr('purchaseSuccess') + ' (' + trItem(bDef.name) + ' +1)');
-          overlay.remove();
-          if (onArmedChange) onArmedChange();
-        });
-      };
-    });
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-  }
-
   // Dedicated Full-Screen Mode Selection Page
   function buildModeSelectPage(app) {
     var curChar = app.store.data.selectedCharacter || 'footy';
@@ -9605,11 +9322,6 @@
             '</div>' +
           '</div>' +
           '<div class="fvh-diff-reward-pill" id="fvh-diff-reward-info"></div>' +
-          '<div class="fvh-ctrl-row fvh-ctrl-boost-row">' +
-            '<span class="fvh-ctrl-label">' + tr('catBoosts') + ':</span>' +
-            '<div class="fvh-mode-boost-box" id="fvh-mode-boost-trigger" style="cursor:pointer;">' +
-            '</div>' +
-          '</div>' +
         '</div>' +
       '</div>' +
       '<div class="fvh-mode-card-actions">' +
@@ -9660,50 +9372,6 @@
     });
     updateDiffRewardPill(selDiff);
 
-    function updatePracticeBoostBox() {
-      var boostBox = practiceCard.querySelector('#fvh-mode-boost-trigger');
-      if (!boostBox) return;
-      var armedId = app.store.data.armedBoost;
-      var boostCharges = app.store.data.boostCharges || {};
-      if (armedId) {
-        var bDef = BOOST_CATALOG.find(function (b) { return b.id === armedId; }) || { name: armedId, icon: '⚡', type: 'active' };
-        var ch = boostCharges[armedId] || 0;
-        boostBox.innerHTML =
-          '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">' +
-          '  <span style="font-size:22px;line-height:1;">' + bDef.icon + '</span>' +
-          '  <div style="min-width:0;text-align:left;">' +
-          '    <div style="font-weight:800;font-size:12px;color:#fff;display:flex;align-items:center;gap:6px;">' +
-          '      ' + trItem(bDef.name) +
-          '      <span class="fvh-boost-type-tag ' + bDef.type + '" style="font-size:9px;padding:1px 5px;">' + (bDef.type === 'active' ? '⚡ ' + tr('boostActiveType') : '🛡️ ' + tr('boostPassiveType')) + '</span>' +
-          '    </div>' +
-          '    <div style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('boostCharges', { n: ch }) + ' · ' + (bDef.type === 'active' ? '12s Overdrive' : tr('boostPassiveDesc')) + '</div>' +
-          '  </div>' +
-          '</div>' +
-          '<button class="btn small" type="button" style="padding:4px 8px;font-size:11px;font-weight:700;">' + tr('changeBoost') + ' ➔</button>';
-      } else {
-        boostBox.innerHTML =
-          '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">' +
-          '  <span style="font-size:20px;opacity:0.5;">⚡</span>' +
-          '  <div style="min-width:0;text-align:left;">' +
-          '    <div style="font-weight:800;font-size:12px;color:var(--text-muted);">' + tr('noBoostEquipped') + '</div>' +
-          '    <div style="font-size:10px;color:var(--text-muted);opacity:0.8;">' + tr('selectBoostPrompt') + '</div>' +
-          '  </div>' +
-          '</div>' +
-          '<button class="btn small" type="button" style="padding:4px 8px;font-size:11px;font-weight:700;">+ ' + tr('boostArm') + '</button>';
-      }
-    }
-    updatePracticeBoostBox();
-
-    var boostTrigger = practiceCard.querySelector('#fvh-mode-boost-trigger');
-    if (boostTrigger) {
-      boostTrigger.onclick = function () {
-        app.audio.play('click');
-        showModeBoostSelectorModal(app, function () {
-          updatePracticeBoostBox();
-        });
-      };
-    }
-
     practiceCard.querySelector('.fvh-btn-start-practice').onclick = function () {
       app.audio.play('click');
       app.store.update(function (d) {
@@ -9715,7 +9383,7 @@
         char: selSport,
         difficulty: selDiff,
         minutes: selMinutes,
-        boostId: app.store.data.armedBoost
+        boostId: null
       }, false);
     };
 

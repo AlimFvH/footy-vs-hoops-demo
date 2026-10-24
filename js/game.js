@@ -4050,7 +4050,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     exports.defaultEquipped = defaultEquipped;
     exports.defaultOwned = defaultOwned;
     exports.boostEffectsOf = boostEffectsOf;
-    exports.CATEGORIES = ['skins', 'stadiums', 'boosts', 'balls', 'celebrations', 'other'];
+    exports.CATEGORIES = ['skins', 'stadiums', 'balls', 'other'];
     exports.RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
     const FOOTY_BASE = {
         line: 0xf4f7f2,
@@ -4689,57 +4689,6 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             price: 720,
             icon: '🌌',
             visual: { mode: 'hoops', base: 0x101a3a, accent: 0xf6c445, style: 'stars', glow: 0x4a6bff },
-        },
-        {
-            id: 'cel_confetti',
-            category: 'celebrations',
-            slot: 'celebration',
-            name: 'Confetti Burst',
-            rarity: 'common',
-            price: 0,
-            icon: '🎉',
-            isDefault: true,
-            visual: { style: 'confetti', colors: [0xff4d6d, 0xffd166, 0x06d6a0, 0x4cc9f0, 0xffffff] },
-        },
-        {
-            id: 'cel_fireworks',
-            category: 'celebrations',
-            slot: 'celebration',
-            name: 'Fireworks',
-            rarity: 'rare',
-            price: 240,
-            icon: '🎆',
-            visual: { style: 'fireworks', colors: [0xff4d6d, 0xffd166, 0x4cc9f0, 0xb388ff] },
-        },
-        {
-            id: 'cel_shockwave',
-            category: 'celebrations',
-            slot: 'celebration',
-            name: 'Shockwave',
-            rarity: 'epic',
-            price: 380,
-            icon: '💥',
-            visual: { style: 'shockwave', colors: [0x7df9ff, 0xffffff, 0x4d7cff] },
-        },
-        {
-            id: 'cel_flames',
-            category: 'celebrations',
-            slot: 'celebration',
-            name: 'Flame Burst',
-            rarity: 'epic',
-            price: 400,
-            icon: '🔥',
-            visual: { style: 'flames', colors: [0xff3d00, 0xff9100, 0xffd740] },
-        },
-        {
-            id: 'cel_goldrain',
-            category: 'celebrations',
-            slot: 'celebration',
-            name: 'Gold Rain',
-            rarity: 'legendary',
-            price: 650,
-            icon: '✨',
-            visual: { style: 'goldrain', colors: [0xffd740, 0xffe9a0, 0xffffff] },
         },
         {
             id: 'trail_default',
@@ -7717,42 +7666,11 @@ define("render/effects", ["require", "exports", "gfx/scene", "gfx/math"], functi
             this.add({ x, y, z, life: 0.45, max: 0.45, r: c[0], g: c[1], b: c[2], size: Math.min(0.7, 0.3 + speed * 0.012), grow: -0.5 });
         }
         celebrate(x, y, z, big = true) {
-            const cols = this.celebration.colors;
+            const cols = [0xff4d6d, 0xffd166, 0x06d6a0, 0x4cc9f0, 0xffffff];
             const pick = () => cols[Math.floor(Math.random() * cols.length)];
-            switch (this.celebration.style) {
-                case 'confetti':
-                    for (let i = 0; i < (big ? 160 : 70); i++) {
-                        const c = (0, math_js_9.rgb)(pick());
-                        this.add({ x: x + (Math.random() - 0.5) * 8, y: 8 + Math.random() * 4, z: z + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 3, vz: (Math.random() - 0.5) * 3, life: 3, max: 3, r: c[0], g: c[1], b: c[2], size: 0.34, grav: 0.4, drag: 0.4, add: false });
-                    }
-                    break;
-                case 'fireworks':
-                    for (let i = 0; i < 4; i++) {
-                        this.add({ x: x + (Math.random() - 0.5) * 8, y: 0.5, z: z + (Math.random() - 0.5) * 8, vx: 0, vy: 15 + Math.random() * 4, vz: 0, life: 0.7 + Math.random() * 0.3, max: 1, r: 1, g: 1, b: 0.8, size: 0.35, grav: 8, add: true, shell: { colors: cols } });
-                    }
-                    break;
-                case 'shockwave':
-                    for (let i = 0; i < 90; i++) {
-                        const a = (i / 90) * Math.PI * 2;
-                        const c = (0, math_js_9.rgb)(pick());
-                        this.add({ x, y: 0.2, z, vx: Math.cos(a) * 14, vy: 0.2, vz: Math.sin(a) * 14, life: 0.9, max: 0.9, r: c[0], g: c[1], b: c[2], size: 0.55, grow: -0.3, drag: 1.5 });
-                    }
-                    this.burst(x, 1, z, 60, 9, cols[0], 0.8, 0.4, 3);
-                    break;
-                case 'flames':
-                    for (let i = 0; i < 140; i++) {
-                        const c = (0, math_js_9.rgb)(pick());
-                        const a = Math.random() * Math.PI * 2;
-                        const r = Math.random() * 2.5;
-                        this.add({ x: x + Math.cos(a) * r, y: 0.2, z: z + Math.sin(a) * r, vx: 0, vy: 4 + Math.random() * 7, vz: 0, life: 1.1, max: 1.1, r: c[0], g: c[1], b: c[2], size: 0.7, grow: -0.4, add: true, drag: 0.5 });
-                    }
-                    break;
-                case 'goldrain':
-                    for (let i = 0; i < 160; i++) {
-                        const c = (0, math_js_9.rgb)(pick());
-                        this.add({ x: x + (Math.random() - 0.5) * 10, y: 9 + Math.random() * 3, z: z + (Math.random() - 0.5) * 10, vx: 0, vy: -4 - Math.random() * 4, vz: 0, life: 2.2, max: 2.2, r: c[0], g: c[1], b: c[2], size: 0.3, add: true });
-                    }
-                    break;
+            for (let i = 0; i < (big ? 140 : 60); i++) {
+                const c = (0, math_js_9.rgb)(pick());
+                this.add({ x: x + (Math.random() - 0.5) * 8, y: (y || 0) + 6 + Math.random() * 3, z: z + (Math.random() - 0.5) * 8, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 3, vz: (Math.random() - 0.5) * 3, life: 2.5, max: 2.5, r: c[0], g: c[1], b: c[2], size: 0.32, grav: 0.4, drag: 0.4, add: false });
             }
         }
         update(dt) {
@@ -7896,9 +7814,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.ballShadow = new scene_js_5.Node(G.plane(1, 1), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.ballGlow = new scene_js_5.Node(G.ring(r * 1.5, r * 2.3, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.scene.root.add(this.ball, this.ballShadow, this.ballGlow);
-            this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), visualOf(eq.celebration, 'cel_confetti'));
-            // 3D Boost visual aura
-            this.boostId = opts.boostId || (eq && eq.boost);
+            this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), null);
+            // Boosts completely removed
+            this.boostId = null;
             this.boostAura = null;
             if (this.boostId && this.chars.length > 0) {
                 const bCols = {
@@ -12019,28 +11937,8 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         }
         setBoost(cfg, save) {
             this.cfg = cfg;
-            const boostId = cfg && cfg.boostId;
-            if (!boostId || cfg.online || cfg.demo) {
-                this.boostWidget.hidden = true;
-                return;
-            }
-            this.boostWidget.hidden = false;
-            if (boostId === 'boost_turbo') {
-                this.boostBtn.hidden = false;
-                this.boostStatusPill.hidden = true;
-                this.boostIcon.textContent = '👟';
-                this.boostLabel.textContent = 'TURBO';
-                const charges = (save.boostCharges && save.boostCharges['boost_turbo']) || 0;
-                this.boostChargesPill.textContent = 'x' + charges;
-                this.boostChargesPill.classList.toggle('empty', charges <= 0);
-            } else {
-                this.boostBtn.hidden = true;
-                this.boostStatusPill.hidden = false;
-                const it = (0, shop_js_1.getItem)(boostId);
-                const icon = it ? it.icon : '✨';
-                const name = it ? (0, index_js_1.t)(`item.${boostId}`) || it.name : 'Boost';
-                this.boostStatusPill.innerHTML = `<span class="pill-ico">${icon}</span> <span class="pill-nm">${name}</span>`;
-            }
+            this.boostWidget.hidden = true;
+            return;
         }
         updateBoostCharges(n) {
             this.boostChargesPill.textContent = 'x' + n;
@@ -13056,7 +12954,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.stop();
             const save = this.getSave();
             const online = (_a = cfg.online) !== null && _a !== void 0 ? _a : null;
-            const boosts = cfg.boostId && !cfg.demo && !online ? (0, shop_js_3.boostEffectsOf)(cfg.boostId) : types_js_3.NO_BOOSTS;
+            const boosts = types_js_3.NO_BOOSTS;
             const opts = {
                 difficulty: cfg.difficulty,
                 matchSeconds: Math.round(cfg.minutes * 60),
@@ -13916,8 +13814,8 @@ define("core/progress", ["require", "exports", "data/shop", "core/packs", "core/
     }
     exports.LOADOUT_SLOTS = 3;
     const SLOTS = {
-        footy: ['skin', 'stadium.footy', 'ball.footy', 'celebration', 'trail', 'frame'],
-        hoops: ['skin', 'stadium.hoops', 'ball.hoops', 'celebration', 'trail', 'frame'],
+        footy: ['skin', 'stadium.footy', 'ball.footy', 'trail', 'frame'],
+        hoops: ['skin', 'stadium.hoops', 'ball.hoops', 'trail', 'frame'],
     };
     const loadoutSlots = (m) => SLOTS[m];
     exports.loadoutSlots = loadoutSlots;
@@ -14478,7 +14376,6 @@ define("core/album", ["require", "exports", "data/shop", "core/packs"], function
             reward: { coins: 900, xp: 300, pack: 'clash' },
             pages: [
                 { id: 'style.kits', collection: 'style', title: 'album.page.kits', icon: '🎽', items: sorted(pick('skins')) },
-                { id: 'style.celebrations', collection: 'style', title: 'album.page.celebrations', icon: '🎉', items: sorted(pick('celebrations')) },
                 { id: 'style.extras', collection: 'style', title: 'album.page.extras', icon: '🔥', items: sorted(pick('other')) },
             ],
         },
@@ -14766,7 +14663,7 @@ define("ui/pages", ["require", "exports", "core/input", "core/economy", "core/qu
         }
         shop() {
             const a = this.app;
-            const CAT_ICON = { skins: '🎽', stadiums: '🏟️', boosts: '⚡', balls: '⚽', celebrations: '🎉', other: '✨' };
+            const CAT_ICON = { skins: '🎽', stadiums: '🏟️', balls: '⚽', other: '✨' };
             const wallet = (0, dom_js_5.h)('div', { class: 'wallet-card' });
             const p = (0, kit_js_3.page)((0, index_js_6.t)('shop.title'), this.back, null, this.nav('shop'));
             const cats = (0, dom_js_5.h)('div', { class: 'cat-rail', role: 'tablist' });
@@ -14899,7 +14796,7 @@ define("ui/pages", ["require", "exports", "core/input", "core/economy", "core/qu
         inventory() {
             const a = this.app;
             const p = (0, kit_js_3.page)((0, index_js_6.t)('nav.inventory'), this.back, null, this.nav('inventory'));
-            const CAT_ICON = { all: '🎒', skins: '🎽', stadiums: '🏟️', boosts: '⚡', balls: '⚽', celebrations: '🎉', other: '✨' };
+            const CAT_ICON = { all: '🎒', skins: '🎽', stadiums: '🏟️', balls: '⚽', other: '✨' };
             const head = (0, dom_js_5.h)('div', { class: 'inv-head' });
             const cats = (0, dom_js_5.h)('div', { class: 'cat-rail', role: 'tablist' });
             const filter = (0, dom_js_5.h)('div', { class: 'shop-filter' });

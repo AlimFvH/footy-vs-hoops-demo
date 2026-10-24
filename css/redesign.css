@@ -274,19 +274,36 @@ html.is-telegram {
 
 .solo-avatar-box {
   width: 100% !important;
-  height: clamp(200px, 32vh, 280px) !important;
+  height: clamp(230px, 34vh, 290px) !important;
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
 }
 
+.solo-avatar-box .fvh-hero-figure-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-height: clamp(175px, 26vh, 230px) !important;
+  width: 100% !important;
+}
+
 .solo-avatar-box .fvh-hero-cutout-img {
-  height: clamp(190px, 30vh, 270px) !important;
+  height: clamp(175px, 26vh, 230px) !important;
   max-width: 90% !important;
   object-fit: contain !important;
   filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75)) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.fvh-hero-active-jersey-tag {
+  position: relative !important;
+  bottom: auto !important;
+  margin-top: 10px !important;
+  margin-bottom: 2px !important;
+  z-index: 2 !important;
 }
 
 .fvh-hero-card.solo-hero:hover .solo-avatar-box .fvh-hero-cutout-img {
@@ -5719,23 +5736,37 @@ html, body {
   box-sizing: border-box !important;
 }
 
-/* Topbar Alignment & Equal Heights */
+/* Topbar Alignment, Vertical Breathing Room & Comfortable Spacing */
 .fvh-topbar {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
+  min-height: 52px !important;
+  padding: 8px 14px !important;
+  overflow: visible !important;
+}
+.fvh-topbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+.fvh-topbar-brand img.emblem {
+  width: 34px !important;
+  height: 34px !important;
+  object-fit: contain !important;
 }
 .fvh-topbar-stats {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 5px !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
 }
 .fvh-topbar-stats button.fvh-pill {
-  height: 28px !important;
-  min-height: 28px !important;
-  max-height: 28px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -5743,13 +5774,18 @@ html, body {
   vertical-align: middle !important;
   margin: 0 !important;
   line-height: 1 !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
 }
-.fvh-topbar-stats button.fvh-pill.icon-only {
-  width: 28px !important;
-  min-width: 28px !important;
-  max-width: 28px !important;
+.fvh-topbar-stats button.fvh-pill.icon-only,
+#fvh-btn-settings {
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  height: 32px !important;
   padding: 0 !important;
-  font-size: 14px !important;
+  font-size: 15px !important;
+  flex-shrink: 0 !important;
 }
 .fvh-btn-topbar-profile {
   font-weight: 800 !important;
@@ -6200,8 +6236,8 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   display: block !important;
 }
 
-/* Topbar Mobile Hardening (<360px) */
-@media (max-width: 360px) {
+/* Topbar Mobile Responsiveness (<440px and <=360px) */
+@media (max-width: 440px) {
   .fvh-topbar-brand .logo-text {
     display: none !important;
   }
@@ -6209,15 +6245,29 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
     margin-right: 4px !important;
   }
   .fvh-topbar {
-    padding: 6px 8px !important;
+    padding: 6px 10px !important;
+    min-height: 48px !important;
     overflow: visible !important;
   }
   .fvh-topbar-stats {
-    gap: 3px !important;
+    gap: 4px !important;
   }
+}
+@media (max-width: 360px) {
+  .fvh-topbar-brand .logo-text {
+    display: none !important;
+  }
+}
   .fvh-btn-topbar-profile {
-    max-width: 80px !important;
+    max-width: 85px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+  }
+  #fvh-btn-settings {
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 32px !important;
+    flex-shrink: 0 !important;
   }
 }

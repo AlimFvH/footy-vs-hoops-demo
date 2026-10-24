@@ -175,11 +175,7 @@ const ITEM_CATALOG = {
   'ball_earthrise': { name: 'Earthrise Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 650 },
   'ball_cyber_neon': { name: 'Cyber Neon Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 800 },
 
-  // Celebrations & VFX
-  'cel_confetti': { name: 'Confetti Rain', category: 'celebrations', slot: 'celebration', price: 0, isDefault: true },
-  'cel_fireworks': { name: 'Victory Fireworks', category: 'celebrations', slot: 'celebration', price: 350 },
-  'cel_lightning': { name: 'Lightning Storm', category: 'celebrations', slot: 'celebration', price: 550 },
-  'cel_goldrain': { name: 'Gold Rain Celebration', category: 'celebrations', slot: 'celebration', price: 800 },
+  // Celebrations & Boosts removed completely per release specification
 
   // Trails
   'trail_default': { name: 'Classic Trail', category: 'trails', slot: 'trail', price: 0, isDefault: true },
@@ -190,13 +186,7 @@ const ITEM_CATALOG = {
   // Mystery Packs
   'pack_footy': { name: 'Footy Striker Pack', category: 'packs', price: 250, type: 'pack', packId: 'footy' },
   'pack_hoops': { name: 'Hoops All-Star Pack', category: 'packs', price: 250, type: 'pack', packId: 'hoops' },
-  'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' },
-
-  // Boosts (Catalog items with charges and distinct gameplay effects)
-  'boost_turbo': { name: 'Turbo Boots', category: 'boosts', slot: 'boost', price: 60, type: 'active', duration: 12 },
-  'boost_lungs': { name: 'Iron Lungs', category: 'boosts', slot: 'boost', price: 70, type: 'passive', duration: 0 },
-  'boost_power': { name: 'Sharp Shooter', category: 'boosts', slot: 'boost', price: 110, type: 'passive', duration: 0 },
-  'boost_coins': { name: 'Coin Doubler', category: 'boosts', slot: 'boost', price: 150, type: 'passive', duration: 0 }
+  'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' }
 };
 
 // Bundles Definition
@@ -302,11 +292,17 @@ const QUEST_REWARDS = {
   'a_first_win': { coins: 200, xp: 100 },
   'a_footy_master': { coins: 800, xp: 500 },
   'a_hoops_master': { coins: 800, xp: 500 },
-  'soc_tg_channel': { coins: 200, xp: 100 },
-  'soc_tg_chat': { coins: 150, xp: 75 },
-  'soc_x_follow': { coins: 200, xp: 100 },
+  'soc_tg_channel': { coins: 500, xp: 150 },
+  'soc_tg_chat': { coins: 450, xp: 120 },
+  'soc_x_follow': { coins: 400, xp: 100 },
   'soc_discord': { coins: 250, xp: 120 },
-  'soc_youtube': { coins: 200, xp: 100 }
+  'soc_youtube': { coins: 450, xp: 120 },
+  'q_sub_tg': { coins: 500, xp: 150 },
+  'q_sub_chat': { coins: 450, xp: 120 },
+  'q_sub_x': { coins: 400, xp: 100 },
+  'q_sub_insta': { coins: 400, xp: 100 },
+  'q_sub_yt': { coins: 450, xp: 120 },
+  'q_sub_tiktok': { coins: 400, xp: 100 }
 };
 
 // Battle Pass Rewards Definition (30 Levels Dual Track)
@@ -339,7 +335,7 @@ const BATTLE_PASS_CONFIG = (function() {
     else if (i === 2) premiumReward = { type: 'coins', name: '300 VIP Coins', val: 300 };
     else if (i === 3) premiumReward = { type: 'cosmetic', name: 'Neon Blaze Ball', itemId: 'ball_hoops_blaze' };
     else if (i === 4) premiumReward = { type: 'coins', name: '500 VIP Coins', val: 500 };
-    else if (i === 5) premiumReward = { type: 'cosmetic', name: 'Gold Rain Celebration', itemId: 'cel_goldrain' };
+    else if (i === 5) premiumReward = { type: 'coins', name: '700 VIP Coins', val: 700 };
     else if (i === 6) premiumReward = { type: 'coins', name: '600 VIP Coins', val: 600 };
     else if (i === 7) premiumReward = { type: 'cosmetic', name: 'Solar Blaze Ball', itemId: 'ball_footy_solar' };
     else if (i === 8) premiumReward = { type: 'pack', name: 'Ultimate Clash Pack', packId: 'clash' };
@@ -352,10 +348,10 @@ const BATTLE_PASS_CONFIG = (function() {
     else if (i === 15) premiumReward = { type: 'cosmetic', name: 'Mars Bio-Dome Arena', itemId: 'std_mars_dome' };
     else if (i === 16) premiumReward = { type: 'cosmetic', name: 'Laser Trail', itemId: 'trail_laser' };
     else if (i === 17) premiumReward = { type: 'coins', name: '1500 VIP Coins', val: 1500 };
-    else if (i === 18) premiumReward = { type: 'cosmetic', name: 'Victory Fireworks', itemId: 'cel_fireworks' };
+    else if (i === 18) premiumReward = { type: 'coins', name: '1600 VIP Coins', val: 1600 };
     else if (i === 19) premiumReward = { type: 'coins', name: '1800 VIP Coins', val: 1800 };
     else if (i === 20) premiumReward = { type: 'cosmetic', name: 'Apollo Lunar Arena', itemId: 'std_moon_crater' };
-    else if (i === 21) premiumReward = { type: 'cosmetic', name: 'Star Confetti', itemId: 'cel_confetti' };
+    else if (i === 21) premiumReward = { type: 'cosmetic', name: 'Magma Caldera Arena', itemId: 'std_volcano_caldera' };
     else if (i === 22) premiumReward = { type: 'coins', name: '2000 VIP Coins', val: 2000 };
     else if (i === 23) premiumReward = { type: 'cosmetic', name: 'Earthrise Ball', itemId: 'ball_earthrise' };
     else if (i === 24) premiumReward = { type: 'coins', name: '2500 VIP Coins', val: 2500 };
@@ -402,8 +398,7 @@ function createDefaultPlayer(playerId) {
       'ball_footy_classic',
       'ball_hoops_street',
       'frame_default',
-      'trail_default',
-      'cel_confetti'
+      'trail_default'
     ],
     equipped: {
       skin: 'skin_rookie',
@@ -411,7 +406,6 @@ function createDefaultPlayer(playerId) {
       'ball.hoops': 'ball_hoops_street',
       'stadium.footy': 'std_footy_classic',
       'stadium.hoops': 'std_hoops_street',
-      celebration: 'cel_confetti',
       trail: 'trail_default',
       frame: 'frame_default'
     },
