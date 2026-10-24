@@ -69,10 +69,14 @@ async function runNeonStagingIntegration() {
 
   // Safety Guard: Refuse to run against production database unless explicitly overridden
   const lowerUrl = stagingUrl.toLowerCase();
-  if (lowerUrl.includes('prod') && !process.env.ALLOW_PROD_INTEGRATION_TEST) {
-    console.error('\n[SAFETY HALT] Target database URL contains "prod".');
-    console.error('To protect production data, tests refuse to execute against databases with "prod" in URL.');
-    console.error('Ensure you are using a dedicated staging database URL (e.g. neondb_staging).');
+  const isLikelyProduction = lowerUrl.includes('prod') ||
+                             lowerUrl.includes('dpg-') ||
+                             (process.env.NODE_ENV === 'production' && !process.env.STAGING_DATABASE_URL);
+
+  if (isLikelyProduction && !process.env.ALLOW_PROD_INTEGRATION_TEST) {
+    console.error('\n[SAFETY HALT] Target database appears to be a production instance.');
+    console.error('To protect live player data, integration tests strictly refuse to run against production.');
+    console.error('Ensure you supply a dedicated staging database URL via STAGING_DATABASE_URL (e.g. neondb_staging).');
     process.exit(1);
   }
 

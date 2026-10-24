@@ -17,13 +17,27 @@ function resolveSsl(connStr, userSsl) {
   if (userSsl !== undefined) return userSsl;
   if (!connStr) return false;
   const lower = String(connStr).toLowerCase();
-  if (lower.includes('neon.tech') || lower.includes('sslmode=require') || lower.includes('ssl=true') || lower.includes('render.com')) {
+
+  const needsSsl = Boolean(
+    lower.includes('neon.tech') ||
+    lower.includes('sslmode=require') ||
+    lower.includes('ssl=true') ||
+    lower.includes('render.com') ||
+    process.env.NODE_ENV === 'production' ||
+    process.env.NODE_ENV === 'staging' ||
+    process.env.DATABASE_SSL === 'true'
+  );
+
+  if (!needsSsl) return false;
+
+  // Prefer strict certificate verification using standard trusted CA bundle (Let's Encrypt / DigiCert)
+  // Never disable certificate verification silently.
+  if (process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'false') {
+    console.warn('[SECURITY WARNING] PostgreSQL TLS certificate verification has been explicitly disabled via DATABASE_SSL_REJECT_UNAUTHORIZED=false. This is vulnerable to MITM attacks.');
     return { rejectUnauthorized: false };
   }
-  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging' || process.env.DATABASE_SSL === 'true') {
-    return { rejectUnauthorized: false };
-  }
-  return false;
+
+  return { rejectUnauthorized: true };
 }
 
 function maskConnectionUrl(connStr) {

@@ -32,6 +32,18 @@ async function runRollback(options = {}) {
   const isExport = options.action === 'export' || exportIdx !== -1;
   const isRestore = options.action === 'restore' || restoreIdx !== -1;
 
+  if (isRestore && dbUrl) {
+    const lower = String(dbUrl).toLowerCase();
+    const isProd = lower.includes('prod') || lower.includes('dpg-') || (process.env.NODE_ENV === 'production' && !process.env.STAGING_DATABASE_URL);
+    if (isProd && !process.env.CONFIRM_PRODUCTION_ROLLBACK) {
+      console.error('\n[SAFETY HALT] Restoration target appears to be a PRODUCTION database.');
+      console.error('Restoring will overwrite existing data. Refusing operation.');
+      console.error('Production rollback requires explicit owner approval and CONFIRM_PRODUCTION_ROLLBACK=true.\n');
+      if (options.throwOnError) throw new Error('Production rollback refused without explicit confirmation');
+      process.exit(1);
+    }
+  }
+
   if (!isExport && !isRestore) {
     console.error('Specify either --export <path> or --restore <backup-json-path>');
     if (options.throwOnError) throw new Error('Specify either export or restore');

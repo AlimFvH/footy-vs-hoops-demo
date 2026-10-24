@@ -81,6 +81,20 @@ async function runMigration(options = {}) {
     process.exit(1);
   }
 
+  // Safety check: Prevent accidental migration against production
+  if (dbUrl) {
+    const lower = String(dbUrl).toLowerCase();
+    const isProd = lower.includes('prod') || lower.includes('dpg-') || (process.env.NODE_ENV === 'production' && !process.env.STAGING_DATABASE_URL);
+    if (isProd && !process.env.CONFIRM_PRODUCTION_MIGRATION) {
+      console.error('\n[SAFETY HALT] Target database appears to be a PRODUCTION instance.');
+      console.error('To prevent accidental production data modification, migration is refused.');
+      console.error('To migrate staging, supply STAGING_DATABASE_URL.');
+      console.error('Production migration requires explicit owner approval and CONFIRM_PRODUCTION_MIGRATION=true.\n');
+      if (options.throwOnError) throw new Error('Production migration refused without explicit confirmation');
+      process.exit(1);
+    }
+  }
+
   // Mask database credentials in console
   let maskedUrl = options.pool ? 'In-Memory / Injected Pool' : dbUrl;
   if (dbUrl) {
