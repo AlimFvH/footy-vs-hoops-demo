@@ -1818,6 +1818,14 @@ const server = http.createServer((req, res) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+
+      if (webhookSecret) {
+        const receivedSecret = req.headers['x-telegram-bot-api-secret-token'];
+        if (receivedSecret !== webhookSecret) {
+          return sendJson(res, 403, { ok: false, error: 'invalid_webhook_secret', message: 'Webhook secret verification failed' });
+        }
+      }
 
       // A. Handle pre_checkout_query
       if (data && data.pre_checkout_query) {

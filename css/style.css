@@ -23,9 +23,9 @@ html, body {
   font-family: var(--font); overscroll-behavior: none; touch-action: none; position: fixed; inset: 0;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
-#stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; background: #070b14; }
+#stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; height: var(--tg-viewport-height, 100dvh); background: #070b14; }
 #gl { display: block; width: 100%; height: 100%; outline: none; image-rendering: -webkit-optimize-contrast; }
-#ui, #hud-mount { position: fixed; inset: 0; pointer-events: none; height: 100vh; height: 100dvh; }
+#ui, #hud-mount { position: fixed; inset: 0; pointer-events: none; height: 100vh; height: 100dvh; height: var(--tg-viewport-height, 100dvh); }
 #ui > * { pointer-events: auto; }
 button { font-family: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
 button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -271,6 +271,15 @@ kbd { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(25
 @media (max-width: 440px) {
   .btn-cluster { width: 232px; height: 232px; } .stamina { width: 100px; }
   .sb-team { min-width: 70px; padding: 6px 9px; } .sb-name { max-width: 50px; }
+}
+@media (max-width: 360px) {
+  .btn-cluster { width: 198px; height: 198px; }
+  .btn-shoot { width: 94px; height: 94px; }
+  .btn-tackle { width: 72px; height: 72px; bottom: 104px; }
+  .btn-sprint { width: 58px; height: 58px; right: 98px; bottom: 98px; }
+  .stick-zone { width: calc(100% - 204px); min-width: 38%; height: 60%; }
+  .stick-base { width: 108px; height: 108px; }
+  .stick-knob { width: 48px; height: 48px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 

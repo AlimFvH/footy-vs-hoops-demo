@@ -2001,17 +2001,20 @@
   function triggerHaptic(type) {
     try {
       if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-        if (type === 'success') {
-          window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        } else if (type === 'error') {
-          window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-        } else if (type === 'heavy') {
-          window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
-        } else if (type === 'medium') {
-          window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        var h = window.Telegram.WebApp.HapticFeedback;
+        if (type === 'success' || type === 'warning' || type === 'error') {
+          h.notificationOccurred(type);
+        } else if (type === 'heavy' || type === 'medium' || type === 'rigid' || type === 'soft') {
+          h.impactOccurred(type);
+        } else if (type === 'selection') {
+          if (typeof h.selectionChanged === 'function') h.selectionChanged();
+          else h.impactOccurred('light');
         } else {
-          window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+          h.impactOccurred('light');
         }
+      } else if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+        var pattern = (type === 'heavy') ? 30 : (type === 'medium') ? 18 : (type === 'success') ? [20, 40, 20] : 8;
+        navigator.vibrate(pattern);
       }
     } catch (e) {}
   }
@@ -9474,12 +9477,19 @@
               document.documentElement.style.setProperty('--tg-safe-top', (tg.safeAreaInset.top || 0) + 'px');
               document.documentElement.style.setProperty('--tg-safe-bottom', (tg.safeAreaInset.bottom || 0) + 'px');
             }
+            if (tg.viewportHeight) {
+              document.documentElement.style.setProperty('--tg-viewport-height', tg.viewportHeight + 'px');
+            }
+            if (tg.viewportStableHeight) {
+              document.documentElement.style.setProperty('--tg-viewport-stable-height', tg.viewportStableHeight + 'px');
+            }
           };
           applyTgInsets();
           if (typeof tg.onEvent === 'function') {
             try {
               tg.onEvent('contentSafeAreaChanged', applyTgInsets);
               tg.onEvent('safeAreaChanged', applyTgInsets);
+              tg.onEvent('viewportChanged', applyTgInsets);
             } catch (e) {}
           }
         }
