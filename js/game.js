@@ -5057,7 +5057,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return c;
     }
     exports.COURT_MARGIN = 2.4;
-    const PPM_B = 40;
+    const PPM_B = 60;
     function courtPlaneSize() {
         return [2 * (basketball_js_1.BB.W + basketball_js_1.BB.APRON + exports.COURT_MARGIN), 2 * (basketball_js_1.BB.L + basketball_js_1.BB.APRON + exports.COURT_MARGIN)];
     }
@@ -5066,85 +5066,179 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const [c, g] = makeCanvas(Math.round(pw * PPM_B), Math.round(pd * PPM_B));
         const X = (x) => (x + pw / 2) * PPM_B;
         const Z = (z) => (z + pd / 2) * PPM_B;
-        const { W, L } = basketball_js_1.BB;
-        g.fillStyle = hex(t.apron);
+        const { W, L, APRON } = basketball_js_1.BB;
+
+        // 1. Apron & Baseline Safety Run-off Surface
+        g.fillStyle = hex(t.apron || 0x111622);
         g.fillRect(0, 0, c.width, c.height);
-        const planks = Math.round((2 * (W + basketball_js_1.BB.APRON)) / 0.28);
-        const px0 = X(-W - basketball_js_1.BB.APRON);
-        const pwid = (2 * (W + basketball_js_1.BB.APRON) * PPM_B) / planks;
-        const courtTopZ = Z(-L - basketball_js_1.BB.APRON);
-        const courtBotZ = Z(L + basketball_js_1.BB.APRON);
+
+        // 2. High-Grade Northern Hard Maple Parquet Hardwood
+        const plankMeters = 0.14; // Realistic maple plank width
+        const totalCourtW = 2 * (W + APRON);
+        const planks = Math.round(totalCourtW / plankMeters);
+        const px0 = X(-W - APRON);
+        const pwid = (totalCourtW * PPM_B) / planks;
+        const courtTopZ = Z(-L - APRON);
+        const courtBotZ = Z(L + APRON);
         const courtLen = courtBotZ - courtTopZ;
-        // High-gloss parquet hardwood planks with staggered plank butt joints
+
+        // Base wood colors with natural tonal variation
+        const colA = hex(t.woodA || 0xd4a373);
+        const colB = hex(t.woodB || 0xbc8a5f);
+
         for (let i = 0; i < planks; i++) {
-            g.fillStyle = hex(i % 2 ? t.woodA : t.woodB);
-            g.fillRect(px0 + i * pwid, courtTopZ, pwid + 1, courtLen);
-            // Staggered butt joints every ~1.6m
-            const shift = (i % 4) * 0.25;
-            for (let y = courtTopZ + shift * 1.6 * PPM_B; y < courtBotZ; y += 1.6 * PPM_B) {
-                g.fillStyle = 'rgba(0,0,0,0.14)';
-                g.fillRect(px0 + i * pwid, y, pwid + 1, 1.5);
-                g.fillStyle = 'rgba(255,255,255,0.06)';
-                g.fillRect(px0 + i * pwid, y + 1.5, pwid + 1, 1);
+            // Subtle pseudo-random brightness variation per plank (hash-based)
+            const seed = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+            const variance = (seed - Math.floor(seed) - 0.5) * 0.08;
+            g.fillStyle = i % 2 ? colA : colB;
+            g.fillRect(px0 + i * pwid, courtTopZ, pwid + 0.8, courtLen);
+
+            // Fine vertical wood grain striations
+            for (let j = 0; j < 4; j++) {
+                g.fillStyle = variance > 0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.04)';
+                g.fillRect(px0 + i * pwid + (j * pwid) / 4, courtTopZ, 1.0, courtLen);
+            }
+
+            // Staggered plank butt joints every ~1.8m
+            const shift = ((i % 5) * 0.2);
+            for (let y = courtTopZ + shift * 1.8 * PPM_B; y < courtBotZ; y += 1.8 * PPM_B) {
+                // Bevel seam shadow
+                g.fillStyle = 'rgba(0,0,0,0.18)';
+                g.fillRect(px0 + i * pwid, y, pwid + 0.8, 1.2);
+                // Bevel seam highlight
+                g.fillStyle = 'rgba(255,255,255,0.08)';
+                g.fillRect(px0 + i * pwid, y + 1.2, pwid + 0.8, 0.8);
             }
         }
-        // Subtle wood grain noise
-        for (let i = 0; i < 3500; i++) {
-            g.fillStyle = `rgba(0,0,0,${Math.random() * 0.08})`;
-            g.fillRect(px0 + Math.random() * planks * pwid, courtTopZ + Math.random() * courtLen, 1.5, Math.random() * 20 + 8);
+
+        // Two-tone hardwood staining: Lighter natural maple inside 3-point arcs
+        for (const s of [-1, 1]) {
+            const hz = s * basketball_js_1.BB.HOOP_Z;
+            g.save();
+            g.beginPath();
+            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, 0, Math.PI * 2);
+            g.fillStyle = 'rgba(255,248,235,0.06)';
+            g.fill();
+            g.restore();
         }
-        g.fillStyle = 'rgba(0,0,0,0.28)';
+
+        // Dark apron perimeter border outline
+        g.fillStyle = 'rgba(0,0,0,0.32)';
         const ox = X(-W);
         const oz = Z(-L);
-        g.fillRect(px0, Z(-L - basketball_js_1.BB.APRON), c.width, oz - Z(-L - basketball_js_1.BB.APRON));
+        g.fillRect(px0, Z(-L - APRON), c.width, oz - Z(-L - APRON));
         g.fillRect(px0, Z(L), c.width, c.height - Z(L));
         g.fillRect(px0, oz, ox - px0, 2 * L * PPM_B);
         g.fillRect(X(W), oz, c.width - X(W), 2 * L * PPM_B);
-        g.strokeStyle = hex(t.line);
-        g.fillStyle = hex(t.line);
-        g.lineWidth = 0.075 * PPM_B * 1.6;
+
+        // 3. Official Tournament Court Markings
+        const lineCol = hex(t.line || 0xffffff);
+        g.strokeStyle = lineCol;
+        g.fillStyle = lineCol;
+        g.lineWidth = 0.08 * PPM_B * 1.4; // 8cm official line width
+        g.lineCap = 'butt';
+        g.lineJoin = 'miter';
+
+        // Outer boundary rectangle
         g.strokeRect(X(-W), Z(-L), 2 * W * PPM_B, 2 * L * PPM_B);
+
+        // Half-court line
         g.beginPath();
         g.moveTo(X(-W), Z(0));
         g.lineTo(X(W), Z(0));
         g.stroke();
-        g.fillStyle = hex(t.centerPaint);
-        g.globalAlpha = 0.55;
+
+        // Center Jump Circle (3.6m diameter)
+        const centerR = basketball_js_1.BB.CENTER_R * PPM_B;
+        g.fillStyle = hex(t.centerPaint || 0x0284c7);
+        g.globalAlpha = 0.65;
         g.beginPath();
-        g.arc(X(0), Z(0), basketball_js_1.BB.CENTER_R * PPM_B, 0, Math.PI * 2);
+        g.arc(X(0), Z(0), centerR, 0, Math.PI * 2);
         g.fill();
-        g.globalAlpha = 1;
+        g.globalAlpha = 1.0;
         g.beginPath();
-        g.arc(X(0), Z(0), basketball_js_1.BB.CENTER_R * PPM_B, 0, Math.PI * 2);
+        g.arc(X(0), Z(0), centerR, 0, Math.PI * 2);
         g.stroke();
+
+        // Inner center circle (1.8m diameter)
+        g.beginPath();
+        g.arc(X(0), Z(0), centerR * 0.5, 0, Math.PI * 2);
+        g.strokeStyle = 'rgba(255,255,255,0.85)';
+        g.lineWidth = 0.05 * PPM_B * 1.4;
+        g.stroke();
+        g.strokeStyle = lineCol;
+        g.lineWidth = 0.08 * PPM_B * 1.4;
+
+        // North & South Endzones (Key, Free Throw, 3-Point Arc, Restricted Area)
         for (const s of [-1, 1]) {
             const hz = s * basketball_js_1.BB.HOOP_Z;
             const ftz = s * (basketball_js_1.BB.HOOP_Z - basketball_js_1.BB.FT_DIST);
+
             g.save();
+            // Clip to court boundary
             g.beginPath();
             g.rect(X(-W), Z(-L), 2 * W * PPM_B, 2 * L * PPM_B);
             g.clip();
-            g.fillStyle = hex(t.paint);
-            g.globalAlpha = 0.75;
+
+            // Painted Free Throw Lane (Key: 4.9m wide by 5.8m long)
             const keyTop = Math.min(Z(ftz), Z(s * L));
-            g.fillRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, Math.abs(Z(ftz) - Z(s * L)));
-            g.globalAlpha = 1;
-            g.strokeRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, Math.abs(Z(ftz) - Z(s * L)));
+            const keyH = Math.abs(Z(ftz) - Z(s * L));
+            g.fillStyle = hex(t.paint || 0x1e3a8a);
+            g.globalAlpha = 0.82;
+            g.fillRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, keyH);
+            g.globalAlpha = 1.0;
+            g.strokeRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, keyH);
+
+            // Free Throw Circle (3.6m diameter = 1.8m radius)
+            // Solid semicircle extending toward halfcourt
             g.beginPath();
-            g.arc(X(0), Z(ftz), 1.8 * PPM_B, 0, Math.PI * 2);
+            g.arc(X(0), Z(ftz), 1.8 * PPM_B, s < 0 ? 0 : Math.PI, s < 0 ? Math.PI : Math.PI * 2);
             g.stroke();
+
+            // Dashed semicircle inside the key
+            g.save();
+            g.setLineDash([0.35 * PPM_B, 0.25 * PPM_B]);
             g.beginPath();
-            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, 0, Math.PI * 2);
+            g.arc(X(0), Z(ftz), 1.8 * PPM_B, s < 0 ? Math.PI : 0, s < 0 ? Math.PI * 2 : Math.PI);
             g.stroke();
+            g.restore();
+
+            // Rebound lane hash marks along the key sides (4 marks on each side)
+            for (let m = 1; m <= 4; m++) {
+                const markZ = Z(s * L - s * (1.75 + m * 0.95));
+                for (const side of [-1, 1]) {
+                    const markX = X(side * basketball_js_1.BB.KEY_W);
+                    g.fillRect(side < 0 ? markX - 0.25 * PPM_B : markX, markZ - 0.04 * PPM_B, 0.25 * PPM_B, 0.08 * PPM_B);
+                }
+            }
+
+            // Official 3-Point Arc (6.75m radius with straight corner lines)
+            const cornerDist = basketball_js_1.BB.THREE_R * 0.94;
+            const cornerBreakZ = s * (basketball_js_1.BB.HOOP_Z - Math.sqrt(Math.max(0, basketball_js_1.BB.THREE_R * basketball_js_1.BB.THREE_R - cornerDist * cornerDist)));
+            
             g.beginPath();
-            g.arc(X(0), Z(hz), 1.25 * PPM_B, 0, Math.PI * 2);
+            // Corner straight lines parallel to sidelines
+            g.moveTo(X(-cornerDist), Z(s * L));
+            g.lineTo(X(-cornerDist), Z(cornerBreakZ));
+            // 3-Point Arc
+            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, s < 0 ? 0.22 : Math.PI + 0.22, s < 0 ? Math.PI - 0.22 : Math.PI * 2 - 0.22);
+            g.lineTo(X(cornerDist), Z(s * L));
             g.stroke();
-            g.fillStyle = hex(t.rim);
+
+            // Restricted Area Arc (1.25m semicircle under rim)
             g.beginPath();
-            g.arc(X(0), Z(hz), 0.1 * PPM_B, 0, Math.PI * 2);
+            g.arc(X(0), Z(hz), 1.25 * PPM_B, s < 0 ? 0 : Math.PI, s < 0 ? Math.PI : Math.PI * 2);
+            g.stroke();
+
+            // Subtle shooter target square projection under hoop
+            g.fillStyle = hex(t.rim || 0xff6a1a);
+            g.beginPath();
+            g.arc(X(0), Z(hz), 0.12 * PPM_B, 0, Math.PI * 2);
             g.fill();
+
             g.restore();
         }
+
         return c;
     }
     function makeNetTexture(color = '#ffffff') {
@@ -5283,14 +5377,34 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return c;
     }
     function makeBackboardTexture() {
-        const [c, g] = makeCanvas(256, 160);
-        g.fillStyle = 'rgba(210,230,255,0.28)';
-        g.fillRect(0, 0, 256, 160);
+        const [c, g] = makeCanvas(512, 320);
+        // High-clarity shatterproof tempered glass with cyan tint
+        g.fillStyle = 'rgba(215, 235, 255, 0.32)';
+        g.fillRect(0, 0, 512, 320);
+
+        // Vibrant Red/Orange Perimeter LED Buzzer Light Strip (official arena buzzer indicator)
+        g.strokeStyle = '#ff3b00';
+        g.lineWidth = 10;
+        g.shadowColor = '#ff3b00';
+        g.shadowBlur = 10;
+        g.strokeRect(6, 6, 500, 308);
+        g.shadowBlur = 0;
+
+        // Inner white glass border line
         g.strokeStyle = '#ffffff';
+        g.lineWidth = 7;
+        g.strokeRect(16, 16, 480, 288);
+
+        // Official Inner Shooter's Target Box (59cm x 45cm, centered 15cm above rim)
         g.lineWidth = 8;
-        g.strokeRect(4, 4, 248, 152);
-        g.lineWidth = 6;
-        g.strokeRect(88, 70, 80, 70);
+        g.strokeRect(176, 135, 160, 140);
+
+        // Corner steel mounting reinforcement plates
+        g.fillStyle = 'rgba(200, 215, 235, 0.75)';
+        for (const [x, y] of [[20, 20], [476, 20], [20, 284], [476, 284]]) {
+            g.fillRect(x - 6, y - 6, 12, 12);
+        }
+
         return c;
     }
     function makeBallTexture(v) {
@@ -6864,19 +6978,20 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         buildArenaSkyAndHorizon(root, t, W, L, true, quality);
 
         const [pw, pd] = (0, textures_js_1.courtPlaneSize)();
-        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.55, shininess: 65, receiveShadow: true }));
+        // High-gloss polyurethane parquet reflection finish
+        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.88, shininess: 85, receiveShadow: true }));
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
-        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.78, spec: 0.95, shininess: 85, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
-        const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.6, castShadow: true });
-        const rimColorVal = t.rim || 0xff6a1a;
+        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.85, spec: 0.96, shininess: 90, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
+        const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.7, shininess: 75, castShadow: true });
+        const rimColorVal = t.rim || 0xff5500;
         const rimRgb = (0, math_js_6.rgb)(rimColorVal);
         const rimMat = (0, scene_js_1.material)({
             color: rimRgb,
-            emissive: rimRgb.map((v) => v * 0.4),
-            spec: 0.95,
-            shininess: 90,
+            emissive: [0.25, 0.08, 0],
+            spec: 0.96,
+            shininess: 95,
             castShadow: true
         });
         const poleMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x334155), spec: 0.5, castShadow: true });
@@ -6912,6 +7027,10 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 f.setPos(x, y, bz);
                 hoop.add(f);
             }
+            // Protective high-density safety padding along the bottom edge of backboard
+            const padEdge = new scene_js_1.Node(G.box(2 * basketball_js_2.BB.BOARD_W + 0.12, 0.10, 2 * basketball_js_2.BB.BOARD_T + 0.08), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.35 }));
+            padEdge.setPos(0, basketball_js_2.BB.BOARD_BOTTOM - 0.04, bz);
+            hoop.add(padEdge);
 
             // 2. High-Visibility Tournament Basketball Rim (Horizontal torus facing straight up!)
             // Unrotated torus already lies in horizontal X-Z plane with Y=height, perfectly concentric with scoring cylinder!
@@ -7285,24 +7404,21 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
             // 1. Muscular Legs, Dynamic Pro Shorts, Compression Socks & Authentic Footwear
             for (const [leg, knee, sx] of [[this.legL, this.kneeL, -0.14], [this.legR, this.kneeR, 0.14]]) {
-                leg.setPos(sx, foot ? 1.02 : 0.95, 0);
-                leg.add(at(mk(G.capsule(foot ? 0.112 : 0.105, foot ? 0.54 : 0.52, 8 + 2 * sg, 3), skin.skin, { skin: true }), 0, -0.22, 0));
+                leg.setPos(sx, foot ? 1.02 : 1.05, 0);
+                leg.add(at(mk(G.capsule(foot ? 0.112 : 0.108, foot ? 0.54 : 0.56, 8 + 2 * sg, 3), skin.skin, { skin: true }), 0, -0.22, 0));
                 
                 // Continuous Spherical Knee Saddle Cap at thigh joint terminus
-                if (foot) {
-                    leg.add(at(mk(G.sphere(0.092, 10, 8), skin.skin, { skin: true }), 0, -0.47, 0));
-                }
+                leg.add(at(mk(G.sphere(foot ? 0.092 : 0.094, 10, 8), skin.skin, { skin: true }), 0, -0.47, 0));
 
                 knee.setPos(0, -0.47, 0);
-                knee.add(at(mk(G.capsule(foot ? 0.088 : 0.082, foot ? 0.54 : 0.52, 8, 3), skin.skin, { skin: true }), 0, -0.2, 0));
+                knee.add(at(mk(G.capsule(foot ? 0.088 : 0.086, foot ? 0.54 : 0.56, 8, 3), skin.skin, { skin: true }), 0, -0.2, 0));
                 
-                // Anatomical Patella Knee Cap (tracks knee flexion seamlessly on front of joint)
-                if (foot) {
-                    const patella = mk(G.box(0.068, 0.085, 0.038), skin.skin, { skin: true, fine: true });
-                    patella.rotation = [-0.15, 0, 0];
-                    knee.add(at(patella, 0, 0.02, 0.082));
-                    knee.add(at(mk(G.sphere(0.086, 8, 6), skin.skin, { skin: true }), 0, 0, 0));
-                }
+                // Anatomical Patella Knee Cap (smoothly contoured on front of knee)
+                const patella = mk(G.sphere(0.080, 8, 6), skin.skin, { skin: true, fine: true });
+                patella.scale = [0.85, 1.25, 0.45];
+                patella.rotation = [-0.15, 0, 0];
+                knee.add(at(patella, 0, 0.02, 0.082));
+                knee.add(at(mk(G.sphere(0.086, 8, 6), skin.skin, { skin: true }), 0, 0, 0));
 
                 if (foot) {
                     // Football: Athletic shorts with lateral lightning stripe and bottom white hem piping
@@ -7348,25 +7464,35 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 }
                 else {
                     // Basketball: Loose long basketball shorts with prominent dual side stripes and split hem
-                    leg.add(at(mk(G.cylinder(0.17, 0.2, 0.62, 9 + sg), skin.shorts, { fabric: true }), 0, -0.2, 0));
-                    leg.add(at(mk(G.box(0.05, 0.58, 0.22), skin.secondary, { fabric: true }), sx < 0 ? -0.175 : 0.175, -0.2, 0));
-                    leg.add(at(mk(G.box(0.02, 0.56, 0.225), trim, { fine: true, fabric: true }), sx < 0 ? -0.185 : 0.185, -0.2, 0));
-                    leg.add(at(mk(G.cylinder(0.204, 0.204, 0.04, 10), white, { fine: true, fabric: true }), 0, -0.47, 0));
+                    leg.add(at(mk(G.cylinder(0.165, 0.195, 0.60, 9 + sg), skin.shorts, { fabric: true }), 0, -0.2, 0));
+                    leg.add(at(mk(G.box(0.045, 0.58, 0.22), skin.secondary, { fabric: true }), sx < 0 ? -0.17 : 0.17, -0.2, 0));
+                    leg.add(at(mk(G.box(0.018, 0.56, 0.225), trim, { fine: true, fabric: true }), sx < 0 ? -0.18 : 0.18, -0.2, 0));
+                    leg.add(at(mk(G.cylinder(0.198, 0.198, 0.04, 10), white, { fine: true, fabric: true }), 0, -0.47, 0));
 
-                    // Ribbed white crew socks
-                    knee.add(at(mk(G.cylinder(0.094, 0.088, 0.18, 8), white, { fabric: true }), 0, -0.35, 0));
-                    knee.add(at(mk(G.cylinder(0.096, 0.096, 0.035, 8), skin.secondary, { fine: true }), 0, -0.28, 0));
+                    // Ribbed crew socks with collegiate dual stripes
+                    knee.add(at(mk(G.cylinder(0.096, 0.090, 0.24, 8), white, { fabric: true }), 0, -0.32, 0));
+                    knee.add(at(mk(G.cylinder(0.098, 0.098, 0.03, 8), skin.secondary, { fine: true }), 0, -0.24, 0));
+                    knee.add(at(mk(G.cylinder(0.097, 0.097, 0.02, 8), skin.primary, { fine: true }), 0, -0.28, 0));
 
-                    // Chunky High-Top Basketball Sneakers with thick white EVA midsole cushion & colored tread
-                    knee.add(at(mk(G.box(0.19, 0.13, 0.31), skin.boots, { shoe: true }), 0, -0.39, 0.05));
+                    // Pro High-Top Basketball Sneaker:
+                    // Padded High-top Ankle Collar
+                    const collar = mk(G.cylinder(0.106, 0.106, 0.12, 8), skin.boots, { shoe: true });
+                    knee.add(at(collar, 0, -0.38, 0.02));
+
+                    // Main Sneaker Upper Body
+                    knee.add(at(mk(G.box(0.19, 0.12, 0.32), skin.boots, { shoe: true }), 0, -0.41, 0.06));
                     const toe = mk(G.sphere(0.095, 8, 6), skin.boots, { shoe: true });
                     toe.scale = [1, 0.75, 1.1];
-                    knee.add(at(toe, 0, -0.41, 0.2));
-                    // Thick sculpted white EVA midsole
-                    knee.add(at(mk(G.box(0.205, 0.06, 0.36), white, { shoe: true }), 0, -0.455, 0.07));
-                    // Grippy colored outsole tread
-                    knee.add(at(mk(G.box(0.21, 0.025, 0.37), skin.boots, { shoe: true }), 0, -0.485, 0.07));
-                    knee.add(at(mk(G.box(0.05, 0.07, 0.2), skin.accent, { fine: true, shoe: true }), sx < 0 ? -0.098 : 0.098, -0.39, 0.05));
+                    knee.add(at(toe, 0, -0.42, 0.21));
+
+                    // Sculpted EVA Foam Midsole with colored heel Air/Gel Cushion window
+                    knee.add(at(mk(G.box(0.205, 0.055, 0.37), white, { shoe: true }), 0, -0.455, 0.07));
+                    const airWindow = mk(G.box(0.07, 0.03, 0.12), skin.accent, { fine: true, shoe: true, spec: 0.9, shininess: 90 });
+                    knee.add(at(airWindow, sx < 0 ? -0.095 : 0.095, -0.455, -0.04));
+
+                    // Grippy Multi-Directional Herringbone Rubber Outsole
+                    knee.add(at(mk(G.box(0.21, 0.022, 0.375), dark, { shoe: true }), 0, -0.485, 0.07));
+                    knee.add(at(mk(G.box(0.048, 0.06, 0.18), skin.secondary, { fine: true, shoe: true }), sx < 0 ? -0.095 : 0.095, -0.40, 0.06));
                 }
                 leg.add(knee);
                 this.pivot.add(leg);
@@ -7387,23 +7513,21 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             chest.scale = [1, 1, 0.63];
             this.torso.add(chest);
 
-            if (foot) {
-                // Anatomical Pectoral Muscle Shelf (Left & Right pectorals with sternum division)
-                for (const sx of [-1, 1]) {
-                    const pec = mk(G.box(0.125, 0.155, 0.038), skin.primary, { fabric: true, rim: 0.28 });
-                    pec.rotation = [0.12, sx < 0 ? -0.12 : 0.12, 0];
-                    this.torso.add(at(pec, sx * 0.12, 0.19, 0.195));
-                    
-                    // Latissimus Dorsi flank V-taper
-                    const lat = mk(G.box(0.038, 0.40, 0.17), skin.primary, { fabric: true });
-                    lat.rotation = [0, 0, sx < 0 ? 0.12 : -0.12];
-                    this.torso.add(at(lat, sx * 0.27, -0.04, -0.02));
+            // Anatomical Pectoral Muscle Shelf (Left & Right pectorals with sternum division)
+            for (const sx of [-1, 1]) {
+                const pec = mk(G.box(foot ? 0.125 : 0.122, foot ? 0.155 : 0.145, 0.038), skin.primary, { fabric: true, rim: 0.28 });
+                pec.rotation = [0.12, sx < 0 ? -0.12 : 0.12, 0];
+                this.torso.add(at(pec, sx * 0.12, 0.19, 0.195));
+                
+                // Latissimus Dorsi flank V-taper
+                const lat = mk(G.box(0.038, 0.40, 0.17), skin.primary, { fabric: true });
+                lat.rotation = [0, 0, sx < 0 ? 0.12 : -0.12];
+                this.torso.add(at(lat, sx * (foot ? 0.27 : 0.26), -0.04, -0.02));
 
-                    // Posterior Scapular contours on back yoke
-                    const scap = mk(G.box(0.11, 0.16, 0.03), skin.primary, { fabric: true });
-                    scap.rotation = [-0.1, sx < 0 ? 0.14 : -0.14, 0];
-                    this.torso.add(at(scap, sx * 0.12, 0.18, -0.195));
-                }
+                // Posterior Scapular contours on back yoke
+                const scap = mk(G.box(0.11, 0.16, 0.03), skin.primary, { fabric: true });
+                scap.rotation = [-0.1, sx < 0 ? 0.14 : -0.14, 0];
+                this.torso.add(at(scap, sx * 0.12, 0.18, -0.195));
             }
 
             // Muscular Deltoid Shoulders
@@ -7509,9 +7633,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 arm.add(at(mk(G.capsule(foot ? 0.074 : 0.07, foot ? 0.42 : 0.4, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
                 
                 // Continuous Spherical Elbow Saddle Cap at joint pivot
-                if (foot) {
-                    arm.add(at(mk(G.sphere(0.068, 8, 6), skin.skin, { skin: true }), 0, -0.34, 0));
-                }
+                arm.add(at(mk(G.sphere(0.068, 8, 6), skin.skin, { skin: true }), 0, -0.34, 0));
 
                 if (foot) {
                     // Football: Sleeves with contrasting cuffs
@@ -7535,9 +7657,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 elbow.add(at(mk(G.capsule(foot ? 0.066 : 0.062, foot ? 0.44 : 0.42, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
                 
                 // Olecranon posterior elbow contour
-                if (foot) {
-                    elbow.add(at(mk(G.sphere(0.055, 6, 5), skin.skin, { fine: true, skin: true }), 0, 0.015, -0.065));
-                }
+                elbow.add(at(mk(G.sphere(0.055, 6, 5), skin.skin, { fine: true, skin: true }), 0, 0.015, -0.065));
                 elbow.add(at(mk(G.sphere(0.072, 7, 5), skin.skin, { fine: true, skin: true }), 0, -0.4, 0.01));
                 if (!foot)
                     elbow.add(at(mk(G.cylinder(0.072, 0.072, 0.055, 8), skin.secondary, { fine: true }), 0, -0.32, 0));
@@ -7549,30 +7669,28 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             this.head = new scene_js_3.Node();
             this.head.setPos(0, foot ? 2.05 : 1.99, 0);
 
-            // Sculpted cranium and athletic tapered jaw (7.8:1 athletic proportion for football)
-            const skullR = foot ? 0.175 : 0.205;
+            // Sculpted cranium and athletic tapered jaw (8.2:1 athletic proportion for basketball)
+            const skullR = foot ? 0.175 : 0.180;
             const skull = mk(G.sphere(skullR, 12 + 2 * sg, 9), skin.skin, { skin: true });
-            skull.scale = foot ? [0.94, 1.05, 0.98] : [0.95, 1.07, 1];
+            skull.scale = foot ? [0.94, 1.05, 0.98] : [0.94, 1.06, 0.98];
             this.head.add(skull);
 
-            const jawR = foot ? 0.12 : 0.145;
+            const jawR = foot ? 0.12 : 0.125;
             const jaw = mk(G.sphere(jawR, 8, 6), skin.skin, { skin: true });
-            this.head.add(at(jaw, 0, foot ? -0.082 : -0.095, foot ? 0.05 : 0.06));
+            this.head.add(at(jaw, 0, foot ? -0.082 : -0.088, foot ? 0.05 : 0.055));
 
             // Athletic Cheeks and Ears
             for (const sx of [-1, 1]) {
                 // Cheeks
-                this.head.add(at(mk(G.sphere(foot ? 0.062 : 0.075, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.095 : 0.11), -0.04, foot ? 0.105 : 0.12));
+                this.head.add(at(mk(G.sphere(foot ? 0.062 : 0.065, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.095 : 0.10), -0.04, foot ? 0.105 : 0.11));
                 // Ears
-                this.head.add(at(mk(G.sphere(foot ? 0.038 : 0.044, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.172 : 0.198), 0.0, 0.0));
-                this.head.add(at(mk(G.sphere(foot ? 0.022 : 0.026, 5, 4), dark, { fine: true }), sx * (foot ? 0.176 : 0.202), 0.0, 0.0));
+                this.head.add(at(mk(G.sphere(foot ? 0.038 : 0.040, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.172 : 0.178), 0.0, 0.0));
+                this.head.add(at(mk(G.sphere(foot ? 0.022 : 0.024, 5, 4), dark, { fine: true }), sx * (foot ? 0.176 : 0.182), 0.0, 0.0));
 
                 // Sculpted Zygomatic Arch & Athletic Mandible Contour
-                if (foot) {
-                    const zygoma = mk(G.box(0.040, 0.024, 0.026), skin.skin, { fine: true, skin: true });
-                    zygoma.rotation = [0, sx < 0 ? 0.22 : -0.22, sx < 0 ? -0.15 : 0.15];
-                    this.head.add(at(zygoma, sx * 0.115, -0.02, 0.118));
-                }
+                const zygoma = mk(G.box(0.040, 0.024, 0.026), skin.skin, { fine: true, skin: true });
+                zygoma.rotation = [0, sx < 0 ? 0.22 : -0.22, sx < 0 ? -0.15 : 0.15];
+                this.head.add(at(zygoma, sx * (foot ? 0.115 : 0.118), -0.02, foot ? 0.118 : 0.122));
             }
 
             // Expressive 3D Athlete Eyes
@@ -7754,7 +7872,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const land = this.landT > 0 ? Math.sin((this.landT / 0.2) * Math.PI) * 0.12 : 0;
             const bob = Math.abs(sp) * amp * 0.08;
             const bank = this.ease('bank', -Math.max(-0.3, Math.min(0.3, yawRate * 0.028)) * Math.min(1, speed / 4), 9, dt);
-            const pelvicTilt = foot ? Math.min(0.12, speed * 0.022) : 0;
+            const pelvicTilt = Math.min(0.12, speed * (foot ? 0.022 : 0.020));
             this.pivot.position[1] = lift - slide * (foot ? 0.52 : 0.42) - crouch - land + bob;
             this.pivot.rotation[0] = lean + land * 0.8 + pelvicTilt;
             this.pivot.rotation[2] = roll + sp * amp * 0.04 + bank;
@@ -7828,10 +7946,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     this.kneeR.rotation[0] = this.kneeR.rotation[0] * (1 - slide) + 0.08 * slide;
                 }
                 else {
-                    this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) - 1.0 * slide;
-                    this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 1.4 * slide;
-                    this.kneeL.rotation[0] *= 1 - slide;
-                    this.kneeR.rotation[0] *= 1 - slide;
+                    // Basketball: Athletic low defensive slide stance with wide lateral base
+                    this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) - 0.45 * slide;
+                    this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 0.45 * slide;
+                    this.legL.rotation[2] = -0.26 * slide;
+                    this.legR.rotation[2] = 0.26 * slide;
+                    this.kneeL.rotation[0] = this.kneeL.rotation[0] * (1 - slide) + 0.85 * slide;
+                    this.kneeR.rotation[0] = this.kneeR.rotation[0] * (1 - slide) + 0.85 * slide;
                 }
             }
             if (land > 0.01) {
@@ -7845,11 +7966,30 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const baseBend = this.ease('elbow', a.shootCharging ? 1.42 : 0.5 + amp * 0.95, 14, dt);
             this.elbowL.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, sp));
             this.elbowR.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, -sp));
-            if (this.mode === 'hoops' && carrying && armUp < 0.05) {
-                this.armR.rotation[0] = -0.7 + Math.sin(a.runPhase * 7) * 0.5;
-                this.elbowR.rotation[0] = -0.8 + Math.sin(a.runPhase * 7) * 0.45;
+            if (this.mode === 'hoops') {
+                if (a.shootCharging) {
+                    // Cocking ball above forehead: right shooting elbow tucked underneath, left guide hand up
+                    this.armR.rotation[0] = -2.1 - a.shootCharge * 0.45;
+                    this.elbowR.rotation[0] = -1.65 - a.shootCharge * 0.35;
+                    this.armL.rotation[0] = -1.95 - a.shootCharge * 0.35;
+                    this.elbowL.rotation[0] = -1.15;
+                }
+                else if (a.shotT > 0) {
+                    // Apex release with iconic goose-neck wrist snap follow-through
+                    const snapW = Math.min(1, a.shotT / 0.25);
+                    this.armR.rotation[0] = -2.75 * (1 - 0.2 * snapW);
+                    this.elbowR.rotation[0] = -0.22 - 0.5 * (1 - snapW);
+                    this.armL.rotation[0] = -1.85 * (1 - snapW);
+                    this.elbowL.rotation[0] = -0.6 * (1 - snapW);
+                }
+                else if (carrying && armUp < 0.05) {
+                    // Dynamic rhythmic dribbling: arm pushes downward in cadence with ball bounce
+                    const dribbleCadence = (this.t * 9) % (Math.PI * 2);
+                    this.armR.rotation[0] = -0.55 + Math.sin(dribbleCadence) * 0.42;
+                    this.elbowR.rotation[0] = -0.75 + Math.sin(dribbleCadence) * 0.38;
+                }
             }
-            if (a.shotT > 0)
+            if (a.shotT > 0 && foot)
                 this.elbowR.rotation[0] *= 0.15;
             const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : armUp > 1 ? 0.15 : 0.12, 14, dt);
             this.armL.rotation[2] = -spread + sp * amp * 0.05 + (foot && kickP >= 0 ? -0.32 * kick : 0);
