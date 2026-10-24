@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const url = require('url');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8099;
-const DATA_FILE = path.join(__dirname, 'data.json');
+const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
 
 // In-Memory State
 let state = {
