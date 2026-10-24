@@ -29,155 +29,110 @@ let state = {
 
 const TON_RECIPIENT_ADDRESS = process.env.TON_RECIPIENT_ADDRESS || 'EQBvW8Z5huBkMJYdn30BlgG3mM2N05hpVNeSlfG2L89xAOn3';
 
+// Configurable Telegram Stars prices from environment variable or unconfigured
+let ENV_STARS_PRICES = {};
+try {
+  if (process.env.STARS_PRICES_JSON) {
+    ENV_STARS_PRICES = JSON.parse(process.env.STARS_PRICES_JSON);
+  }
+} catch (e) {
+  console.warn('Failed to parse STARS_PRICES_JSON', e);
+}
+
 const PRODUCT_CATALOG = {
-  // Battle Pass VIP Track (Digital good sold inside Telegram Mini App strictly uses Telegram Stars XTR)
-  'battlepass_premium': {
-    name: 'Battle Pass Season 1 VIP',
-    starsPrice: 250,
-    type: 'battlepass'
+  // FvH Currency Packages (Stage 1 Specification: 100, 500, 1,200, 3,000 FvH Coin)
+  // Stars prices are unconfigured by default until officially specified
+  'pkg_coins_100': {
+    id: 'pkg_coins_100',
+    name: '100 FvH Coin',
+    coinsAmount: 100,
+    starsPrice: ENV_STARS_PRICES['pkg_coins_100'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_100']) : null,
+    type: 'currency'
   },
-  // Configured FvH Currency Packages (Prompt 4 Section 4)
+  'pkg_coins_500': {
+    id: 'pkg_coins_500',
+    name: '500 FvH Coin',
+    coinsAmount: 500,
+    starsPrice: ENV_STARS_PRICES['pkg_coins_500'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_500']) : null,
+    type: 'currency'
+  },
+  'pkg_coins_1200': {
+    id: 'pkg_coins_1200',
+    name: '1,200 FvH Coin',
+    coinsAmount: 1200,
+    starsPrice: ENV_STARS_PRICES['pkg_coins_1200'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_1200']) : null,
+    type: 'currency'
+  },
+  'pkg_coins_3000': {
+    id: 'pkg_coins_3000',
+    name: '3,000 FvH Coin',
+    coinsAmount: 3000,
+    starsPrice: ENV_STARS_PRICES['pkg_coins_3000'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_3000']) : null,
+    type: 'currency'
+  },
+  // Aliases for backwards compatibility with earlier test keys
   'pkg_coins_starter': {
+    id: 'pkg_coins_starter',
     name: 'Starter Coin Pack (500 FvH Coin)',
     coinsAmount: 500,
-    starsPrice: 50,
-    tonPrice: 0.3,
+    starsPrice: ENV_STARS_PRICES['pkg_coins_500'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_500']) : null,
     type: 'currency'
   },
   'pkg_coins_pro': {
+    id: 'pkg_coins_pro',
     name: 'Pro Coin Pack (1,200 FvH Coin)',
     coinsAmount: 1200,
-    starsPrice: 100,
-    tonPrice: 0.6,
+    starsPrice: ENV_STARS_PRICES['pkg_coins_1200'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_1200']) : null,
     type: 'currency'
-  },
-  'pkg_coins_elite': {
-    name: 'Elite Coin Pack (2,800 FvH Coin)',
-    coinsAmount: 2800,
-    starsPrice: 200,
-    tonPrice: 1.2,
-    type: 'currency'
-  },
-  'pkg_coins_champion': {
-    name: 'Champion Coin Pack (6,500 FvH Coin)',
-    coinsAmount: 6500,
-    starsPrice: 400,
-    tonPrice: 2.5,
-    type: 'currency'
-  },
-  'pkg_coins_legend': {
-    name: 'Legend Coin Pack (15,000 FvH Coin)',
-    coinsAmount: 15000,
-    starsPrice: 800,
-    tonPrice: 5.0,
-    type: 'currency'
-  },
-  // Themed Cosmetic Bundles (Prompt 4 Section 5)
-  'bundle_footy_starter': {
-    name: 'FOOTY Starter Bundle',
-    coinsPrice: 2000,
-    starsPrice: 150,
-    tonPrice: 0.9,
-    type: 'bundle'
-  },
-  'bundle_hoops_starter': {
-    name: 'HOOPS Starter Bundle',
-    coinsPrice: 2000,
-    starsPrice: 150,
-    tonPrice: 0.9,
-    type: 'bundle'
-  },
-  'bundle_ocean_arena': {
-    name: 'Ocean Arena Collection',
-    coinsPrice: 5000,
-    starsPrice: 350,
-    tonPrice: 2.2,
-    type: 'bundle'
-  },
-  'bundle_mars_explorer': {
-    name: 'Mars Explorer Collection',
-    coinsPrice: 5500,
-    starsPrice: 400,
-    tonPrice: 2.5,
-    type: 'bundle'
-  },
-  'bundle_lunar_champ': {
-    name: 'Lunar Championship Collection',
-    coinsPrice: 6000,
-    starsPrice: 450,
-    tonPrice: 2.8,
-    type: 'bundle'
-  },
-  'bundle_cyber_neon': {
-    name: 'Cyber Neon Collection',
-    coinsPrice: 7000,
-    starsPrice: 500,
-    tonPrice: 3.2,
-    type: 'bundle'
-  },
-  'bundle_legendary_champs': {
-    name: 'Legendary Champions Bundle',
-    coinsPrice: 12000,
-    starsPrice: 850,
-    tonPrice: 5.0,
-    type: 'bundle'
   }
 };
 
 // Authoritative In-Game Cosmetic Items Catalog
+// Price Tiers per Stage 1 specification:
+// Skins: Common 300, Rare 700, Epic 1500
+// Football Balls: Common 200, Rare 500, Epic 1000
+// Basketball Balls: Common 200, Rare 500, Epic 1000
 const ITEM_CATALOG = {
   // Kits / Jerseys
-  'skin_rookie': { name: 'Rookie Blue', category: 'skins', slot: 'skin', price: 0, isDefault: true },
-  'skin_crimson': { name: 'Crimson Comet', category: 'skins', slot: 'skin', price: 120 },
-  'skin_neon': { name: 'Neon Striker', category: 'skins', slot: 'skin', price: 260 },
-  'skin_frost': { name: 'Frost Giant', category: 'skins', slot: 'skin', price: 280 },
-  'skin_shadow': { name: 'Shadow Ninja', category: 'skins', slot: 'skin', price: 480 },
-  'skin_solar': { name: 'Solar Flare', category: 'skins', slot: 'skin', price: 520 },
-  'skin_gold': { name: 'Golden Legend', category: 'skins', slot: 'skin', price: 950 },
-  'skin_cyber': { name: 'Cyber Blue Jersey', category: 'skins', slot: 'skin', price: 1100 },
-  'skin_sunset': { name: 'Sunset Gold Jersey', category: 'skins', slot: 'skin', price: 260 },
-  'skin_hydro': { name: 'Hydro Striker Kit', category: 'skins', slot: 'skin', price: 480 },
-  'skin_mars': { name: 'Mars Rover Kit', category: 'skins', slot: 'skin', price: 520 },
-  'skin_astronaut': { name: 'Astronaut Kit', category: 'skins', slot: 'skin', price: 950 },
-  'skin_neon_elite': { name: 'Cyber Striker #10', category: 'skins', slot: 'skin', price: 1100 },
+  'skin_rookie': { name: 'Rookie Blue', category: 'skins', slot: 'skin', rarity: 'common', price: 0, isDefault: true },
+  'skin_crimson': { name: 'Crimson Comet', category: 'skins', slot: 'skin', rarity: 'common', price: 300 },
+  'skin_sunset': { name: 'Sunset Gold Jersey', category: 'skins', slot: 'skin', rarity: 'common', price: 300 },
+  'skin_neon': { name: 'Neon Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
+  'skin_frost': { name: 'Frost Giant', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
+  'skin_hydro': { name: 'Hydro Striker Kit', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
+  'skin_mars': { name: 'Mars Rover Kit', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
+  'skin_shadow': { name: 'Shadow Ninja', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+  'skin_solar': { name: 'Solar Flare', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+  'skin_gold': { name: 'Golden Legend', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+  'skin_cyber': { name: 'Cyber Blue Jersey', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+  'skin_astronaut': { name: 'Astronaut Kit', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+  'skin_neon_elite': { name: 'Cyber Striker #10', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
 
-  // Arenas / Stadiums (10 Themed Environments + Classics)
+  // Football Balls
+  'ball_footy_classic': { name: 'Classic Leather', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+  'ball_footy_plasma': { name: 'Plasma Pulse', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
+  'ball_footy_neon': { name: 'Cyan Core Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
+  'ball_footy_solar': { name: 'Solar Blaze Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
+  'ball_footy_inferno': { name: 'Inferno Ball Skin', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
+  'ball_footy_gold': { name: 'Solid Gold', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
+  'ball_earthrise': { name: 'Earthrise Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
+
+  // Basketball Balls
+  'ball_hoops_street': { name: 'Raw Street', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+  'ball_hoops_blaze': { name: 'Neon Blaze Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 200 },
+  'ball_hoops_chrome': { name: 'Chrome Spark', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 500 },
+  'ball_tidal': { name: 'Tidal Wave Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 500 },
+  'ball_hoops_midnight': { name: 'Midnight Matte', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
+  'ball_cyber_neon': { name: 'Cyber Neon Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
+
+  // Standard Starter Stadiums (preserved for match loading)
   'std_footy_classic': { name: 'Classic Grass', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 0, isDefault: true },
-  'std_footy_night': { name: 'Night Arena', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 300 },
-  'std_footy_golden': { name: 'Golden Hour', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 520 },
-  'std_footy_neon': { name: 'Neon Turf', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 900 },
   'std_hoops_street': { name: 'Street Classic', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 0, isDefault: true },
-  'std_hoops_neon': { name: 'Neon Court', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 350 },
-  'std_hoops_gold': { name: 'Golden Court', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 600 },
-  'std_hoops_sky': { name: 'Rooftop Sky', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 950 },
-  'std_ocean_sunset': { name: 'Coastal Sunset Court', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 580 },
-  'std_forest_redwood': { name: 'Redwood Forest Arena', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 560 },
-  'std_space_orbit': { name: 'Orbital Space Colosseum', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 900 },
-  'std_mars_dome': { name: 'Mars Bio-Dome Arena', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 750 },
-  'std_moon_crater': { name: 'Apollo Lunar Arena', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 680 },
-  'std_underwater_dome': { name: 'Abyssal Ocean Dome', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 820 },
-  'std_cyber_megacity': { name: 'Neo Tokyo Megacity', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 950 },
-  'std_volcano_caldera': { name: 'Magma Caldera Arena', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 850 },
-  'std_floating_islands': { name: 'Aetheria Sky Islands', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 880 },
-  'std_crystal_cavern': { name: 'Prismatic Crystal Cave', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 790 },
+  'std_ocean_sunset': { name: 'Coastal Sunset Court', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 0 },
+  'std_volcano_caldera': { name: 'Magma Caldera Arena', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', price: 0 },
 
-  // Balls
-  'ball_footy_classic': { name: 'Classic Leather', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 0, isDefault: true },
-  'ball_footy_plasma': { name: 'Plasma Pulse', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 180 },
-  'ball_footy_gold': { name: 'Solid Gold', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 450 },
-  'ball_footy_inferno': { name: 'Inferno Ball Skin', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 700 },
-  'ball_footy_solar': { name: 'Solar Blaze Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 550 },
-  'ball_hoops_street': { name: 'Raw Street', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 0, isDefault: true },
-  'ball_hoops_blaze': { name: 'Neon Blaze Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 200 },
-  'ball_hoops_chrome': { name: 'Chrome Spark', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 480 },
-  'ball_hoops_midnight': { name: 'Midnight Matte', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 750 },
-  'ball_tidal': { name: 'Tidal Wave Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 600 },
-  'ball_earthrise': { name: 'Earthrise Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', price: 650 },
-  'ball_cyber_neon': { name: 'Cyber Neon Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', price: 800 },
-
-  // Celebrations & Boosts removed completely per release specification
-
-  // Trails
+  // Default accessories
+  'frame_default': { name: 'Default Frame', category: 'frames', slot: 'frame', price: 0, isDefault: true },
   'trail_default': { name: 'Classic Trail', category: 'trails', slot: 'trail', price: 0, isDefault: true },
   'trail_fire': { name: 'Fire Trail', category: 'trails', slot: 'trail', price: 250 },
   'trail_rainbow': { name: 'Rainbow Trail', category: 'trails', slot: 'trail', price: 400 },
@@ -280,29 +235,28 @@ const BUNDLE_CATALOG = {
   }
 };
 
-// Quest Rewards Configuration
+// Quest Rewards Configuration (Stage 1 approved rules: Social tasks 50 FvH Coin, Referral 100 FvH Coin)
 const QUEST_REWARDS = {
-  'prime_daily': { coins: 250, xp: 100 },
-  'd_play3': { coins: 80, xp: 40 },
-  'd_score5': { coins: 120, xp: 60 },
-  'd_win1': { coins: 150, xp: 75 },
-  'w_win10': { coins: 500, xp: 300 },
-  'w_score20': { coins: 400, xp: 250 },
-  'w_matches15': { coins: 350, xp: 200 },
-  'a_first_win': { coins: 200, xp: 100 },
-  'a_footy_master': { coins: 800, xp: 500 },
-  'a_hoops_master': { coins: 800, xp: 500 },
-  'soc_tg_channel': { coins: 500, xp: 150 },
-  'soc_tg_chat': { coins: 450, xp: 120 },
-  'soc_x_follow': { coins: 400, xp: 100 },
-  'soc_discord': { coins: 250, xp: 120 },
-  'soc_youtube': { coins: 450, xp: 120 },
-  'q_sub_tg': { coins: 500, xp: 150 },
-  'q_sub_chat': { coins: 450, xp: 120 },
-  'q_sub_x': { coins: 400, xp: 100 },
-  'q_sub_insta': { coins: 400, xp: 100 },
-  'q_sub_yt': { coins: 450, xp: 120 },
-  'q_sub_tiktok': { coins: 400, xp: 100 }
+  'prime_daily': { coins: 150, xp: 50 },
+  'd_play3': { coins: 50, xp: 30 },
+  'd_score5': { coins: 80, xp: 40 },
+  'd_win1': { coins: 100, xp: 50 },
+  'w_win10': { coins: 300, xp: 150 },
+  'w_score20': { coins: 250, xp: 120 },
+  'w_matches15': { coins: 200, xp: 100 },
+  'a_first_win': { coins: 100, xp: 50 },
+  // Approved Stage 1 Social Tasks: 50 FvH Coin each
+  'q_sub_tg': { coins: 50, xp: 50 },
+  'q_sub_chat': { coins: 50, xp: 50 },
+  'q_sub_x': { coins: 50, xp: 50 },
+  'q_sub_insta': { coins: 50, xp: 50 },
+  'q_sub_yt': { coins: 50, xp: 50 },
+  'q_sub_tiktok': { coins: 50, xp: 50 },
+  'soc_tg_channel': { coins: 50, xp: 50 },
+  'soc_tg_chat': { coins: 50, xp: 50 },
+  'soc_x_follow': { coins: 50, xp: 50 },
+  // Approved Stage 1 Referral Qualification: 100 FvH Coin
+  'q_referral': { coins: 100, xp: 100 }
 };
 
 // Battle Pass Rewards Definition (30 Levels Dual Track)
@@ -389,8 +343,13 @@ function currentLevelForXp(totalXp) {
 function createDefaultPlayer(playerId) {
   return {
     playerId: playerId,
+    playerName: null,
+    selectedTeam: null,
+    selectedCharacter: null,
+    teamChosen: false,
     coins: 350,
     xp: 0,
+    transactions: [],
     owned: [
       'skin_rookie',
       'std_footy_classic',
@@ -402,6 +361,8 @@ function createDefaultPlayer(playerId) {
     ],
     equipped: {
       skin: 'skin_rookie',
+      'skin.footy': 'skin_rookie',
+      'skin.hoops': 'skin_solar',
       'ball.footy': 'ball_footy_classic',
       'ball.hoops': 'ball_hoops_street',
       'stadium.footy': 'std_footy_classic',
@@ -451,6 +412,13 @@ function addLedgerEntry(playerId, type, deltaCoins, deltaXp, balanceAfter, reaso
     timestamp: Date.now()
   };
   state.economyLedger.push(entry);
+  if (state.players && state.players[playerId]) {
+    if (!state.players[playerId].transactions) state.players[playerId].transactions = [];
+    state.players[playerId].transactions.push(entry);
+    if (state.players[playerId].transactions.length > 50) {
+      state.players[playerId].transactions = state.players[playerId].transactions.slice(-50);
+    }
+  }
   persistState();
   return entry;
 }
@@ -1537,6 +1505,23 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 404, { ok: false, error: 'product_not_found' });
       }
 
+      if (!prod.starsPrice || typeof prod.starsPrice !== 'number') {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'stars_price_unconfigured',
+          message: 'Telegram Stars price is not yet configured for this package'
+        });
+      }
+
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!botToken) {
+        return sendJson(res, 200, {
+          ok: false,
+          error: 'bot_token_unconfigured',
+          message: 'TELEGRAM_BOT_TOKEN is not configured on the server. Stars checkout requires active bot credentials.'
+        });
+      }
+
       const orderId = 'stars_' + crypto.randomBytes(8).toString('hex');
       const order = {
         orderId,
@@ -1555,7 +1540,6 @@ const server = http.createServer((req, res) => {
       state.starsInvoices[orderId] = order;
       persistState();
 
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (botToken) {
         try {
           const https = require('https');
@@ -2479,6 +2463,83 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  // -------------------------------------------------------------
+  // POST /api/profile/select-team
+  // First-launch team selection: saves FOOTY or HOOPS and qualifies referrals
+  // -------------------------------------------------------------
+  if (pathname === '/api/profile/select-team' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
+      const playerId = String(data.playerId || '').trim();
+      const team = String(data.team || data.character || '').trim().toLowerCase();
+      if (!playerId || (team !== 'footy' && team !== 'hoops')) {
+        return sendJson(res, 400, { ok: false, error: 'invalid_team_selection', message: 'Team must be footy or hoops' });
+      }
+      const player = getPlayer(playerId);
+      if (!player) {
+        return sendJson(res, 404, { ok: false, error: 'player_not_found' });
+      }
+
+      // If player already chose a team, lock it for the 15-day season to prevent manipulation
+      if (player.teamChosen && player.selectedTeam && player.selectedTeam !== team) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'team_already_locked',
+          message: 'Team selection is locked for the 15-day season',
+          selectedTeam: player.selectedTeam
+        });
+      }
+
+      player.selectedTeam = team;
+      player.selectedCharacter = team;
+      player.teamChosen = true;
+      player.updatedAt = Date.now();
+
+      // Check referral qualification: If this is a newly qualified player, credit referrer with 100 FvH Coin
+      let referralQualified = false;
+      let referrerId = null;
+      Object.keys(state.referrals).forEach(refCode => {
+        const refRecord = state.referrals[refCode];
+        if (refRecord && Array.isArray(refRecord.referred)) {
+          refRecord.referred.forEach(r => {
+            if (r.playerId === playerId && !r.qualified) {
+              r.qualified = true;
+              r.qualifiedAt = Date.now();
+              referralQualified = true;
+              referrerId = refRecord.ownerId;
+              const referrer = state.players[refRecord.ownerId];
+              if (referrer) {
+                referrer.coins = (referrer.coins || 0) + 100;
+                referrer.updatedAt = Date.now();
+                addLedgerEntry(
+                  referrer.playerId,
+                  'reward',
+                  100,
+                  50,
+                  referrer.coins,
+                  'Qualified referral reward (100 FvH Coin)',
+                  'ref_reward_' + playerId
+                );
+              }
+            }
+          });
+        }
+      });
+
+      persistState();
+
+      return sendJson(res, 200, {
+        ok: true,
+        success: true,
+        playerId: player.playerId,
+        selectedTeam: player.selectedTeam,
+        teamChosen: true,
+        referralQualified,
+        referrerId
+      });
+    });
+  }
+
   // 2. Initial Sync / Migration for local profiles
   if (pathname === '/api/economy/sync' && req.method === 'POST') {
     return readJsonBody(req, (err, data) => {
@@ -2534,8 +2595,13 @@ const server = http.createServer((req, res) => {
           player.stats.winsByDiff.hard = Math.max(player.stats.winsByDiff.hard || 0, Number(data.stats.winsByDiff.hard) || 0);
         }
       }
-      if (data.selectedCharacter) {
-        player.selectedCharacter = data.selectedCharacter;
+      if (data.selectedTeam || data.selectedCharacter) {
+        const team = (data.selectedTeam || data.selectedCharacter).toLowerCase();
+        if ((team === 'footy' || team === 'hoops') && !player.teamChosen) {
+          player.selectedTeam = team;
+          player.selectedCharacter = team;
+          player.teamChosen = true;
+        }
       }
       if (data.photoUrl && typeof data.photoUrl === 'string') {
         player.photoUrl = data.photoUrl.trim().slice(0, 500);
@@ -2553,6 +2619,8 @@ const server = http.createServer((req, res) => {
         ok: true,
         success: true,
         playerId: player.playerId,
+        selectedTeam: player.selectedTeam,
+        teamChosen: Boolean(player.teamChosen),
         coins: player.coins,
         xp: player.xp,
         owned: player.owned,
@@ -2560,7 +2628,8 @@ const server = http.createServer((req, res) => {
         boostCharges: player.boostCharges || {},
         armedBoost: player.armedBoost || null,
         battlePass: player.battlePass,
-        packs: player.packs
+        packs: player.packs,
+        transactions: (player.transactions || []).slice(-30)
       });
     });
   }
@@ -2769,17 +2838,27 @@ const server = http.createServer((req, res) => {
           meta.mode = comp.mode || meta.mode;
         }
 
+        const isOnline = Boolean(data.onlineMatch || data.matchToken);
         const outcome = meta.outcome === 'win' ? 'win' : meta.outcome === 'draw' ? 'draw' : 'loss';
         const diff = meta.difficulty || 'normal';
-        const diffMul = { easy: 0.8, normal: 1.0, hard: 1.35 }[diff] || 1.0;
         const goals = Number(meta.goals || (meta.stats && meta.stats.humanGoals) || 0);
         const tackles = Number(meta.tackles || (meta.stats && meta.stats.humanTackles) || 0);
 
-        const base = outcome === 'win' ? 60 : outcome === 'draw' ? 30 : 15;
-        const scoring = meta.mode === 'footy' ? goals * 10 : Math.min(40, goals * 2);
-        const skill = Math.min(30, tackles * 3);
-        const coinsEarned = Math.max(0, Math.round((base + scoring + skill) * diffMul));
-        const xpEarned = Math.round((outcome === 'win' ? 50 : outcome === 'draw' ? 30 : 20) * diffMul + goals * 3);
+        // Stage 1 Approved Economy Rule:
+        // Verified PvP victory: 20 FvH Coin.
+        // AI matches do NOT grant PvP victory rewards (0 coins).
+        let coinsEarned = 0;
+        let xpEarned = 10;
+        if (isOnline && outcome === 'win') {
+          coinsEarned = 20;
+          xpEarned = 30;
+        } else if (isOnline && outcome === 'draw') {
+          coinsEarned = 0;
+          xpEarned = 15;
+        } else if (!isOnline) {
+          coinsEarned = 0;
+          xpEarned = outcome === 'win' ? 20 : 10;
+        }
 
         player.coins += coinsEarned;
         player.xp += xpEarned;

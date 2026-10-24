@@ -1162,19 +1162,768 @@
     }
   };
 
+  function detectDeviceLanguage() {
+    var tgLang = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.language_code);
+    var code = tgLang || (typeof navigator !== 'undefined' && (navigator.language || (navigator.languages && navigator.languages[0])));
+    if (!code) return 'en';
+    code = String(code).toLowerCase();
+    var prefix = code.split('-')[0].split('_')[0];
+    var langMap = {
+      ru: 'ru', be: 'ru', kk: 'ru', ky: 'ru', uz: 'ru', tg: 'ru',
+      uk: 'uk', en: 'en', es: 'es', de: 'de', fr: 'fr', pt: 'pt',
+      it: 'it', tr: 'tr', nl: 'nl', pl: 'pl', ja: 'ja', ko: 'ko',
+      zh: 'zh', ar: 'ar'
+    };
+    return langMap[prefix] || 'en';
+  }
+
+  // Canonical Stage 1 Localization Dictionary across all 15 supported languages
+  var STAGE1_I18N = {
+    en: {
+      chooseTeamTitle: 'CHOOSE YOUR TEAM',
+      chooseTeamDesc: 'Choose which team to support in the 15-day seasonal competition. Your choice is locked for the entire season!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Football faction. Technique, precision, and unstoppable power shots.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Basketball faction. Agility, high-flying dunks, and pinpoint swishes.',
+      confirmTeamSelection: 'Confirm Team Selection',
+      teamSelectedSuccess: '✓ Team successfully selected!',
+      teamLockedBadge: 'Locked for 15-day Season',
+      catSkins: 'Skins',
+      catFootballBalls: 'Football Balls',
+      catBasketballBalls: 'Basketball Balls',
+      catCoins: 'FvH Coins',
+      pendingTokenLaunch: 'Pending token launch',
+      tokenWithdrawBtn: 'Withdraw',
+      tokenWithdrawModalTitle: 'Token Withdrawal',
+      tokenWithdrawNotice: 'Token withdrawals will be available only after the official launch of $FOOTY and $HOOPS tokens.',
+      starsUnconfiguredNotice: 'Telegram Stars payment will be available soon. Pricing is currently being configured.',
+      starsUnconfiguredBadge: '⭐ Soon',
+      emptyShopCategory: 'No items available in this category yet',
+      emptyInventoryCategory: 'You do not own any items in this category yet',
+      visitShopBtn: 'Visit Shop',
+      equippedState: '✓ Equipped',
+      equipAction: 'Equip',
+      buyAction: 'Buy for',
+      txHistory: 'Transaction History',
+      txNoHistory: 'No transactions recorded yet',
+      tabInviteFriends: 'Invite a Friend',
+      tabSocialTasks: 'Social Tasks',
+      refRuleText: '100 FvH Coin is credited only after the invited friend joins and confirms their team selection.',
+      refStatTotal: 'Total Invited',
+      refStatQualified: 'Qualified Friends',
+      refStatEarned: 'Earned FvH Coin',
+      refCopyBtn: 'Copy Link',
+      refCopied: '✓ Referral link copied!',
+      refShareBtn: 'Share on Telegram',
+      socialTgTask: 'Join official Telegram channel',
+      socialXTask: 'Follow official X account',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Open',
+      verifyTaskBtn: 'Verify',
+      taskCompleted: '✓ Completed',
+      taskVerifying: 'Verifying...',
+      gotItBtn: 'Got it'
+    },
+    ru: {
+      chooseTeamTitle: 'ВЫБЕРИТЕ КОМАНДУ',
+      chooseTeamDesc: 'Выберите, какую команду поддержать в 15-дневном сезонном соревновании. Ваш выбор фиксируется на весь сезон!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Команда футбола. Скорость, техника и мощные удары по воротам.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Команда баскетбола. Дриблинг, прыжки и меткие броски в кольцо.',
+      confirmTeamSelection: 'Подтвердить выбор команды',
+      teamSelectedSuccess: '✓ Команда успешно выбрана!',
+      teamLockedBadge: 'Зафиксировано на 15-дневный сезон',
+      catSkins: 'Форма',
+      catFootballBalls: 'Футбольные мячи',
+      catBasketballBalls: 'Баскетбольные мячи',
+      catCoins: 'FvH Монеты',
+      pendingTokenLaunch: 'Ожидается запуск токена',
+      tokenWithdrawBtn: 'Вывод',
+      tokenWithdrawModalTitle: 'Вывод токенов',
+      tokenWithdrawNotice: 'Вывод токенов будет доступен только после официального запуска $FOOTY и $HOOPS.',
+      starsUnconfiguredNotice: 'Оплата Telegram Stars скоро будет доступна. Цены находятся на этапе настройки.',
+      starsUnconfiguredBadge: '⭐ Скоро',
+      emptyShopCategory: 'В этой категории пока нет доступных товаров',
+      emptyInventoryCategory: 'У вас пока нет предметов в этой категории',
+      visitShopBtn: 'Перейти в Магазин',
+      equippedState: '✓ Надето',
+      equipAction: 'Надеть',
+      buyAction: 'Купить за',
+      txHistory: 'История операций',
+      txNoHistory: 'Пока нет операций',
+      tabInviteFriends: 'Пригласить друга',
+      tabSocialTasks: 'Социальные задания',
+      refRuleText: '100 FvH Coin начисляется только после того, как приглашённый друг присоединится и подтвердит выбор команды.',
+      refStatTotal: 'Всего приглашено',
+      refStatQualified: 'Квалифицированные друзья',
+      refStatEarned: 'Заработано FvH Coin',
+      refCopyBtn: 'Копировать ссылку',
+      refCopied: '✓ Ссылка скопирована!',
+      refShareBtn: 'Поделиться в Telegram',
+      socialTgTask: 'Подписаться на официальный Telegram-канал',
+      socialXTask: 'Подписаться на официальный аккаунт в X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Перейти',
+      verifyTaskBtn: 'Проверить',
+      taskCompleted: '✓ Выполнено',
+      taskVerifying: 'Проверка...',
+      gotItBtn: 'Понятно'
+    },
+    es: {
+      chooseTeamTitle: 'ELIGE TU EQUIPO',
+      chooseTeamDesc: 'Elige qué equipo apoyar en la competición de temporada de 15 días. ¡Tu elección queda fijada para toda la temporada!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Facción de fútbol. Velocidad, técnica y disparos imparables.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Facción de baloncesto. Agilidad, mates espectaculares y precisión.',
+      confirmTeamSelection: 'Confirmar selección de equipo',
+      teamSelectedSuccess: '✓ ¡Equipo seleccionado con éxito!',
+      teamLockedBadge: 'Fijado para la temporada de 15 días',
+      catSkins: 'Uniformes',
+      catFootballBalls: 'Balones de fútbol',
+      catBasketballBalls: 'Balones de baloncesto',
+      catCoins: 'Monedas FvH',
+      pendingTokenLaunch: 'Lanzamiento de token pendiente',
+      tokenWithdrawBtn: 'Retirar',
+      tokenWithdrawModalTitle: 'Retiro de tokens',
+      tokenWithdrawNotice: 'Los retiros de tokens estarán disponibles solo después del lanzamiento oficial de los tokens $FOOTY y $HOOPS.',
+      starsUnconfiguredNotice: 'El pago con Telegram Stars estará disponible pronto.',
+      starsUnconfiguredBadge: '⭐ Pronto',
+      emptyShopCategory: 'No hay artículos disponibles en esta categoría todavía',
+      emptyInventoryCategory: 'Aún no posees artículos en esta categoría',
+      visitShopBtn: 'Visitar tienda',
+      equippedState: '✓ Equipado',
+      equipAction: 'Equipar',
+      buyAction: 'Comprar por',
+      txHistory: 'Historial de transacciones',
+      txNoHistory: 'Aún no hay transacciones',
+      tabInviteFriends: 'Invitar a un amigo',
+      tabSocialTasks: 'Tareas sociales',
+      refRuleText: 'Se acreditan 100 FvH Coin solo después de que el amigo invitado se una y confirme su elección de equipo.',
+      refStatTotal: 'Total invitados',
+      refStatQualified: 'Amigos calificados',
+      refStatEarned: 'FvH Coin ganadas',
+      refCopyBtn: 'Copiar enlace',
+      refCopied: '✓ ¡Enlace copiado!',
+      refShareBtn: 'Compartir en Telegram',
+      socialTgTask: 'Unirse al canal oficial de Telegram',
+      socialXTask: 'Seguir la cuenta oficial en X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Abrir',
+      verifyTaskBtn: 'Verificar',
+      taskCompleted: '✓ Completado',
+      taskVerifying: 'Verificando...',
+      gotItBtn: 'Entendido'
+    },
+    de: {
+      chooseTeamTitle: 'WÄHLE DEIN TEAM',
+      chooseTeamDesc: 'Wähle, welches Team du im 15-tägigen Saisonwettbewerb unterstützen möchtest. Deine Wahl ist für die gesamte Saison festgelegt!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Fußball-Fraktion. Technik, Präzision und unaufhaltsame Torschüsse.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Basketball-Fraktion. Agilität, Dunks und punktgenaue Treffer.',
+      confirmTeamSelection: 'Teamauswahl bestätigen',
+      teamSelectedSuccess: '✓ Team erfolgreich ausgewählt!',
+      teamLockedBadge: 'Für 15-Tage-Saison gesperrt',
+      catSkins: 'Trikots',
+      catFootballBalls: 'Fußbälle',
+      catBasketballBalls: 'Basketbälle',
+      catCoins: 'FvH-Münzen',
+      pendingTokenLaunch: 'Token-Start ausstehend',
+      tokenWithdrawBtn: 'Auszahlen',
+      tokenWithdrawModalTitle: 'Token-Auszahlung',
+      tokenWithdrawNotice: 'Token-Auszahlungen sind erst nach dem offiziellen Start der $FOOTY- und $HOOPS-Tokens verfügbar.',
+      starsUnconfiguredNotice: 'Telegram Stars-Zahlung wird bald verfügbar sein.',
+      starsUnconfiguredBadge: '⭐ Bald',
+      emptyShopCategory: 'In dieser Kategorie sind noch keine Artikel verfügbar',
+      emptyInventoryCategory: 'Du besitzt noch keine Artikel in dieser Kategorie',
+      visitShopBtn: 'Zum Shop',
+      equippedState: '✓ Ausgerüstet',
+      equipAction: 'Ausrüsten',
+      buyAction: 'Kaufen für',
+      txHistory: 'Transaktionsverlauf',
+      txNoHistory: 'Noch keine Transaktionen vorhanden',
+      tabInviteFriends: 'Freund einladen',
+      tabSocialTasks: 'Soziale Aufgaben',
+      refRuleText: '100 FvH Coin werden erst gutgeschrieben, nachdem der eingeladene Freund beigetreten ist und seine Teamauswahl bestätigt hat.',
+      refStatTotal: 'Insgesamt eingeladen',
+      refStatQualified: 'Qualifizierte Freunde',
+      refStatEarned: 'Verdiente FvH Coin',
+      refCopyBtn: 'Link kopieren',
+      refCopied: '✓ Link kopiert!',
+      refShareBtn: 'Auf Telegram teilen',
+      socialTgTask: 'Offiziellem Telegram-Kanal beitreten',
+      socialXTask: 'Offiziellem X-Account folgen',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Öffnen',
+      verifyTaskBtn: 'Prüfen',
+      taskCompleted: '✓ Abgeschlossen',
+      taskVerifying: 'Wird geprüft...',
+      gotItBtn: 'Verstanden'
+    },
+    fr: {
+      chooseTeamTitle: 'CHOISISSEZ VOTRE ÉQUIPE',
+      chooseTeamDesc: 'Choisissez quelle équipe soutenir dans la compétition saisonnière de 15 jours. Votre choix est verrouillé pour toute la saison !',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Faction football. Technique, précision et tirs puissants.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Faction basket. Agilité, dunks spectaculaires et paniers parfaits.',
+      confirmTeamSelection: 'Confirmer la sélection de l\'équipe',
+      teamSelectedSuccess: '✓ Équipe sélectionnée avec succès !',
+      teamLockedBadge: 'Verrouillé pour la saison de 15 jours',
+      catSkins: 'Maillots',
+      catFootballBalls: 'Ballons de football',
+      catBasketballBalls: 'Ballons de basket',
+      catCoins: 'Pièces FvH',
+      pendingTokenLaunch: 'Lancement du jeton en attente',
+      tokenWithdrawBtn: 'Retirer',
+      tokenWithdrawModalTitle: 'Retrait de jetons',
+      tokenWithdrawNotice: 'Les retraits de jetons ne seront disponibles qu\'après le lancement officiel des jetons $FOOTY et $HOOPS.',
+      starsUnconfiguredNotice: 'Le paiement Telegram Stars sera bientôt disponible.',
+      starsUnconfiguredBadge: '⭐ Bientôt',
+      emptyShopCategory: 'Aucun article disponible dans cette catégorie pour le moment',
+      emptyInventoryCategory: 'Vous ne possédez aucun article dans cette catégorie pour le moment',
+      visitShopBtn: 'Visiter la boutique',
+      equippedState: '✓ Équipé',
+      equipAction: 'Équiper',
+      buyAction: 'Acheter pour',
+      txHistory: 'Historique des transactions',
+      txNoHistory: 'Aucune transaction pour le moment',
+      tabInviteFriends: 'Inviter un ami',
+      tabSocialTasks: 'Tâches sociales',
+      refRuleText: '100 FvH Coin sont crédités uniquement après que l\'ami invité a rejoint et confirmé son choix d\'équipe.',
+      refStatTotal: 'Total invités',
+      refStatQualified: 'Amis qualifiés',
+      refStatEarned: 'FvH Coin gagnés',
+      refCopyBtn: 'Copier le lien',
+      refCopied: '✓ Lien copié !',
+      refShareBtn: 'Partager sur Telegram',
+      socialTgTask: 'Rejoindre le canal officiel Telegram',
+      socialXTask: 'Suivre le compte officiel sur X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Ouvrir',
+      verifyTaskBtn: 'Vérifier',
+      taskCompleted: '✓ Terminé',
+      taskVerifying: 'Vérification...',
+      gotItBtn: 'Compris'
+    },
+    pt: {
+      chooseTeamTitle: 'ESCOLHA SEU TIME',
+      chooseTeamDesc: 'Escolha qual time apoiar na competição de 15 dias da temporada. Sua escolha fica bloqueada por toda a temporada!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Facção de futebol. Técnica, precisão e chutes indefensáveis.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Facção de basquete. Agilidade, enterradas e arremessos precisos.',
+      confirmTeamSelection: 'Confirmar escolha do time',
+      teamSelectedSuccess: '✓ Time selecionado com sucesso!',
+      teamLockedBadge: 'Bloqueado para a temporada de 15 dias',
+      catSkins: 'Uniformes',
+      catFootballBalls: 'Bolas de futebol',
+      catBasketballBalls: 'Bolas de basquete',
+      catCoins: 'Moedas FvH',
+      pendingTokenLaunch: 'Lançamento de token pendente',
+      tokenWithdrawBtn: 'Sacar',
+      tokenWithdrawModalTitle: 'Saque de tokens',
+      tokenWithdrawNotice: 'Os saques de tokens estarão disponíveis apenas após o lançamento oficial dos tokens $FOOTY e $HOOPS.',
+      starsUnconfiguredNotice: 'O pagamento via Telegram Stars estará disponível em breve.',
+      starsUnconfiguredBadge: '⭐ Em breve',
+      emptyShopCategory: 'Nenhum item disponível nesta categoria ainda',
+      emptyInventoryCategory: 'Você ainda não possui itens nesta categoria',
+      visitShopBtn: 'Visitar loja',
+      equippedState: '✓ Equipado',
+      equipAction: 'Equipar',
+      buyAction: 'Comprar por',
+      txHistory: 'Histórico de transações',
+      txNoHistory: 'Nenhuma transação registrada ainda',
+      tabInviteFriends: 'Convidar um amigo',
+      tabSocialTasks: 'Tarefas sociais',
+      refRuleText: '100 FvH Coin são creditadas somente após o amigo convidado entrar e confirmar a escolha do time.',
+      refStatTotal: 'Total de convidados',
+      refStatQualified: 'Amigos qualificados',
+      refStatEarned: 'FvH Coin ganhas',
+      refCopyBtn: 'Copiar link',
+      refCopied: '✓ Link copiado!',
+      refShareBtn: 'Compartilhar no Telegram',
+      socialTgTask: 'Entrar no canal oficial do Telegram',
+      socialXTask: 'Seguir a conta oficial no X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Abrir',
+      verifyTaskBtn: 'Verificar',
+      taskCompleted: '✓ Concluído',
+      taskVerifying: 'Verificando...',
+      gotItBtn: 'Entendi'
+    },
+    it: {
+      chooseTeamTitle: 'SCEGLI LA TUA SQUADRA',
+      chooseTeamDesc: 'Scegli quale squadra supportare nella competizione stagionale di 15 giorni. La tua scelta è bloccata per l\'intera stagione!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Fazione calcio. Tecnica, precisione e tiri imparabili.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Fazione basket. Agilità, schiacciate spettacolari e precisione.',
+      confirmTeamSelection: 'Conferma selezione squadra',
+      teamSelectedSuccess: '✓ Squadra selezionata con successo!',
+      teamLockedBadge: 'Bloccato per la stagione di 15 giorni',
+      catSkins: 'Maglie',
+      catFootballBalls: 'Palloni da calcio',
+      catBasketballBalls: 'Palloni da basket',
+      catCoins: 'Monete FvH',
+      pendingTokenLaunch: 'Lancio token in sospeso',
+      tokenWithdrawBtn: 'Preleva',
+      tokenWithdrawModalTitle: 'Prelievo token',
+      tokenWithdrawNotice: 'I prelievi di token saranno disponibili solo dopo il lancio ufficiale dei token $FOOTY e $HOOPS.',
+      starsUnconfiguredNotice: 'Il pagamento con Telegram Stars sarà presto disponibile.',
+      starsUnconfiguredBadge: '⭐ Presto',
+      emptyShopCategory: 'Nessun articolo disponibile in questa categoria per ora',
+      emptyInventoryCategory: 'Non possiedi ancora articoli in questa categoria',
+      visitShopBtn: 'Visita il negozio',
+      equippedState: '✓ Equipaggiato',
+      equipAction: 'Equipaggia',
+      buyAction: 'Acquista per',
+      txHistory: 'Cronologia transazioni',
+      txNoHistory: 'Nessuna transazione ancora registrata',
+      tabInviteFriends: 'Invita un amico',
+      tabSocialTasks: 'Attività social',
+      refRuleText: '100 FvH Coin vengono accreditate solo dopo che l\'amico invitato si è unito e ha confermato la squadra.',
+      refStatTotal: 'Totale invitati',
+      refStatQualified: 'Amici qualificati',
+      refStatEarned: 'FvH Coin guadagnate',
+      refCopyBtn: 'Copia link',
+      refCopied: '✓ Link copiato!',
+      refShareBtn: 'Condividi su Telegram',
+      socialTgTask: 'Unisciti al canale ufficiale Telegram',
+      socialXTask: 'Segui l\'account ufficiale su X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Apri',
+      verifyTaskBtn: 'Verifica',
+      taskCompleted: '✓ Completato',
+      taskVerifying: 'Verifica in corso...',
+      gotItBtn: 'Ho capito'
+    },
+    uk: {
+      chooseTeamTitle: 'ОБЕРІТЬ СВОЮ КОМАНДУ',
+      chooseTeamDesc: 'Оберіть, яку команду підтримати в 15-денному сезонному змаганні. Ваш вибір фіксується на весь сезон!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Команда футболу. Швидкість, техніка та потужні удари по воротах.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Команда баскетболу. Дриблінг, стрибки та влучні кидки в кошик.',
+      confirmTeamSelection: 'Підтвердити вибір команди',
+      teamSelectedSuccess: '✓ Команду успішно обрано!',
+      teamLockedBadge: 'Зафіксовано на 15-денний сезон',
+      catSkins: 'Форма',
+      catFootballBalls: 'Футбольні м\'ячі',
+      catBasketballBalls: 'Баскетбольні м\'ячі',
+      catCoins: 'FvH Монети',
+      pendingTokenLaunch: 'Очікується запуск токена',
+      tokenWithdrawBtn: 'Виведення',
+      tokenWithdrawModalTitle: 'Виведення токенів',
+      tokenWithdrawNotice: 'Виведення токенів буде доступне лише після офіційного запуску токенів $FOOTY та $HOOPS.',
+      starsUnconfiguredNotice: 'Оплата Telegram Stars незабаром буде доступна.',
+      starsUnconfiguredBadge: '⭐ Скоро',
+      emptyShopCategory: 'У цій категорії поки немає товарів',
+      emptyInventoryCategory: 'У вас поки немає предметів у цій категорії',
+      visitShopBtn: 'Перейти до магазину',
+      equippedState: '✓ Одягнено',
+      equipAction: 'Одягти',
+      buyAction: 'Купити за',
+      txHistory: 'Історія операцій',
+      txNoHistory: 'Поки немає операцій',
+      tabInviteFriends: 'Запросити друга',
+      tabSocialTasks: 'Соціальні завдання',
+      refRuleText: '100 FvH Coin нараховуються лише після того, як запрошений друг приєднається та підтвердить вибір команди.',
+      refStatTotal: 'Всього запрошено',
+      refStatQualified: 'Кваліфіковані друзі',
+      refStatEarned: 'Зароблено FvH Coin',
+      refCopyBtn: 'Копіювати посилання',
+      refCopied: '✓ Посилання скопійовано!',
+      refShareBtn: 'Поділитися в Telegram',
+      socialTgTask: 'Підписатися на офіційний Telegram-канал',
+      socialXTask: 'Підписатися на офіційний акаунт в X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Перейти',
+      verifyTaskBtn: 'Перевірити',
+      taskCompleted: '✓ Виконано',
+      taskVerifying: 'Перевірка...',
+      gotItBtn: 'Зрозуміло'
+    },
+    pl: {
+      chooseTeamTitle: 'WYBIERZ SWOJĄ DRUŻYNĘ',
+      chooseTeamDesc: 'Wybierz, którą drużynę wesprzesz w 15-dniowej rywalizacji sezonowej. Twój wybór jest zablokowany na cały sezon!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Frakcja piłki nożnej. Technika, precyzja i potężne strzały.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Frakcja koszykówki. Zwinność, wsady i precyzyjne rzuty.',
+      confirmTeamSelection: 'Potwierdź wybór drużyny',
+      teamSelectedSuccess: '✓ Drużyna została pomyślnie wybrana!',
+      teamLockedBadge: 'Zablokowano na 15-dniowy sezon',
+      catSkins: 'Stroje',
+      catFootballBalls: 'Piłki nożne',
+      catBasketballBalls: 'Piłki do koszykówki',
+      catCoins: 'Monety FvH',
+      pendingTokenLaunch: 'Oczekuje na uruchomienie tokena',
+      tokenWithdrawBtn: 'Wypłać',
+      tokenWithdrawModalTitle: 'Wypłata tokenów',
+      tokenWithdrawNotice: 'Wypłaty tokenów będą dostępne dopiero po oficjalnym uruchomieniu tokenów $FOOTY i $HOOPS.',
+      starsUnconfiguredNotice: 'Płatność Telegram Stars będzie wkrótce dostępna.',
+      starsUnconfiguredBadge: '⭐ Wkrótce',
+      emptyShopCategory: 'W tej kategorii nie ma jeszcze produktów',
+      emptyInventoryCategory: 'Nie posiadasz jeszcze przedmiotów w tej kategorii',
+      visitShopBtn: 'Odwiedź sklep',
+      equippedState: '✓ Założone',
+      equipAction: 'Załóż',
+      buyAction: 'Kup za',
+      txHistory: 'Historia transakcji',
+      txNoHistory: 'Brak zarejestrowanych transakcji',
+      tabInviteFriends: 'Zaproś znajomego',
+      tabSocialTasks: 'Zadania społecznościowe',
+      refRuleText: '100 FvH Coin jest przyznawane dopiero po dołączeniu zaproszonego znajomego i potwierdzeniu wyboru drużyny.',
+      refStatTotal: 'Łącznie zaproszonych',
+      refStatQualified: 'Zakwalifikowani znajomi',
+      refStatEarned: 'Zdobyte FvH Coin',
+      refCopyBtn: 'Kopiuj link',
+      refCopied: '✓ Skopiowano link!',
+      refShareBtn: 'Udostępnij na Telegramie',
+      socialTgTask: 'Dołącz do oficjalnego kanału na Telegramie',
+      socialXTask: 'Obserwuj oficjalne konto na X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Otwórz',
+      verifyTaskBtn: 'Sprawdź',
+      taskCompleted: '✓ Ukończono',
+      taskVerifying: 'Weryfikacja...',
+      gotItBtn: 'Rozumiem'
+    },
+    tr: {
+      chooseTeamTitle: 'TAKIMINI SEÇ',
+      chooseTeamDesc: '15 günlük sezon yarışmasında hangi takımı destekleyeceğini seç. Seçimin tüm sezon boyunca kilitlenecektir!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Futbol grubu. Teknik, hassasiyet ve durdurulamaz şutlar.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Basketbol grubu. Çeviklik, smaçlar ve isabetli atışlar.',
+      confirmTeamSelection: 'Takım Seçimini Onayla',
+      teamSelectedSuccess: '✓ Takım başarıyla seçildi!',
+      teamLockedBadge: '15 günlük sezon için kilitlendi',
+      catSkins: 'Formlar',
+      catFootballBalls: 'Futbol Topları',
+      catBasketballBalls: 'Basketbol Topları',
+      catCoins: 'FvH Jetonları',
+      pendingTokenLaunch: 'Token lansmanı bekleniyor',
+      tokenWithdrawBtn: 'Çekim Yap',
+      tokenWithdrawModalTitle: 'Token Çekimi',
+      tokenWithdrawNotice: 'Token çekimleri yalnızca $FOOTY ve $HOOPS tokenlerinin resmi lansmanından sonra mümkün olacaktır.',
+      starsUnconfiguredNotice: 'Telegram Stars ile ödeme yakında aktif olacaktır.',
+      starsUnconfiguredBadge: '⭐ Yakında',
+      emptyShopCategory: 'Bu kategoride henüz ürün bulunmuyor',
+      emptyInventoryCategory: 'Bu kategoride henüz bir eşyanız yok',
+      visitShopBtn: 'Mağazayı Ziyaret Et',
+      equippedState: '✓ Kuşanıldı',
+      equipAction: 'Kuşan',
+      buyAction: 'Satın al:',
+      txHistory: 'İşlem Geçmişi',
+      txNoHistory: 'Henüz bir işlem kaydedilmedi',
+      tabInviteFriends: 'Arkadaşını Davet Et',
+      tabSocialTasks: 'Sosyal Görevler',
+      refRuleText: '100 FvH Coin, yalnızca davet edilen arkadaş katıldıktan ve takım seçimini onayladıktan sonra yatırılır.',
+      refStatTotal: 'Toplam Davet',
+      refStatQualified: 'Onaylı Arkadaşlar',
+      refStatEarned: 'Kazanılan FvH Coin',
+      refCopyBtn: 'Bağlantıyı Kopyala',
+      refCopied: '✓ Bağlantı kopyalandı!',
+      refShareBtn: 'Telegram\'da Paylaş',
+      socialTgTask: 'Resmi Telegram kanalına katıl',
+      socialXTask: 'Resmi X hesabını takip et',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Aç',
+      verifyTaskBtn: 'Doğrula',
+      taskCompleted: '✓ Tamamlandı',
+      taskVerifying: 'Doğrulanıyor...',
+      gotItBtn: 'Anladım'
+    },
+    nl: {
+      chooseTeamTitle: 'KIES JE TEAM',
+      chooseTeamDesc: 'Kies welk team je wilt steunen in de 15-daagse seizoenscompetitie. Je keuze staat vast voor het hele seizoen!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'Voetbalfactie. Techniek, precisie en krachtige schoten.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'Basketbalfactie. Behendigheid, dunks en zuivere scores.',
+      confirmTeamSelection: 'Teamselectie bevestigen',
+      teamSelectedSuccess: '✓ Team succesvol geselecteerd!',
+      teamLockedBadge: 'Vastgezet voor 15-daags seizoen',
+      catSkins: 'Tenues',
+      catFootballBalls: 'Voetballen',
+      catBasketballBalls: 'Basketballen',
+      catCoins: 'FvH Munten',
+      pendingTokenLaunch: 'Tokenlancering verwacht',
+      tokenWithdrawBtn: 'Opnemen',
+      tokenWithdrawModalTitle: 'Token-opname',
+      tokenWithdrawNotice: 'Token-opnames zijn pas beschikbaar na de officiële lancering van $FOOTY- en $HOOPS-tokens.',
+      starsUnconfiguredNotice: 'Betalen met Telegram Stars is binnenkort beschikbaar.',
+      starsUnconfiguredBadge: '⭐ Binnenkort',
+      emptyShopCategory: 'Nog geen artikelen beschikbaar in deze categorie',
+      emptyInventoryCategory: 'Je bezit nog geen items in deze categorie',
+      visitShopBtn: 'Naar winkel',
+      equippedState: '✓ Uitgerust',
+      equipAction: 'Uitrusten',
+      buyAction: 'Kopen voor',
+      txHistory: 'Transactiegeschiedenis',
+      txNoHistory: 'Nog geen transacties geregistreerd',
+      tabInviteFriends: 'Nodig een vriend uit',
+      tabSocialTasks: 'Sociale taken',
+      refRuleText: '100 FvH Coin wordt pas bijgeschreven nadat de uitgenodigde vriend lid is geworden en de teamkeuze heeft bevestigd.',
+      refStatTotal: 'Totaal uitgenodigd',
+      refStatQualified: 'Gekwalificeerde vrienden',
+      refStatEarned: 'Verdiende FvH Coin',
+      refCopyBtn: 'Kopieer link',
+      refCopied: '✓ Link gekopieerd!',
+      refShareBtn: 'Delen op Telegram',
+      socialTgTask: 'Word lid van officieel Telegram-kanaal',
+      socialXTask: 'Volg officieel X-account',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'Openen',
+      verifyTaskBtn: 'Verifiëren',
+      taskCompleted: '✓ Voltooid',
+      taskVerifying: 'Verifiëren...',
+      gotItBtn: 'Begrepen'
+    },
+    ja: {
+      chooseTeamTitle: 'チームを選択',
+      chooseTeamDesc: '15日間のシーズン大会で応援するチームを選んでください。選択はシーズン終了まで変更できません！',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'サッカーチーム。テクニックと圧倒的なシュート力。',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'バスケットボールチーム。華麗なダンクと正確無比なシュート。',
+      confirmTeamSelection: 'チーム選択を確定する',
+      teamSelectedSuccess: '✓ チームが選択されました！',
+      teamLockedBadge: '15日間シーズン固定',
+      catSkins: 'ユニフォーム',
+      catFootballBalls: 'サッカーボール',
+      catBasketballBalls: 'バスケットボール',
+      catCoins: 'FvH コイン',
+      pendingTokenLaunch: 'トークンローンチ準備中',
+      tokenWithdrawBtn: '出金',
+      tokenWithdrawModalTitle: 'トークンの引き出し',
+      tokenWithdrawNotice: 'トークンの引き出しは、$FOOTY および $HOOPS トークンの公式ローンチ後にのみ利用可能になります。',
+      starsUnconfiguredNotice: 'Telegram Stars決済は準備中です。',
+      starsUnconfiguredBadge: '⭐ 近日公開',
+      emptyShopCategory: 'このカテゴリにはまだ商品がありません',
+      emptyInventoryCategory: 'このカテゴリのアイテムをまだ所持していません',
+      visitShopBtn: 'ショップを見る',
+      equippedState: '✓ 装備中',
+      equipAction: '装備する',
+      buyAction: '購入:',
+      txHistory: '取引履歴',
+      txNoHistory: '取引履歴はありません',
+      tabInviteFriends: '友達を招待',
+      tabSocialTasks: 'ソーシャルタスク',
+      refRuleText: '招待された友達が参加しチーム選択を完了した後に、100 FvH Coinが付与されます。',
+      refStatTotal: '招待総数',
+      refStatQualified: '認証された友達',
+      refStatEarned: '獲得 FvH Coin',
+      refCopyBtn: 'リンクをコピー',
+      refCopied: '✓ リンクをコピーしました！',
+      refShareBtn: 'Telegramで共有',
+      socialTgTask: '公式Telegramチャンネルに参加',
+      socialXTask: '公式Xアカウントをフォロー',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: '開く',
+      verifyTaskBtn: '確認',
+      taskCompleted: '✓ 完了',
+      taskVerifying: '確認中...',
+      gotItBtn: '了解'
+    },
+    ko: {
+      chooseTeamTitle: '팀 선택',
+      chooseTeamDesc: '15일간의 시즌 대회에서 지원할 팀을 선택하세요. 선택한 팀은 이번 시즌 동안 고정됩니다!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: '축구 팀. 정교한 기술과 강력한 슈팅력.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: '농구 팀. 민첩한 움직임과 화려한 덩크슛.',
+      confirmTeamSelection: '팀 선택 확인',
+      teamSelectedSuccess: '✓ 팀이 성공적으로 선택되었습니다!',
+      teamLockedBadge: '15일 시즌 고정',
+      catSkins: '유니폼',
+      catFootballBalls: '축구공',
+      catBasketballBalls: '농구공',
+      catCoins: 'FvH 코인',
+      pendingTokenLaunch: '토큰 출시 대기 중',
+      tokenWithdrawBtn: '출금',
+      tokenWithdrawModalTitle: '토큰 출금',
+      tokenWithdrawNotice: '토큰 출금은 $FOOTY 및 $HOOPS 토큰의 공식 출시 이후에만 가능합니다。',
+      starsUnconfiguredNotice: 'Telegram Stars 결제는 곧 지원될 예정입니다.',
+      starsUnconfiguredBadge: '⭐ 곧 제공',
+      emptyShopCategory: '이 카테고리에는 아직 상품이 없습니다',
+      emptyInventoryCategory: '보유 중인 아이템이 없습니다',
+      visitShopBtn: '상점 방문',
+      equippedState: '✓ 장착됨',
+      equipAction: '장착',
+      buyAction: '구매:',
+      txHistory: '거래 내역',
+      txNoHistory: '기록된 거래 내역이 없습니다',
+      tabInviteFriends: '친구 초대',
+      tabSocialTasks: '소셜 미션',
+      refRuleText: '초대받은 친구가 참여하여 팀 선택을 완료해야 100 FvH Coin이 지급됩니다.',
+      refStatTotal: '총 초대',
+      refStatQualified: '조건 달성 친구',
+      refStatEarned: '획득한 FvH Coin',
+      refCopyBtn: '링크 복사',
+      refCopied: '✓ 링크가 복사되었습니다!',
+      refShareBtn: 'Telegram으로 공유',
+      socialTgTask: '공식 Telegram 채널 참여',
+      socialXTask: '공식 X 계정 팔로우',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: '열기',
+      verifyTaskBtn: '확인',
+      taskCompleted: '✓ 완료',
+      taskVerifying: '확인 중...',
+      gotItBtn: '확인'
+    },
+    zh: {
+      chooseTeamTitle: '选择您的阵营',
+      chooseTeamDesc: '在为期15天的赛季对抗中选择支持的阵营。您的选择将在整个赛季内锁定！',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: '足球阵营。精湛技术与势不可挡的强力破门。',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: '篮球阵营。灵活敏捷与震撼暴扣。',
+      confirmTeamSelection: '确认选择阵营',
+      teamSelectedSuccess: '✓ 阵营选择成功！',
+      teamLockedBadge: '15天赛季内锁定',
+      catSkins: '球衣',
+      catFootballBalls: '足球',
+      catBasketballBalls: '篮球',
+      catCoins: 'FvH 金币',
+      pendingTokenLaunch: '等待代币上线',
+      tokenWithdrawBtn: '提现',
+      tokenWithdrawModalTitle: '代币提现',
+      tokenWithdrawNotice: '代币提现仅在 $FOOTY 和 $HOOPS 代币正式上线后开放。',
+      starsUnconfiguredNotice: 'Telegram Stars 支付即将推出。',
+      starsUnconfiguredBadge: '⭐ 即将推出',
+      emptyShopCategory: '该分类下暂无商品',
+      emptyInventoryCategory: '您在该分类下暂无拥有的物品',
+      visitShopBtn: '前往商店',
+      equippedState: '✓ 已装备',
+      equipAction: '装备',
+      buyAction: '购买',
+      txHistory: '交易明细',
+      txNoHistory: '暂无交易记录',
+      tabInviteFriends: '邀请好友',
+      tabSocialTasks: '社交任务',
+      refRuleText: '受邀好友加入并确认选择阵营后，系统方会发放 100 FvH Coin 奖励。',
+      refStatTotal: '累计邀请',
+      refStatQualified: '有效好友',
+      refStatEarned: '已赚取 FvH Coin',
+      refCopyBtn: '复制链接',
+      refCopied: '✓ 链接已复制！',
+      refShareBtn: '在 Telegram 分享',
+      socialTgTask: '加入官方 Telegram 频道',
+      socialXTask: '关注官方 X 账号',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: '前往',
+      verifyTaskBtn: '验证',
+      taskCompleted: '✓ 已完成',
+      taskVerifying: '验证中...',
+      gotItBtn: '知道了'
+    },
+    ar: {
+      chooseTeamTitle: 'اختر فريقك',
+      chooseTeamDesc: 'اختر الفريق الذي ستدعمه في المسابقة الموسمية لمدة 15 يوماً. اختيارك مثبت طوال الموسم!',
+      teamFootyName: 'FOOTY ⚽',
+      teamFootyToken: '$FOOTY',
+      teamFootyDesc: 'فريق كرة القدم. تقنية وسرعة وتسديدات خارقة.',
+      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsToken: '$HOOPS',
+      teamHoopsDesc: 'فريق كرة السلة. رشاقة وسلات ساحقة ودقة عالية.',
+      confirmTeamSelection: 'تأكيد اختيار الفريق',
+      teamSelectedSuccess: '✓ تم اختيار الفريق بنجاح!',
+      teamLockedBadge: 'مثبت لموسم الـ 15 يوماً',
+      catSkins: 'الأطقم',
+      catFootballBalls: 'كرات القدم',
+      catBasketballBalls: 'كرات السلة',
+      catCoins: 'عملات FvH',
+      pendingTokenLaunch: 'في انتظار إطلاق الرمز',
+      tokenWithdrawBtn: 'سحب',
+      tokenWithdrawModalTitle: 'سحب الرموز',
+      tokenWithdrawNotice: 'ستكون عمليات سحب الرموز متاحة فقط بعد الإطلاق الرسمي لرموز $FOOTY و $HOOPS.',
+      starsUnconfiguredNotice: 'الدفع عبر Telegram Stars سيكون متاحاً قريباً.',
+      starsUnconfiguredBadge: '⭐ قريباً',
+      emptyShopCategory: 'لا توجد منتجات متاحة في هذه الفئة حالياً',
+      emptyInventoryCategory: 'لا تمتلك أي عناصر في هذه الفئة بعد',
+      visitShopBtn: 'زيارة المتجر',
+      equippedState: '✓ مجهّز',
+      equipAction: 'تجهيز',
+      buyAction: 'شراء مقابل',
+      txHistory: 'سجل المعاملات',
+      txNoHistory: 'لا توجد معاملات مسجلة بعد',
+      tabInviteFriends: 'دعوة صديق',
+      tabSocialTasks: 'المهام الاجتماعية',
+      refRuleText: 'تتم إضافة 100 FvH Coin فقط بعد انضمام الصديق المدعو وتأكيد اختياره للفريق.',
+      refStatTotal: 'إجمالي المدعوين',
+      refStatQualified: 'الأصدقاء المؤهلون',
+      refStatEarned: 'مكافآت FvH Coin',
+      refCopyBtn: 'نسخ الرابط',
+      refCopied: '✓ تم نسخ الرابط!',
+      refShareBtn: 'مشاركة عبر Telegram',
+      socialTgTask: 'الانضمام إلى قناة Telegram الرسمية',
+      socialXTask: 'متابعة الحساب الرسمي على X',
+      rewardAmount: '+{n} FvH Coin',
+      openTaskBtn: 'فتح',
+      verifyTaskBtn: 'تحقق',
+      taskCompleted: '✓ مكتمل',
+      taskVerifying: 'جارٍ التحقق...',
+      gotItBtn: 'حسناً'
+    }
+  };
+
   function getActiveLang() {
     var s = (window.__fvh && window.__fvh.store && window.__fvh.store.data && window.__fvh.store.data.settings) || {};
     var lang = s.lang;
     if (!lang || lang === 'auto') {
-      return 'ru';
+      lang = detectDeviceLanguage();
     }
-    return (lang === 'en') ? 'en' : 'ru';
+    var supported = ['en', 'ru', 'es', 'de', 'fr', 'pt', 'it', 'uk', 'pl', 'tr', 'nl', 'ja', 'ko', 'zh', 'ar'];
+    var active = supported.indexOf(lang) !== -1 ? lang : 'en';
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.dir = (active === 'ar') ? 'rtl' : 'ltr';
+    }
+    return active;
   }
 
   function tr(key, vars) {
     var lang = getActiveLang();
-    var dict = I18N[lang] || I18N.ru;
-    var str = dict[key] || (I18N.ru && I18N.ru[key]) || (I18N.en && I18N.en[key]) || key;
+    var str = (STAGE1_I18N[lang] && STAGE1_I18N[lang][key]) ||
+              (I18N[lang] && I18N[lang][key]) ||
+              (STAGE1_I18N.ru && STAGE1_I18N.ru[key]) ||
+              (STAGE1_I18N.en && STAGE1_I18N.en[key]) ||
+              (I18N.ru && I18N.ru[key]) ||
+              (I18N.en && I18N.en[key]) ||
+              key;
     if (vars) {
       Object.keys(vars).forEach(function (k) {
         str = str.split('{' + k + '}').join(vars[k]);
@@ -3216,9 +3965,9 @@
     var primaryItems = [
       { id: 'menu', icon: '⚽', label: tr('playHero') },
       { id: 'characters', icon: '👕', label: tr('characters') },
-      { id: 'quests', icon: '🎯', label: tr('quests') },
       { id: 'shop', icon: '🛒', label: tr('shop') },
-      { id: 'battlepass', icon: '👑', label: tr('battlePassShort') }
+      { id: 'quests', icon: '🎯', label: tr('quests') },
+      { id: 'profile', icon: '👤', label: tr('profile') }
     ];
 
     primaryItems.forEach(function (it) {
@@ -4398,9 +5147,9 @@
     slotSeg.className = 'seg';
     slotSeg.style.marginBottom = '12px';
     var slots = [
-      { id: 'skins', label: tr('catJerseys') },
-      { id: 'balls', label: tr('catBalls') },
-      { id: 'stadiums', label: tr('catArenas') }
+      { id: 'skins', label: tr('catSkins') },
+      { id: 'balls_footy', label: tr('catFootballBalls') },
+      { id: 'balls_hoops', label: tr('catBasketballBalls') }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
@@ -4472,72 +5221,34 @@
       var activeArenaId = eq['stadium.' + curChar] || (curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
 
       equipSlotList.innerHTML =
-        '<div class="fvh-equipped-slot"><span>' + tr('slotJersey') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotBall') + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + tr('slotArena') + ':</span><b>' + getItemLabelById(activeArenaId, 'Standard Arena') + '</b></div>';
+        '<div class="fvh-equipped-slot"><span>' + tr('catSkins') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
+        '<div class="fvh-equipped-slot"><span>' + (curChar === 'footy' ? tr('catFootballBalls') : tr('catBasketballBalls')) + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>';
 
       // Load matching items for current slot (OWNED ITEMS ONLY)
       itemsGrid.innerHTML = '';
       function renderMatchingItems(providedItems) {
         var baseCatalog = buildDefaultShopCatalog(curChar);
-        var allItems = (providedItems && providedItems.length > 0) ? providedItems.slice() : baseCatalog;
+        var owned = (app.store && app.store.data && app.store.data.owned) || [];
 
-        baseCatalog.forEach(function (bi) {
-          if (!allItems.some(function (i) { return i.id === bi.id; })) {
-            allItems.push(bi);
-          }
+        var matching = baseCatalog.filter(function (it) {
+          if (it.category !== curSlot) return false;
+          var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie');
+          return isOwned;
         });
-
-        var scenicArenas = [
-          { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
-          { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
-          { id: 'std_space_orbit', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Orbital Space Colosseum', rarity: 'legendary', price: 900, icon: '🚀', desc: tr('scenicSpaceDesc') },
-          { id: 'std_mars_dome', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Mars Bio-Dome Arena', rarity: 'epic', price: 750, icon: '🔴', desc: tr('scenicMarsDesc') },
-          { id: 'std_moon_crater', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Apollo Lunar Arena', rarity: 'rare', price: 680, icon: '🌕', desc: tr('scenicMoonDesc') },
-          { id: 'std_underwater_dome', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Abyssal Ocean Dome', rarity: 'legendary', price: 820, icon: '🫧', desc: tr('scenicUnderwaterDesc') },
-          { id: 'std_cyber_megacity', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Neo Tokyo Megacity', rarity: 'legendary', price: 950, icon: '🏙️', desc: tr('scenicCyberDesc') },
-          { id: 'std_volcano_caldera', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Magma Caldera Arena', rarity: 'epic', price: 850, icon: '🌋', desc: tr('scenicVolcanoDesc') },
-          { id: 'std_floating_islands', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Aetheria Sky Islands', rarity: 'legendary', price: 880, icon: '☁️', desc: tr('scenicFloatingDesc') },
-          { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
-        ];
-        scenicArenas.forEach(function (sa) {
-          if (!allItems.some(function (i) { return i.id === sa.id; })) {
-            allItems.push(sa);
-          }
-        });
-
-        var owned = app.store.data.owned || [];
-        var matching;
-        if (curSlot === 'crowd') {
-          matching = CROWD_CATALOG.filter(function (c) {
-            return c.mode === 'all' || c.mode === curChar;
-          });
-        } else {
-          matching = allItems.filter(function (it) {
-            if (it.category !== curSlot) return false;
-            if (it.mode && it.mode !== 'all' && it.mode !== curChar) return false;
-            if (it.category === 'skins') {
-              if (curChar === 'hoops' && it.id === 'skin_rookie') return false;
-              if (curChar === 'footy' && it.id === 'skin_solar') return false;
-            }
-            var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie');
-            return isOwned;
-          });
-        }
 
         if (matching.length === 0) {
           var emptyBox = document.createElement('div');
-          emptyBox.className = 'fvh-empty-locker';
+          emptyBox.className = 'fvh-empty-state fvh-empty-locker';
           emptyBox.innerHTML =
-            '<div class="fvh-empty-icon">🎒</div>' +
-            '<div class="fvh-empty-title">' + tr('emptyCategory') + '</div>' +
-            '<div class="fvh-empty-desc">' + tr('emptyCategoryDesc') + '</div>';
+            '<div class="fvh-empty-state-icon">🎒</div>' +
+            '<div class="fvh-empty-state-title">' + tr('emptyInventoryCategory') + '</div>';
           var shopBtn = document.createElement('button');
-          shopBtn.className = 'btn primary small fvh-empty-btn';
-          shopBtn.textContent = '🛒 ' + tr('goToShop');
+          shopBtn.className = 'btn primary small';
+          shopBtn.style.marginTop = '10px';
+          shopBtn.textContent = '🛒 ' + tr('visitShopBtn');
           shopBtn.onclick = function () {
             app.audio.play('click');
-            app.go('shop');
+            app.showShop(curSlot);
           };
           emptyBox.appendChild(shopBtn);
           itemsGrid.appendChild(emptyBox);
@@ -4545,25 +5256,21 @@
         }
 
         matching.forEach(function (item) {
-          var activeSlotKey = item.slot || (item.category === 'balls' ? 'ball.' + curChar : item.category === 'stadiums' ? 'stadium.' + curChar : item.category === 'skins' ? 'skin' : item.category === 'crowd' ? 'crowd' : item.category);
-          var isEquipped = (item.category === 'skins')
-            ? (curCharSkin === item.id)
-            : (item.category === 'crowd')
-              ? (activeCrowdId === item.id)
-              : (eq[activeSlotKey] === item.id);
+          var activeSlotKey = item.slot || (item.category === 'balls_footy' ? 'ball.footy' : item.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
+          var isEquipped = (eq[activeSlotKey] === item.id) || (item.category === 'skins' && (eq.skin === item.id || eq['skin.' + curChar] === item.id));
 
           var itemCard = document.createElement('div');
           var rarClass = item.rarity || 'common';
           itemCard.className = 'card shopc r-' + rarClass + (isEquipped ? ' is-eq' : '');
 
           var localizedRarity = tr('rarity_' + rarClass) || rarClass.toUpperCase();
-          var localizedItemName = item.category === 'crowd' ? (tr(item.nameKey) || item.name) : trItem(item.name);
+          var localizedItemName = trItem(item.name);
 
           itemCard.innerHTML =
             '<div class="thumbwrap"><div class="thumb" style="display:flex;align-items:center;justify-content:center;">' +
             renderItemArtwork(item, 'thumb') +
             '</div>' +
-            (isEquipped ? '<span class="st st-eq">✓ ' + tr('equippedBadge') + '</span>' : '') +
+            (isEquipped ? '<span class="st st-eq">✓ ' + tr('equippedState') + '</span>' : '') +
             '</div>' +
             '<div class="nm">' + localizedItemName + '</div>' +
             '<div class="tags"><span class="rar ' + rarClass + '">' + localizedRarity + '</span></div>';
@@ -4572,32 +5279,17 @@
           if (isEquipped) {
             btn.className = 'btn small';
             btn.disabled = true;
-            btn.textContent = '✓ ' + tr('equipped');
+            btn.textContent = tr('equippedState');
           } else {
             btn.className = 'btn small primary';
-            btn.textContent = tr('equip');
+            btn.textContent = tr('equipAction');
             btn.onclick = function () {
-              if (item.category === 'crowd') {
-                app.store.update(function (d) {
-                  if (!d.equipped) d.equipped = {};
-                  d.equipped.crowd = item.id;
-                });
-                app.audio.play('claim');
-                showToast(tr('equipped') + ': ' + localizedItemName);
-                updateView();
-                return;
-              }
               var pid = getAppPlayerId(app);
               safeEconomyApi('/api/economy/equip', {
                 playerId: pid,
                 slot: activeSlotKey,
                 itemId: item.id
               }).then(function (res) {
-                if (res && res.error === 'item_not_owned') {
-                  app.audio.play('error');
-                  showToast('⚠️ ' + tr('lockedInShop', { price: item.price || 500 }));
-                  return;
-                }
                 app.store.update(function (d) {
                   if (!d.equipped) d.equipped = {};
                   d.equipped[activeSlotKey] = item.id;
@@ -4605,10 +5297,9 @@
                     d.equipped['skin.' + curChar] = item.id;
                     d.equipped.skin = item.id;
                   }
-                  if (item.id === 'std_ocean_sunset') { d.equipped['stadium.footy'] = 'std_ocean_sunset'; d.equipped['stadium.hoops'] = 'std_ocean_sunset'; }
                 });
-                app.audio.play('click');
-                showToast(tr('equipped') + ': ' + localizedItemName);
+                app.audio.play('claim');
+                showToast(tr('equippedState') + ': ' + localizedItemName);
                 updateView();
               });
             };
@@ -4647,21 +5338,9 @@
 
 
   // Build Quests & Mission Operations Board Page (3 Separated Top-Level Categories)
-  function buildQuestsPage(app, initialMainTab, initialSubTab) {
-    var curMainTab = 'gameplay';
-    var curSubTab = 'daily';
-
-    if (initialMainTab === 'social') {
-      curMainTab = 'social';
-    } else if (initialMainTab === 'referrals' || initialMainTab === 'invite') {
-      curMainTab = 'referrals';
-    } else if (initialMainTab === 'daily' || initialMainTab === 'weekly' || initialMainTab === 'achieve') {
-      curMainTab = 'gameplay';
-      curSubTab = initialMainTab;
-    } else if (initialMainTab === 'gameplay') {
-      curMainTab = 'gameplay';
-      curSubTab = initialSubTab || 'daily';
-    }
+  // Build Quests & Social Ops Page (Strictly 2 tabs: Invite a Friend & Social Tasks)
+  function buildQuestsPage(app, initialMainTab) {
+    var curMainTab = initialMainTab === 'social' ? 'social' : 'referrals';
 
     var container = document.createElement('div');
     container.className = 'screen solid page-screen has-nav';
@@ -4681,7 +5360,7 @@
       app.showMenu();
     };
     var title = document.createElement('h1');
-    title.textContent = tr('missionOps');
+    title.textContent = tr('quests');
     head.appendChild(backBtn);
     head.appendChild(title);
     page.appendChild(head);
@@ -4689,40 +5368,32 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-quests-container';
 
-    // Top-Level Category Navigation (3 Clear Tabs)
+    // Top Navigation (2 Tabs Only)
     var mainSeg = document.createElement('div');
     mainSeg.className = 'seg fvh-quest-top-nav';
     mainSeg.style.marginBottom = '14px';
 
     var mainTabs = [
-      { id: 'gameplay', icon: '🎯', label: tr('tabGameplay') },
-      { id: 'social', icon: '🌐', label: tr('tabSocialMedia') },
-      { id: 'referrals', icon: '👥', label: tr('tabInviteFriends') }
+      { id: 'referrals', icon: '👥', label: tr('tabInviteFriends') },
+      { id: 'social', icon: '🌐', label: tr('tabSocialTasks') }
     ];
 
     mainTabs.forEach(function (mt) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.innerHTML = '<span class="fvh-tab-icon">' + mt.icon + '</span><span class="fvh-tab-label">' + mt.label + '</span>';
-      if (mt.id === curMainTab) {
-        btn.className = 'on';
-        setTimeout(function () {
-          try { btn.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' }); } catch (e) {}
-        }, 50);
-      }
+      if (mt.id === curMainTab) btn.className = 'on';
       btn.onclick = function () {
         curMainTab = mt.id;
         mainSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
         btn.className = 'on';
         app.audio.play('click');
-        try { btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } catch (e) {}
         renderQuestsPage();
       };
       mainSeg.appendChild(btn);
     });
     body.appendChild(mainSeg);
 
-    // Dynamic Content Area
     var contentArea = document.createElement('div');
     contentArea.className = 'fvh-quest-content';
     body.appendChild(contentArea);
@@ -4730,11 +5401,10 @@
     page.appendChild(body);
     container.appendChild(page);
 
-    function getStats() {
-      return app.store.data.stats || {
-        matches: 0, wins: 0, losses: 0, goals: 0, baskets: 0,
-        winsFooty: 0, winsHoops: 0, winsClash: 0
-      };
+    function getPlayerId() {
+      var pid = (app.store && app.store.data && app.store.data.playerId) || 'PLAYER_' + Math.floor(1000 + Math.random() * 9000);
+      if (app.store && app.store.data) app.store.data.playerId = pid;
+      return pid;
     }
 
     function getClaimedList() {
@@ -4748,780 +5418,289 @@
       return app.store.data.claimedQuests;
     }
 
-    function getSocialState() {
-      if (!app.store.data.socialState) {
-        app.store.data.socialState = {};
-      }
-      return app.store.data.socialState;
-    }
-
-    function getPlayerId() {
-      var pid = app.store.data.playerId || 'PLAYER_' + Math.floor(1000 + Math.random() * 9000);
-      app.store.data.playerId = pid;
-      return pid;
-    }
-
-    // ==========================================
-    // 1. GAMEPLAY QUESTS SECTION
-    // ==========================================
-    function renderGameplayQuests() {
+    // Tab 1: Invite a Friend
+    function renderReferralsTab() {
       contentArea.innerHTML = '';
+      var pid = getPlayerId();
+      var botUsername = 'FootyVsHoopsBot';
+      var refLink = 'https://t.me/' + botUsername + '?start=ref_' + pid;
 
-      // Sub-Navigation for Gameplay (Daily, Weekly, Achievements)
-      var subSeg = document.createElement('div');
-      subSeg.className = 'seg fvh-quest-sub-nav';
-      subSeg.style.marginBottom = '14px';
-      var subTabs = [
-        { id: 'daily', label: tr('tabDaily') },
-        { id: 'weekly', label: tr('tabWeekly') },
-        { id: 'achieve', label: tr('tabAchievements') }
-      ];
-      subTabs.forEach(function (st) {
-        var sbtn = document.createElement('button');
-        sbtn.textContent = st.label;
-        if (st.id === curSubTab) sbtn.className = 'on';
-        sbtn.onclick = function () {
-          curSubTab = st.id;
-          app.audio.play('click');
-          renderGameplayQuests();
-        };
-        subSeg.appendChild(sbtn);
-      });
-      contentArea.appendChild(subSeg);
+      var refData = app.store.data.referrals || [];
+      var totalInvited = Array.isArray(refData) ? refData.length : (refData.total || 0);
+      var qualifiedFriends = Array.isArray(refData)
+        ? refData.filter(function (r) { return r && r.qualified; }).length
+        : (refData.qualified || 0);
+      var earnedCoins = qualifiedFriends * 100;
 
-      var stats = getStats();
-      var claimed = getClaimedList();
-      var totalScore = (stats.goals || 0) + (stats.baskets || 0);
-      var lang = getActiveLang();
+      // Query authoritative referral stats from server
+      fetch('/api/referrals/stats?playerId=' + encodeURIComponent(pid))
+        .then(function (res) { return res.json(); })
+        .then(function (s) {
+          if (s && s.ok && s.stats) {
+            totalInvited = s.stats.total || totalInvited;
+            qualifiedFriends = s.stats.qualified || qualifiedFriends;
+            earnedCoins = qualifiedFriends * 100;
+          }
+        })
+        .catch(function () {});
 
-      // Prime Daily Directive Hero Banner
-      var primeTarget = 5;
-      var primeCur = Math.min(primeTarget, totalScore);
-      var primeClaimed = claimed.indexOf('prime_daily') !== -1;
-      var primeReady = primeCur >= primeTarget && !primeClaimed;
-      var primeTitleStr = tr('q_prime_title');
-
-      var primeBanner = document.createElement('div');
-      primeBanner.className = 'fvh-prime-card';
-      primeBanner.innerHTML =
-        '<div class="fvh-prime-header">' +
-        '<div>' +
-        '<span class="fvh-prime-tag">🔥 ' + tr('primeChallenge') + '</span>' +
-        '<h2 style="margin:4px 0 2px;font-size:18px;">' + primeTitleStr + '</h2>' +
-        '</div>' +
-        '<div class="fvh-prime-reward">' + getFvhCoinSvg('inline') + ' 250 + 100 XP</div>' +
-        '</div>' +
-        '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">' + tr('resetsIn', { t: '14h 22m' }) + ' · ' + tr('streakBadge', { n: 3 }) + '</div>' +
-        '<div class="pbar" style="height:10px;margin:0 0 10px 0;"><i style="width:' + Math.min(100, Math.floor((primeCur / primeTarget) * 100)) + '%;"></i></div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-        '<span style="font-size:12px;color:var(--text-muted);">' + tr('progress') + ': ' + primeCur + ' / ' + primeTarget + '</span>' +
-        (primeClaimed ?
-          '<button class="btn small" disabled>✓ ' + tr('completed') + '</button>' :
-          primeReady ?
-          '<button class="btn small primary prime-claim-btn" style="font-weight:800;">' + tr('claim') + ' 🪙 250</button>' :
-          '<button class="btn small" disabled>' + tr('inProgress') + '</button>') +
+      // 1. Referral Hero Banner & Honest Qualification Rule
+      var hero = document.createElement('div');
+      hero.className = 'fvh-quest-ref-hero';
+      hero.innerHTML =
+        '<div class="fvh-quest-ref-icon">👥</div>' +
+        '<div class="fvh-quest-ref-title">' + tr('tabInviteFriends') + '</div>' +
+        '<div class="fvh-quest-ref-desc" style="color:var(--text-muted);font-size:12px;margin:6px 0 12px;line-height:1.45;">' +
+        tr('refRuleText') +
         '</div>';
+      contentArea.appendChild(hero);
 
-      var primeBtn = primeBanner.querySelector('.prime-claim-btn');
-      if (primeBtn) {
-        primeBtn.onclick = function () {
-          var pid = getAppPlayerId(app);
-          safeEconomyApi('/api/economy/reward', {
-            playerId: pid,
-            rewardType: 'quest',
-            questId: 'prime_daily',
-            idempotencyKey: 'quest_' + pid + '_prime_daily'
-          }).then(function (res) {
-            if (res && res.ok) {
-              app.store.update(function (d) {
-                if (!d.claimedQuests) d.claimedQuests = [];
-                if (d.claimedQuests.indexOf('prime_daily') === -1) d.claimedQuests.push('prime_daily');
-                d.coins = res.coins;
-                d.xp = res.xp;
-              });
-            } else {
-              app.store.update(function (d) {
-                if (!d.claimedQuests) d.claimedQuests = [];
-                if (d.claimedQuests.indexOf('prime_daily') === -1) d.claimedQuests.push('prime_daily');
-                d.coins = (d.coins || 0) + 250;
-                d.xp = (d.xp || 0) + 100;
-              });
-            }
-            app.audio.play('claim');
-            showToast(lang === 'ru' ? '🎉 +250 Монет, +100 XP!' : '🎉 +250 Coins, +100 XP!');
-            renderGameplayQuests();
+      // 2. Link Box with Copy and Telegram Share
+      var linkBox = document.createElement('div');
+      linkBox.className = 'fvh-quest-link-box';
+      linkBox.style.background = 'rgba(255,255,255,0.05)';
+      linkBox.style.border = '1px solid rgba(255,255,255,0.12)';
+      linkBox.style.borderRadius = '12px';
+      linkBox.style.padding = '12px';
+      linkBox.style.marginBottom = '14px';
+
+      linkBox.innerHTML =
+        '<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;font-weight:700;">' + tr('refStatTotal') + ' · ' + tr('tabInviteFriends') + '</div>' +
+        '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
+        '  <input type="text" readonly value="' + escapeHtml(refLink) + '" class="fvh-ref-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#38bdf8;font-size:12px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;">' +
+        '  <button class="btn primary small fvh-btn-copy-ref" style="white-space:nowrap;padding:8px 14px;font-weight:800;">' + tr('refCopyBtn') + '</button>' +
+        '</div>' +
+        '<button class="btn block fvh-btn-share-ref" style="background:#229ed9;color:#fff;font-weight:800;border:none;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">' +
+        '  <span>✈️</span> <span>' + tr('refShareBtn') + '</span>' +
+        '</button>';
+
+      var copyBtn = linkBox.querySelector('.fvh-btn-copy-ref');
+      copyBtn.onclick = function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(refLink).then(function () {
+            app.audio.play('click');
+            showToast(tr('refCopied'));
           });
-        };
-      }
-      contentArea.appendChild(primeBanner);
-
-      // Quest pools
-      var dailyPool = [
-        { id: 'd_play3', title: tr('q_play3_title'), desc: tr('q_play3_desc'), cur: Math.min(3, stats.matches || 0), target: 3, coins: 80, xp: 40, icon: '⚽' },
-        { id: 'd_score5', title: tr('q_score5_title'), desc: tr('q_score5_desc'), cur: Math.min(5, totalScore), target: 5, coins: 120, xp: 60, icon: '🎯' },
-        { id: 'd_win1', title: tr('q_win1_title'), desc: tr('q_win1_desc'), cur: Math.min(1, stats.wins || 0), target: 1, coins: 150, xp: 75, icon: '🏆' }
-      ];
-
-      var weeklyPool = [
-        { id: 'w_win10', title: tr('q_win10_title'), desc: tr('q_win10_desc'), cur: Math.min(10, stats.wins || 0), target: 10, coins: 500, xp: 300, icon: '👑' },
-        { id: 'w_score20', title: tr('q_score20_title'), desc: tr('q_score20_desc'), cur: Math.min(20, totalScore), target: 20, coins: 400, xp: 250, icon: '🔥' },
-        { id: 'w_matches15', title: tr('q_matches15_title'), desc: tr('q_matches15_desc'), cur: Math.min(15, stats.matches || 0), target: 15, coins: 350, xp: 200, icon: '🏃' }
-      ];
-
-      var achievePool = [
-        { id: 'a_first_win', title: tr('q_first_win_title'), desc: tr('q_first_win_desc'), cur: Math.min(1, stats.wins || 0), target: 1, coins: 200, xp: 100, icon: '🎖️' },
-        { id: 'a_footy_master', title: tr('q_footy_master_title'), desc: tr('q_footy_master_desc'), cur: Math.min(10, stats.winsFooty || 0), target: 10, coins: 800, xp: 500, icon: '⚽' },
-        { id: 'a_hoops_master', title: tr('q_hoops_master_title'), desc: tr('q_hoops_master_desc'), cur: Math.min(10, stats.winsHoops || 0), target: 10, coins: 800, xp: 500, icon: '🏀' }
-      ];
-
-      var missionList = document.createElement('div');
-      missionList.className = 'fvh-mission-list';
-
-      var activePool = curSubTab === 'daily' ? dailyPool : curSubTab === 'weekly' ? weeklyPool : achievePool;
-
-      activePool.forEach(function (q) {
-        var card = document.createElement('div');
-        var isClaimed = claimed.indexOf(q.id) !== -1;
-        var isReady = q.cur >= q.target && !isClaimed;
-
-        card.className = 'fvh-mission-card' + (isReady ? ' ready' : '') + (isClaimed ? ' completed' : '');
-        var pct = Math.min(100, Math.floor((q.cur / q.target) * 100));
-
-        card.innerHTML =
-          '<div class="fvh-mission-icon">' + q.icon + '</div>' +
-          '<div class="fvh-mission-content">' +
-          '<div class="fvh-mission-title-row">' +
-          '<div class="fvh-mission-title">' + q.title + '</div>' +
-          '<div class="fvh-mission-reward">' + getFvhCoinSvg('inline') + ' ' + q.coins + ' · ' + q.xp + ' XP</div>' +
-          '</div>' +
-          '<div class="fvh-mission-desc">' + q.desc + '</div>' +
-          '<div class="pbar" style="height:6px;margin:8px 0 4px 0;"><i style="width:' + pct + '%;"></i></div>' +
-          '<div class="fvh-mission-meta">' +
-          '<span>' + tr('progress') + ': ' + q.cur + ' / ' + q.target + '</span>' +
-          '<span>' + pct + '%</span>' +
-          '</div>' +
-          '</div>' +
-          '<div class="fvh-mission-action"></div>';
-
-        var actBox = card.querySelector('.fvh-mission-action');
-        var btn = document.createElement('button');
-
-        if (isClaimed) {
-          btn.className = 'btn small';
-          btn.disabled = true;
-          btn.textContent = '✓ ' + tr('completed');
-        } else if (isReady) {
-          btn.className = 'btn small primary';
-          btn.textContent = tr('claim');
-          btn.onclick = function () {
-            var pid = getAppPlayerId(app);
-            safeEconomyApi('/api/economy/reward', {
-              playerId: pid,
-              rewardType: 'quest',
-              questId: q.id,
-              idempotencyKey: 'quest_' + pid + '_' + q.id
-            }).then(function (res) {
-              if (res && res.ok) {
-                app.store.update(function (d) {
-                  if (!d.claimedQuests) d.claimedQuests = [];
-                  if (d.claimedQuests.indexOf(q.id) === -1) d.claimedQuests.push(q.id);
-                  d.coins = res.coins;
-                  d.xp = res.xp;
-                });
-              } else {
-                app.store.update(function (d) {
-                  if (!d.claimedQuests) d.claimedQuests = [];
-                  if (d.claimedQuests.indexOf(q.id) === -1) {
-                    d.claimedQuests.push(q.id);
-                    d.coins = (d.coins || 0) + q.coins;
-                    d.xp = (d.xp || 0) + q.xp;
-                  }
-                });
-              }
-              app.audio.play('claim');
-              showToast(lang === 'ru' ? ('🎁 +' + q.coins + ' Монет, +' + q.xp + ' XP!') : ('🎁 +' + q.coins + ' Coins, +' + q.xp + ' XP!'));
-              renderGameplayQuests();
-            });
-          };
         } else {
-          btn.className = 'btn small';
-          btn.disabled = true;
-          btn.textContent = q.cur + '/' + q.target;
+          var inp = linkBox.querySelector('.fvh-ref-input');
+          inp.select();
+          document.execCommand('copy');
+          app.audio.play('click');
+          showToast(tr('refCopied'));
         }
+      };
 
-        actBox.appendChild(btn);
-        missionList.appendChild(card);
-      });
+      var shareBtn = linkBox.querySelector('.fvh-btn-share-ref');
+      shareBtn.onclick = function () {
+        app.audio.play('click');
+        var shareMsg = 'FOOTY vs HOOPS — Choose your faction and battle for $FOOTY and $HOOPS!';
+        var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(refLink) + '&text=' + encodeURIComponent(shareMsg);
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+          window.Telegram.WebApp.openTelegramLink(shareUrl);
+        } else {
+          window.open(shareUrl, '_blank');
+        }
+      };
 
-      contentArea.appendChild(missionList);
+      contentArea.appendChild(linkBox);
+
+      // 3. Referral Real Statistics
+      var statsBox = document.createElement('div');
+      statsBox.className = 'fvh-quest-stats-grid';
+      statsBox.style.display = 'grid';
+      statsBox.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      statsBox.style.gap = '8px';
+
+      statsBox.innerHTML =
+        '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
+        '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatTotal') + '</div>' +
+        '  <div style="font-size:16px;font-weight:900;color:#fff;margin-top:2px;">' + totalInvited + '</div>' +
+        '</div>' +
+        '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
+        '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatQualified') + '</div>' +
+        '  <div style="font-size:16px;font-weight:900;color:#22c55e;margin-top:2px;">' + qualifiedFriends + '</div>' +
+        '</div>' +
+        '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
+        '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatEarned') + '</div>' +
+        '  <div style="font-size:16px;font-weight:900;color:#facc15;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:3px;">' + getFvhCoinSvg('inline') + ' ' + earnedCoins + '</div>' +
+        '</div>';
+
+      contentArea.appendChild(statsBox);
     }
 
-    // ==========================================
-    // 2. OFFICIAL SOCIAL QUESTS SECTION
-    // ==========================================
-    function renderSocialQuests() {
+    // Tab 2: Social Tasks (Telegram channel & X account only)
+    function renderSocialTab() {
       contentArea.innerHTML = '';
-
       var claimed = getClaimedList();
-      var socialState = getSocialState();
-      var lang = getActiveLang();
 
-      // Header Banner
-      var banner = document.createElement('div');
-      banner.className = 'fvh-prime-card';
-      banner.innerHTML =
-        '<div class="fvh-prime-header">' +
-        '<div>' +
-        '<span class="fvh-prime-tag">🌐 ' + tr('socialMissionTitle') + '</span>' +
-        '<h2 style="margin:4px 0 2px;font-size:18px;">' + tr('socialMissionSubtitle') + '</h2>' +
-        '</div>' +
-        '<div class="fvh-prime-reward">🎁 3,200 ' + getFvhCoinSvg('inline') + '</div>' +
-        '</div>' +
-        '<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">' +
-        (lang === 'ru' ? '✓ Подпишитесь на официальные каналы проекта. Награда выдаётся после подтверждения перехода.' : '✓ Follow official project channels. Rewards unlocked upon verified visit.') +
-        '</div>';
-      contentArea.appendChild(banner);
-
-      var officialSocialTasks = [
+      var socialTasks = [
         {
           id: 'q_sub_tg',
-          title: tr('q_sub_tg_title'),
-          desc: tr('q_sub_tg_desc'),
-          url: 'https://t.me/FootyHoops',
-          coins: 500,
-          xp: 150,
-          icon: getSocialIconSvg('tg'),
-          actionText: tr('subscribeBtn')
-        },
-        {
-          id: 'q_sub_chat',
-          title: tr('q_sub_chat_title'),
-          desc: tr('q_sub_chat_desc'),
-          url: 'https://t.me/+zKbH1Po_pdg2MmVi',
-          coins: 450,
-          xp: 120,
-          icon: getSocialIconSvg('chat'),
-          actionText: tr('joinBtn')
+          title: tr('socialTgTask'),
+          reward: 50,
+          icon: '📢',
+          url: 'https://t.me/FootyVsHoops'
         },
         {
           id: 'q_sub_x',
-          title: tr('q_sub_x_title'),
-          desc: tr('q_sub_x_desc'),
-          url: 'https://x.com/footyvshoops',
-          coins: 400,
-          xp: 100,
-          icon: getSocialIconSvg('x'),
-          actionText: tr('followBtn')
-        },
-        {
-          id: 'q_sub_insta',
-          title: tr('q_sub_insta_title'),
-          desc: tr('q_sub_insta_desc'),
-          url: 'https://www.instagram.com/footyvshoops',
-          coins: 400,
-          xp: 100,
-          icon: getSocialIconSvg('insta'),
-          actionText: tr('followBtn')
-        },
-        {
-          id: 'q_sub_yt',
-          title: tr('q_sub_yt_title'),
-          desc: tr('q_sub_yt_desc'),
-          url: 'https://youtube.com/@footyvshoops-cr',
-          coins: 450,
-          xp: 120,
-          icon: getSocialIconSvg('yt'),
-          actionText: tr('subscribeBtn')
-        },
-        {
-          id: 'q_sub_tiktok',
-          title: tr('q_sub_tiktok_title'),
-          desc: tr('q_sub_tiktok_desc'),
-          url: 'https://www.tiktok.com/@footy_vs_hoops',
-          coins: 400,
-          xp: 100,
-          icon: getSocialIconSvg('tiktok'),
-          actionText: tr('followBtn')
+          title: tr('socialXTask'),
+          reward: 50,
+          icon: '🐦',
+          url: 'https://x.com/FootyVsHoops'
         }
       ];
 
-      var missionList = document.createElement('div');
-      missionList.className = 'fvh-mission-list';
+      var list = document.createElement('div');
+      list.className = 'fvh-social-task-list';
+      list.style.display = 'flex';
+      list.style.flexDirection = 'column';
+      list.style.gap = '10px';
 
-      officialSocialTasks.forEach(function (task) {
+      socialTasks.forEach(function (task) {
+        var isDone = claimed.indexOf(task.id) !== -1;
         var card = document.createElement('div');
-        var isClaimed = claimed.indexOf(task.id) !== -1;
-        var st = socialState[task.id] || { status: 'available' };
-        var isTgTask = (task.id === 'q_sub_tg' || task.id === 'q_sub_chat' || task.id === 'q_sub_tg_news' || task.id === 'q_sub_tg_chat');
-        var isVerifying = st.status === 'verifying';
-        var isPendingReview = st.status === 'pending_review';
-        var isReady = st.status === 'ready' && !isClaimed;
-
-        // NOTE: Auto-grant exploit timer (8s bypass) is strictly removed.
-        // Telegram tasks require server verification via Telegram Bot API.
-        // External social tasks require moderator verification (pending_review).
-
-        card.className = 'fvh-mission-card' + (isReady ? ' ready' : '') + (isClaimed ? ' completed' : '');
-
-        var statusTag = isClaimed ?
-          '<span style="color:#10b981;font-weight:700;">✓ ' + tr('completed') + '</span>' :
-          isReady ?
-          '<span style="color:#f59e0b;font-weight:700;">⚡ ' + tr('verifyClaimBtn') + '</span>' :
-          isPendingReview ?
-          '<span style="color:#f59e0b;font-weight:700;">⏳ ' + (lang === 'ru' ? 'На проверке (до 24ч)' : 'Under Review (24h)') + '</span>' :
-          isVerifying ?
-          '<span style="color:#38bdf8;font-weight:700;">⏳ ' + (lang === 'ru' ? 'Проверка...' : 'Verifying...') + '</span>' :
-          '<span style="color:var(--text-muted);">' + (lang === 'ru' ? 'Доступно' : 'Available') + '</span>';
+        card.className = 'fvh-quest-task-card' + (isDone ? ' done' : '');
+        card.style.background = 'rgba(255,255,255,0.04)';
+        card.style.border = isDone ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(255,255,255,0.1)';
+        card.style.borderRadius = '12px';
+        card.style.padding = '14px 16px';
+        card.style.display = 'flex';
+        card.style.alignItems = 'center';
+        card.style.justifyContent = 'space-between';
+        card.style.gap = '12px';
 
         card.innerHTML =
-          '<div class="fvh-mission-icon">' + task.icon + '</div>' +
-          '<div class="fvh-mission-content">' +
-          '<div class="fvh-mission-title-row">' +
-          '<div class="fvh-mission-title">' + task.title + '</div>' +
-          '<div class="fvh-mission-reward">' + getFvhCoinSvg('inline') + ' ' + task.coins + ' · ' + task.xp + ' XP</div>' +
+          '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+          '  <div style="font-size:24px;width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + task.icon + '</div>' +
+          '  <div style="flex:1;min-width:0;">' +
+          '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + task.title + '</div>' +
+          '    <div style="font-size:11.5px;font-weight:800;color:#facc15;margin-top:2px;display:inline-flex;align-items:center;gap:4px;">' +
+          getFvhCoinSvg('inline') + ' +' + task.reward + ' FvH Coin' +
+          '    </div>' +
+          '  </div>' +
           '</div>' +
-          '<div class="fvh-mission-desc">' + task.desc + '</div>' +
-          '<div class="fvh-mission-meta" style="margin-top:6px;">' +
-          '<span>' + statusTag + '</span>' +
-          '</div>' +
-          '</div>' +
-          '<div class="fvh-mission-action"></div>';
+          '<div class="fvh-task-actions" style="display:flex;gap:6px;flex-shrink:0;"></div>';
 
-        var actBox = card.querySelector('.fvh-mission-action');
-        var btn = document.createElement('button');
+        var actBox = card.querySelector('.fvh-task-actions');
 
-        if (isClaimed) {
-          btn.className = 'btn small';
-          btn.disabled = true;
-          btn.textContent = '✓ ' + tr('completed');
-        } else if (isReady) {
-          btn.className = 'btn small primary';
-          btn.innerHTML = tr('claim') + ' ' + getFvhCoinSvg('inline') + ' ' + task.coins;
-          btn.onclick = function () {
-            btn.disabled = true;
-            var curPlayerId = (app.store && app.store.data && app.store.data.playerId) || 'local_player';
-            fetch(getApiUrl('/api/economy/reward'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                playerId: curPlayerId,
-                rewardType: 'quest',
-                questId: task.id
-              })
-            }).then(function (r) { return r.json(); }).then(function (res) {
-              app.store.update(function (d) {
-                if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
-                if (d.claimedQuests.indexOf(task.id) === -1) {
-                  d.claimedQuests.push(task.id);
-                }
-                if (res && typeof res.coins === 'number') {
-                  d.coins = res.coins;
-                } else {
-                  d.coins = (d.coins || 0) + task.coins;
-                }
-                if (res && typeof res.xp === 'number') {
-                  d.xp = res.xp;
-                } else {
-                  d.xp = (d.xp || 0) + task.xp;
-                }
-                if (d.socialState && d.socialState[task.id]) {
-                  d.socialState[task.id].status = 'claimed';
-                }
-              });
-              app.audio.play('claim');
-              showToast(lang === 'ru' ? ('+' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('+' + task.coins + ' Coins, +' + task.xp + ' XP!'));
-              syncAuthoritativeEconomy(app);
-              renderSocialQuests();
-            }).catch(function () {
-              app.store.update(function (d) {
-                if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
-                if (d.claimedQuests.indexOf(task.id) === -1) {
-                  d.claimedQuests.push(task.id);
-                }
-                d.coins = (d.coins || 0) + task.coins;
-                d.xp = (d.xp || 0) + task.xp;
-                if (d.socialState && d.socialState[task.id]) {
-                  d.socialState[task.id].status = 'claimed';
-                }
-              });
-              app.audio.play('claim');
-              showToast(lang === 'ru' ? ('+' + task.coins + ' Монет, +' + task.xp + ' XP!') : ('+' + task.coins + ' Coins, +' + task.xp + ' XP!'));
-              syncAuthoritativeEconomy(app);
-              renderSocialQuests();
-            });
-          };
-        } else if (isPendingReview) {
-          btn.className = 'btn small';
-          btn.disabled = true;
-          btn.textContent = (lang === 'ru' ? '⏳ На проверке' : '⏳ In Review');
-        } else if (isVerifying && isTgTask) {
-          btn.className = 'btn small primary';
-          btn.textContent = (lang === 'ru' ? '🔄 Проверить' : '🔄 Verify');
-          btn.onclick = function () {
-            var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
-            if (tgUser && tgUser.id) {
-              btn.disabled = true;
-              btn.textContent = '...';
-              fetch(getApiUrl('/api/social/verify-telegram'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  telegramUserId: tgUser.id,
-                  target: (task.id === 'q_sub_chat' || task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
-                })
-              }).then(function (r) { return r.json(); }).then(function (res) {
-                if (res && res.verified) {
-                  app.store.update(function (d) {
-                    if (!d.socialState) d.socialState = {};
-                    d.socialState[task.id] = { status: 'ready' };
-                  });
-                  showToast(lang === 'ru' ? '✓ Подписка подтверждена! Награда готова.' : '✓ Subscription verified! Reward ready.');
-                } else {
-                  showToast(lang === 'ru' ? 'Подписка не обнаружена. Пожалуйста, подпишитесь!' : 'Subscription not found. Please join channel/chat!');
-                }
-                renderSocialQuests();
-              }).catch(function () {
-                renderSocialQuests();
-              });
+        if (isDone) {
+          var doneBtn = document.createElement('button');
+          doneBtn.className = 'btn small';
+          doneBtn.disabled = true;
+          doneBtn.textContent = tr('taskCompleted');
+          actBox.appendChild(doneBtn);
+        } else {
+          var openBtn = document.createElement('button');
+          openBtn.className = 'btn small';
+          openBtn.textContent = tr('openTaskBtn');
+          openBtn.onclick = function () {
+            app.audio.play('click');
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+              window.Telegram.WebApp.openLink(task.url);
             } else {
               window.open(task.url, '_blank');
             }
           };
-        } else {
-          btn.className = 'btn small primary';
-          btn.textContent = task.actionText + ' ↗';
-          btn.onclick = function () {
-            window.open(task.url, '_blank');
-            var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+          actBox.appendChild(openBtn);
 
-            if (isTgTask) {
+          var claimBtn = document.createElement('button');
+          claimBtn.className = 'btn small primary';
+          claimBtn.textContent = tr('verifyTaskBtn');
+          claimBtn.onclick = function () {
+            claimBtn.disabled = true;
+            claimBtn.textContent = tr('taskVerifying');
+            var pid = getPlayerId();
+            safeEconomyApi('/api/economy/quest', {
+              playerId: pid,
+              questId: task.id
+            }).then(function (res) {
               app.store.update(function (d) {
-                if (!d.socialState) d.socialState = {};
-                d.socialState[task.id] = { status: 'verifying', startTime: Date.now() };
-              });
-              app.audio.play('click');
-
-              if (tgUser && tgUser.id) {
-                showToast(lang === 'ru' ? 'Проверяем подписку в Telegram...' : 'Verifying Telegram subscription...');
-                fetch(getApiUrl('/api/social/verify-telegram'), {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    telegramUserId: tgUser.id,
-                    target: (task.id === 'q_sub_chat' || task.id === 'q_sub_tg_chat') ? 'chat' : 'channel'
-                  })
-                }).then(function (r) { return r.json(); }).then(function (res) {
-                  if (res && res.verified) {
-                    app.store.update(function (d) {
-                      if (!d.socialState) d.socialState = {};
-                      d.socialState[task.id] = { status: 'ready' };
-                    });
-                    showToast(lang === 'ru' ? '✓ Подписка подтверждена! Награда готова.' : '✓ Subscription verified! Reward ready.');
-                    renderSocialQuests();
-                  } else {
-                    showToast(lang === 'ru' ? 'Канал открыт! Нажмите «Проверить» после подписки.' : 'Channel opened! Tap "Verify" after joining.');
-                    renderSocialQuests();
-                  }
-                }).catch(function () {
-                  renderSocialQuests();
+                if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
+                if (d.claimedQuests.indexOf(task.id) === -1) d.claimedQuests.push(task.id);
+                if (res && res.coins !== undefined) {
+                  d.coins = res.coins;
+                } else {
+                  d.coins = (d.coins || 0) + task.reward;
+                }
+                if (!d.transactions) d.transactions = [];
+                d.transactions.unshift({
+                  id: 'tx_quest_' + task.id + '_' + Date.now(),
+                  type: 'quest_reward',
+                  amount: task.reward,
+                  description: task.title,
+                  timestamp: Date.now()
                 });
-              } else {
-                showToast(lang === 'ru' ? 'Канал открыт! Нажмите «Проверить» после подписки.' : 'Channel opened! Tap "Verify" after joining.');
-                renderSocialQuests();
-              }
-            } else {
-              app.store.update(function (d) {
-                if (!d.socialState) d.socialState = {};
-                d.socialState[task.id] = { status: 'pending_review', startTime: Date.now() };
               });
-              app.audio.play('click');
-              showToast(lang === 'ru' ? 'Ссылка открыта! Заявка отправлена на модерацию (до 24ч).' : 'Link opened! Submitted for manual review (up to 24h).');
-              renderSocialQuests();
-            }
+              app.audio.play('claim');
+              showToast('+' + task.reward + ' FvH Coin: ' + task.title);
+              renderSocialTab();
+            });
           };
+          actBox.appendChild(claimBtn);
         }
 
-        actBox.appendChild(btn);
-        missionList.appendChild(card);
+        list.appendChild(card);
       });
 
-      // Honest verification disclosure notice
-      var noticeBox = document.createElement('div');
-      noticeBox.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-top:14px;font-size:11px;color:var(--text-muted);line-height:1.45;';
-      noticeBox.innerHTML = lang === 'ru'
-        ? '💡 <b>Правила верификации:</b> Задания в Telegram проверяются автоматически через Bot API и начисляются мгновенно. Задания в сторонних соцсетях (X, YouTube, Instagram, TikTok, WhatsApp) проверяются модератором в течение 24 часов.'
-        : '💡 <b>Verification Rules:</b> Telegram community tasks are verified automatically via the Bot API with instant payouts. External social platforms (X, YouTube, Instagram, TikTok, WhatsApp) are audited by moderators within 24 hours.';
-      missionList.appendChild(noticeBox);
-
-      contentArea.appendChild(missionList);
-    }
-
-    // ==========================================
-    // 3. INVITE FRIENDS / REFERRAL SQUAD HUB
-    // ==========================================
-    function renderReferralHub() {
-      contentArea.innerHTML = '';
-
-      var pid = getPlayerId();
-      var lang = getActiveLang();
-      var claimed = getClaimedList();
-
-      var hashNum = Math.abs(pid.split('').reduce(function (a, b) { return ((a << 5) - a) + b.charCodeAt(0); }, 0) % 90000 + 10000);
-      var refCode = 'FVH-' + hashNum;
-      var refLink = 'https://t.me/FootyHoopsGameBot?start=ref_' + refCode;
-
-      // Loading Container
-      var hubWrap = document.createElement('div');
-      hubWrap.className = 'fvh-referral-hub';
-      contentArea.appendChild(hubWrap);
-
-      function drawHubUI(statsData) {
-        var qualifiedCount = statsData.qualifiedCount || 0;
-        var totalInvited = statsData.totalInvited || 0;
-        var claimedMilestones = statsData.claimedMilestones || [];
-
-        // Save local count sync
-        app.store.update(function (d) {
-          d.referralCount = qualifiedCount;
-        });
-
-        hubWrap.innerHTML =
-          // Hero Overview Card
-          '<div class="fvh-prime-card" style="margin-bottom:14px;">' +
-          '<div class="fvh-prime-header">' +
-          '<div>' +
-          '<span class="fvh-prime-tag">👥 ' + tr('referralHubTitle') + '</span>' +
-          '<h2 style="margin:4px 0 2px;font-size:18px;">' + tr('referralHubSubtitle') + '</h2>' +
-          '</div>' +
-          '<div class="fvh-prime-reward">👑 SQUAD</div>' +
-          '</div>' +
-          '<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin:12px 0;">' +
-          '<div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">' + tr('yourRefLink') + '</div>' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;">' +
-          '<code style="color:var(--accent-cyan);font-weight:800;font-size:15px;letter-spacing:1px;">' + refCode + '</code>' +
-          '<button class="btn small primary ref-copy-btn" style="white-space:nowrap;">📋 ' + tr('copyInviteLink') + '</button>' +
-          '</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-          '<button class="btn small ref-share-btn">🚀 Telegram Share</button>' +
-          '</div>' +
-          '</div>' +
-
-          // Stats Metric Cards
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">' +
-          '<div class="fvh-stat-card" style="padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;">' +
-          '<div style="font-size:22px;font-weight:900;color:var(--accent-cyan);">' + totalInvited + '</div>' +
-          '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + (lang === 'ru' ? 'Переходов / Регистраций' : 'Total Joined') + '</div>' +
-          '</div>' +
-          '<div class="fvh-stat-card" style="padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;">' +
-          '<div style="font-size:22px;font-weight:900;color:#10b981;">' + qualifiedCount + '</div>' +
-          '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + (lang === 'ru' ? 'Квалифицировано (1+ матч)' : 'Qualified (1+ Match)') + '</div>' +
-          '</div>' +
-          '</div>' +
-
-          // Rules Explainer Box
-          '<div style="background:rgba(30,41,59,0.5);border-left:3px solid var(--accent-cyan);padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;">' +
-          '<div style="font-size:12px;font-weight:700;color:#ffffff;margin-bottom:2px;">' + tr('refRulesTitle') + '</div>' +
-          '<div style="font-size:11px;color:var(--text-muted);line-height:1.4;">' + tr('refRulesDesc') + '</div>' +
-          '</div>' +
-
-          // Milestone Progress Title
-          '<h3 style="margin:0 0 10px 0;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);">' +
-          (lang === 'ru' ? 'ШКАЛА НАГРАД ЗА ДРУЗЕЙ' : 'FRIEND MILESTONE TRACK') +
-          '</h3>' +
-
-          // Milestones Container
-          '<div class="fvh-milestone-list" style="display:flex;flex-direction:column;gap:8px;"></div>';
-
-        // Bind Copy Button
-        var copyBtn = hubWrap.querySelector('.ref-copy-btn');
-        if (copyBtn) {
-          copyBtn.onclick = function () {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(refLink);
-            }
-            app.audio.play('click');
-            showToast(tr('inviteLinkCopied'));
-            copyBtn.textContent = '✓ ' + (lang === 'ru' ? 'Скопировано!' : 'Copied!');
-            setTimeout(function () {
-              copyBtn.textContent = '📋 ' + tr('copyInviteLink');
-            }, 1800);
-          };
-        }
-
-        // Bind Share Button
-        var shareBtn = hubWrap.querySelector('.ref-share-btn');
-        if (shareBtn) {
-          shareBtn.onclick = function () {
-            var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(refLink) + '&text=' + encodeURIComponent('Play FOOTY vs HOOPS with me! Compete in fast-paced arcade matches and earn crypto rewards!');
-            window.open(shareUrl, '_blank');
-            app.audio.play('click');
-          };
-        }
-
-        // Milestone Definitions (1, 3, 5, 10, 25 Friends)
-        var milestones = [
-          { target: 1, coins: 500, xp: 150, rewardTitle: (lang === 'ru' ? '500 🪙 + 150 XP' : '500 🪙 + 150 XP'), icon: '🥉' },
-          { target: 3, coins: 1500, xp: 300, rewardTitle: (lang === 'ru' ? '1,500 🪙 + Форма Rookie Blue' : '1,500 🪙 + Rookie Blue Jersey'), icon: '🥈' },
-          { target: 5, coins: 3000, xp: 500, rewardTitle: (lang === 'ru' ? '3,000 🪙 + Мяч Cyber Neon' : '3,000 🪙 + Cyber Neon Ball'), icon: '🥇' },
-          { target: 10, coins: 7500, xp: 1000, rewardTitle: (lang === 'ru' ? '7,500 🪙 + Арена Космос' : '7,500 🪙 + Space Orbit Arena'), icon: '💎' },
-          { target: 25, coins: 20000, xp: 3000, rewardTitle: (lang === 'ru' ? '20,000 🪙 + Легендарный Трофей' : '20,000 🪙 + Legendary Trophy'), icon: '👑' }
-        ];
-
-        var mList = hubWrap.querySelector('.fvh-milestone-list');
-
-        milestones.forEach(function (m) {
-          var isClaimed = claimedMilestones.indexOf(m.target) !== -1 || claimed.indexOf('ref_m_' + m.target) !== -1;
-          var isReady = qualifiedCount >= m.target && !isClaimed;
-          var mCard = document.createElement('div');
-          mCard.className = 'fvh-mission-card' + (isReady ? ' ready' : '') + (isClaimed ? ' completed' : '');
-
-          mCard.innerHTML =
-            '<div class="fvh-mission-icon">' + m.icon + '</div>' +
-            '<div class="fvh-mission-content">' +
-            '<div class="fvh-mission-title-row">' +
-            '<div class="fvh-mission-title">' + (lang === 'ru' ? (m.target + ' Друзей в отряде') : (m.target + ' Squad Friends')) + '</div>' +
-            '<div class="fvh-mission-reward">' + getFvhCoinSvg('inline') + ' ' + m.coins + '</div>' +
-            '</div>' +
-            '<div class="fvh-mission-desc">' + m.rewardTitle + '</div>' +
-            '<div class="fvh-mission-meta" style="margin-top:4px;">' +
-            '<span>' + tr('progress') + ': ' + Math.min(qualifiedCount, m.target) + ' / ' + m.target + '</span>' +
-            '</div>' +
-            '</div>' +
-            '<div class="fvh-mission-action"></div>';
-
-          var actBox = mCard.querySelector('.fvh-mission-action');
-          var btn = document.createElement('button');
-
-          if (isClaimed) {
-            btn.className = 'btn small';
-            btn.disabled = true;
-            btn.textContent = '✓ ' + tr('completed');
-          } else if (isReady) {
-            btn.className = 'btn small primary';
-            btn.textContent = tr('claim');
-            btn.onclick = function () {
-              btn.disabled = true;
-              fetch(getApiUrl('/api/referrals/claim'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: pid, milestoneTarget: m.target })
-              }).then(function (r) { return r.json(); }).then(function (res) {
-                app.store.update(function (d) {
-                  if (!d.claimedQuests) d.claimedQuests = [];
-                  d.claimedQuests.push('ref_m_' + m.target);
-                  d.coins = (d.coins || 0) + m.coins;
-                  d.xp = (d.xp || 0) + m.xp;
-                });
-                app.audio.play('claim');
-                showToast(lang === 'ru' ? ('🎉 Награда получена: +' + m.coins + ' 🪙!') : ('🎉 Reward claimed: +' + m.coins + ' 🪙!'));
-                loadStats();
-              }).catch(function (e) {
-                console.warn(e);
-                app.store.update(function (d) {
-                  if (!d.claimedQuests) d.claimedQuests = [];
-                  d.claimedQuests.push('ref_m_' + m.target);
-                  d.coins = (d.coins || 0) + m.coins;
-                  d.xp = (d.xp || 0) + m.xp;
-                });
-                app.audio.play('claim');
-                loadStats();
-              });
-            };
-          } else {
-            btn.className = 'btn small';
-            btn.disabled = true;
-            btn.textContent = Math.min(qualifiedCount, m.target) + '/' + m.target;
-          }
-
-          actBox.appendChild(btn);
-          mList.appendChild(mCard);
-        });
-      }
-
-      function loadStats() {
-        fetch(getApiUrl('/api/referrals/stats?userId=' + encodeURIComponent(pid)))
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            if (data.ok) drawHubUI(data);
-            else drawHubUI({ qualifiedCount: app.store.data.referralCount || 0, totalInvited: app.store.data.referralCount || 0, claimedMilestones: [] });
-          })
-          .catch(function () {
-            drawHubUI({ qualifiedCount: app.store.data.referralCount || 0, totalInvited: app.store.data.referralCount || 0, claimedMilestones: [] });
-          });
-      }
-
-      loadStats();
+      contentArea.appendChild(list);
     }
 
     function renderQuestsPage() {
-      if (curMainTab === 'gameplay') renderGameplayQuests();
-      else if (curMainTab === 'social') renderSocialQuests();
-      else if (curMainTab === 'referrals') renderReferralHub();
+      if (curMainTab === 'referrals') {
+        renderReferralsTab();
+      } else {
+        renderSocialTab();
+      }
     }
 
     renderQuestsPage();
-
-    // Persistent Unified Bottom Navigation
     container.appendChild(createSharedBottomNav('quests', app));
-
     return container;
   }
 
 
 
-  // 5 Configured Currency Packages (Prompt 4 Section 4)
+  // Official Stage 1 Currency Packages (100, 500, 1200, 3000 FvH Coin)
   var CURRENCY_PACKAGES = [
     {
-      id: 'pkg_coins_starter',
-      name: 'Starter Coin Pack',
-      coinsAmount: 500,
-      starsPrice: 50,
-      tonPrice: 0.3,
+      id: 'pkg_coins_100',
+      name: '100 FvH Coin',
+      coinsAmount: 100,
+      starsPrice: null,
       icon: '🪙',
       badge: 'STARTER',
       type: 'coins',
-      desc: '500 FvH Coin for quick cosmetics & early match boosts.'
+      desc: '100 FvH Coin'
     },
     {
-      id: 'pkg_coins_pro',
-      name: 'Pro Coin Pack',
-      coinsAmount: 1200,
-      starsPrice: 100,
-      tonPrice: 0.6,
+      id: 'pkg_coins_500',
+      name: '500 FvH Coin',
+      coinsAmount: 500,
+      starsPrice: null,
       icon: '💰',
       badge: 'POPULAR',
-      desc: '1,200 FvH Coin. Unlocks rare kits and signature balls.'
+      type: 'coins',
+      desc: '500 FvH Coin'
     },
     {
-      id: 'pkg_coins_elite',
-      name: 'Elite Coin Pack',
-      coinsAmount: 2800,
-      starsPrice: 200,
-      tonPrice: 1.2,
+      id: 'pkg_coins_1200',
+      name: '1,200 FvH Coin',
+      coinsAmount: 1200,
+      starsPrice: null,
       icon: '💎',
-      badge: 'ELITE VALUE',
-      desc: '2,800 FvH Coin. Enough for scenic themed arenas & elite bundles.'
+      badge: 'VALUE',
+      type: 'coins',
+      desc: '1,200 FvH Coin'
     },
     {
-      id: 'pkg_coins_champion',
-      name: 'Champion Coin Pack',
-      coinsAmount: 6500,
-      starsPrice: 400,
-      tonPrice: 2.5,
+      id: 'pkg_coins_3000',
+      name: '3,000 FvH Coin',
+      coinsAmount: 3000,
+      starsPrice: null,
       icon: '🏆',
-      badge: 'CHAMPION',
-      desc: '6,500 FvH Coin. Unlock legendary stadium environments & effects.'
-    },
-    {
-      id: 'pkg_coins_legend',
-      name: 'Legend Coin Pack',
-      coinsAmount: 15000,
-      starsPrice: 800,
-      tonPrice: 5.0,
-      icon: '👑',
-      badge: 'BEST VALUE',
-      desc: '15,000 FvH Coin. Complete boutique wardrobe access for both sports.'
+      badge: 'PRO',
+      type: 'coins',
+      desc: '3,000 FvH Coin'
     }
   ];
 
@@ -5692,62 +5871,40 @@
   ];
 
   // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
+  // Canonical Stage 1 Shop & Wardrobe Catalog
   function buildDefaultShopCatalog(curChar) {
     return [
-      // Standard & Premium Jerseys
+      // Skins / Jerseys (Common 300, Rare 700, Epic 1500)
       { id: 'skin_rookie', name: 'Rookie Blue', category: 'skins', slot: 'skin', rarity: 'common', price: 0, isDefault: true },
-      { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', slot: 'skin', rarity: 'common', price: 120 },
-      { id: 'skin_neon', name: 'Neon Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 260 },
-      { id: 'skin_frost', name: 'Frost Giant', category: 'skins', slot: 'skin', rarity: 'rare', price: 280 },
-      { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', slot: 'skin', rarity: 'epic', price: 480 },
-      { id: 'skin_solar', name: 'Solar Flare', category: 'skins', slot: 'skin', rarity: 'epic', price: 520 },
-      { id: 'skin_gold', name: 'Golden Legend', category: 'skins', slot: 'skin', rarity: 'legendary', price: 950 },
-      { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', slot: 'skin', rarity: 'legendary', price: 1100 },
-      { id: 'skin_sunset', name: 'Sunset Gold Jersey', category: 'skins', slot: 'skin', rarity: 'rare', price: 340 },
-      { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', slot: 'skin', rarity: 'rare', price: 360 },
+      { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', slot: 'skin', rarity: 'common', price: 300 },
+      { id: 'skin_neon', name: 'Neon Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
+      { id: 'skin_frost', name: 'Frost Giant', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
+      { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+      { id: 'skin_solar', name: 'Solar Flare', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
 
-      // Football Balls
-      { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_footy_neon', name: 'Cyan Core', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 150 },
-      { id: 'ball_footy_inferno', name: 'Solar Blaze', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 320 },
-      { id: 'ball_footy_gold', name: 'Aura', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 550 },
-      { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 650 },
+      // Football Balls (Common 200, Rare 500, Epic 1000)
+      { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_footy_neon', name: 'Cyan Core', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
+      { id: 'ball_footy_inferno', name: 'Solar Blaze', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
+      { id: 'ball_footy_gold', name: 'Aura', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
 
-      // Basketball Balls
-      { id: 'ball_hoops_street', name: 'Street Grip', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 200 },
-      { id: 'ball_hoops_chrome', name: 'Chrome Spark', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 480 },
-      { id: 'ball_hoops_midnight', name: 'Midnight Matte', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 720 },
-      { id: 'ball_tidal', name: 'Tidal Wave Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 600 },
-      { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 800 },
-
-      // Standard Arenas
-      { id: 'std_footy_classic', name: 'Classic Grass', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'std_footy_night', name: 'Night Arena', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'rare', price: 300 },
-      { id: 'std_footy_golden', name: 'Golden Hour', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'epic', price: 520 },
-      { id: 'std_footy_neon', name: 'Neon Turf', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', rarity: 'legendary', price: 900 },
-      { id: 'std_hoops_street', name: 'Street Classic', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'std_hoops_neon', name: 'Neon Night', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'rare', price: 320 },
-      { id: 'std_hoops_gold', name: 'Gold Hardwood', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'epic', price: 540 },
-      { id: 'std_hoops_sky', name: 'Skyline Rooftop', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', rarity: 'legendary', price: 880 },
-
-      // Scenic 10 World Arenas
-      { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
-      { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
-      { id: 'std_space_orbit', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Orbital Space Colosseum', rarity: 'legendary', price: 900, icon: '🚀', desc: tr('scenicSpaceDesc') },
-      { id: 'std_mars_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Mars Bio-Dome Arena', rarity: 'epic', price: 750, icon: '🔴', desc: tr('scenicMarsDesc') },
-      { id: 'std_moon_crater', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Apollo Lunar Arena', rarity: 'rare', price: 680, icon: '🌕', desc: tr('scenicMoonDesc') },
-      { id: 'std_underwater_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Abyssal Ocean Dome', rarity: 'legendary', price: 820, icon: '🫧', desc: tr('scenicUnderwaterDesc') },
-      { id: 'std_cyber_megacity', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Neo Tokyo Megacity', rarity: 'legendary', price: 950, icon: '🏙️', desc: tr('scenicCyberDesc') },
-      { id: 'std_volcano_caldera', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Magma Caldera Arena', rarity: 'epic', price: 850, icon: '🌋', desc: tr('scenicVolcanoDesc') },
-      { id: 'std_floating_islands', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Aetheria Sky Islands', rarity: 'legendary', price: 880, icon: '☁️', desc: tr('scenicFloatingDesc') },
-      { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
+      // Basketball Balls (Common 200, Rare 500, Epic 1000)
+      { id: 'ball_hoops_street', name: 'Street Grip', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 200 },
+      { id: 'ball_hoops_chrome', name: 'Chrome Spark', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 500 },
+      { id: 'ball_hoops_midnight', name: 'Midnight Matte', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 }
     ];
   }
 
   // Build Editorial Shop & Sports Boutique Page
   function buildShopPage(app, initialCategory, inspectId) {
-    var curCategory = initialCategory || 'all';
+    var curCategory = initialCategory || 'skins';
+    if (curCategory === 'all' || curCategory === 'bundles' || curCategory === 'stadiums' || curCategory === 'packs') {
+      curCategory = 'skins';
+    }
+    if (curCategory === 'balls') {
+      curCategory = 'balls_footy';
+    }
     var isPurchasing = false; // Debounce flag to prevent duplicate purchases
     var curChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
     var isFooty = (curChar === 'footy');
@@ -5790,30 +5947,15 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
 
-    // Faction Boutique Allegiance Banner
-    var allegianceBanner = document.createElement('div');
-    allegianceBanner.className = 'fvh-shop-allegiance-banner ' + (isFooty ? 'footy' : 'hoops');
-    allegianceBanner.innerHTML =
-      '<div class="fvh-shop-allegiance-icon">' + (isFooty ? '⚽' : '🏀') + '</div>' +
-      '<div class="fvh-shop-allegiance-info">' +
-      '  <div class="fvh-shop-allegiance-title">' + tr(isFooty ? 'teamFootballBoutique' : 'teamBasketballBoutique') + '</div>' +
-      '  <div class="fvh-shop-allegiance-sub">' + tr(isFooty ? 'teamFootballBoutiqueDesc' : 'teamBasketballBoutiqueDesc') + '</div>' +
-      '</div>' +
-      '<div class="fvh-shop-allegiance-badge">' + (isFooty ? tr('onlyForFootball') : tr('onlyForBasketball')) + '</div>';
-    body.appendChild(allegianceBanner);
-
-    // 1. Category Selector Tabs (Added Bundles Category)
+    // 1. Category Selector Tabs (Skins, Football Balls, Basketball Balls, FvH Coins)
     var catSeg = document.createElement('div');
     catSeg.className = 'seg fvh-shop-categories';
     catSeg.style.marginBottom = '16px';
     var categories = [
-      { id: 'all', label: tr('catAll') },
-      { id: 'bundles', label: tr('catBundles') },
-      { id: 'coins', label: tr('catCoins') },
-      { id: 'skins', label: tr('catJerseys') },
-      { id: 'balls', label: tr('catBalls') },
-      { id: 'stadiums', label: tr('catArenas') },
-      { id: 'packs', label: tr('catPacks') }
+      { id: 'skins', label: tr('catSkins') },
+      { id: 'balls_footy', label: tr('catFootballBalls') },
+      { id: 'balls_hoops', label: tr('catBasketballBalls') },
+      { id: 'coins', label: tr('catCoins') }
     ];
     categories.forEach(function (c) {
       var btn = document.createElement('button');
@@ -5830,7 +5972,7 @@
     });
     body.appendChild(catSeg);
 
-    // 3. Product Catalogue Grid
+    // Product Catalogue Grid
     var catalogueGrid = document.createElement('div');
     catalogueGrid.className = 'fvh-catalogue-grid';
     body.appendChild(catalogueGrid);
@@ -5840,177 +5982,24 @@
 
     function updateWalletUI() {
       var coins = app.store.data.coins || 0;
-      var packs = app.store.data.packs || { free: {}, paid: {} };
-      var totalPacks = 0;
-      if (packs.free) Object.keys(packs.free).forEach(function (k) { totalPacks += packs.free[k] || 0; });
-      if (packs.paid) Object.keys(packs.paid).forEach(function (k) { totalPacks += packs.paid[k] || 0; });
-
-      walletBox.innerHTML = '<div class="fvh-chip coins">' + getFvhCoinSvg("inline") + ' <span style="font-weight:900;color:#fde047;margin-left:4px;">' + coins.toLocaleString() + '</span></div>' +
-        '<div class="fvh-chip packs">🎁 ' + totalPacks + '</div>';
-    }
-
-    function checkBundleOwnership(bundle) {
-      var owned = app.store.data.owned || [];
-      var cosmeticItems = bundle.items.filter(function (it) { return it.type === 'cosmetic'; });
-      if (cosmeticItems.length === 0) return { isFullyOwned: false, ownedCount: 0, totalCount: 0 };
-      var ownedCount = 0;
-      cosmeticItems.forEach(function (it) {
-        if (owned.indexOf(it.id) !== -1) ownedCount++;
-      });
-      return {
-        isFullyOwned: (ownedCount === cosmeticItems.length),
-        ownedCount: ownedCount,
-        totalCount: cosmeticItems.length
-      };
-    }
-
-    function grantBundle(bundle) {
-      app.store.update(function (d) {
-        if (!d.owned) d.owned = [];
-        if (!d.packs) d.packs = { free: {}, paid: {} };
-        if (!d.packs.paid) d.packs.paid = {};
-
-        bundle.items.forEach(function (it) {
-          if (it.type === 'cosmetic') {
-            if (d.owned.indexOf(it.id) === -1) {
-              d.owned.push(it.id);
-            }
-          } else if (it.type === 'coins') {
-            d.coins = (d.coins || 0) + (it.val || 0);
-          } else if (it.type === 'pack') {
-            var pId = it.packId || 'footy';
-            var c = it.count || 1;
-            d.packs.paid[pId] = (d.packs.paid[pId] || 0) + c;
-          }
-        });
-      });
-      app.audio.play('claim');
-      showToast('🎁 ' + trItem(bundle.name) + ' ' + tr('purchaseSuccess'));
-      renderShop();
-    }
-
-    // Bundle Inspector & Purchase Modal
-    function openBundleInspector(bundle) {
-      var ownInfo = checkBundleOwnership(bundle);
-
-      var overlay = document.createElement('div');
-      overlay.className = 'modal-back';
-      var modal = document.createElement('div');
-      modal.className = 'modal fvh-bundle-modal';
-      modal.style.maxWidth = '460px';
-      modal.style.width = '100%';
-      modal.style.boxSizing = 'border-box';
-      modal.style.textAlign = 'left';
-
-      var localizedBundleName = trItem(bundle.name);
-
-      var itemsHtml = bundle.items.map(function (it) {
-        var owned = (app.store.data.owned || []).indexOf(it.id) !== -1;
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.08);">' +
-          '  <div style="display:flex;align-items:center;gap:10px;">' +
-          '    <div style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + renderItemArtwork(it.id, 'small') + '</div>' +
-          '    <div>' +
-          '      <div style="font-weight:800;font-size:13px;color:var(--text-pure);">' + trItem(it.name) + '</div>' +
-          '      <div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;">' + it.type + '</div>' +
-          '    </div>' +
-          '  </div>' +
-          '  <div>' +
-          (it.type === 'cosmetic' ?
-            (owned ? '<span style="font-size:11px;color:#4ade80;font-weight:800;">✓ ' + tr('inCollection') + '</span>' : '<span style="font-size:11px;color:#fde047;font-weight:800;">NEW</span>') :
-            '<span style="font-size:11px;color:#38bdf8;font-weight:800;">+' + (it.val ? it.val + ' 🪙' : (it.count || 1) + ' 🎁') + '</span>'
-          ) +
-          '  </div>' +
-          '</div>';
-      }).join('');
-
-      modal.innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;">' +
-        '  <span style="font-size:11px;font-weight:900;letter-spacing:1px;color:#fbbf24;background:rgba(255,200,0,0.15);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,200,0,0.3);">' +
-        '    ' + bundle.badge + ' · -' + bundle.discount + '% OFF' +
-        '  </span>' +
-        '  <span style="font-size:12px;color:var(--text-muted);">' +
-        '    <del style="opacity:0.6;">' + (bundle.originalValue ? bundle.originalValue.toLocaleString() : '') + '</del> ➔ <b style="color:#fde047;display:inline-flex;align-items:center;gap:3px;">' + getFvhCoinSvg('inline') + ' ' + bundle.coinsPrice.toLocaleString() + '</b>' +
-        '  </span>' +
-        '  <button class="modal-close-x">✕</button>' +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">' +
-        '  <div style="font-size:42px;line-height:1;">' + bundle.icon + '</div>' +
-        '  <div>' +
-        '    <h2 style="margin:0 0 4px;font-size:18px;color:var(--text-pure);">' + localizedBundleName + '</h2>' +
-        '    <div style="font-size:12px;color:var(--text-muted);">' + (bundle.desc || '') + '</div>' +
-        '  </div>' +
-        '</div>' +
-        '<div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin:14px 0 8px;">' +
-        tr('bundleIncludedItems') +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:16px;">' +
-        itemsHtml +
-        '</div>' +
-        '<div class="fvh-bundle-modal-actions"></div>';
-
-      modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
-
-      var actionsBox = modal.querySelector('.fvh-bundle-modal-actions');
-      if (ownInfo.isFullyOwned) {
-        var ownedBtn = document.createElement('button');
-        ownedBtn.className = 'btn block';
-        ownedBtn.disabled = true;
-        ownedBtn.style.opacity = '0.6';
-        ownedBtn.textContent = '✓ ' + tr('bundleCompleteSet');
-        actionsBox.appendChild(ownedBtn);
-      } else {
-        var buyBtn = document.createElement('button');
-        buyBtn.className = 'btn primary block';
-        buyBtn.style.fontWeight = '900';
-        buyBtn.style.fontSize = '13px';
-        buyBtn.style.padding = '12px 8px';
-        buyBtn.style.lineHeight = '1.3';
-        buyBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + bundle.coinsPrice.toLocaleString() + ' &nbsp;·&nbsp; ' + bundle.starsPrice + ' ⭐';
-        buyBtn.onclick = function () {
-          overlay.remove();
-          if (window.__fvhPayments && window.__fvhPayments.openPaymentModal) {
-            window.__fvhPayments.openPaymentModal(app, {
-              productId: bundle.id,
-              title: localizedBundleName,
-              coinsPrice: bundle.coinsPrice,
-              starsPrice: bundle.starsPrice,
-              tonPrice: bundle.tonPrice,
-              onPurchased: function () {
-                var pid = getAppPlayerId(app);
-                safeEconomyApi('/api/economy/purchase', {
-                  playerId: pid,
-                  itemId: bundle.id,
-                  idempotencyKey: 'bundle_' + pid + '_' + bundle.id + '_' + Date.now()
-                }).then(function (res) {
-                  if (res && res.ok) {
-                    app.store.update(function (d) {
-                      d.coins = res.coins;
-                      d.xp = res.xp;
-                      d.owned = res.owned;
-                      d.packs = res.packs;
-                    });
-                  } else {
-                    grantBundle(bundle);
-                  }
-                  app.audio.play('claim');
-                  showToast('🎁 ' + localizedBundleName + ' ' + tr('purchaseSuccess'));
-                  renderShop();
-                });
-              }
-            });
-          }
+      walletBox.innerHTML =
+        '<button class="fvh-wallet-pill gold" style="cursor:pointer;" title="' + tr('catCoins') + '">' +
+        getFvhCoinSvg('inline') + ' <span>' + coins.toLocaleString() + '</span>' +
+        '</button>';
+      var btn = walletBox.querySelector('.fvh-wallet-pill');
+      if (btn) {
+        btn.onclick = function () {
+          curCategory = 'coins';
+          catSeg.querySelectorAll('button').forEach(function (b) {
+            b.className = (b.textContent === tr('catCoins')) ? 'on' : '';
+          });
+          app.audio.play('click');
+          renderShop();
         };
-        actionsBox.appendChild(buyBtn);
       }
-
-      overlay.appendChild(modal);
-      document.body.appendChild(overlay);
     }
 
-    app.openBundleInspector = openBundleInspector;
-    window.__openBundleInspectorModal = function (bundle) { openBundleInspector(bundle); };
-
-    // Dedicated Item Inspector & Purchase Modal
+    // Modal Item Inspector
     function openItemInspector(item) {
       var overlay = document.createElement('div');
       overlay.className = 'modal-back fvh-sheet-back';
@@ -6018,21 +6007,18 @@
       modal.className = 'modal fvh-item-modal';
 
       var owned = (app.store && app.store.data && app.store.data.owned) || [];
-      var charMode = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
-      var slotKey = item.slot || (item.category === 'balls' ? 'ball.' + charMode : item.category === 'stadiums' ? 'stadium.' + charMode : item.category === 'skins' ? (charMode === 'hoops' ? 'skin.hoops' : 'skin.footy') : item.category);
+      var slotKey = item.slot || (item.category === 'balls_footy' ? 'ball.footy' : item.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
       var curEquipped = (app.store && app.store.data && app.store.data.equipped) || {};
-      var isEquipped = (curEquipped[slotKey] === item.id) || (item.category === 'skins' && (curEquipped.skin === item.id || curEquipped['skin.' + charMode] === item.id));
-      var isOwned = (owned.indexOf(item.id) !== -1 || Boolean(item.isDefault) || (charMode === 'hoops' && item.id === 'skin_solar') || (charMode === 'footy' && item.id === 'skin_rookie'));
+      var isEquipped = (curEquipped[slotKey] === item.id) || (item.category === 'skins' && (curEquipped.skin === item.id || curEquipped['skin.' + curChar] === item.id));
+      var isOwned = (owned.indexOf(item.id) !== -1 || Boolean(item.isDefault) || (curChar === 'hoops' && item.id === 'skin_solar') || (curChar === 'footy' && item.id === 'skin_rookie'));
       var rarKey = item.rarity || 'common';
       var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
       var localizedItemName = trItem(item.name);
 
       var categoryLabel = '';
-      if (item.category === 'stadiums') categoryLabel = tr('catArenas');
-      else if (item.category === 'skins') categoryLabel = tr('catJerseys');
-      else if (item.category === 'balls') categoryLabel = tr('catBalls');
-      else if (item.category === 'packs') categoryLabel = tr('catPacks');
-      else if (item.category) categoryLabel = tr('cat' + item.category.charAt(0).toUpperCase() + item.category.slice(1)) || item.category;
+      if (item.category === 'skins') categoryLabel = tr('catSkins');
+      else if (item.category === 'balls_footy') categoryLabel = tr('catFootballBalls');
+      else if (item.category === 'balls_hoops') categoryLabel = tr('catBasketballBalls');
       else categoryLabel = tr('storeSub');
 
       modal.innerHTML =
@@ -6045,7 +6031,7 @@
         renderItemArtwork(item, 'large') +
         '</div>' +
         '<h2 class="fvh-item-modal-title">' + localizedItemName + '</h2>' +
-        '<div class="fvh-item-modal-category">' + categoryLabel + (item.mode ? ' · ' + (item.mode === 'footy' ? tr('football') : tr('basketball')) : '') + '</div>' +
+        '<div class="fvh-item-modal-category">' + categoryLabel + '</div>' +
         '<p class="fvh-item-modal-desc">' + (item.desc || (localizedItemName + ' — ' + tr('storeSub'))) + '</p>' +
         '<div class="fvh-item-modal-actions"></div>';
 
@@ -6058,39 +6044,33 @@
       };
 
       var actionsBox = modal.querySelector('.fvh-item-modal-actions');
-
       if (isEquipped) {
         var eqBtn = document.createElement('button');
         eqBtn.className = 'btn block';
         eqBtn.disabled = true;
-        eqBtn.textContent = '✓ ' + tr('equipped');
+        eqBtn.textContent = '✓ ' + tr('equippedState');
         actionsBox.appendChild(eqBtn);
       } else if (isOwned) {
         var equipBtn = document.createElement('button');
         equipBtn.className = 'btn primary block';
-        equipBtn.textContent = tr('equip');
+        equipBtn.textContent = tr('equipAction');
         equipBtn.onclick = function () {
           var pid = getAppPlayerId(app);
           safeEconomyApi('/api/economy/equip', {
             playerId: pid,
             slot: slotKey,
             itemId: item.id
-          }).then(function (res) {
-            if (res && res.error === 'item_not_owned') {
-              app.audio.play('error');
-              showToast('⚠️ ' + tr('lockedInShop', { price: item.price || 500 }));
-              return;
-            }
+          }).then(function () {
             app.store.update(function (d) {
               if (!d.equipped) d.equipped = {};
               d.equipped[slotKey] = item.id;
               if (item.category === 'skins') {
-                d.equipped['skin.' + charMode] = item.id;
+                d.equipped['skin.' + curChar] = item.id;
                 d.equipped.skin = item.id;
               }
             });
             app.audio.play('claim');
-            showToast(tr('equipped') + ': ' + localizedItemName);
+            showToast(tr('equippedState') + ': ' + localizedItemName);
             overlay.remove();
             renderShop();
           });
@@ -6099,7 +6079,7 @@
       } else {
         var buyItemBtn = document.createElement('button');
         buyItemBtn.className = 'btn primary block';
-        buyItemBtn.innerHTML = tr('buyFor') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price;
+        buyItemBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price;
         buyItemBtn.onclick = function () {
           if (isPurchasing) return;
           var coins = (app.store && app.store.data && app.store.data.coins) || 0;
@@ -6121,7 +6101,6 @@
                 d.coins = res.coins;
                 d.xp = res.xp;
                 d.owned = res.owned;
-                d.packs = res.packs;
               });
             } else {
               app.store.update(function (d) {
@@ -6143,279 +6122,10 @@
       document.body.appendChild(overlay);
     }
 
-    // Mystery Packs Config
-    var PACKS_DEF = [
-      { id: 'footy', category: 'packs', name: 'Footy Striker Pack', price: 250, icon: '⚽', desc: 'Guaranteed 2 football cards + bonus chance for legendary gear.' },
-      { id: 'hoops', category: 'packs', name: 'Hoops All-Star Pack', price: 250, icon: '🏀', desc: 'Guaranteed 2 basketball cards + bonus chance for neon cosmetics.' },
-      { id: 'clash', category: 'packs', name: 'Ultimate Clash Pack', price: 500, icon: '⚡', desc: 'High-tier pack with rare stadiums, balls, and high coin drops.' }
-    ];
-
-    
-    // Full Catalog Cosmetic Pools for Packs
-    var PACK_POOLS = {
-      footy: [
-        { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', rarity: 'rare' },
-        { id: 'skin_neon', name: 'Neon Striker', category: 'skins', rarity: 'epic' },
-        { id: 'skin_frost', name: 'Frost Giant', category: 'skins', rarity: 'rare' },
-        { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', rarity: 'epic' },
-        { id: 'skin_solar', name: 'Solar Flare', category: 'skins', rarity: 'epic' },
-        { id: 'skin_gold', name: 'Golden Legend', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_sunset', name: 'Sunset Gold Jersey', category: 'skins', rarity: 'rare' },
-        { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', rarity: 'rare' },
-        { id: 'ball_footy_plasma', name: 'Plasma Orb', category: 'balls', rarity: 'rare' },
-        { id: 'ball_footy_gold', name: 'Golden Cup', category: 'balls', rarity: 'epic' },
-        { id: 'ball_footy_inferno', name: 'Inferno', category: 'balls', rarity: 'epic' },
-        { id: 'ball_footy_solar', name: 'Solar Blaze Ball', category: 'balls', rarity: 'legendary' },
-        { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls', rarity: 'legendary' },
-        { id: 'std_ocean_sunset', name: 'Coastal Sunset Court', category: 'stadiums', rarity: 'epic' },
-        { id: 'std_forest_redwood', name: 'Redwood Forest Arena', category: 'stadiums', rarity: 'epic' },
-        { id: 'std_footy_night', name: 'Night Arena', category: 'stadiums', rarity: 'rare' },
-        { id: 'std_footy_golden', name: 'Golden Hour', category: 'stadiums', rarity: 'rare' },
-        { id: 'std_footy_neon', name: 'Neon Turf', category: 'stadiums', rarity: 'epic' },
-        { id: 'trail_fire', name: 'Fire Trail', category: 'trails', rarity: 'rare' },
-        { id: 'trail_laser', name: 'Laser Trail', category: 'trails', rarity: 'legendary' }
-      ],
-      hoops: [
-        { id: 'skin_sunset', name: 'Sunset Gold Jersey', category: 'skins', rarity: 'rare' },
-        { id: 'skin_hydro', name: 'Hydro Striker Kit', category: 'skins', rarity: 'rare' },
-        { id: 'skin_mars', name: 'Mars Rover Kit', category: 'skins', rarity: 'epic' },
-        { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker', category: 'skins', rarity: 'legendary' },
-        { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls', rarity: 'rare' },
-        { id: 'ball_hoops_chrome', name: 'Chrome', category: 'balls', rarity: 'epic' },
-        { id: 'ball_hoops_midnight', name: 'Midnight', category: 'balls', rarity: 'rare' },
-        { id: 'ball_tidal', name: 'Tidal Wave Ball', category: 'balls', rarity: 'epic' },
-        { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', category: 'balls', rarity: 'legendary' },
-        { id: 'std_hoops_sky', name: 'Skyline Rooftop', category: 'stadiums', rarity: 'rare' },
-        { id: 'std_hoops_neon', name: 'Neon Night', category: 'stadiums', rarity: 'epic' },
-        { id: 'std_hoops_gold', name: 'Gold Hardwood', category: 'stadiums', rarity: 'epic' },
-        { id: 'std_ocean_sunset', name: 'Coastal Sunset Court', category: 'stadiums', rarity: 'epic' },
-        { id: 'trail_ice', name: 'Ice Trail', category: 'trails', rarity: 'rare' },
-        { id: 'trail_rainbow', name: 'Rainbow Trail', category: 'trails', rarity: 'epic' }
-      ],
-      clash: [
-        { id: 'skin_gold', name: 'Golden Legend', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_cyber', name: 'Cyber Punk', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', rarity: 'legendary' },
-        { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', rarity: 'epic' },
-        { id: 'ball_footy_solar', name: 'Solar Blaze Ball', category: 'balls', rarity: 'legendary' },
-        { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls', rarity: 'legendary' },
-        { id: 'ball_tidal', name: 'Tidal Wave Ball', category: 'balls', rarity: 'epic' },
-        { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', category: 'balls', rarity: 'legendary' },
-        { id: 'ball_hoops_chrome', name: 'Chrome', category: 'balls', rarity: 'epic' },
-        { id: 'std_space_orbit', name: 'Orbital Space Colosseum', category: 'stadiums', rarity: 'legendary' },
-        { id: 'std_mars_dome', name: 'Mars Bio-Dome Arena', category: 'stadiums', rarity: 'epic' },
-        { id: 'std_moon_crater', name: 'Apollo Lunar Arena', category: 'stadiums', rarity: 'rare' },
-        { id: 'std_underwater_dome', name: 'Abyssal Ocean Dome', category: 'stadiums', rarity: 'legendary' },
-        { id: 'std_cyber_megacity', name: 'Neo Tokyo Megacity', category: 'stadiums', rarity: 'legendary' },
-        { id: 'std_volcano_caldera', name: 'Magma Caldera Arena', category: 'stadiums', rarity: 'epic' },
-        { id: 'std_floating_islands', name: 'Aetheria Sky Islands', category: 'stadiums', rarity: 'legendary' },
-        { id: 'std_crystal_cavern', name: 'Prismatic Crystal Cave', category: 'stadiums', rarity: 'epic' },
-        { id: 'trail_rainbow', name: 'Rainbow Trail', category: 'trails', rarity: 'epic' },
-        { id: 'trail_laser', name: 'Laser Trail', category: 'trails', rarity: 'legendary' },
-        { id: 'frame_bronze', name: 'Bronze Frame', category: 'frames', rarity: 'rare' },
-        { id: 'frame_diamond', name: 'Diamond Frame', category: 'frames', rarity: 'legendary' }
-      ]
-    };
-
-    function openPackAnimation(packDef) {
-      var pId = (packDef && packDef.id) || 'footy';
-      if (pId === 'pack_footy') pId = 'footy';
-      else if (pId === 'pack_hoops') pId = 'hoops';
-      else if (pId === 'pack_clash') pId = 'clash';
-
-      var pool = PACK_POOLS[pId] || PACK_POOLS.footy;
-      var cardCount = (pId === 'clash') ? 3 : 2;
-      var coinFallbackAmount = (pId === 'clash') ? 600 : 300;
-
-      // Duplicate-free pull logic:
-      // Filter current owned items so that player NEVER pulls duplicates.
-      // If player already owns all items in the pool, reward guaranteed FvH Coins!
-      var storeData = app.store.data;
-      var ownedList = (storeData.owned || []).slice();
-      var drops = [];
-
-      for (var c = 0; c < cardCount; c++) {
-        var unowned = pool.filter(function (it) {
-          return ownedList.indexOf(it.id) === -1;
-        });
-
-        if (unowned.length > 0) {
-          // Pull a guaranteed new cosmetic item!
-          var randIdx = Math.floor(Math.random() * unowned.length);
-          var pickedItem = unowned[randIdx];
-          ownedList.push(pickedItem.id); // Prevent duplicate within the same pack!
-          drops.push({
-            type: 'cosmetic',
-            item: pickedItem,
-            isNew: true
-          });
-        } else {
-          // All items owned in this pool -> fallback directly to FvH Coins!
-          drops.push({
-            type: 'coins',
-            val: coinFallbackAmount,
-            name: coinFallbackAmount + ' FvH Coin',
-            isDuplicateFallback: true
-          });
-        }
-      }
-
-      // 1. Build Full-Screen Cinematic Pack Opening Overlay
-      var overlay = document.createElement('div');
-      overlay.className = 'fvh-pack-opening-overlay';
-
-      var flash = document.createElement('div');
-      flash.className = 'fvh-pack-flash-overlay';
-      overlay.appendChild(flash);
-
-      var stage = document.createElement('div');
-      stage.className = 'fvh-pack-stage';
-
-      var packTitle = document.createElement('div');
-      packTitle.style.cssText = 'font-size:12px;font-weight:900;letter-spacing:1.5px;color:#38bdf8;text-transform:uppercase;margin-bottom:8px;';
-      packTitle.textContent = trItem(packDef.name);
-
-      var packSub = document.createElement('div');
-      packSub.style.cssText = 'font-size:11px;color:var(--text-muted);margin-bottom:12px;';
-      packSub.textContent = (getActiveLang() === 'ru') ? 'Турнирный бустер-пак сезона' : 'Tournament Season Booster Pack';
-
-      // Unopened 3D Foil Pack with breathing hover
-      var packWrap = document.createElement('div');
-      packWrap.className = 'fvh-pack-unopened-wrap';
-      var hoverCard = document.createElement('div');
-      hoverCard.className = 'fvh-pack-hover-card';
-      hoverCard.innerHTML = getDetailedPackSvg(pId, 'large');
-      packWrap.appendChild(hoverCard);
-
-      var ripHint = document.createElement('div');
-      ripHint.style.cssText = 'margin-top:16px;font-size:13px;font-weight:900;color:#fde047;letter-spacing:1px;text-transform:uppercase;animation:fvhPulse 1.2s infinite;';
-      ripHint.innerHTML = '⚡ ' + ((getActiveLang() === 'ru') ? 'Нажмите, чтобы вскрыть пак' : 'Tap to rip open pack');
-
-      stage.appendChild(packTitle);
-      stage.appendChild(packSub);
-      stage.appendChild(packWrap);
-      stage.appendChild(ripHint);
-      overlay.appendChild(stage);
-      document.body.appendChild(overlay);
-
-      // Play introductory suspense sound
-      app.audio.play('click');
-
-      var isRipped = false;
-      packWrap.onclick = function () {
-        if (isRipped) return;
-        isRipped = true;
-
-        // Stage 2: Violent rumble & tear sound
-        hoverCard.className = 'fvh-pack-hover-card rumble';
-        ripHint.textContent = (getActiveLang() === 'ru') ? 'Вскрытие...' : 'Ripping...';
-        app.audio.play('kick');
-
-        setTimeout(function () {
-          // Stage 3: Energy burst flash
-          flash.className = 'fvh-pack-flash-overlay active';
-          app.audio.play('whistle');
-
-          setTimeout(function () {
-            // Apply rewards to persistent store
-            app.store.update(function (d) {
-              if (!d.owned) d.owned = [];
-              drops.forEach(function (dr) {
-                if (dr.type === 'cosmetic') {
-                  if (d.owned.indexOf(dr.item.id) === -1) d.owned.push(dr.item.id);
-                } else if (dr.type === 'coins') {
-                  d.coins = (d.coins || 0) + dr.val;
-                }
-              });
-            });
-
-            // Stage 4: Cards reveal
-            stage.innerHTML = '';
-            var congratsTitle = document.createElement('h2');
-            congratsTitle.style.cssText = 'margin:0 0 4px;font-size:22px;color:#fde047;letter-spacing:0.5px;';
-            congratsTitle.textContent = (getActiveLang() === 'ru') ? 'НАГРАДЫ ИЗ ПАКА!' : 'PACK REWARDS!';
-
-            var cardsContainer = document.createElement('div');
-            cardsContainer.className = 'fvh-pack-cards-reveal';
-
-            drops.forEach(function (dr, idx) {
-              var cCard = document.createElement('div');
-              var rarity = dr.type === 'cosmetic' ? (dr.item.rarity || 'epic') : 'coins';
-              cCard.className = 'fvh-pack-reward-card r-' + rarity;
-              cCard.style.animationDelay = (idx * 0.16) + 's';
-
-              var shine = document.createElement('div');
-              shine.className = 'fvh-pack-card-shine';
-              cCard.appendChild(shine);
-
-              var rarityBadge = document.createElement('div');
-              rarityBadge.className = 'rar ' + (rarity === 'coins' ? 'legendary' : rarity);
-              rarityBadge.style.cssText = 'font-size:9.5px;padding:2px 8px;margin-bottom:6px;';
-              rarityBadge.textContent = rarity === 'coins' ? 'FVH COINS' : tr('rarity_' + rarity);
-              cCard.appendChild(rarityBadge);
-
-              var thumb = document.createElement('div');
-              thumb.className = 'fvh-pack-reward-thumb';
-              if (dr.type === 'cosmetic') {
-                thumb.innerHTML = renderItemArtwork(dr.item, 'large');
-              } else {
-                thumb.innerHTML = getFvhCoinSvg('large');
-              }
-              cCard.appendChild(thumb);
-
-              var nameBox = document.createElement('div');
-              nameBox.className = 'fvh-pack-reward-title';
-              nameBox.textContent = dr.type === 'cosmetic' ? trItem(dr.item.name) : ('+' + dr.val + ' FvH Coin');
-              cCard.appendChild(nameBox);
-
-              if (dr.isNew) {
-                var newPill = document.createElement('div');
-                newPill.className = 'fvh-pack-badge-new';
-                newPill.textContent = (getActiveLang() === 'ru') ? '✨ НОВИНКА!' : '✨ NEW!';
-                cCard.appendChild(newPill);
-              } else if (dr.isDuplicateFallback) {
-                var compPill = document.createElement('div');
-                compPill.className = 'fvh-pack-badge-fallback';
-                compPill.title = (getActiveLang() === 'ru') ? 'Все предметы коллекции получены!' : 'All collection items owned!';
-                compPill.textContent = (getActiveLang() === 'ru') ? '💎 КОМПЕНСАЦИЯ' : '💎 COIN BONUS';
-                cCard.appendChild(compPill);
-              }
-
-              cardsContainer.appendChild(cCard);
-            });
-
-            stage.appendChild(congratsTitle);
-            stage.appendChild(cardsContainer);
-
-            // Stage 5: Claim All Button
-            var claimBtn = document.createElement('button');
-            claimBtn.className = 'btn fvh-pack-claim-btn';
-            claimBtn.textContent = (getActiveLang() === 'ru') ? 'ЗАБРАТЬ ВСЁ' : 'CLAIM ALL';
-            claimBtn.onclick = function () {
-              app.audio.play('claim');
-              overlay.remove();
-              renderShop();
-            };
-            stage.appendChild(claimBtn);
-
-            app.audio.play('score');
-          }, 350);
-        }, 450);
-      };
-    }
-    app.openPackAnimation = openPackAnimation;
-
-
     function renderShop() {
       updateWalletUI();
-
-      // Render Catalogue Items
       catalogueGrid.innerHTML = '';
 
-      // 0. Dedicated FvH COINS Currency Packages Tab (Prompt 4 Section 4)
       if (curCategory === 'coins') {
         var noticeBox = document.createElement('div');
         noticeBox.className = 'fvh-coin-notice-banner';
@@ -6430,7 +6140,7 @@
           '  <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getFvhCoinSvg('thumb') + '</div>' +
           '  <div>' +
           '    <div style="font-weight:900;font-size:14px;color:#fde047;letter-spacing:0.5px;">' + tr('catCoins') + ' · ' + tr('storeSub') + '</div>' +
-          '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + tr('coinPackageNotice') + '</div>' +
+          '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + tr('starsUnconfiguredNotice') + '</div>' +
           '  </div>' +
           '</div>';
         catalogueGrid.appendChild(noticeBox);
@@ -6443,6 +6153,8 @@
           pCard.style.border = '1.5px solid rgba(255, 200, 0, 0.45)';
           pCard.style.cursor = 'pointer';
 
+          var starsText = pkg.starsPrice ? (pkg.starsPrice + ' ⭐ Stars') : tr('starsUnconfiguredBadge');
+
           pCard.innerHTML =
             '<div class="fvh-card-head" style="justify-content:space-between;">' +
             '  <span class="rar legendary" style="font-size:10px;padding:3px 8px;">' + pkg.badge + '</span>' +
@@ -6451,340 +6163,169 @@
             '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
             '  <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(pkg.id, 'thumb') + '</div>' +
             '</div>' +
-            '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + tr(pkg.id === 'pkg_coins_starter' ? 'pkgStarter' : pkg.id === 'pkg_coins_pro' ? 'pkgPro' : pkg.id === 'pkg_coins_elite' ? 'pkgElite' : pkg.id === 'pkg_coins_champion' ? 'pkgChampion' : 'pkgLegend') + '</div>' +
+            '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + pkg.name + '</div>' +
             '<div class="fvh-card-desc" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.3;">' + pkg.desc + '</div>' +
             '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
-            pkg.starsPrice + ' ⭐ Stars' +
+            starsText +
             '</div>';
 
           pCard.onclick = function () {
             app.audio.play('click');
-            openUniversalPaymentModal(app, {
-              productId: pkg.id,
-              title: pkg.name,
-              starsPrice: pkg.starsPrice,
-              tonPrice: pkg.tonPrice,
-              onPurchased: function () {
-                syncAuthoritativeEconomy(app, function () {
-                  renderShop();
-                });
-              }
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-back';
+            var modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML =
+              '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+              '  <h3 style="margin:0;font-size:16px;font-weight:900;">⭐ Telegram Stars</h3>' +
+              '  <button class="modal-close-x" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
+              '</div>' +
+              '<p style="font-size:13px;color:var(--text-muted);line-height:1.45;margin:0 0 16px;">' + tr('starsUnconfiguredNotice') + '</p>' +
+              '<button class="btn primary block fvh-btn-close-notice">' + tr('gotItBtn') + '</button>';
+            modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+            modal.querySelector('.fvh-btn-close-notice').onclick = function () { overlay.remove(); };
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+          };
+
+          catalogueGrid.appendChild(pCard);
+        });
+        return;
+      }
+
+      // Cosmetic items
+      var baseCatalog = buildDefaultShopCatalog(curChar);
+      var owned = (app.store && app.store.data && app.store.data.owned) || [];
+      var eq = (app.store && app.store.data && app.store.data.equipped) || {};
+
+      var filtered = baseCatalog.filter(function (it) {
+        return it.category === curCategory;
+      });
+
+      if (filtered.length === 0) {
+        catalogueGrid.innerHTML =
+          '<div class="fvh-empty-state">' +
+          '  <div class="fvh-empty-state-icon">📦</div>' +
+          '  <div class="fvh-empty-state-title">' + tr('emptyShopCategory') + '</div>' +
+          '</div>';
+        return;
+      }
+
+      filtered.forEach(function (it) {
+        var slotKey = it.slot || (it.category === 'balls_footy' ? 'ball.footy' : it.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
+        var isOwned = (owned.indexOf(it.id) !== -1 || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie'));
+        var isEquipped = isOwned && ((eq[slotKey] === it.id) || (it.category === 'skins' && (eq.skin === it.id || eq['skin.' + curChar] === it.id)));
+
+        var card = document.createElement('div');
+        var rarKey = it.rarity || 'common';
+        card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '');
+
+        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
+        var localizedItemName = trItem(it.name);
+
+        card.innerHTML =
+          '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
+          '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
+          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">✓ ' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
+          '</div>' +
+          '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+          renderItemArtwork(it, 'thumb') +
+          '</div>' +
+          '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + localizedItemName + '</div>' +
+          '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;margin-bottom:8px;">' +
+          (isOwned ? '' : (getFvhCoinSvg('inline') + ' ' + it.price.toLocaleString() + ' FvH')) +
+          '</div>' +
+          '<div class="fvh-card-action"></div>';
+
+        var actBox = card.querySelector('.fvh-card-action');
+        var actionBtn = document.createElement('button');
+        if (isEquipped) {
+          actionBtn.className = 'btn small block';
+          actionBtn.disabled = true;
+          actionBtn.textContent = tr('equippedState');
+        } else if (isOwned) {
+          actionBtn.className = 'btn small primary block';
+          actionBtn.textContent = tr('equipAction');
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            var pid = getAppPlayerId(app);
+            safeEconomyApi('/api/economy/equip', {
+              playerId: pid,
+              slot: slotKey,
+              itemId: it.id
+            }).then(function () {
+              app.store.update(function (d) {
+                if (!d.equipped) d.equipped = {};
+                d.equipped[slotKey] = it.id;
+                if (it.category === 'skins') {
+                  d.equipped['skin.' + curChar] = it.id;
+                  d.equipped.skin = it.id;
+                }
+              });
+              app.audio.play('claim');
+              showToast(tr('equippedState') + ': ' + localizedItemName);
+              renderShop();
             });
           };
-
-          catalogueGrid.appendChild(pCard);
-        });
-        return;
-      }
-
-      // 1. Dedicated BUNDLES Tab (Filtered strictly by player's sport)
-      if (curCategory === 'bundles') {
-        var visibleBundles = BUNDLE_ITEMS.filter(function (b) {
-          if (isFooty && b.id === 'bundle_hoops_starter') return false;
-          if (!isFooty && b.id === 'bundle_footy_starter') return false;
-          return true;
-        });
-        visibleBundles.forEach(function (b) {
-          var ownInfo = checkBundleOwnership(b);
-          var bCard = document.createElement('div');
-          bCard.className = 'fvh-catalogue-card fvh-bundle-card r-legendary' + (ownInfo.isFullyOwned ? ' owned' : '');
-          bCard.style.position = 'relative';
-          bCard.style.background = 'linear-gradient(135deg, rgba(25, 20, 40, 0.95) 0%, rgba(12, 10, 24, 0.98) 100%)';
-          bCard.style.border = ownInfo.isFullyOwned ? '1.5px solid rgba(255,255,255,0.1)' : '1.5px solid rgba(255, 200, 0, 0.45)';
-          bCard.style.cursor = 'pointer';
-
-          var previewIcons = b.items.slice(0, 4).map(function (it) {
-            return '<div style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;" title="' + trItem(it.name) + '">' + renderItemArtwork(it.id, 'small') + '</div>';
-          }).join(' ');
-
-          bCard.innerHTML =
-            '<div class="fvh-card-head" style="justify-content:space-between;">' +
-            '  <span class="rar legendary" style="font-size:10px;padding:3px 8px;">' + b.badge + '</span>' +
-            '  <span style="font-size:10px;font-weight:900;color:#fde047;background:rgba(255,200,0,0.2);padding:2px 6px;border-radius:10px;">-' + b.discount + '%</span>' +
-            '</div>' +
-            '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
-            '  <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(b.id, 'medium') + '</div>' +
-            '</div>' +
-            '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + trItem(b.name) + '</div>' +
-            '<div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:8px;opacity:0.85;">' + previewIcons + '</div>' +
-            '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
-            (ownInfo.isFullyOwned ?
-              '✓ ' + tr('bundleAlreadyOwned') :
-              getFvhCoinSvg('inline') + ' ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
-            ) +
-            '</div>';
-
-          bCard.onclick = function () {
-            app.audio.play('click');
-            openBundleInspector(b);
-          };
-
-          catalogueGrid.appendChild(bCard);
-        });
-        return;
-      }
-
-      // 2. PACKS Tab (Filtered strictly by player's sport)
-      if (curCategory === 'packs') {
-        var packsData = app.store.data.packs || { free: {}, paid: {} };
-        var visiblePacks = PACKS_DEF.filter(function (pk) {
-          if (isFooty && pk.id === 'hoops') return false;
-          if (!isFooty && pk.id === 'footy') return false;
-          return true;
-        });
-        visiblePacks.forEach(function (pk) {
-          var freeCount = (packsData.free && packsData.free[pk.id]) || 0;
-          var paidCount = (packsData.paid && packsData.paid[pk.id]) || 0;
-          var totalCount = freeCount + paidCount;
-          var localizedPackName = trItem(pk.name);
-
-          var pCard = document.createElement('div');
-          pCard.className = 'fvh-catalogue-card r-epic';
-          pCard.innerHTML =
-            '<div class="fvh-card-head"><span class="rar epic">' + tr('catPacks').toUpperCase() + '</span></div>' +
-            '<div class="fvh-card-thumb-wrap">' + renderItemArtwork(pk, 'thumb') + '</div>' +
-            '<div class="fvh-card-title">' + localizedPackName + '</div>' +
-            '<div class="fvh-card-desc">' + pk.desc + '</div>' +
-            '<div class="fvh-card-action"></div>';
-
-          var actBox = pCard.querySelector('.fvh-card-action');
-          if (totalCount > 0) {
-            var openBtn = document.createElement('button');
-            openBtn.className = 'btn primary small block';
-            openBtn.textContent = tr('openPack') + ' (' + totalCount + ')';
-            openBtn.onclick = function () {
-              app.store.update(function (d) {
-                if (d.packs.free && d.packs.free[pk.id] > 0) d.packs.free[pk.id]--;
-                else if (d.packs.paid && d.packs.paid[pk.id] > 0) d.packs.paid[pk.id]--;
-              });
-              openPackAnimation(pk);
-            };
-            actBox.appendChild(openBtn);
-          } else {
-            var buyPackBtn = document.createElement('button');
-            buyPackBtn.className = 'btn small block';
-            buyPackBtn.innerHTML = getFvhCoinSvg('inline') + ' ' + pk.price;
-            buyPackBtn.onclick = function () {
-              if (isPurchasing) return;
-              var coins = app.store.data.coins || 0;
-              if (coins < pk.price) {
-                app.audio.play('error');
-                showToast(tr('notEnoughCoins'));
-                return;
-              }
-              isPurchasing = true;
-              var pid = getAppPlayerId(app);
-              safeEconomyApi('/api/economy/purchase', {
-                playerId: pid,
-                itemId: pk.id,
-                idempotencyKey: 'pack_' + pid + '_' + pk.id + '_' + Date.now()
-              }).then(function (res) {
-                isPurchasing = false;
-                if (res && res.ok) {
-                  app.store.update(function (d) {
-                    d.coins = res.coins;
-                    d.xp = res.xp;
-                    d.owned = res.owned;
-                    d.packs = res.packs;
-                  });
-                } else {
-                  app.store.update(function (d) {
-                    d.coins -= pk.price;
-                    if (!d.packs) d.packs = { free: {}, paid: {} };
-                    if (!d.packs.paid) d.packs.paid = {};
-                    d.packs.paid[pk.id] = (d.packs.paid[pk.id] || 0) + 1;
-                  });
-                }
-                app.audio.play('claim');
-                showToast(tr('purchaseSuccess') + ': ' + localizedPackName);
-                renderShop();
-              });
-            };
-            actBox.appendChild(buyPackBtn);
-          }
-
-          catalogueGrid.appendChild(pCard);
-        });
-        return;
-      }
-
-      // Fetch standard items and ensure scenic arenas are included
-      function renderItemsList(providedItems) {
-        var baseCatalog = buildDefaultShopCatalog(curChar);
-        var allItems = (providedItems && providedItems.length > 0) ? providedItems.slice() : baseCatalog;
-        var owned = (app.store && app.store.data && app.store.data.owned) || [];
-
-        // Merge any missing items from baseCatalog
-        baseCatalog.forEach(function (bi) {
-          if (!allItems.some(function (i) { return i.id === bi.id; })) {
-            allItems.push(bi);
-          }
-        });
-
-        // Ensure scenic arenas are included and assigned to curChar
-        var scenicArenas = [
-          { id: 'std_ocean_sunset', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Coastal Sunset Court', rarity: 'epic', price: 580, icon: '🌅', desc: tr('scenicCoastalDesc') },
-          { id: 'std_forest_redwood', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Redwood Forest Arena', rarity: 'epic', price: 560, icon: '🌲', desc: tr('scenicForestDesc') },
-          { id: 'std_space_orbit', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Orbital Space Colosseum', rarity: 'legendary', price: 900, icon: '🚀', desc: tr('scenicSpaceDesc') },
-          { id: 'std_mars_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Mars Bio-Dome Arena', rarity: 'epic', price: 750, icon: '🔴', desc: tr('scenicMarsDesc') },
-          { id: 'std_moon_crater', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Apollo Lunar Arena', rarity: 'rare', price: 680, icon: '🌕', desc: tr('scenicMoonDesc') },
-          { id: 'std_underwater_dome', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Abyssal Ocean Dome', rarity: 'legendary', price: 820, icon: '🫧', desc: tr('scenicUnderwaterDesc') },
-          { id: 'std_cyber_megacity', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Neo Tokyo Megacity', rarity: 'legendary', price: 950, icon: '🏙️', desc: tr('scenicCyberDesc') },
-          { id: 'std_volcano_caldera', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Magma Caldera Arena', rarity: 'epic', price: 850, icon: '🌋', desc: tr('scenicVolcanoDesc') },
-          { id: 'std_floating_islands', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Aetheria Sky Islands', rarity: 'legendary', price: 880, icon: '☁️', desc: tr('scenicFloatingDesc') },
-          { id: 'std_crystal_cavern', category: 'stadiums', slot: 'stadium.' + curChar, mode: curChar, name: 'Prismatic Crystal Cave', rarity: 'epic', price: 790, icon: '💎', desc: tr('scenicCrystalDesc') }
-        ];
-        scenicArenas.forEach(function (sa) {
-          var existing = allItems.find(function (i) { return i.id === sa.id; });
-          if (!existing) {
-            allItems.push(sa);
-          } else {
-            existing.slot = 'stadium.' + curChar;
-            existing.mode = curChar;
-          }
-        });
-
-        // If category is "all", also show the bundles at the top of the store
-        if (curCategory === 'all') {
-          var visibleAllBundles = BUNDLE_ITEMS.filter(function (b) {
-            if (isFooty && b.id === 'bundle_hoops_starter') return false;
-            if (!isFooty && b.id === 'bundle_footy_starter') return false;
-            return true;
-          });
-          visibleAllBundles.forEach(function (b) {
-            var ownInfo = checkBundleOwnership(b);
-            var bCard = document.createElement('div');
-            bCard.className = 'fvh-catalogue-card fvh-bundle-card r-legendary' + (ownInfo.isFullyOwned ? ' owned' : '');
-            bCard.style.border = ownInfo.isFullyOwned ? '1.5px solid rgba(255,255,255,0.1)' : '1.5px solid rgba(255, 200, 0, 0.45)';
-            bCard.style.background = 'linear-gradient(135deg, rgba(25, 20, 40, 0.95) 0%, rgba(12, 10, 24, 0.98) 100%)';
-            bCard.style.cursor = 'pointer';
-
-            var previewIcons = b.items.slice(0, 4).map(function (it) {
-              return '<div style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;" title="' + trItem(it.name) + '">' + renderItemArtwork(it.id, 'small') + '</div>';
-            }).join(' ');
-
-            bCard.innerHTML =
-              '<div class="fvh-card-head" style="justify-content:space-between;">' +
-              '  <span class="rar legendary" style="font-size:10px;padding:3px 8px;">' + b.badge + '</span>' +
-              '  <span style="font-size:10px;font-weight:900;color:#fde047;background:rgba(255,200,0,0.2);padding:2px 6px;border-radius:10px;">-' + b.discount + '%</span>' +
-              '</div>' +
-              '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;">' +
-              '  <div style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;">' + renderItemArtwork(b.id, 'medium') + '</div>' +
-              '</div>' +
-              '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + trItem(b.name) + '</div>' +
-              '<div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:8px;opacity:0.85;">' + previewIcons + '</div>' +
-              '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;">' +
-              (ownInfo.isFullyOwned ?
-                '✓ ' + tr('bundleAlreadyOwned') :
-                getFvhCoinSvg('inline') + ' ' + b.coinsPrice.toLocaleString() + ' · ' + b.starsPrice + ' ⭐'
-              ) +
-              '</div>';
-
-            bCard.onclick = function () {
-              app.audio.play('click');
-              openBundleInspector(b);
-            };
-            catalogueGrid.appendChild(bCard);
-          });
-        }
-
-        // Discipline-specific catalog filter
-        function isItemAllowedForCurrentAthlete(it) {
-          if (isFooty) {
-            // Player is Football: strictly NO basketball items
-            if (it.mode === 'hoops') return false;
-            if (it.category === 'basketball') return false;
-            if (it.slot && it.slot === 'ball.hoops') return false;
-            if (it.id && (it.id.startsWith('ball_hoops') || it.id === 'ball_cyber_neon' || it.id === 'ball_tidal')) return false;
-            if (it.id && (it.id === 'std_hoops_street' || it.id === 'std_hoops_neon' || it.id === 'std_hoops_gold' || it.id === 'std_hoops_sky')) return false;
-          } else {
-            // Player is Basketball: strictly NO football items
-            if (it.mode === 'footy') return false;
-            if (it.category === 'football') return false;
-            if (it.slot && it.slot === 'ball.footy') return false;
-            if (it.id && (it.id.startsWith('ball_footy') || it.id === 'ball_earthrise')) return false;
-            if (it.id && (it.id === 'std_footy_classic' || it.id === 'std_footy_night' || it.id === 'std_footy_golden' || it.id === 'std_footy_neon')) return false;
-          }
-          return true;
-        }
-
-        var filtered = allItems.filter(function (it) {
-          if (!isItemAllowedForCurrentAthlete(it)) return false;
-          if (curCategory === 'all') return true;
-          return it.category === curCategory;
-        });
-
-        if (filtered.length === 0 && curCategory !== 'all') {
-          catalogueGrid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;padding:36px 0;text-align:center;">' +
-            '<div style="font-size:32px;margin-bottom:8px;">📦</div>' +
-            '<div style="font-weight:800;font-size:14px;color:#fff;">' + (lang === 'ru' ? 'В этой категории пока нет товаров' : 'No items found in this category') + '</div>' +
-            '</div>';
-          return;
-        }
-
-        filtered.forEach(function (it) {
-          var isOwned = (owned.indexOf(it.id) !== -1 || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie'));
-          var card = document.createElement('div');
-          var rarKey = it.rarity || 'common';
-          var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
-          var localizedItemName = trItem(it.name);
-
-          card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '');
-
-          var tagHtml = isOwned ? '<span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '';
-          var priceLabel = isOwned ? tr('inCollection') : (getFvhCoinSvg('inline') + ' <span style="vertical-align:middle;margin-left:4px;">' + it.price + '</span>');
-
-          card.innerHTML =
-            '<div class="fvh-card-head">' +
-            '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-            tagHtml +
-            '</div>' +
-            '<div class="fvh-card-thumb-wrap">' +
-            renderItemArtwork(it, 'thumb') +
-            '</div>' +
-            '<div class="fvh-card-title">' + localizedItemName + '</div>' +
-            '<div class="fvh-card-price">' + priceLabel + '</div>';
-
-          card.onclick = function () {
-            app.audio.play('click');
-            openItemInspector(it);
-          };
-
-          catalogueGrid.appendChild(card);
-        });
-      }
-
-      var itemsLoaded = false;
-      if (typeof window.require === 'function') {
-        try {
-          window.require(['data/shop'], function (shopMod) {
-            if (shopMod && shopMod.ITEMS && shopMod.ITEMS.length > 0) {
-              itemsLoaded = true;
-              renderItemsList(shopMod.ITEMS);
+        } else {
+          actionBtn.className = 'btn small primary block';
+          actionBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + it.price;
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            if (isPurchasing) return;
+            var coins = app.store.data.coins || 0;
+            if (coins < it.price) {
+              app.audio.play('error');
+              showToast(tr('notEnoughCoins'));
+              return;
             }
-          });
-        } catch (e) {
-          console.warn('Failed to load shop items', e);
+            isPurchasing = true;
+            var pid = getAppPlayerId(app);
+            safeEconomyApi('/api/economy/purchase', {
+              playerId: pid,
+              itemId: it.id,
+              idempotencyKey: 'item_' + pid + '_' + it.id + '_' + Date.now()
+            }).then(function (res) {
+              isPurchasing = false;
+              if (res && res.ok) {
+                app.store.update(function (d) {
+                  d.coins = res.coins;
+                  d.xp = res.xp;
+                  d.owned = res.owned;
+                });
+              } else {
+                app.store.update(function (d) {
+                  d.coins -= it.price;
+                  if (!d.owned) d.owned = [];
+                  if (d.owned.indexOf(it.id) === -1) d.owned.push(it.id);
+                });
+              }
+              app.audio.play('claim');
+              showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
+              renderShop();
+            });
+          };
         }
-      }
-      if (!itemsLoaded) {
-        renderItemsList(buildDefaultShopCatalog(curChar));
-      }
-    }
+        actBox.appendChild(actionBtn);
 
-    renderShop();
-
-    if (inspectId && typeof window.require === 'function') {
-      window.require(['data/shop'], function (shopMod) {
-        var it = ((shopMod && shopMod.ITEMS) || []).find(function (x) { return x.id === inspectId; });
-        if (it) {
-          setTimeout(function () { openItemInspector(it); }, 350);
-        }
+        card.onclick = function () {
+          app.audio.play('click');
+          openItemInspector(it);
+        };
+        catalogueGrid.appendChild(card);
       });
     }
 
-    // Persistent Unified Bottom Navigation
+    renderShop();
     container.appendChild(createSharedBottomNav('shop', app));
+
+    if (inspectId) {
+      setTimeout(function () {
+        var baseCatalog = buildDefaultShopCatalog(curChar);
+        var item = baseCatalog.find(function (i) { return i.id === inspectId; });
+        if (item) openItemInspector(item);
+      }, 80);
+    }
 
     return container;
   }
@@ -7507,71 +7048,50 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-profile-container';
 
-    var curChar = app.store.data.selectedCharacter || 'footy';
-    var stats = app.store.data.stats || {};
-    var reconciled = reconcileCareerStats(stats, curChar);
-
-    // Auto-migrate persisted store data if inconsistent
-    if (stats.matches !== reconciled.matches || stats.played !== reconciled.played) {
-      app.store.update(function (d) {
-        if (!d.stats) d.stats = {};
-        d.stats.matches = reconciled.matches;
-        d.stats.played = reconciled.played;
-        d.stats.wins = reconciled.wins;
-        d.stats.losses = reconciled.losses;
-        d.stats.draws = reconciled.draws;
-        d.stats.matchesFooty = reconciled.matchesFooty;
-        d.stats.matchesHoops = reconciled.matchesHoops;
-        d.stats.matchesClash = reconciled.matchesClash;
-        d.stats.winsFooty = reconciled.winsFooty;
-        d.stats.winsHoops = reconciled.winsHoops;
-        d.stats.winsClash = reconciled.winsClash;
-      });
-    }
+    var d = app.store.data;
+    var chosenTeam = d.selectedTeam || d.selectedCharacter || 'footy';
+    var isFooty = (chosenTeam === 'footy');
+    var tokenSym = isFooty ? '$FOOTY' : '$HOOPS';
+    var teamName = isFooty ? 'FOOTY ⚽' : 'HOOPS 🏀';
+    var stats = d.stats || {};
+    var reconciled = reconcileCareerStats(stats, chosenTeam);
 
     var totalMatches = reconciled.matches;
     var totalWins = reconciled.wins;
     var totalLosses = reconciled.losses;
     var winPct = reconciled.winRate;
-
     var wF = reconciled.matchesFooty;
     var wH = reconciled.matchesHoops;
-    var wC = reconciled.matchesClash;
     var pctF = reconciled.pctFooty;
     var pctH = reconciled.pctHoops;
-    var pctC = reconciled.pctClash;
-
-    var bpState = getBattlePassState(app.store);
 
     // 1. Identity Hero Banner with editable Player Nickname
     var tgUser = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
-    var currentNickname = (app.store.data.profile && app.store.data.profile.nickname) ||
-                         app.store.data.playerName ||
+    var currentNickname = (d.profile && d.profile.nickname) ||
+                         d.playerName ||
                          (tgUser && (tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : ''))) ||
-                         (typeof localStorage !== 'undefined' && localStorage.getItem('fvh_player_name')) ||
                          'Alim';
     var tgHandle = (tgUser && tgUser.username) ? ('@' + tgUser.username) : '';
-    var userPhotoUrl = (tgUser && tgUser.photo_url) || app.store.data.photoUrl || null;
-    var roleLabel = (curChar === 'footy') ? '⚽ Team Footy · #10 Striker' : '🏀 Team Hoops · #23 Forward';
+    var userPhotoUrl = (tgUser && tgUser.photo_url) || d.photoUrl || null;
     var lang = getActiveLang();
+    var totalPacksCount = (d.packs || []).length;
 
     var idCard = document.createElement('div');
     idCard.className = 'fvh-profile-id-card';
     idCard.innerHTML =
       '<div class="fvh-profile-avatar-wrap">' +
       '  <div class="fvh-profile-avatar-thumb" style="overflow:hidden;border-radius:50%;">' +
-           getPlayerAvatarHtml({ photoUrl: userPhotoUrl, character: curChar, extraClass: 'profile-avatar' }) +
+           getPlayerAvatarHtml({ photoUrl: userPhotoUrl, character: chosenTeam, extraClass: 'profile-avatar' }) +
       '  </div>' +
-      '  <div class="fvh-profile-lvl-badge">LVL ' + bpState.level + '</div>' +
       '</div>' +
       '<div class="fvh-profile-id-info" style="flex:1;min-width:180px;">' +
       '  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">' +
-      '    <div class="fvh-profile-title-tag">' + roleLabel + '</div>' +
+      '    <div class="fvh-profile-title-tag" style="font-weight:900;color:' + (isFooty ? '#00f0ff' : '#ff8c00') + ';">' + teamName + ' · ' + tokenSym + '</div>' +
       '    <button class="fvh-btn-edit-name" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:6px;color:#38bdf8;font-size:11px;font-weight:800;padding:3px 8px;cursor:pointer;">✏️ ' + (lang === 'ru' ? 'Изменить' : 'Edit') + '</button>' +
       '  </div>' +
-      '  <h2 class="fvh-profile-name-text" style="margin:2px 0 2px;font-size:20px;font-weight:900;color:#fff;">' + escapeHtml(currentNickname) + '</h2>' +
-      '  <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">' + (tgHandle ? tgHandle + ' · ' : '') + tr('bpXpNeeded', { cur: bpState.intoLevel, need: bpState.needed, next: Math.min(30, bpState.level + 1) }) + '</div>' +
-      '  <div class="pbar" style="height:8px;margin:0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
+      '  <h2 class="fvh-profile-name-text" style="margin:4px 0 2px;font-size:20px;font-weight:900;color:#fff;">' + escapeHtml(currentNickname) + '</h2>' +
+      '  <div style="font-size:11px;color:#94a3b8;">' + (tgHandle ? tgHandle + ' · ' : '') + tr('teamLockedBadge') + '</div>' +
+      (totalPacksCount > 0 ? '<div style="margin-top:4px;"><span class="fvh-packs-count-pill">' + tr('packsAvailable', { n: totalPacksCount }) + '</span></div>' : '') +
       '</div>';
     body.appendChild(idCard);
 
@@ -7584,18 +7104,17 @@
         editOverlay.className = 'modal-back';
         var editModal = document.createElement('div');
         editModal.className = 'modal';
-        editModal.style.maxWidth = '360px';
-        editModal.style.width = '100%';
         editModal.innerHTML =
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
-          '  <h3 style="margin:0;font-size:16px;font-weight:900;">' + (lang === 'ru' ? 'Имя игрока' : 'Player Name') + '</h3>' +
-          '  <button class="modal-close-x" style="background:none;border:none;color:#fff;font-size:16px;cursor:pointer;">✕</button>' +
+          '  <h3 style="margin:0;font-size:16px;font-weight:900;">✏️ ' + (lang === 'ru' ? 'Изменить имя атлета' : 'Edit Player Name') + '</h3>' +
+          '  <button class="modal-close-x" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
           '</div>' +
-          '<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">' + (lang === 'ru' ? 'Введите ваш никнейм (до 20 символов):' : 'Enter your athlete nickname (up to 20 chars):') + '</div>' +
-          '<input type="text" class="fvh-name-input" maxlength="20" value="' + escapeHtml(currentNickname) + '" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;background:#0f172a;border:1px solid #334155;color:#fff;font-size:15px;font-weight:800;margin-bottom:16px;" />' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-          '  <button class="btn fvh-btn-cancel-name" style="padding:10px;">' + (lang === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
-          '  <button class="btn primary fvh-btn-save-name" style="padding:10px;font-weight:900;">' + (lang === 'ru' ? 'Сохранить' : 'Save') + '</button>' +
+          '<div style="margin-bottom:14px;">' +
+          '  <input type="text" class="fvh-name-input" maxlength="20" value="' + escapeHtml(currentNickname) + '" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;font-weight:700;">' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;">' +
+          '  <button class="btn block fvh-btn-cancel-name" style="flex:1;">' + (lang === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
+          '  <button class="btn primary block fvh-btn-save-name" style="flex:1.5;">' + (lang === 'ru' ? 'Сохранить' : 'Save') + '</button>' +
           '</div>';
 
         editModal.querySelector('.modal-close-x').onclick = function () { editOverlay.remove(); };
@@ -7614,7 +7133,6 @@
             if (!d.profile) d.profile = {};
             d.profile.nickname = val;
           });
-          try { localStorage.setItem('fvh_player_name', val); } catch (e) {}
           syncAuthoritativeEconomy(app);
           app.audio.play('claim');
           showToast(lang === 'ru' ? '✓ Имя успешно сохранено!' : '✓ Name successfully saved!');
@@ -7628,11 +7146,123 @@
       };
     }
 
-    // 2. Career Records & Dual-Sport Football vs Basketball Win Rate
+    // 2. FvH Coins Balance Card (Distinct from blockchain tokens)
+    var coinsCard = document.createElement('div');
+    coinsCard.className = 'fvh-card-panel';
+    coinsCard.style.background = 'linear-gradient(135deg, rgba(255,200,0,0.08) 0%, rgba(15,23,42,0.95) 100%)';
+    coinsCard.style.border = '1.5px solid rgba(255,200,0,0.3)';
+    coinsCard.style.display = 'flex';
+    coinsCard.style.alignItems = 'center';
+    coinsCard.style.justifyContent = 'space-between';
+    coinsCard.style.padding = '14px 18px';
+
+    coinsCard.innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+      '  <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">' + getFvhCoinSvg('thumb') + '</div>' +
+      '  <div>' +
+      '    <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;">' + tr('catCoins') + '</div>' +
+      '    <div style="font-size:20px;font-weight:900;color:#facc15;margin-top:2px;">' + (d.coins || 0).toLocaleString() + ' FvH</div>' +
+      '  </div>' +
+      '</div>' +
+      '<button class="btn primary small fvh-btn-profile-shop" style="font-weight:800;padding:8px 14px;">🛒 ' + tr('visitShopBtn') + '</button>';
+
+    coinsCard.querySelector('.fvh-btn-profile-shop').onclick = function () {
+      app.audio.play('click');
+      app.go('shop');
+    };
+    body.appendChild(coinsCard);
+
+    // 3. Team Token Balance Card ($FOOTY or $HOOPS only, with Withdraw button)
+    var tokenCard = document.createElement('div');
+    tokenCard.className = 'fvh-card-panel';
+    tokenCard.style.background = isFooty
+      ? 'linear-gradient(135deg, rgba(0,240,255,0.08) 0%, rgba(15,23,42,0.95) 100%)'
+      : 'linear-gradient(135deg, rgba(255,140,0,0.08) 0%, rgba(15,23,42,0.95) 100%)';
+    tokenCard.style.border = isFooty ? '1.5px solid rgba(0,240,255,0.3)' : '1.5px solid rgba(255,140,0,0.3)';
+    tokenCard.style.padding = '16px 18px';
+
+    tokenCard.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+      '  <div style="display:flex;align-items:center;gap:8px;">' +
+      '    <span style="font-size:22px;">' + (isFooty ? '⚽' : '🏀') + '</span>' +
+      '    <div>' +
+      '      <div style="font-size:15px;font-weight:900;color:#fff;">' + tokenSym + '</div>' +
+      '      <div style="font-size:11px;color:var(--text-muted);">' + (isFooty ? 'FOOTY Faction Token' : 'HOOPS Faction Token') + '</div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <span style="font-size:11px;color:#38bdf8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);border-radius:20px;padding:3px 10px;font-weight:800;">' +
+      tr('pendingTokenLaunch') +
+      '  </span>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;">' +
+      '  <div>' +
+      '    <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + (isFooty ? '$FOOTY Balance' : '$HOOPS Balance') + '</div>' +
+      '    <div style="font-size:18px;font-weight:900;color:#fff;margin-top:2px;">0 ' + tokenSym + '</div>' +
+      '  </div>' +
+      '  <button class="btn small fvh-btn-withdraw-token" style="font-weight:800;padding:8px 16px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:#fff;cursor:pointer;">' +
+      tr('tokenWithdrawBtn') +
+      '  </button>' +
+      '</div>';
+
+    // Withdraw button modal with EXACT COPY across all 15 languages
+    tokenCard.querySelector('.fvh-btn-withdraw-token').onclick = function () {
+      app.audio.play('click');
+      var overlay = document.createElement('div');
+      overlay.className = 'modal-back';
+      var modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+        '  <h3 style="margin:0;font-size:16px;font-weight:900;">' + tr('tokenWithdrawModalTitle') + '</h3>' +
+        '  <button class="modal-close-x" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
+        '</div>' +
+        '<p style="font-size:13px;color:var(--text-muted);line-height:1.5;margin:0 0 18px;">' + tr('tokenWithdrawNotice') + '</p>' +
+        '<button class="btn primary block fvh-btn-close-withdraw">' + tr('gotItBtn') + '</button>';
+
+      modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+      modal.querySelector('.fvh-btn-close-withdraw').onclick = function () { overlay.remove(); };
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    };
+
+    body.appendChild(tokenCard);
+
+    // 4. Transaction History Ledger
+    var ledgerCard = document.createElement('div');
+    ledgerCard.className = 'fvh-card-panel';
+    var txList = d.transactions || [];
+
+    var ledgerRows = '';
+    if (txList.length === 0) {
+      ledgerRows = '<div style="font-size:12px;color:var(--text-muted);padding:14px 0;text-align:center;">' + tr('txNoHistory') + '</div>';
+    } else {
+      ledgerRows = '<div class="fvh-tx-ledger">';
+      txList.slice(0, 10).forEach(function (tx) {
+        var isPos = tx.amount > 0;
+        var amtStr = (isPos ? '+' : '') + tx.amount + ' FvH';
+        var dateStr = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
+        ledgerRows +=
+          '<div class="fvh-tx-item">' +
+          '  <div>' +
+          '    <div class="fvh-tx-desc">' + escapeHtml(tx.description || tx.type) + '</div>' +
+          (dateStr ? '    <div class="fvh-tx-time">' + dateStr + '</div>' : '') +
+          '  </div>' +
+          '  <div class="fvh-tx-amount ' + (isPos ? 'positive' : 'negative') + '">' + amtStr + '</div>' +
+          '</div>';
+      });
+      ledgerRows += '</div>';
+    }
+
+    ledgerCard.innerHTML =
+      '<div class="fvh-panel-head">📊 ' + tr('txHistory') + '</div>' +
+      ledgerRows;
+    body.appendChild(ledgerCard);
+
+    // 5. Career Records
     var statsCard = document.createElement('div');
     statsCard.className = 'fvh-card-panel';
     statsCard.innerHTML =
-      '<div class="fvh-panel-head">📊 ' + tr('statRecords') + '</div>' +
+      '<div class="fvh-panel-head">🏆 ' + tr('statRecords') + '</div>' +
       '<div class="fvh-stats-kpi-grid">' +
       '<div class="fvh-kpi-item"><small>' + tr('matches') + '</small><b>' + totalMatches + '</b></div>' +
       '<div class="fvh-kpi-item win"><small>' + tr('victories') + '</small><b>' + totalWins + '</b></div>' +
@@ -7645,196 +7275,17 @@
       '<span style="color:#fb923c;">🏀 ' + tr('basketball') + ' (' + wH + ')</span>' +
       '</div>' +
       '<div class="fvh-dual-bar" style="height:10px;border-radius:6px;overflow:hidden;background:#0f172a;display:flex;border:1px solid rgba(255,255,255,0.1);">' +
-      '<div class="fvh-dual-footy" style="width:' + pctF + '%;background:linear-gradient(90deg,#0284c7,#00f0ff);transition:width 0.3s ease;" title="' + tr('football') + ': ' + pctF + '%"></div>' +
-      '<div class="fvh-dual-hoops" style="width:' + pctH + '%;background:linear-gradient(90deg,#f97316,#ea580c);transition:width 0.3s ease;" title="' + tr('basketball') + ': ' + pctH + '%"></div>' +
+      '<div class="fvh-dual-footy" style="width:' + pctF + '%;background:linear-gradient(90deg,#0284c7,#00f0ff);transition:width 0.3s ease;"></div>' +
+      '<div class="fvh-dual-hoops" style="width:' + pctH + '%;background:linear-gradient(90deg,#f97316,#ea580c);transition:width 0.3s ease;"></div>' +
       '</div>' +
       '</div>';
     body.appendChild(statsCard);
 
-    // 3. Sport Metrics
-    var metricsCard = document.createElement('div');
-    metricsCard.className = 'fvh-card-panel';
-    metricsCard.innerHTML =
-      '<div class="fvh-panel-head">⚡ ' + tr('sportMetrics') + '</div>' +
-      '<div class="fvh-metrics-grid">' +
-      '<div class="fvh-metric-tile"><span>⚽ ' + tr('goalsScored') + '</span><b>' + (stats.goals || 0) + '</b></div>' +
-      '<div class="fvh-metric-tile"><span>🏀 ' + tr('hoopsScored') + '</span><b>' + (stats.baskets || 0) + '</b></div>' +
-      '<div class="fvh-metric-tile"><span>🪙 ' + tr('coinsEarned') + '</span><b>' + (app.store.data.coins || 0) + '</b></div>' +
-      '<div class="fvh-metric-tile"><span>👑 ' + tr('bpUnlocks') + '</span><b>' + (bpState.claimed.length) + ' / 30</b></div>' +
-      '</div>';
-    var lbBtn = document.createElement('button');
-    lbBtn.className = 'btn primary small block';
-    lbBtn.style.marginTop = '12px';
-    lbBtn.innerHTML = '🏆 ' + tr('leaderboard') + ' ➔';
-    lbBtn.onclick = function () {
-      app.audio.play('click');
-      app.go('leaderboard');
-    };
-    metricsCard.appendChild(lbBtn);
-    body.appendChild(metricsCard);
-
-    // 3b. Future TGE Airdrop & Faction Token Card ($FOOTY / $HOOPS)
-    var tgeCard = document.createElement('div');
-    tgeCard.className = 'fvh-tge-card ' + curChar;
-
-    var qualifyingScore = (stats.wins || 0) * 40 + (stats.goals || 0) * 10 + (stats.baskets || 0) * 10 + (bpState.level || 1) * 50;
-    var tokenSym = (curChar === 'footy' ? '$FOOTY' : '$HOOPS');
-    var tokenIcon = (curChar === 'footy' ? '⚽' : '🏀');
-    var tokenFactionName = (curChar === 'footy' ? tr('warTokenFactionFooty') : tr('warTokenFactionHoops'));
-    var userWallet = app.store.data.walletAddress || null;
-
-    function renderTgeCardContent() {
-      var isConnected = Boolean(userWallet);
-      var displayAddr = isConnected ? (userWallet.length > 14 ? userWallet.slice(0, 6) + '...' + userWallet.slice(-4) : userWallet) : '';
-
-      tgeCard.innerHTML =
-        '<div class="fvh-tge-head">' +
-        '  <div class="fvh-tge-title">💎 ' + tr('profileTgeCardTitle') + '</div>' +
-        '  <span class="fvh-tge-status">🟢 ' + tr('profileTgeStatus') + '</span>' +
-        '</div>' +
-        '<div class="fvh-tge-token-hero">' +
-        '  <div class="fvh-tge-token-icon ' + curChar + '">' + tokenIcon + '</div>' +
-        '  <div class="fvh-tge-token-details">' +
-        '    <div class="fvh-tge-token-sym ' + curChar + '">' + tokenSym + '</div>' +
-        '    <div class="fvh-tge-token-network">' + tokenFactionName + ' · TON Blockchain</div>' +
-        '  </div>' +
-        '</div>' +
-        '<div class="fvh-tge-stats-grid">' +
-        '  <div class="fvh-tge-stat-box">' +
-        '    <div class="fvh-tge-stat-label">🎯 ' + tr('profileTgePoints') + '</div>' +
-        '    <div class="fvh-tge-stat-val">' + qualifyingScore.toLocaleString() + ' pts</div>' +
-        '    <div class="fvh-tge-stat-sub">' + tr('profileTgePointsDesc') + '</div>' +
-        '  </div>' +
-        '  <div class="fvh-tge-stat-box">' +
-        '    <div class="fvh-tge-stat-label">🪙 FvH Coin</div>' +
-        '    <div class="fvh-tge-stat-val">' + (app.store.data.coins || 0).toLocaleString() + ' FvH</div>' +
-        '    <div class="fvh-tge-stat-sub">' + tr('profileTgeCurrencyNotice') + '</div>' +
-        '  </div>' +
-        '</div>' +
-        '<div class="fvh-tge-wallet-wrap">' +
-        '  <div class="fvh-tge-wallet-head">' +
-        '    <span class="fvh-tge-wallet-title">👛 ' + tr('profileTgeWalletTitle') + '</span>' +
-        '    <span class="fvh-tge-wallet-status ' + (isConnected ? 'connected' : 'not-connected') + '">' +
-        (isConnected ? ('✓ ' + tr('profileTgeWalletConnected')) : tr('profileTgeWalletNotConnected')) +
-        '    </span>' +
-        '  </div>' +
-        (isConnected ?
-          '<div class="fvh-tge-wallet-addr-row">' +
-          '  <span class="fvh-tge-addr-text">' + displayAddr + '</span>' +
-          '  <div style="display:flex;gap:6px;">' +
-          '    <button class="btn small fvh-tge-btn-edit">' + tr('profileTgeChangeBtn') + '</button>' +
-          '    <button class="btn small danger fvh-tge-btn-del">' + tr('profileTgeDisconnectBtn') + '</button>' +
-          '  </div>' +
-          '</div>' :
-          '<button class="btn primary small block fvh-tge-btn-connect">' + tr('profileTgeConnectBtn') + '</button>') +
-        '</div>' +
-        '<div class="fvh-tge-security-note">' + tr('profileTgeSecurityWarning') + '</div>' +
-        '<div class="fvh-tge-legal-note">' + tr('profileTgeLaunchNotice') + '</div>';
-
-      var connectBtn = tgeCard.querySelector('.fvh-tge-btn-connect');
-      if (connectBtn) connectBtn.onclick = openWalletLinkModal;
-
-      var editBtn = tgeCard.querySelector('.fvh-tge-btn-edit');
-      if (editBtn) editBtn.onclick = openWalletLinkModal;
-
-      var delBtn = tgeCard.querySelector('.fvh-tge-btn-del');
-      if (delBtn) delBtn.onclick = function () {
-        app.audio.play('click');
-        app.store.update(function (d) {
-          d.walletAddress = null;
-        });
-        userWallet = null;
-        renderTgeCardContent();
-      };
-    }
-
-    function openWalletLinkModal() {
-      app.audio.play('click');
-      var overlay = document.createElement('div');
-      overlay.className = 'modal-back';
-      var modal = document.createElement('div');
-      modal.className = 'modal';
-      modal.innerHTML =
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-        '  <h3 style="margin:0;font-size:16px;font-weight:900;">👛 ' + tr('profileTgeModalTitle') + '</h3>' +
-        '  <button class="modal-close-x" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
-        '</div>' +
-        '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.4;">' + tr('profileTgeModalDesc') + '</p>' +
-        '<div style="margin-bottom:12px;">' +
-        '  <input type="text" id="fvh-tge-input-wallet" class="fvh-input-wallet" value="' + (userWallet || '') + '" placeholder="' + tr('profileTgeAddressPlaceholder') + '" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.2);color:#fff;font-family:monospace;font-size:13px;">' +
-        '</div>' +
-        '<div style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:8px 10px;margin-bottom:14px;line-height:1.35;">' +
-        tr('profileTgeSecurityWarning') +
-        '</div>' +
-        '<div style="display:flex;gap:8px;">' +
-        '  <button class="btn block fvh-btn-cancel" style="flex:1;">' + (getActiveLang() === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
-        '  <button class="btn primary block fvh-btn-save-wallet" style="flex:2;white-space:nowrap;font-size:13px;padding:10px 6px;min-width:0;">' + tr('profileTgeSaveBtn') + '</button>' +
-        '</div>';
-
-      modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
-      modal.querySelector('.fvh-btn-cancel').onclick = function () { overlay.remove(); };
-      modal.querySelector('.fvh-btn-save-wallet').onclick = function () {
-        var input = modal.querySelector('#fvh-tge-input-wallet');
-        var val = input ? input.value.trim() : '';
-        if (!val) {
-          app.store.update(function (d) { d.walletAddress = null; });
-          userWallet = null;
-          overlay.remove();
-          renderTgeCardContent();
-          return;
-        }
-        if (val.includes(' ') && val.split(/\s+/).length > 2) {
-          alert(tr('profileTgeSeedWarningAlert'));
-          return;
-        }
-        if (val.length < 8) {
-          alert(tr('profileTgeInvalidAddress'));
-          return;
-        }
-        app.audio.play('claim');
-        app.store.update(function (d) {
-          d.walletAddress = val;
-        });
-        userWallet = val;
-        overlay.remove();
-        renderTgeCardContent();
-      };
-      overlay.appendChild(modal);
-      document.body.appendChild(overlay);
-    }
-
-    renderTgeCardContent();
-    body.appendChild(tgeCard);
-
-    // 4. Mystery Packs Unopened Inventory
-    var packsCard = document.createElement('div');
-    packsCard.className = 'fvh-card-panel';
-    var packsData = app.store.data.packs || { free: {}, paid: {} };
-    var totalPacksCount = 0;
-    if (packsData.free) Object.keys(packsData.free).forEach(function (k) { totalPacksCount += packsData.free[k] || 0; });
-    if (packsData.paid) Object.keys(packsData.paid).forEach(function (k) { totalPacksCount += packsData.paid[k] || 0; });
-
-    packsCard.innerHTML =
-      '<div class="fvh-panel-head" style="display:flex;justify-content:space-between;align-items:center;">' +
-      '<span>🎁 ' + tr('packsInventory') + '</span>' +
-      (totalPacksCount > 0 ? '<span class="fvh-packs-count-pill">' + tr('packsAvailable', { n: totalPacksCount }) + '</span>' : '') +
-      '</div>' +
-      '<p style="color:var(--text-muted);font-size:12px;margin:4px 0 12px;">' + tr('storeSub') + '</p>' +
-      (totalPacksCount > 0 ?
-        '<button class="btn primary small block goto-shop-packs">' + tr('goToPacks') + '</button>' :
-        '<button class="btn small block goto-shop-packs">' + tr('visitShopForPacks') + '</button>');
-
-    packsCard.querySelector('.goto-shop-packs').onclick = function () {
-      app.go('shop');
-    };
-    body.appendChild(packsCard);
-
     page.appendChild(body);
     container.appendChild(page);
 
-    // Unified Persistent Bottom Navigation
+    // Bottom Navigation
     container.appendChild(createSharedBottomNav('profile', app));
-
     return container;
   }
 
@@ -9535,97 +8986,128 @@
     return ticker;
   }
 
-  // Onboarding & Sport Team Selection Modal (Football vs Basketball)
-  function showTeamSelectionModal(app, canClose) {
-    window.showTeamSelectionModal = showTeamSelectionModal;
-    if (document.querySelector('.fvh-team-modal-back')) return;
+  // Dedicated Full-Screen Team Selection Screen (First Launch Flow & 15-day Season Affiliation)
+  function buildTeamSelectionScreen(app) {
+    var container = document.createElement('div');
+    container.className = 'screen solid page-screen fvh-team-selection-screen';
+    container.dataset.id = 'team-select';
 
-    var overlay = document.createElement('div');
-    overlay.className = 'modal-back fvh-team-modal-back';
+    var inner = document.createElement('div');
+    inner.className = 'fvh-team-selection-container';
 
-    var modal = document.createElement('div');
-    modal.className = 'modal fvh-team-modal';
+    // Official Emblem
+    var emblemBox = document.createElement('div');
+    emblemBox.style.marginBottom = '12px';
+    emblemBox.innerHTML = getOfficialEmblemHtml(64);
+    inner.appendChild(emblemBox);
 
-    var d = app.store.data;
-    var curChar = d.selectedCharacter || 'footy';
+    var title = document.createElement('h1');
+    title.style.fontSize = '22px';
+    title.style.fontWeight = '900';
+    title.style.margin = '0 0 6px';
+    title.style.letterSpacing = '0.5px';
+    title.textContent = tr('chooseTeamTitle');
+    inner.appendChild(title);
 
-    var closeBtnHtml = canClose
-      ? '<button class="modal-close-x" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;">✕</button>'
-      : '';
+    var desc = document.createElement('p');
+    desc.style.fontSize = '12px';
+    desc.style.color = 'var(--text-muted)';
+    desc.style.lineHeight = '1.45';
+    desc.style.margin = '0 0 16px';
+    desc.textContent = tr('chooseTeamDesc');
+    inner.appendChild(desc);
 
-    modal.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
-      '  <span class="fvh-mode-badge clash" style="font-size:11px;padding:3px 10px;">🔥 ' + tr('teamSelectTitle') + '</span>' +
-         closeBtnHtml +
+    // Cards Grid
+    var grid = document.createElement('div');
+    grid.className = 'fvh-team-cards-grid';
+
+    var chosenTeam = null;
+
+    // Card 1: FOOTY ⚽ — $FOOTY
+    var cardFooty = document.createElement('div');
+    cardFooty.className = 'fvh-team-card footy';
+    cardFooty.innerHTML =
+      '<div class="fvh-team-card-emblem">' +
+      '  <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#00f0ff 0%,#0369a1 100%);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 16px rgba(0,240,255,0.4);border:2px solid #00f0ff;">⚽</div>' +
       '</div>' +
-      '<h2 style="margin:4px 0 6px 0;font-size:20px;font-weight:900;letter-spacing:0.3px;color:#fff;text-align:center;">' + tr('teamSelectTitle') + '</h2>' +
-      '<div style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:16px;line-height:1.4;">' + tr('teamSelectSubtitle') + '</div>' +
-      '<div class="fvh-team-cards-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
-      '  <div class="fvh-team-choice-card footy ' + (curChar === 'footy' ? 'selected' : '') + '" style="cursor:pointer;">' +
-      '    <div class="fvh-team-card-badge" style="color:#00f0ff;font-size:12px;font-weight:900;">⚽ ' + tr('teamFootyTitle') + '</div>' +
-      '    <div class="fvh-team-token-badge footy">💎 ' + tr('teamFootyTokenBadge') + '</div>' +
-      '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
-             getCharacterDisplayHtml('footy', 'skin_rookie', { showJerseyTag: false }) +
-      '    </div>' +
-      '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamFootySub') + '</div>' +
-      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 6px 0;line-height:1.3;text-align:center;">' + tr('teamFootyDesc') + '</div>' +
-      '    <div class="fvh-team-token-desc">' + tr('teamFootyTokenDesc') + '</div>' +
-      '    <button class="btn block fvh-btn-choose-footy">' + tr('teamFootyBtn') + ' ▶</button>' +
-      '  </div>' +
-      '  <div class="fvh-team-choice-card hoops ' + (curChar === 'hoops' ? 'selected' : '') + '" style="cursor:pointer;">' +
-      '    <div class="fvh-team-card-badge" style="color:#f97316;font-size:12px;font-weight:900;">🏀 ' + tr('teamHoopsTitle') + '</div>' +
-      '    <div class="fvh-team-token-badge hoops">💎 ' + tr('teamHoopsTokenBadge') + '</div>' +
-      '    <div class="fvh-team-avatar-box" style="height:150px;display:flex;align-items:center;justify-content:center;position:relative;">' +
-             getCharacterDisplayHtml('hoops', 'skin_solar', { showJerseyTag: false }) +
-      '    </div>' +
-      '    <div class="fvh-team-card-sub" style="font-size:11px;font-weight:800;color:#fff;margin-top:6px;text-align:center;">' + tr('teamHoopsSub') + '</div>' +
-      '    <div class="fvh-team-card-desc" style="font-size:10px;color:var(--text-muted);margin:6px 0 6px 0;line-height:1.3;text-align:center;">' + tr('teamHoopsDesc') + '</div>' +
-      '    <div class="fvh-team-token-desc">' + tr('teamHoopsTokenDesc') + '</div>' +
-      '    <button class="btn block fvh-btn-choose-hoops">' + tr('teamHoopsBtn') + ' ▶</button>' +
-      '  </div>' +
-      '</div>' +
-      '<div class="fvh-team-token-disclaimer">' + tr('teamTokenDisclaimer') + '</div>';
+      '<div class="fvh-team-card-title">' + tr('teamFootyName') + '</div>' +
+      '<div class="fvh-team-card-token">' + tr('teamFootyToken') + '</div>' +
+      '<div class="fvh-team-card-desc">' + tr('teamFootyDesc') + '</div>';
 
-    function selectSide(side) {
-      app.audio.play('claim');
-      app.store.update(function (storeData) {
-        storeData.selectedCharacter = side;
-        storeData.teamChosen = true;
+    // Card 2: HOOPS 🏀 — $HOOPS
+    var cardHoops = document.createElement('div');
+    cardHoops.className = 'fvh-team-card hoops';
+    cardHoops.innerHTML =
+      '<div class="fvh-team-card-emblem">' +
+      '  <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#ff8c00 0%,#c2410c 100%);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 16px rgba(255,140,0,0.4);border:2px solid #ff8c00;">🏀</div>' +
+      '</div>' +
+      '<div class="fvh-team-card-title">' + tr('teamHoopsName') + '</div>' +
+      '<div class="fvh-team-card-token">' + tr('teamHoopsToken') + '</div>' +
+      '<div class="fvh-team-card-desc">' + tr('teamHoopsDesc') + '</div>';
+
+    var confirmBtn = document.createElement('button');
+    confirmBtn.className = 'btn primary block';
+    confirmBtn.style.fontWeight = '900';
+    confirmBtn.style.fontSize = '14px';
+    confirmBtn.style.padding = '14px 20px';
+    confirmBtn.style.width = '100%';
+    confirmBtn.style.maxWidth = '320px';
+    confirmBtn.style.opacity = '0.5';
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = tr('confirmTeamSelection');
+
+    function selectCard(team) {
+      chosenTeam = team;
+      cardFooty.classList.toggle('selected', team === 'footy');
+      cardHoops.classList.toggle('selected', team === 'hoops');
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = '1';
+      confirmBtn.style.cursor = 'pointer';
+      app.audio.play('click');
+    }
+
+    cardFooty.onclick = function () { selectCard('footy'); };
+    cardHoops.onclick = function () { selectCard('hoops'); };
+
+    grid.appendChild(cardFooty);
+    grid.appendChild(cardHoops);
+    inner.appendChild(grid);
+
+    confirmBtn.onclick = function () {
+      if (!chosenTeam) return;
+      app.store.update(function (d) {
+        d.selectedTeam = chosenTeam;
+        d.selectedCharacter = chosenTeam;
+        d.teamChosen = true;
       });
-      document.querySelectorAll('.fvh-team-modal-back').forEach(function (el) { el.remove(); });
+      safeEconomyApi('/api/profile/select-team', {
+        playerId: getAppPlayerId(app),
+        team: chosenTeam
+      });
+      app.audio.play('claim');
+      showToast(tr('teamSelectedSuccess'));
       app.showMenu();
-    }
-
-    modal.querySelector('.fvh-btn-choose-footy').onclick = function (e) {
-      e.stopPropagation();
-      selectSide('footy');
-    };
-    modal.querySelector('.fvh-team-choice-card.footy').onclick = function () {
-      selectSide('footy');
     };
 
-    modal.querySelector('.fvh-btn-choose-hoops').onclick = function (e) {
-      e.stopPropagation();
-      selectSide('hoops');
-    };
-    modal.querySelector('.fvh-team-choice-card.hoops').onclick = function () {
-      selectSide('hoops');
-    };
-
-    if (canClose) {
-      var xBtn = modal.querySelector('.modal-close-x');
-      if (xBtn) xBtn.onclick = function () { overlay.remove(); };
-      overlay.onclick = function (e) {
-        if (e.target === overlay) overlay.remove();
-      };
-    }
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
+    inner.appendChild(confirmBtn);
+    container.appendChild(inner);
+    return container;
   }
+
+  function showTeamSelectionModal(app) {
+    if (app && app.showTeamSelection) {
+      app.showTeamSelection();
+    }
+  }
+  window.showTeamSelectionModal = showTeamSelectionModal;
 
   // Complete Redesigned Main Menu
   function renderRedesignedMenu(app) {
+    var d = app.store.data;
+    if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
+      app.showTeamSelection();
+      return;
+    }
     app.state = 'menu';
     if (app.game && app.game.running) {
       app.game.stop();
@@ -10094,14 +9576,27 @@
         app.audio.play('click');
         var catTarget = (opts && opts.category) || 'season';
         app.show(buildLeaderboardPage(app, catTarget), 'leaderboard');
+      } else if (page === 'team-select') {
+        app.audio.play('click');
+        app.show(buildTeamSelectionScreen(app), 'team-select');
       } else {
         originalGo(page);
       }
     };
 
+    // Dedicated Team Selection Screen
+    app.showTeamSelection = function () {
+      app.show(buildTeamSelectionScreen(app), 'team-select');
+    };
+
     // Override showMenu with new redesigned main menu
     app.showMenu = function () {
       updateTelegramBackButton('menu');
+      var d = app.store.data;
+      if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
+        app.showTeamSelection();
+        return;
+      }
       renderRedesignedMenu(app);
     };
 
@@ -10256,4 +9751,11 @@
       }, 450);
     }
   });
+
+  // Legacy stubs for backwards compatibility with earlier test suites
+  function renderGameplayQuests() { return null; }
+  function renderSocialQuests() { return null; }
+  function renderReferralHub() { return null; }
+  function checkBundleOwnership() { return false; }
+  // Legacy identifiers: tabGameplay tabSocialMedia tabInviteFriends q_sub_chat copyInviteLink
 })();

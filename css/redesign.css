@@ -6257,7 +6257,6 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   .fvh-topbar-brand .logo-text {
     display: none !important;
   }
-}
   .fvh-btn-topbar-profile {
     max-width: 85px !important;
     overflow: hidden !important;
@@ -6271,3 +6270,213 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
     flex-shrink: 0 !important;
   }
 }
+
+/* ==========================================================================
+   STAGE 1: TEAM SELECTION, SHOP, PROFILE & ECONOMY EXTENSIONS
+   ========================================================================== */
+
+/* Team Selection Screen */
+.fvh-team-selection-screen {
+  background: radial-gradient(circle at 50% 20%, #151d38 0%, #080d1a 100%) !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.fvh-team-selection-container {
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.fvh-team-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin: 20px 0 24px;
+}
+
+@media (max-width: 360px) {
+  .fvh-team-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.fvh-team-card {
+  background: rgba(18, 25, 48, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fvh-team-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.fvh-team-card.footy.selected {
+  border-color: #00f0ff;
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.35);
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.12) 0%, rgba(18, 25, 48, 0.98) 100%);
+}
+
+.fvh-team-card.hoops.selected {
+  border-color: #ff8c00;
+  box-shadow: 0 0 24px rgba(255, 140, 0, 0.35);
+  background: linear-gradient(180deg, rgba(255, 140, 0, 0.12) 0%, rgba(18, 25, 48, 0.98) 100%);
+}
+
+.fvh-team-card-emblem {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fvh-team-card-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.fvh-team-card-token {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.fvh-team-card.footy .fvh-team-card-token {
+  color: #00f0ff;
+}
+
+.fvh-team-card.hoops .fvh-team-card-token {
+  color: #ff8c00;
+}
+
+.fvh-team-card-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+/* Empty states */
+.fvh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+  grid-column: 1 / -1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fvh-empty-state-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+  opacity: 0.85;
+}
+
+.fvh-empty-state-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.fvh-empty-state-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.4;
+  margin-bottom: 14px;
+}
+
+/* Transaction History Ledger */
+.fvh-tx-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fvh-tx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.fvh-tx-desc {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.fvh-tx-time {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.fvh-tx-amount {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.fvh-tx-amount.positive {
+  color: #22c55e;
+}
+
+.fvh-tx-amount.negative {
+  color: #ef4444;
+}
+
+/* RTL Support for Arabic */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .fvh-topbar {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .fvh-topbar-stats {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .page-head .back {
+  transform: rotate(180deg);
+}
+
+[dir="rtl"] .fvh-kpi-item,
+[dir="rtl"] .fvh-team-card {
+  text-align: center;
+}
+
