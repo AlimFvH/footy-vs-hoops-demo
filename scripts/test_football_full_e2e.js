@@ -11,12 +11,13 @@ async function run() {
   const chrome = spawn(chromePath, [
     '--headless=new',
     '--remote-debugging-port=9222',
+    '--user-data-dir=C:\\Users\\ASUS\\AppData\\Local\\Temp\\chrome_debug',
     '--disable-gpu',
     '--no-sandbox',
     'about:blank'
   ]);
 
-  await new Promise(r => setTimeout(r, 1200));
+  await new Promise(r => setTimeout(r, 2000));
 
   const verRes = await fetch('http://127.0.0.1:9222/json/version');
   const ver = await verRes.json();

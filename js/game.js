@@ -992,24 +992,95 @@ void main(){
   } else {
     vec3 N = normalize(vN);
     if (uDouble == 1 && !gl_FrontFacing) N = -N;
+    
+    // Procedural turf normal perturbation for grass blade micro-depth on ground plane
+    if (uReceive == 1 && vWorld.y < 0.05 && N.y > 0.6) {
+      vec2 gP = vWorld.xz * 12.0;
+      float bPattern = sin(gP.x + cos(gP.y * 1.4)) * cos(gP.y - sin(gP.x * 0.8)) * 0.08;
+      N = normalize(N + vec3(dFdx(bPattern), 0.0, dFdy(bPattern)));
+    }
+
     vec3 V = normalize(uCam - vWorld);
+    float NdotV = max(dot(N, V), 0.001);
+    
+    // Physically-based Cook-Torrance GGX microfacet parameterization
+    float roughness = clamp(1.0 - sqrt(clamp(uShine, 1.0, 128.0) / 128.0), 0.06, 0.96);
+    float alphaRough = roughness * roughness;
+    float alpha2 = alphaRough * alphaRough;
+    float metallic = clamp((uSpec - 0.35) * 1.5, 0.0, 0.85);
+    vec3 F0 = mix(vec3(0.04), base, metallic);
+    
+    // Shadow factor
     float ndl = max(dot(N, uSunDir), 0.0);
     float sh = 1.0;
     if (uReceive == 1) sh = shadowAt(ndl);
-    vec3 amb = mix(uGround, uSky, N.y * 0.5 + 0.5);
-    vec3 diff = amb + uSunColor * ndl * sh;
+
+    // Directional Sunlight (Cook-Torrance Specular + Lambertian Diffuse)
+    vec3 sunSpec = vec3(0.0);
+    vec3 sunDiff = vec3(0.0);
+    if (ndl > 0.0) {
+      vec3 H = normalize(uSunDir + V);
+      float NdotH = max(dot(N, H), 0.0);
+      float VdotH = max(dot(V, H), 0.0);
+      
+      // D (GGX)
+      float denom = (NdotH * NdotH * (alpha2 - 1.0) + 1.0);
+      float D = alpha2 / (3.14159265 * denom * denom);
+      
+      // G (Smith Schlick-GGX)
+      float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
+      float gV = NdotV / (NdotV * (1.0 - k) + k);
+      float gL = ndl / (ndl * (1.0 - k) + k);
+      float G = gV * gL;
+      
+      // F (Schlick)
+      vec3 F = F0 + (1.0 - F0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+      
+      vec3 specBRDF = (D * G * F) / (4.0 * NdotV * ndl + 0.001);
+      vec3 kD = (vec3(1.0) - F) * (1.0 - metallic);
+      
+      sunDiff = kD * base * (1.0 / 3.14159265) * uSunColor * ndl * sh * 3.14159265;
+      sunSpec = specBRDF * uSunColor * ndl * sh * uSpec * 1.6;
+    }
+
+    // Hemispheric ambient with ground bounce
+    vec3 ambLight = mix(uGround, uSky, N.y * 0.5 + 0.5);
+    vec3 amb = (1.0 - metallic) * base * ambLight * 0.95;
+
+    // Dynamic Point Lights (stadium floodlights) with Cook-Torrance microfacet
+    vec3 ptContrib = vec3(0.0);
     for (int i = 0; i < 4; i++) {
       if (i >= uPLCount) break;
-      vec3 L = uPL[i].xyz - vWorld;
-      float d = length(L);
-      float att = clamp(1.0 - d / uPL[i].w, 0.0, 1.0);
-      att *= att;
-      diff += uPLC[i] * max(dot(N, L / max(d, 0.001)), 0.0) * att;
+      vec3 Ldir = uPL[i].xyz - vWorld;
+      float dist = length(Ldir);
+      if (dist < uPL[i].w) {
+        vec3 L = Ldir / max(dist, 0.001);
+        float pNdotL = max(dot(N, L), 0.0);
+        if (pNdotL > 0.0) {
+          float att = clamp(1.0 - dist / uPL[i].w, 0.0, 1.0);
+          att *= att;
+          vec3 H = normalize(L + V);
+          float pNdotH = max(dot(N, H), 0.0);
+          float pVdotH = max(dot(V, H), 0.0);
+          float pDenom = (pNdotH * pNdotH * (alpha2 - 1.0) + 1.0);
+          float pD = alpha2 / (3.14159265 * pDenom * pDenom);
+          float pk = (roughness + 1.0) * (roughness + 1.0) / 8.0;
+          float pgV = NdotV / (NdotV * (1.0 - pk) + pk);
+          float pgL = pNdotL / (pNdotL * (1.0 - pk) + pk);
+          float pG = pgV * pgL;
+          vec3 pF = F0 + (1.0 - F0) * pow(clamp(1.0 - pVdotH, 0.0, 1.0), 5.0);
+          vec3 pSpec = (pD * pG * pF) / (4.0 * NdotV * pNdotL + 0.001);
+          vec3 pkD = (vec3(1.0) - pF) * (1.0 - metallic);
+          ptContrib += (pkD * base * (1.0 / 3.14159265) * 3.14159265 + pSpec * uSpec * 1.5) * uPLC[i] * pNdotL * att;
+        }
+      }
     }
-    vec3 H = normalize(uSunDir + V);
-    float sp = pow(max(dot(N, H), 0.0), uShine) * uSpec * sh * step(0.0001, ndl);
-    float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0) * uRim;
-    col = base * diff + uSunColor * sp + uEmissive + uRimColor * rim;
+
+    // Natural athletic Fresnel rim (grazing angle sheen for fabrics and athletes)
+    float fresnelRim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 3.5) * uRim;
+    vec3 rimLight = uRimColor * fresnelRim * (0.6 + 0.4 * sh);
+
+    col = amb + sunDiff + sunSpec + ptContrib + uEmissive + rimLight;
   }
   if (uFogOn == 1) {
     float fd = length(uCam - vWorld);
@@ -4858,7 +4929,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return [c, c.getContext('2d')];
     }
     exports.PITCH_MARGIN = 3;
-    const PPM_F = 24;
+    const PPM_F = 36;
     function pitchPlaneSize() {
         return [2 * (football_js_1.FB.W + exports.PITCH_MARGIN), 2 * (football_js_1.FB.L + exports.PITCH_MARGIN)];
     }
@@ -4867,50 +4938,99 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const [c, g] = makeCanvas(Math.round(pw * PPM_F), Math.round(pd * PPM_F));
         const X = (x) => (x + pw / 2) * PPM_F;
         const Z = (z) => (z + pd / 2) * PPM_F;
-        const stripes = 16;
+        const stripes = 18;
         const sh = c.height / stripes;
-        // Alternating lush mower stripes with subtle gradient edge
+        
+        // 1. Alternating precision stadium mower stripes with soft roller bevels
         for (let i = 0; i < stripes; i++) {
             const col = hex(i % 2 ? t.pitchA : t.pitchB);
             g.fillStyle = col;
             g.fillRect(0, i * sh, c.width, sh + 1);
-            // Subtle soft mower transition shadow
-            g.fillStyle = 'rgba(0,0,0,0.04)';
-            g.fillRect(0, i * sh, c.width, 2);
-            g.fillStyle = 'rgba(255,255,255,0.03)';
-            g.fillRect(0, (i + 1) * sh - 2, c.width, 2);
+            // Precision mower roller transition sheen & shadow
+            g.fillStyle = 'rgba(0,0,0,0.055)';
+            g.fillRect(0, i * sh, c.width, 3);
+            g.fillStyle = 'rgba(255,255,255,0.04)';
+            g.fillRect(0, (i + 1) * sh - 3, c.width, 3);
+            // Subtle orthogonal mower cross-grain roll
+            if (i % 3 === 0) {
+                g.fillStyle = 'rgba(255,255,255,0.015)';
+                g.fillRect(0, i * sh, c.width, sh);
+            }
         }
-        // Lush organic grass blade micro-texture
-        for (let i = 0; i < 12000; i++) {
+
+        // 2. High-density organic grass blade micro-texture (28,000 strands)
+        const bladeHues = [
+            'rgba(18,52,24,0.08)',
+            'rgba(34,88,40,0.07)',
+            'rgba(255,255,255,0.045)',
+            'rgba(65,140,55,0.06)'
+        ];
+        for (let i = 0; i < 28000; i++) {
             const gx = Math.random() * c.width;
             const gy = Math.random() * c.height;
-            g.fillStyle = i % 2 === 0 ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
-            g.fillRect(gx, gy, 1.8, Math.random() * 5 + 2);
+            g.fillStyle = bladeHues[i % 4];
+            g.fillRect(gx, gy, 1.4, Math.random() * 4.5 + 1.5);
         }
+
+        // 3. Natural goalmouth & penalty box organic turf wear
+        for (const s of [-1, 1]) {
+            const gz = Z(s * (football_js_1.FB.L - 2.5));
+            const wearGrad = g.createRadialGradient(X(0), gz, 10, X(0), gz, 110);
+            wearGrad.addColorStop(0, 'rgba(92, 74, 42, 0.12)');
+            wearGrad.addColorStop(0.5, 'rgba(80, 68, 38, 0.06)');
+            wearGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            g.fillStyle = wearGrad;
+            g.fillRect(X(-football_js_1.FB.SIX_W * 1.2), Math.min(gz - 60, gz + 60), football_js_1.FB.SIX_W * 2.4 * PPM_F, 120);
+
+            // Subtle penalty spot turf wear
+            const pz = Z(s * (football_js_1.FB.L - football_js_1.FB.SPOT));
+            const pGrad = g.createRadialGradient(X(0), pz, 4, X(0), pz, 28);
+            pGrad.addColorStop(0, 'rgba(85, 70, 40, 0.10)');
+            pGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            g.fillStyle = pGrad;
+            g.beginPath();
+            g.arc(X(0), pz, 28, 0, Math.PI * 2);
+            g.fill();
+        }
+
+        // 4. Regulation high-definition chalk markings with soft bevel
         g.strokeStyle = hex(t.line);
         g.fillStyle = hex(t.line);
-        g.lineWidth = 0.13 * PPM_F;
+        g.lineWidth = 0.12 * PPM_F;
         g.lineJoin = 'miter';
+        g.shadowColor = 'rgba(255,255,255,0.35)';
+        g.shadowBlur = 1.2;
+
         const rect = (x0, z0, x1, z1) => g.strokeRect(X(x0), Z(z0), (x1 - x0) * PPM_F, (z1 - z0) * PPM_F);
         const { W, L } = football_js_1.FB;
+        
+        // Touchlines & Goal lines
         rect(-W, -L, W, L);
+        
+        // Halfway line & Center circle
         g.beginPath();
         g.moveTo(X(-W), Z(0));
         g.lineTo(X(W), Z(0));
         g.stroke();
+        
         g.beginPath();
         g.arc(X(0), Z(0), football_js_1.FB.CIRCLE_R * PPM_F, 0, Math.PI * 2);
         g.stroke();
+        
         g.beginPath();
-        g.arc(X(0), Z(0), 0.28 * PPM_F, 0, Math.PI * 2);
+        g.arc(X(0), Z(0), 0.26 * PPM_F, 0, Math.PI * 2);
         g.fill();
+
+        // Penalty boxes (18-yard), 6-yard boxes, penalty spots & penalty arcs
         for (const s of [-1, 1]) {
             rect(-football_js_1.FB.BOX_W, s > 0 ? L - football_js_1.FB.BOX_D : -L, football_js_1.FB.BOX_W, s > 0 ? L : -L + football_js_1.FB.BOX_D);
             rect(-football_js_1.FB.SIX_W, s > 0 ? L - football_js_1.FB.SIX_D : -L, football_js_1.FB.SIX_W, s > 0 ? L : -L + football_js_1.FB.SIX_D);
             const spotZ = s * (L - football_js_1.FB.SPOT);
             g.beginPath();
-            g.arc(X(0), Z(spotZ), 0.24 * PPM_F, 0, Math.PI * 2);
+            g.arc(X(0), Z(spotZ), 0.22 * PPM_F, 0, Math.PI * 2);
             g.fill();
+            
+            // Penalty D-Arc
             g.save();
             g.beginPath();
             if (s > 0)
@@ -4923,13 +5043,17 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.stroke();
             g.restore();
         }
+
+        // Corner Quadrant Arcs
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
                 g.beginPath();
-                g.arc(X(sx * W), Z(sz * L), 1 * PPM_F, 0, Math.PI * 2);
+                g.arc(X(sx * W), Z(sz * L), 1.0 * PPM_F, 0, Math.PI * 2);
                 g.stroke();
             }
         }
+
+        g.shadowBlur = 0;
         return c;
     }
     exports.COURT_MARGIN = 2.4;
@@ -5024,20 +5148,47 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return c;
     }
     function makeNetTexture(color = '#ffffff') {
-        const [c, g] = makeCanvas(128, 128);
-        g.clearRect(0, 0, 128, 128);
+        const [c, g] = makeCanvas(256, 256);
+        g.clearRect(0, 0, 256, 256);
         g.strokeStyle = color;
-        g.lineWidth = 5;
-        g.globalAlpha = 0.9;
-        for (let i = 0; i <= 128; i += 32) {
-            g.beginPath();
-            g.moveTo(i, 0);
-            g.lineTo(i, 128);
-            g.stroke();
-            g.beginPath();
-            g.moveTo(0, i);
-            g.lineTo(128, i);
-            g.stroke();
+        g.lineWidth = 3.2;
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        
+        // Authentic hexagonal stadium netting with braided twine knot highlights
+        const r = 22;
+        const h = r * Math.sin(Math.PI / 3);
+        const w = r * 1.5;
+        
+        for (let row = -1; row <= 10; row++) {
+            const yOffset = row * h;
+            const xShift = (Math.abs(row) % 2) * (r * 0.866);
+            for (let col = -1; col <= 9; col++) {
+                const cx = col * (r * 1.732) + xShift;
+                const cy = yOffset;
+                
+                g.beginPath();
+                for (let a = 0; a < 6; a++) {
+                    const angle = (a * Math.PI) / 3;
+                    const hx = cx + r * Math.cos(angle);
+                    const hy = cy + r * Math.sin(angle);
+                    if (a === 0) g.moveTo(hx, hy);
+                    else g.lineTo(hx, hy);
+                }
+                g.closePath();
+                g.stroke();
+                
+                // Twine intersection knot highlights
+                g.fillStyle = 'rgba(255,255,255,0.6)';
+                for (let a = 0; a < 6; a++) {
+                    const angle = (a * Math.PI) / 3;
+                    const kx = cx + r * Math.cos(angle);
+                    const ky = cy + r * Math.sin(angle);
+                    g.beginPath();
+                    g.arc(kx, ky, 1.8, 0, Math.PI * 2);
+                    g.fill();
+                }
+            }
         }
         return c;
     }
@@ -7157,6 +7308,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     knee.add(at(toe, 0, -0.41, 0.2));
                     knee.add(at(mk(G.box(0.18, 0.03, 0.34), dark, { shoe: true }), 0, -0.455, 0.07));
                     knee.add(at(mk(G.box(0.045, 0.05, 0.16), skin.accent, { fine: true, shoe: true }), sx < 0 ? -0.075 : 0.075, -0.405, 0.06));
+
+                    // 4 Molded Chrome Studs under outsole for realistic grass traction
+                    const studMat = { shoe: true, spec: 0.85, shininess: 85 };
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), -0.05, -0.48, 0.16));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), 0.05, -0.48, 0.16));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), -0.045, -0.48, -0.04));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), 0.045, -0.48, -0.04));
                 }
                 else {
                     // Basketball: Loose long basketball shorts with prominent dual side stripes and split hem
@@ -7327,64 +7485,71 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.pivot.add(arm);
             }
 
-            // 5. Stylized 3D Cartoon Human Athlete: Expressive Eyes, Sculpted Features & Hair
+            // 5. Stylized 3D Human Athlete: Expressive Eyes, Athletic Features & Hair
             this.head = new scene_js_3.Node();
-            this.head.setPos(0, 1.99, 0);
+            this.head.setPos(0, foot ? 2.05 : 1.99, 0);
 
-            // Sculpted cranium and athletic tapered jaw
-            const skull = mk(G.sphere(0.205, 12 + 2 * sg, 9), skin.skin, { skin: true });
-            skull.scale = [0.95, 1.07, 1];
+            // Sculpted cranium and athletic tapered jaw (7.8:1 athletic proportion for football)
+            const skullR = foot ? 0.175 : 0.205;
+            const skull = mk(G.sphere(skullR, 12 + 2 * sg, 9), skin.skin, { skin: true });
+            skull.scale = foot ? [0.94, 1.05, 0.98] : [0.95, 1.07, 1];
             this.head.add(skull);
-            const jaw = mk(G.sphere(0.145, 8, 6), skin.skin, { skin: true });
-            this.head.add(at(jaw, 0, -0.095, 0.06));
 
-            // Stylized Cartoon Cheeks and Ears
+            const jawR = foot ? 0.12 : 0.145;
+            const jaw = mk(G.sphere(jawR, 8, 6), skin.skin, { skin: true });
+            this.head.add(at(jaw, 0, foot ? -0.082 : -0.095, foot ? 0.05 : 0.06));
+
+            // Athletic Cheeks and Ears
             for (const sx of [-1, 1]) {
-                // Cartoon cheeks
-                this.head.add(at(mk(G.sphere(0.075, 6, 5), skin.skin, { fine: true, skin: true }), sx * 0.11, -0.04, 0.12));
-                // Stylized curved ears
-                this.head.add(at(mk(G.sphere(0.044, 6, 5), skin.skin, { fine: true, skin: true }), sx * 0.198, 0.0, 0.0));
-                this.head.add(at(mk(G.sphere(0.026, 5, 4), dark, { fine: true }), sx * 0.202, 0.0, 0.0));
+                // Cheeks
+                this.head.add(at(mk(G.sphere(foot ? 0.062 : 0.075, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.095 : 0.11), -0.04, foot ? 0.105 : 0.12));
+                // Ears
+                this.head.add(at(mk(G.sphere(foot ? 0.038 : 0.044, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.172 : 0.198), 0.0, 0.0));
+                this.head.add(at(mk(G.sphere(foot ? 0.022 : 0.026, 5, 4), dark, { fine: true }), sx * (foot ? 0.176 : 0.202), 0.0, 0.0));
             }
 
-            // Expressive 3D Cartoon Human Eyes (White Sclera, Vibrant Colored Iris, Pupil, and Specular Gleam)
-            const irisCol = foot ? 0x00b4d8 : 0x78350f; // Electric cyan for footy, deep warm hazel for hoops
+            // Expressive 3D Athlete Eyes
+            const irisCol = foot ? 0x00b4d8 : 0x78350f;
+            const eyeX = foot ? 0.064 : 0.074;
+            const eyeY = 0.022;
+            const eyeZ = foot ? 0.155 : 0.178;
+            const eyeScale = foot ? 0.85 : 1.0;
             for (const sx of [-1, 1]) {
                 // 1. White Eye Sclera
-                this.head.add(at(mk(G.sphere(0.045, 8, 6), white, { fine: true }), sx * 0.074, 0.022, 0.178));
+                this.head.add(at(mk(G.sphere(0.045 * eyeScale, 8, 6), white, { fine: true }), sx * eyeX, eyeY, eyeZ));
                 // 2. Vibrant Colored Iris
-                this.head.add(at(mk(G.sphere(0.027, 8, 6), irisCol, { fine: true }), sx * 0.074, 0.022, 0.198));
+                this.head.add(at(mk(G.sphere(0.027 * eyeScale, 8, 6), irisCol, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.020 * eyeScale));
                 // 3. Deep Black Pupil
-                this.head.add(at(mk(G.sphere(0.016, 6, 5), 0x0a0a0a, { fine: true }), sx * 0.074, 0.022, 0.210));
-                // 4. Specular Highlight Glint ("Pixar Eye Glint")
-                this.head.add(at(mk(G.sphere(0.007, 4, 4), white, { emissive: white, fine: true }), sx * 0.074 + 0.010, 0.034, 0.217));
+                this.head.add(at(mk(G.sphere(0.016 * eyeScale, 6, 5), 0x0a0a0a, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.032 * eyeScale));
+                // 4. Specular Highlight Glint
+                this.head.add(at(mk(G.sphere(0.007 * eyeScale, 4, 4), white, { emissive: white, fine: true }), sx * eyeX + 0.009 * eyeScale, eyeY + 0.010 * eyeScale, eyeZ + 0.039 * eyeScale));
 
                 // Determined Athletic Eyebrows
-                const brow = mk(G.box(0.056, 0.018, 0.024), skin.hair, { fine: true });
+                const brow = mk(G.box(0.052 * eyeScale, 0.016 * eyeScale, 0.022 * eyeScale), skin.hair, { fine: true });
                 brow.rotation = [0, 0, sx < 0 ? -0.16 : 0.16];
-                this.head.add(at(brow, sx * 0.074, 0.066, 0.188));
+                this.head.add(at(brow, sx * eyeX, eyeY + 0.044 * eyeScale, eyeZ + 0.010 * eyeScale));
             }
 
-            // Sculpted Cartoon Nose (Bridge + Tip)
-            this.head.add(at(mk(G.box(0.024, 0.052, 0.026), skin.skin, { fine: true, skin: true }), 0, -0.01, 0.206));
-            this.head.add(at(mk(G.sphere(0.026, 6, 5), skin.skin, { fine: true, skin: true }), 0, -0.038, 0.216));
+            // Sculpted Athletic Nose
+            this.head.add(at(mk(G.box(0.022, 0.048, 0.024), skin.skin, { fine: true, skin: true }), 0, -0.01, foot ? 0.182 : 0.206));
+            this.head.add(at(mk(G.sphere(0.024, 6, 5), skin.skin, { fine: true, skin: true }), 0, -0.036, foot ? 0.192 : 0.216));
 
             // Confident Athletic Smile / Mouth
-            this.head.add(at(mk(G.box(0.068, 0.015, 0.022), 0x8b3a3a, { fine: true }), 0, -0.088, 0.184));
+            this.head.add(at(mk(G.box(foot ? 0.058 : 0.068, 0.014, 0.020), 0x8b3a3a, { fine: true }), 0, foot ? -0.078 : -0.088, foot ? 0.164 : 0.184));
 
             // Stylized 3D Hair and Authentic Sports Headwear
             if (foot) {
                 // Football: Modern athletic crop fade with 3D swept fringe and sideburns
-                const hairBase = mk(G.sphere(0.22, 10 + sg, 8), skin.hair, { spec: 0.18 });
-                hairBase.scale = [0.98, 0.88, 1.02];
-                this.head.add(at(hairBase, 0, 0.06, -0.03));
-                const hairTop = mk(G.sphere(0.19, 8, 6), skin.hair, { spec: 0.18 });
-                this.head.add(at(hairTop, 0, 0.11, 0.01));
-                const hairFringe = mk(G.box(0.18, 0.065, 0.055), skin.hair, { spec: 0.22, fine: true });
+                const hairBase = mk(G.sphere(0.188, 10 + sg, 8), skin.hair, { spec: 0.22 });
+                hairBase.scale = [0.96, 0.90, 1.02];
+                this.head.add(at(hairBase, 0, 0.055, -0.025));
+                const hairTop = mk(G.sphere(0.165, 8, 6), skin.hair, { spec: 0.22 });
+                this.head.add(at(hairTop, 0, 0.095, 0.01));
+                const hairFringe = mk(G.box(0.155, 0.055, 0.048), skin.hair, { spec: 0.25, fine: true });
                 hairFringe.rotation = [0.15, 0, 0];
-                this.head.add(at(hairFringe, 0, 0.088, 0.165));
+                this.head.add(at(hairFringe, 0, 0.076, 0.145));
                 for (const sx of [-1, 1]) {
-                    this.head.add(at(mk(G.box(0.025, 0.06, 0.04), skin.hair, { fine: true }), sx * 0.175, 0.015, 0.06));
+                    this.head.add(at(mk(G.box(0.022, 0.052, 0.035), skin.hair, { fine: true }), sx * 0.152, 0.012, 0.05));
                 }
             }
             else {
@@ -7436,9 +7601,12 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const a = this.agent;
             dt = Math.min(dt, 0.1);
             this.t += dt;
+            const foot = this.mode === 'footy';
             const speed = Math.hypot(a.vx, a.vz);
             const amp = this.ease('amp', Math.min(1, speed / 6.5) * 0.95, 14, dt);
-            const sp = Math.sin(a.runPhase * 2.6);
+            const ph = a.runPhase * (foot ? 2.8 : 2.6);
+            const sp = Math.sin(ph);
+            const cs = Math.cos(ph);
             const idle = Math.sin(this.t * 2.2) * 0.02;
             this.root.position[0] = a.x;
             this.root.position[2] = a.z;
@@ -7457,7 +7625,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const yawRate = dt > 0 ? yawStep / dt : 0;
             this.root.rotation[1] = this.yaw;
             let lift = 0;
-            let lean = Math.min(0.38, speed * 0.052);
+            let lean = Math.min(0.48, speed * (foot ? 0.072 : 0.052));
             let roll = 0;
             let kick = 0;
             let armUp = 0;
@@ -7500,8 +7668,9 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 lean = 0.5 * slide;
             }
             if (a.diveT > 0) {
-                roll = (a.mx >= 0 ? -1 : 1) * 1.25;
-                lift = 0.5;
+                roll = (a.mx >= 0 ? -1 : 1) * (foot ? 1.45 : 1.25);
+                lift = foot ? 0.62 : 0.5;
+                if (foot) armUp = 2.6;
             }
             if (a.stun > 0) {
                 const k = Math.min(1, a.stun / 0.45);
@@ -7518,36 +7687,62 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const land = this.landT > 0 ? Math.sin((this.landT / 0.2) * Math.PI) * 0.12 : 0;
             const bob = Math.abs(sp) * amp * 0.08;
             const bank = this.ease('bank', -Math.max(-0.3, Math.min(0.3, yawRate * 0.028)) * Math.min(1, speed / 4), 9, dt);
-            const ph = a.runPhase * 2.6;
-            const cs = Math.cos(ph);
-            this.pivot.position[1] = lift - slide * 0.42 - crouch - land + bob;
+            this.pivot.position[1] = lift - slide * (foot ? 0.52 : 0.42) - crouch - land + bob;
             this.pivot.rotation[0] = lean + land * 0.8;
             this.pivot.rotation[2] = roll + sp * amp * 0.04 + bank;
             let kickLeg = 0;
             let kickKnee = 0;
             if (kickP >= 0) {
-                if (kickP < 0.32) {
-                    const w = kickP / 0.32;
-                    kickLeg = 0.85 * w;
-                    kickKnee = 1.65 * w;
-                }
-                else if (kickP < 0.58) {
-                    const w = (kickP - 0.32) / 0.26;
-                    kickLeg = 0.85 - 2.85 * w;
-                    kickKnee = 1.65 * (1 - w * 0.9);
+                if (foot) {
+                    if (kickP < 0.35) {
+                        const w = kickP / 0.35;
+                        kickLeg = 0.95 * w;
+                        kickKnee = 1.95 * w;
+                    }
+                    else if (kickP < 0.62) {
+                        const w = (kickP - 0.35) / 0.27;
+                        kickLeg = 0.95 - 3.4 * w;
+                        kickKnee = 1.95 * (1.0 - w * 0.95);
+                    }
+                    else {
+                        const w = (kickP - 0.62) / 0.38;
+                        kickLeg = -2.45 * (1.0 - 0.75 * w);
+                        kickKnee = 0.15 * (1.0 - w);
+                    }
                 }
                 else {
-                    const w = (kickP - 0.58) / 0.42;
-                    kickLeg = -2.0 * (1 - 0.7 * w);
-                    kickKnee = 0.2 * (1 - w);
+                    if (kickP < 0.32) {
+                        const w = kickP / 0.32;
+                        kickLeg = 0.85 * w;
+                        kickKnee = 1.65 * w;
+                    }
+                    else if (kickP < 0.58) {
+                        const w = (kickP - 0.32) / 0.26;
+                        kickLeg = 0.85 - 2.85 * w;
+                        kickKnee = 1.65 * (1 - w * 0.9);
+                    }
+                    else {
+                        const w = (kickP - 0.58) / 0.42;
+                        kickLeg = -2.0 * (1 - 0.7 * w);
+                        kickKnee = 0.2 * (1 - w);
+                    }
                 }
             }
-            const legAmp = this.mode === 'hoops' ? amp * 0.92 : amp;
-            this.legL.rotation[0] = sp * legAmp + idle;
-            this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
+            if (foot) {
+                const legAmp = amp * 1.08;
+                this.legL.rotation[0] = sp * legAmp + idle;
+                this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
+                this.kneeL.rotation[0] = amp * (0.22 + 1.35 * Math.max(0, -cs));
+                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.22 + 1.35 * Math.max(0, cs));
+            }
+            else {
+                const legAmp = this.mode === 'hoops' ? amp * 0.92 : amp;
+                this.legL.rotation[0] = sp * legAmp + idle;
+                this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
+                this.kneeL.rotation[0] = amp * (0.18 + 1.25 * Math.max(0, -cs));
+                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.18 + 1.25 * Math.max(0, cs));
+            }
             this.legL.rotation[2] = 0;
-            this.kneeL.rotation[0] = amp * (0.18 + 1.25 * Math.max(0, -cs));
-            this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.18 + 1.25 * Math.max(0, cs));
             if (crouch > 0.01) {
                 this.legL.rotation[0] -= crouch * 3;
                 this.legR.rotation[0] -= crouch * 3;
@@ -7555,18 +7750,26 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.kneeR.rotation[0] += crouch * 5.5;
             }
             if (slide > 0.02) {
-                this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) - 1.0 * slide;
-                this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 1.4 * slide;
-                this.kneeL.rotation[0] *= 1 - slide;
-                this.kneeR.rotation[0] *= 1 - slide;
+                if (foot) {
+                    this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) + 0.85 * slide;
+                    this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 1.65 * slide;
+                    this.kneeL.rotation[0] = this.kneeL.rotation[0] * (1 - slide) + 1.65 * slide;
+                    this.kneeR.rotation[0] = this.kneeR.rotation[0] * (1 - slide) + 0.08 * slide;
+                }
+                else {
+                    this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) - 1.0 * slide;
+                    this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 1.4 * slide;
+                    this.kneeL.rotation[0] *= 1 - slide;
+                    this.kneeR.rotation[0] *= 1 - slide;
+                }
             }
             if (land > 0.01) {
                 this.kneeL.rotation[0] += land * 4.5;
                 this.kneeR.rotation[0] += land * 4.5;
             }
             const swing = this.mode === 'hoops' && carrying ? 0.25 : amp;
-            this.armL.rotation[0] = -sp * swing * 0.95 - armUp;
-            this.armR.rotation[0] = sp * swing * 0.95 - armUp;
+            this.armL.rotation[0] = -sp * swing * (foot ? 1.15 : 0.95) - armUp;
+            this.armR.rotation[0] = sp * swing * (foot ? 1.15 : 0.95) - armUp;
             const raised = Math.min(1, armUp / 2.4);
             const baseBend = this.ease('elbow', a.shootCharging ? 1.42 : 0.5 + amp * 0.95, 14, dt);
             this.elbowL.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, sp));
@@ -7580,9 +7783,9 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : armUp > 1 ? 0.15 : 0.12, 14, dt);
             this.armL.rotation[2] = -spread + sp * amp * 0.05;
             this.armR.rotation[2] = spread - sp * amp * 0.05;
-            this.torso.rotation[1] = torsoTwist - sp * amp * 0.26 + (kickP >= 0 ? kick * 0.35 : 0);
-            this.torso.rotation[2] = Math.sin(ph) * amp * 0.065 + (kickP >= 0 ? -0.22 * kick : 0);
-            this.head.position[1] = 1.99 + Math.abs(sp) * amp * 0.035;
+            this.torso.rotation[1] = torsoTwist - sp * amp * (foot ? 0.32 : 0.26) + (kickP >= 0 ? kick * (foot ? 0.42 : 0.35) : 0);
+            this.torso.rotation[2] = Math.sin(ph) * amp * (foot ? 0.075 : 0.065) + (kickP >= 0 ? (foot ? -0.26 : -0.22) * kick : 0);
+            this.head.position[1] = (foot ? 2.05 : 1.99) + Math.abs(sp) * amp * 0.035;
             this.head.rotation[1] = -this.torso.rotation[1] * 0.7 + Math.sin(this.t * 1.3) * 0.04 * (1 - amp);
             this.head.rotation[0] = -lean * 0.45 + (a.shootCharging || a.shotT > 0 ? -0.3 : 0);
             if (a.human) {
