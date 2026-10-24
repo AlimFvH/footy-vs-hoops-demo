@@ -8060,11 +8060,35 @@
           clearInterval(cdInterval);
           overlay.remove();
 
+          // Authoritative Server Match Configuration Resolution
+          var m = (matchInfo && matchInfo.match) ? matchInfo.match : (matchInfo || {});
+          var rawMode = String((m.mode !== undefined ? m.mode : (matchInfo && matchInfo.mode)) || '').toLowerCase().trim();
+          var resolvedMode = 'footy';
+          if (rawMode === 'hoops') {
+            resolvedMode = 'hoops';
+          } else if (rawMode === 'footy') {
+            resolvedMode = 'footy';
+          } else {
+            // Malformed, 'clash', or missing mode: resolve using host character if available, else safe fallback
+            var hostChar = (m.host && (m.host.char || m.host.character)) || (matchInfo && matchInfo.opponent && matchInfo.role === 'guest' && matchInfo.opponent.char);
+            if (hostChar === 'hoops') resolvedMode = 'hoops';
+            else if (hostChar === 'footy') resolvedMode = 'footy';
+            else resolvedMode = (curChar === 'hoops') ? 'hoops' : 'footy';
+          }
+
+          var rawMin = Number(m.minutes !== undefined ? m.minutes : (matchInfo && matchInfo.minutes));
+          var resolvedMin = (!isNaN(rawMin) && rawMin >= 1 && rawMin <= 10) ? Math.round(rawMin) : 2;
+
+          var rawSeed = Number(m.seed !== undefined ? m.seed : (matchInfo && matchInfo.seed));
+          var resolvedSeed = (!isNaN(rawSeed) && rawSeed !== 0) ? (rawSeed | 0) : ((Math.random() * 1e9) | 0);
+
+          var resolvedArena = m.arenaId || (matchInfo && matchInfo.arenaId) || null;
+
           startWebRTCSession(app, matchInfo.role, matchInfo.matchId, playerName, opp.name, {
-            mode: matchInfo.mode || curChar,
-            minutes: matchInfo.minutes || 2,
-            seed: matchInfo.seed,
-            arenaId: matchInfo.arenaId
+            mode: resolvedMode,
+            minutes: resolvedMin,
+            seed: resolvedSeed,
+            arenaId: resolvedArena
           }, function (session) {
             app.launchOnline(session);
           }, function (err) {
