@@ -43,13 +43,13 @@ function maskUrl(rawUrl) {
 async function runNeonStagingIntegration() {
   console.log('=== FOOTY vs HOOPS: Neon PostgreSQL Staging Integration Suite ===\n');
 
-  const stagingUrl = process.env.STAGING_DATABASE_URL || process.env.TEST_DATABASE_URL;
+  const stagingUrl = process.env.STAGING_DATABASE_URL;
 
   if (!stagingUrl) {
     console.log('======================================================================');
     console.log('[INTEGRATION STATUS] NOT RUN (SKIPPED)');
     console.log('======================================================================');
-    console.log('Reason: No STAGING_DATABASE_URL or TEST_DATABASE_URL environment variable was detected.');
+    console.log('Reason: No STAGING_DATABASE_URL environment variable was detected.');
     console.log('\nPer Stage H project safeguards, live cloud persistence is NOT claimed');
     console.log('until tests physically run against an active PostgreSQL instance.\n');
     console.log('To execute this suite against your Neon Free staging database:');
@@ -251,10 +251,8 @@ async function runNeonStagingIntegration() {
     // Test 8: Clean Cleanup of Staging Test Data
     // -------------------------------------------------------------
     console.log('\nTest 8: Safe Cleanup of Staging Test Records...');
-    await freshAdapter.query(`
-      DELETE FROM completed_matches WHERE match_id = $1;
-      DELETE FROM players WHERE player_id = $2;
-    `, [testMatchId, testAthleteId]);
+    await freshAdapter.query('DELETE FROM completed_matches WHERE match_id = $1', [testMatchId]);
+    await freshAdapter.query('DELETE FROM players WHERE player_id = $1', [testAthleteId]);
     console.log('  [PASS] Staging test probes cleaned up cleanly.');
 
     await freshAdapter.close();
