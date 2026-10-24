@@ -4183,7 +4183,7 @@
       playerId: pid,
       playerName: d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Athlete',
       stats: d.stats || {},
-      selectedCharacter: d.selectedCharacter || 'footy',
+      selectedCharacter: d.selectedCharacter || null,
       owned: d.owned || [],
       equipped: d.equipped || {},
       coins: d.coins || 0,
@@ -4201,6 +4201,12 @@
           if (res.equipped) storeData.equipped = res.equipped;
           if (res.battlePass) storeData.battlePass = res.battlePass;
           if (res.packs) storeData.packs = res.packs;
+          // Synchronize permanent team choice from authoritative server
+          if (res.teamChosen && res.selectedTeam) {
+            storeData.teamChosen = true;
+            storeData.selectedTeam = res.selectedTeam;
+            storeData.selectedCharacter = res.selectedTeam;
+          }
         });
       }
       if (callback) callback(res);
@@ -6699,8 +6705,8 @@
       scoreboardCard.className = 'fvh-war-scoreboard-card';
       scoreboardCard.innerHTML =
         '<div class="fvh-war-scoreboard-head">' +
-        '  <span class="fvh-war-live-pill">🔴 ' + (getActiveLang() === 'ru' ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH') + '</span>' +
-        '  <span class="fvh-war-rule-tag">⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }) + '</span>' +
+        '  <span class="fvh-war-live-pill">' + (data.isPrelaunch ? ('⏳ ' + (getActiveLang() === 'ru' ? 'ПРЕДСЕЗОН' : 'PRE-LAUNCH')) : ('🔴 ' + (getActiveLang() === 'ru' ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH'))) + '</span>' +
+        '  <span class="fvh-war-rule-tag">' + (data.isPrelaunch ? ('⏳ ' + (getActiveLang() === 'ru' ? 'Скоро запуск' : 'Season Coming Soon')) : ('⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }))) + '</span>' +
         '</div>' +
         '<div class="fvh-war-clash-grid">' +
         '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
@@ -8749,7 +8755,7 @@
       '</div>' +
       '<div class="fvh-mode-card-body">' +
         '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +
-        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь против компьютерного соперника, оттачивайте мастерство и зарабатывайте очки в Битву Команд!' : 'Battle against AI opponent, master your skills, and earn Team War leaderboard points!') + '</div>' +
+        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь против компьютерного соперника, оттачивайте мастерство и готовьтесь к предстоящему сезону!' : 'Battle against AI opponent, master your skills, and prepare for the upcoming season!') + '</div>' +
         '<div class="fvh-mode-controls">' +
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
@@ -8988,6 +8994,14 @@
 
   // Dedicated Full-Screen Team Selection Screen (First Launch Flow & 15-day Season Affiliation)
   function buildTeamSelectionScreen(app) {
+    var d = (app && app.store && app.store.data) || {};
+    if (d.teamChosen && (d.selectedTeam || d.selectedCharacter)) {
+      setTimeout(function () {
+        showToast(getActiveLang() === 'ru' ? 'Выбор команды постоянен и не может быть изменён.' : 'Team selection is permanent and cannot be changed.');
+        if (app.showMenu) app.showMenu();
+      }, 50);
+    }
+
     var container = document.createElement('div');
     container.className = 'screen solid page-screen fvh-team-selection-screen';
     container.dataset.id = 'team-select';
@@ -9075,6 +9089,12 @@
 
     confirmBtn.onclick = function () {
       if (!chosenTeam) return;
+      var curD = (app.store && app.store.data) || {};
+      if (curD.teamChosen && (curD.selectedTeam || curD.selectedCharacter)) {
+        showToast(getActiveLang() === 'ru' ? 'Команда уже выбрана и не может быть изменена.' : 'Team has already been selected and is permanently locked.');
+        app.showMenu();
+        return;
+      }
       app.store.update(function (d) {
         d.selectedTeam = chosenTeam;
         d.selectedCharacter = chosenTeam;

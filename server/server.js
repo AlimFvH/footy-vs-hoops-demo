@@ -29,6 +29,18 @@ let state = {
 
 const TON_RECIPIENT_ADDRESS = process.env.TON_RECIPIENT_ADDRESS || 'EQBvW8Z5huBkMJYdn30BlgG3mM2N05hpVNeSlfG2L89xAOn3';
 
+// Authoritative Server-Controlled Season & Pre-Launch State (Item 1)
+// The season must not start automatically during development, testing, or initial visits.
+// Zero seasonal competition points are awarded before the official launch.
+const SEASON_CONFIG = {
+  state: process.env.SEASON_STATE || 'prelaunch', // 'prelaunch' | 'active' | 'ended'
+  seasonNumber: 1,
+  seasonLengthDays: 15,
+  startTime: process.env.SEASON_START_TIME ? Number(process.env.SEASON_START_TIME) : null,
+  nameEn: 'Season 1: Football vs Basketball War',
+  nameRu: 'Сезон 1: Битва Команд'
+};
+
 // Configurable Telegram Stars prices from environment variable or unconfigured
 let ENV_STARS_PRICES = {};
 try {
@@ -45,6 +57,7 @@ const PRODUCT_CATALOG = {
   'pkg_coins_100': {
     id: 'pkg_coins_100',
     name: '100 FvH Coin',
+    coins: 100,
     coinsAmount: 100,
     starsPrice: ENV_STARS_PRICES['pkg_coins_100'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_100']) : null,
     type: 'currency'
@@ -52,6 +65,7 @@ const PRODUCT_CATALOG = {
   'pkg_coins_500': {
     id: 'pkg_coins_500',
     name: '500 FvH Coin',
+    coins: 500,
     coinsAmount: 500,
     starsPrice: ENV_STARS_PRICES['pkg_coins_500'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_500']) : null,
     type: 'currency'
@@ -59,6 +73,7 @@ const PRODUCT_CATALOG = {
   'pkg_coins_1200': {
     id: 'pkg_coins_1200',
     name: '1,200 FvH Coin',
+    coins: 1200,
     coinsAmount: 1200,
     starsPrice: ENV_STARS_PRICES['pkg_coins_1200'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_1200']) : null,
     type: 'currency'
@@ -66,6 +81,7 @@ const PRODUCT_CATALOG = {
   'pkg_coins_3000': {
     id: 'pkg_coins_3000',
     name: '3,000 FvH Coin',
+    coins: 3000,
     coinsAmount: 3000,
     starsPrice: ENV_STARS_PRICES['pkg_coins_3000'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_3000']) : null,
     type: 'currency'
@@ -2156,6 +2172,25 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 200, { ok: true, history });
   }
 
+  // 8.5 Authoritative Season Status & Pre-Launch State (Item 1)
+  if (pathname === '/api/season/status' && req.method === 'GET') {
+    const isPrelaunch = SEASON_CONFIG.state === 'prelaunch';
+    return sendJson(res, 200, {
+      ok: true,
+      seasonState: SEASON_CONFIG.state,
+      seasonActive: !isPrelaunch && SEASON_CONFIG.state === 'active',
+      seasonNumber: SEASON_CONFIG.seasonNumber,
+      seasonLengthDays: SEASON_CONFIG.seasonLengthDays,
+      seasonStartTime: SEASON_CONFIG.startTime,
+      serverTime: Date.now(),
+      isPrelaunch: isPrelaunch,
+      name: SEASON_CONFIG.nameEn,
+      nameRu: SEASON_CONFIG.nameRu,
+      statusLabelEn: isPrelaunch ? 'Pre-Launch · Season Coming Soon' : 'Season 1 Active',
+      statusLabelRu: isPrelaunch ? 'Предсезон · Скоро запуск' : 'Сезон 1 Активен'
+    });
+  }
+
   // 9. Global Leaderboard / Рейтинг сильнейших атлетов (Production Quality)
   if (pathname === '/api/leaderboard' && req.method === 'GET') {
     let qCategory = String(parsedUrl.query.category || 'season').toLowerCase();
@@ -2243,49 +2278,23 @@ const server = http.createServer((req, res) => {
       }
     }
 
-    // Always ensure the two core authentic athletes (Alim & Brother) are in the competition if not already present
-    if (!athletes.find(a => a.id === 'alim_footy' || a.name.includes('Alim'))) {
-      athletes.push({
-        id: 'alim_footy',
-        name: 'Alim (Footy #10)',
-        char: 'footy',
-        club: 'Footy United',
-        wins: 6,
-        losses: 1,
-        winRate: 86,
-        goals: 14,
-        baskets: 2,
-        winsByDiff: { easy: 2, normal: 3, hard: 1 },
-        coins: 1200,
-        xp: 450,
-        photoUrl: 'assets/hero_footy_cartoon.png'
-      });
-    }
-    if (!athletes.find(a => a.id === 'brother_hoops' || a.name.includes('Brother'))) {
-      athletes.push({
-        id: 'brother_hoops',
-        name: 'Brother (Hoops #23)',
-        char: 'hoops',
-        club: 'Hoops Squad',
-        wins: 5,
-        losses: 1,
-        winRate: 83,
-        goals: 3,
-        baskets: 18,
-        winsByDiff: { easy: 1, normal: 3, hard: 1 },
-        coins: 1100,
-        xp: 420,
-        photoUrl: 'assets/hero_hoops_cartoon.png'
-      });
-    }
+    // Authenticity rule (Item 4): Do NOT fake live data or create sample players
+    // Real-time global rankings must rely on authentic server-verified data only.
+
+    const isPrelaunch = (SEASON_CONFIG.state === 'prelaunch');
 
     // Score Calculator with AI Difficulty weighting and Timeframe scaling
     function computeScore(ath, cat, timeframe) {
+      if (isPrelaunch && (cat === 'season' || cat === 'overall' || !cat)) {
+        // Pre-launch rule: zero seasonal competition points awarded before official launch
+        return 0;
+      }
       const wDiff = ath.winsByDiff || {
         easy: Math.floor((ath.wins || 0) * 0.25),
         normal: Math.floor((ath.wins || 0) * 0.5),
         hard: Math.floor((ath.wins || 0) * 0.25)
       };
+      // AI matches do not award seasonal points per rule 1
       const winPoints = (wDiff.easy || 0) * 15 + (wDiff.normal || 0) * 30 + (wDiff.hard || 0) * 60;
       const goalsPoints = (ath.goals || 0) * 6;
       const basketsPoints = (ath.baskets || 0) * 3;
@@ -2304,7 +2313,7 @@ const server = http.createServer((req, res) => {
       }
 
       if (timeframe === 'weekly') {
-        return Math.max(15, Math.round(raw * 0.38));
+        return Math.max(0, Math.round(raw * 0.38));
       }
       if (timeframe === 'alltime') {
         return Math.round(raw * 1.5);
@@ -2371,8 +2380,12 @@ const server = http.createServer((req, res) => {
       ok: true,
       category: qCategory,
       timeframe: qTimeframe,
-      seasonName: 'Season 1: Football vs Basketball War',
-      seasonDaysLeft: 14,
+      seasonName: SEASON_CONFIG.nameEn,
+      seasonDaysLeft: isPrelaunch ? null : 14,
+      seasonState: SEASON_CONFIG.state,
+      seasonActive: !isPrelaunch && SEASON_CONFIG.state === 'active',
+      isPrelaunch: isPrelaunch,
+      serverTime: Date.now(),
       teamFootball: {
         id: 'footy',
         name: 'Team Football',
@@ -2480,12 +2493,12 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 404, { ok: false, error: 'player_not_found' });
       }
 
-      // If player already chose a team, lock it for the 15-day season to prevent manipulation
+      // If player already chose a team, lock it permanently (Item 2: Permanent team selection)
       if (player.teamChosen && player.selectedTeam && player.selectedTeam !== team) {
         return sendJson(res, 400, {
           ok: false,
           error: 'team_already_locked',
-          message: 'Team selection is locked for the 15-day season',
+          message: 'Team selection is permanent and cannot be changed',
           selectedTeam: player.selectedTeam
         });
       }
@@ -2595,13 +2608,12 @@ const server = http.createServer((req, res) => {
           player.stats.winsByDiff.hard = Math.max(player.stats.winsByDiff.hard || 0, Number(data.stats.winsByDiff.hard) || 0);
         }
       }
-      if (data.selectedTeam || data.selectedCharacter) {
-        const team = (data.selectedTeam || data.selectedCharacter).toLowerCase();
-        if ((team === 'footy' || team === 'hoops') && !player.teamChosen) {
-          player.selectedTeam = team;
-          player.selectedCharacter = team;
-          player.teamChosen = true;
-        }
+      // Permanent Team Selection: Team can ONLY be chosen via explicit POST /api/profile/select-team
+      // Never silently assign a team on sync!
+      if (!player.teamChosen && data.explicitTeamChoice && (data.explicitTeamChoice === 'footy' || data.explicitTeamChoice === 'hoops')) {
+        player.selectedTeam = data.explicitTeamChoice;
+        player.selectedCharacter = data.explicitTeamChoice;
+        player.teamChosen = true;
       }
       if (data.photoUrl && typeof data.photoUrl === 'string') {
         player.photoUrl = data.photoUrl.trim().slice(0, 500);
