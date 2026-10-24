@@ -13,19 +13,47 @@ try {
   // pg is optional if run with custom injected pool/client (e.g. pg-mem)
 }
 
+function resolveSsl(connStr, userSsl) {
+  if (userSsl !== undefined) return userSsl;
+  if (!connStr) return false;
+  const lower = String(connStr).toLowerCase();
+  if (lower.includes('neon.tech') || lower.includes('sslmode=require') || lower.includes('ssl=true') || lower.includes('render.com')) {
+    return { rejectUnauthorized: false };
+  }
+  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging' || process.env.DATABASE_SSL === 'true') {
+    return { rejectUnauthorized: false };
+  }
+  return false;
+}
+
+function maskConnectionUrl(connStr) {
+  if (!connStr) return 'none';
+  try {
+    const u = new URL(connStr);
+    if (u.password) u.password = '***';
+    return u.toString();
+  } catch (e) {
+    return 'postgres://***';
+  }
+}
+
 class PostgresStorageAdapter extends StorageAdapter {
   constructor(options = {}) {
     super('PostgresStorageAdapter');
-    this.connectionString = options.connectionString || process.env.DATABASE_URL || null;
+    this.connectionString = options.connectionString || process.env.STAGING_DATABASE_URL || process.env.DATABASE_URL || null;
     this.pool = options.pool || null;
     this.ownsPool = !options.pool;
-    this.ssl = options.ssl !== undefined ? options.ssl : (process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false);
+    this.ssl = resolveSsl(this.connectionString, options.ssl);
     this.itemCatalog = options.itemCatalog || {};
     this.bundleCatalog = options.bundleCatalog || {};
     this.schemaPath = options.schemaPath || path.join(__dirname, 'schema.sql');
     this.pgMemDb = options.pgMemDb || null;
     this._initialized = false;
     this._playerLocks = new Map();
+  }
+
+  getMaskedUrl() {
+    return maskConnectionUrl(this.connectionString);
   }
 
   async withPlayerLock(playerId, callback) {
@@ -57,14 +85,18 @@ class PostgresStorageAdapter extends StorageAdapter {
       }
       const poolConfig = {
         connectionString: this.connectionString,
-        max: 20,
+        max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000
+        connectionTimeoutMillis: 10000
       };
       if (this.ssl) {
         poolConfig.ssl = this.ssl;
       }
       this.pool = new pgModule.Pool(poolConfig);
+      this.pool.on('error', (err) => {
+        // Handled: Neon serverless drops idle connections on suspend
+        console.warn('[PostgresStorageAdapter] Idle client connection event (handled):', err.message);
+      });
     }
 
     // Run schema creation DDL

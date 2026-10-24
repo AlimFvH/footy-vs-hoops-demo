@@ -516,7 +516,14 @@ if (fs.existsSync(DATA_FILE)) {
 }
 
 storage.init().catch(err => {
-  console.warn('[STORAGE] Warning during storage adapter init:', err.message);
+  if (storage && storage.name === 'PostgresStorageAdapter') {
+    console.error(`[FATAL STORAGE ERROR] Configured PostgreSQL storage failed to initialize: ${err.message}`);
+    console.error(`Database target: ${typeof storage.getMaskedUrl === 'function' ? storage.getMaskedUrl() : 'configured'}`);
+    console.error('Refusing silent fallback to JSON storage when PostgreSQL is explicitly configured.');
+    process.exit(1);
+  } else {
+    console.warn('[STORAGE] Warning during storage adapter init:', err.message);
+  }
 });
 
 function persistState() {

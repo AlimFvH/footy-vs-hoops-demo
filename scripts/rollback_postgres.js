@@ -19,11 +19,11 @@ async function runRollback(options = {}) {
   console.log('=== FOOTY vs HOOPS: PostgreSQL Rollback & Recovery Tool ===\n');
 
   const args = process.argv.slice(2);
-  const dbUrl = options.connectionString || process.env.DATABASE_URL;
+  const dbUrl = options.connectionString || process.env.STAGING_DATABASE_URL || process.env.DATABASE_URL;
 
   if (!dbUrl && !options.pool) {
-    console.error('[ERROR] DATABASE_URL environment variable is required.');
-    if (options.throwOnError) throw new Error('DATABASE_URL is required');
+    console.error('[ERROR] STAGING_DATABASE_URL or DATABASE_URL environment variable is required.');
+    if (options.throwOnError) throw new Error('Database URL is required');
     process.exit(1);
   }
 

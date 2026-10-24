@@ -71,13 +71,13 @@ async function runMigration(options = {}) {
   console.log(`[BACKUP CREATED] ${backupFile} (SHA-256: ${backupHash.slice(0, 16)}...)`);
 
   // 3. Check target connection
-  const dbUrl = options.connectionString || process.env.DATABASE_URL;
+  const dbUrl = options.connectionString || process.env.STAGING_DATABASE_URL || process.env.DATABASE_URL;
   if (!dbUrl && !options.pool) {
-    console.error('\n[HALT] DATABASE_URL environment variable is not set.');
-    console.error('To run migration against target PostgreSQL, supply DATABASE_URL:');
-    console.error('  $env:DATABASE_URL="postgres://..." ; node scripts/migrate_to_postgres.js\n');
+    console.error('\n[HALT] Neither STAGING_DATABASE_URL nor DATABASE_URL is set.');
+    console.error('To run migration against target PostgreSQL, supply connection variable:');
+    console.error('  $env:STAGING_DATABASE_URL="postgres://..." ; node scripts/migrate_to_postgres.js\n');
     console.error('Backup preserved. Zero database changes made.');
-    if (options.throwOnError) throw new Error('DATABASE_URL is not set');
+    if (options.throwOnError) throw new Error('Database URL is not set');
     process.exit(1);
   }
 
