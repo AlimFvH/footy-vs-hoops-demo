@@ -483,6 +483,18 @@ function creditPurchasedProduct(playerId, productId, paymentType = 'stars') {
   return player;
 }
 
+// -------------------------------------------------------------
+// Storage Adapter Layer (Postgres in production, JSON locally/CI)
+// -------------------------------------------------------------
+const { createStorageAdapter } = require('./storage');
+
+const storage = createStorageAdapter({
+  dataFilePath: DATA_FILE,
+  itemCatalog: ITEM_CATALOG,
+  bundleCatalog: BUNDLE_CATALOG,
+  questRewards: QUEST_REWARDS
+});
+
 // Load persisted state if exists
 if (fs.existsSync(DATA_FILE)) {
   try {
@@ -502,6 +514,10 @@ if (fs.existsSync(DATA_FILE)) {
     console.warn('Failed to load server/data.json', e);
   }
 }
+
+storage.init().catch(err => {
+  console.warn('[STORAGE] Warning during storage adapter init:', err.message);
+});
 
 function persistState() {
   try {
@@ -611,6 +627,7 @@ const server = http.createServer((req, res) => {
       service: 'footy-vs-hoops',
       version: '2.0.0',
       uptime: process.uptime(),
+      storageAdapter: storage ? storage.name : 'JsonStorageAdapter',
       timestamp: Date.now()
     });
   }
