@@ -67,10 +67,20 @@ async function runNeonStagingIntegration() {
   const maskedTarget = maskUrl(stagingUrl);
   console.log(`Target Staging Instance: ${maskedTarget}`);
 
-  // Safety Guard: Refuse to run against production database unless explicitly overridden
+  // Safety Guard: Require explicit operator staging confirmation
+  if (!process.env.CONFIRM_NEON_STAGING && !process.env.CONFIRM_STAGING_TEST) {
+    console.error('\n[SAFETY HALT] Explicit staging confirmation is required.');
+    console.error('To ensure tests never run against an unintended database, set:');
+    console.error('  $env:CONFIRM_NEON_STAGING = "true"');
+    console.error('in your terminal alongside $env:STAGING_DATABASE_URL.\n');
+    process.exit(1);
+  }
+
+  // Safety Guard: Refuse to run against production database via URL checks
   const lowerUrl = stagingUrl.toLowerCase();
   const isLikelyProduction = lowerUrl.includes('prod') ||
                              lowerUrl.includes('dpg-') ||
+                             lowerUrl.includes('render.com') ||
                              (process.env.NODE_ENV === 'production' && !process.env.STAGING_DATABASE_URL);
 
   if (isLikelyProduction && !process.env.ALLOW_PROD_INTEGRATION_TEST) {
@@ -95,6 +105,57 @@ async function runNeonStagingIntegration() {
   const testMatchToken = `mtok_staging_${Date.now()}_hash`;
 
   try {
+    // -------------------------------------------------------------
+    // Preflight: Live Staging Database Identity Verification
+    // -------------------------------------------------------------
+    console.log('\nPreflight: Verifying Live Database Identity & Isolation...');
+    const identityRes = await adapter.query(`
+      SELECT
+        current_database() AS db_name,
+        current_user AS db_user,
+        version() AS pg_version
+    `);
+    const dbIdentity = identityRes.rows[0] || {};
+    console.log(`  Database Name: ${dbIdentity.db_name}`);
+    console.log(`  Database User: ${dbIdentity.db_user}`);
+    console.log(`  PG Version:    ${(dbIdentity.pg_version || '').split(' ')[0]} ${(dbIdentity.pg_version || '').split(' ')[1] || ''}`);
+
+    // Verify database name does not indicate production
+    const dbNameLower = String(dbIdentity.db_name || '').toLowerCase();
+    if ((dbNameLower.includes('prod') || dbNameLower.includes('live')) && !process.env.ALLOW_PROD_INTEGRATION_TEST) {
+      console.error(`\n[SAFETY HALT] Database name "${dbIdentity.db_name}" contains production indicators.`);
+      console.error('Integration tests strictly refuse to run against production databases.');
+      await adapter.close();
+      process.exit(1);
+    }
+
+    // Check existing table count in public schema
+    const tblRes = await adapter.query(`
+      SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema = 'public'
+    `);
+    const tblCount = tblRes.rows[0]?.count || 0;
+    console.log(`  Existing Public Tables: ${tblCount}`);
+
+    // If tables already exist, check if players table contains real production data
+    if (tblCount > 0) {
+      try {
+        const pCountRes = await adapter.query('SELECT count(*)::int AS count FROM players');
+        const playerCount = pCountRes.rows[0]?.count || 0;
+        console.log(`  Existing Player Records: ${playerCount}`);
+        if (playerCount > 50 && !process.env.ALLOW_EXISTING_DATA_STAGING) {
+          console.error(`\n[SAFETY HALT] Target database contains ${playerCount} existing player records.`);
+          console.error('To protect existing data from accidental test pollution, tests are halted.');
+          console.error('If this is an intentional staging database with pre-migrated data, set:');
+          console.error('  $env:ALLOW_EXISTING_DATA_STAGING = "true"');
+          await adapter.close();
+          process.exit(1);
+        }
+      } catch (e) {
+        // players table does not exist yet; fresh staging database
+      }
+    }
+    console.log('  [PASS] Staging database identity and isolation verified.');
+
     // -------------------------------------------------------------
     // Test 1: Connection & SSL Handshake Verification
     // -------------------------------------------------------------
@@ -253,6 +314,7 @@ async function runNeonStagingIntegration() {
     console.log('\nTest 8: Safe Cleanup of Staging Test Records...');
     await freshAdapter.query('DELETE FROM completed_matches WHERE match_id = $1', [testMatchId]);
     await freshAdapter.query('DELETE FROM players WHERE player_id = $1', [testAthleteId]);
+    await freshAdapter.query('DELETE FROM players WHERE player_id = $1', ['staging_rollback_probe']).catch(() => {});
     console.log('  [PASS] Staging test probes cleaned up cleanly.');
 
     await freshAdapter.close();
