@@ -7285,10 +7285,25 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
             // 1. Muscular Legs, Dynamic Pro Shorts, Compression Socks & Authentic Footwear
             for (const [leg, knee, sx] of [[this.legL, this.kneeL, -0.14], [this.legR, this.kneeR, 0.14]]) {
-                leg.setPos(sx, 0.95, 0);
-                leg.add(at(mk(G.capsule(0.105, 0.52, 8 + 2 * sg, 3), skin.skin, { skin: true }), 0, -0.22, 0));
+                leg.setPos(sx, foot ? 1.02 : 0.95, 0);
+                leg.add(at(mk(G.capsule(foot ? 0.112 : 0.105, foot ? 0.54 : 0.52, 8 + 2 * sg, 3), skin.skin, { skin: true }), 0, -0.22, 0));
+                
+                // Continuous Spherical Knee Saddle Cap at thigh joint terminus
+                if (foot) {
+                    leg.add(at(mk(G.sphere(0.092, 10, 8), skin.skin, { skin: true }), 0, -0.47, 0));
+                }
+
                 knee.setPos(0, -0.47, 0);
-                knee.add(at(mk(G.capsule(0.082, 0.52, 8, 3), skin.skin, { skin: true }), 0, -0.2, 0));
+                knee.add(at(mk(G.capsule(foot ? 0.088 : 0.082, foot ? 0.54 : 0.52, 8, 3), skin.skin, { skin: true }), 0, -0.2, 0));
+                
+                // Anatomical Patella Knee Cap (tracks knee flexion seamlessly on front of joint)
+                if (foot) {
+                    const patella = mk(G.box(0.068, 0.085, 0.038), skin.skin, { skin: true, fine: true });
+                    patella.rotation = [-0.15, 0, 0];
+                    knee.add(at(patella, 0, 0.02, 0.082));
+                    knee.add(at(mk(G.sphere(0.086, 8, 6), skin.skin, { skin: true }), 0, 0, 0));
+                }
+
                 if (foot) {
                     // Football: Athletic shorts with lateral lightning stripe and bottom white hem piping
                     leg.add(at(mk(G.cylinder(0.14, 0.158, 0.36, 9 + sg), skin.shorts, { fabric: true }), 0, -0.13, 0));
@@ -7301,20 +7316,35 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     knee.add(at(mk(G.cylinder(0.101, 0.101, 0.03, 8), white, { fine: true }), 0, -0.10, 0));
                     knee.add(at(mk(G.cylinder(0.104, 0.104, 0.06, 8), skin.secondary, { fine: true }), 0, -0.01, 0));
 
-                    // High-performance pro football cleats with aerodynamic speed swoosh and chrome stud plate
+                    // High-performance pro football speed boots with strike zone & chrome stud plate
                     knee.add(at(mk(G.box(0.17, 0.085, 0.3), skin.boots, { shoe: true }), 0, -0.41, 0.06));
                     const toe = mk(G.sphere(0.085, 8, 6), skin.boots, { shoe: true });
                     toe.scale = [1, 0.8, 1.15];
                     knee.add(at(toe, 0, -0.41, 0.2));
-                    knee.add(at(mk(G.box(0.18, 0.03, 0.34), dark, { shoe: true }), 0, -0.455, 0.07));
+
+                    // Chrome external heel counter cup
+                    const heelCounter = mk(G.box(0.165, 0.075, 0.10), skin.secondary, { shoe: true, spec: 0.82, shininess: 85 });
+                    knee.add(at(heelCounter, 0, -0.41, -0.06));
+
+                    // Outsole soleplate
+                    knee.add(at(mk(G.box(0.18, 0.03, 0.35), dark, { shoe: true }), 0, -0.455, 0.07));
                     knee.add(at(mk(G.box(0.045, 0.05, 0.16), skin.accent, { fine: true, shoe: true }), sx < 0 ? -0.075 : 0.075, -0.405, 0.06));
 
-                    // 4 Molded Chrome Studs under outsole for realistic grass traction
-                    const studMat = { shoe: true, spec: 0.85, shininess: 85 };
-                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), -0.05, -0.48, 0.16));
-                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), 0.05, -0.48, 0.16));
-                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), -0.045, -0.48, -0.04));
-                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.038, 6), dark, studMat), 0.045, -0.48, -0.04));
+                    // Instep textured ball strike zone ridges
+                    for (let rz = 0; rz < 3; rz++) {
+                        const ridge = mk(G.box(0.018, 0.028, 0.052), trim, { fine: true, shoe: true });
+                        ridge.rotation = [0.2, 0, sx < 0 ? 0.3 : -0.3];
+                        knee.add(at(ridge, sx < 0 ? 0.075 : -0.075, -0.395, 0.09 + rz * 0.045));
+                    }
+
+                    // 6 Molded Chrome Studs under outsole (4 forefoot, 2 rear heel) for authentic pitch traction
+                    const studMat = { shoe: true, spec: 0.88, shininess: 90 };
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), -0.05, -0.48, 0.16));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), 0.05, -0.48, 0.16));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), -0.048, -0.48, 0.07));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), 0.048, -0.48, 0.07));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.040, 6), dark, studMat), -0.042, -0.48, -0.05));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.040, 6), dark, studMat), 0.042, -0.48, -0.05));
                 }
                 else {
                     // Basketball: Loose long basketball shorts with prominent dual side stripes and split hem
@@ -7352,14 +7382,33 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
             // 3. High-Definition Torso & Pro Athletic Jersey (#10 Striker / #23 All-Star)
             this.torso = new scene_js_3.Node();
-            this.torso.setPos(0, 1.38, 0);
-            const chest = mk(G.cylinder(foot ? 0.3 : 0.31, 0.215, 0.72, 10 + 2 * sg), skin.primary, { fabric: true, rim: 0.35 });
-            chest.scale = [1, 1, 0.64];
+            this.torso.setPos(0, foot ? 1.44 : 1.38, 0);
+            const chest = mk(G.cylinder(foot ? 0.32 : 0.31, foot ? 0.22 : 0.215, foot ? 0.76 : 0.72, 10 + 2 * sg), skin.primary, { fabric: true, rim: 0.35 });
+            chest.scale = [1, 1, 0.63];
             this.torso.add(chest);
+
+            if (foot) {
+                // Anatomical Pectoral Muscle Shelf (Left & Right pectorals with sternum division)
+                for (const sx of [-1, 1]) {
+                    const pec = mk(G.box(0.125, 0.155, 0.038), skin.primary, { fabric: true, rim: 0.28 });
+                    pec.rotation = [0.12, sx < 0 ? -0.12 : 0.12, 0];
+                    this.torso.add(at(pec, sx * 0.12, 0.19, 0.195));
+                    
+                    // Latissimus Dorsi flank V-taper
+                    const lat = mk(G.box(0.038, 0.40, 0.17), skin.primary, { fabric: true });
+                    lat.rotation = [0, 0, sx < 0 ? 0.12 : -0.12];
+                    this.torso.add(at(lat, sx * 0.27, -0.04, -0.02));
+
+                    // Posterior Scapular contours on back yoke
+                    const scap = mk(G.box(0.11, 0.16, 0.03), skin.primary, { fabric: true });
+                    scap.rotation = [-0.1, sx < 0 ? 0.14 : -0.14, 0];
+                    this.torso.add(at(scap, sx * 0.12, 0.18, -0.195));
+                }
+            }
 
             // Muscular Deltoid Shoulders
             for (const sx of [-1, 1])
-                this.torso.add(at(mk(G.sphere(0.125, 8, 6), foot ? skin.primary : skin.skin, { fabric: foot, skin: !foot }), sx * 0.31, 0.29, 0));
+                this.torso.add(at(mk(G.sphere(foot ? 0.135 : 0.125, 8, 6), foot ? skin.primary : skin.skin, { fabric: foot, skin: !foot }), sx * (foot ? 0.325 : 0.31), 0.29, 0));
 
             if (!foot) {
                 // Basketball Tank Top: Contrasting side flank stripes and ribbed scoop neckline
@@ -7454,18 +7503,24 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
             this.pivot.add(this.torso);
 
-            // 4. Athletic Arms: Short Sleeves with Cuffs, Captain's Armband, Compression Sleeve & Wristbands
+            // 4. Athletic Arms: Short Sleeves with Cuffs, Elbow Saddle Caps & Forearms
             for (const [arm, elbow, sx] of [[this.armL, this.elbowL, -0.38], [this.armR, this.elbowR, 0.38]]) {
-                arm.setPos(sx, 1.65, 0);
-                arm.add(at(mk(G.capsule(0.07, 0.4, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
+                arm.setPos(sx, foot ? 1.68 : 1.65, 0);
+                arm.add(at(mk(G.capsule(foot ? 0.074 : 0.07, foot ? 0.42 : 0.4, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
+                
+                // Continuous Spherical Elbow Saddle Cap at joint pivot
+                if (foot) {
+                    arm.add(at(mk(G.sphere(0.068, 8, 6), skin.skin, { skin: true }), 0, -0.34, 0));
+                }
+
                 if (foot) {
                     // Football: Sleeves with contrasting cuffs
-                    arm.add(at(mk(G.cylinder(0.098, 0.088, 0.26, 8), skin.primary, { fabric: true }), 0, -0.1, 0));
-                    arm.add(at(mk(G.cylinder(0.096, 0.096, 0.035, 8), white, { fine: true }), 0, -0.225, 0));
-                    arm.add(at(mk(G.cylinder(0.092, 0.092, 0.025, 8), skin.secondary, { fine: true }), 0, -0.245, 0));
+                    arm.add(at(mk(G.cylinder(0.102, 0.090, 0.27, 8), skin.primary, { fabric: true }), 0, -0.1, 0));
+                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.035, 8), white, { fine: true }), 0, -0.23, 0));
+                    arm.add(at(mk(G.cylinder(0.094, 0.094, 0.025, 8), skin.secondary, { fine: true }), 0, -0.25, 0));
                     // Captain's Armband on left arm
                     if (sx < 0) {
-                        arm.add(at(mk(G.cylinder(0.095, 0.095, 0.055, 8), 0xf6c445, { spec: 0.5, fine: true }), 0, -0.15, 0));
+                        arm.add(at(mk(G.cylinder(0.096, 0.096, 0.055, 8), 0xf6c445, { spec: 0.5, fine: true }), 0, -0.15, 0));
                     }
                 }
                 else {
@@ -7477,7 +7532,12 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     }
                 }
                 elbow.setPos(0, -0.34, 0);
-                elbow.add(at(mk(G.capsule(0.062, 0.42, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
+                elbow.add(at(mk(G.capsule(foot ? 0.066 : 0.062, foot ? 0.44 : 0.42, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
+                
+                // Olecranon posterior elbow contour
+                if (foot) {
+                    elbow.add(at(mk(G.sphere(0.055, 6, 5), skin.skin, { fine: true, skin: true }), 0, 0.015, -0.065));
+                }
                 elbow.add(at(mk(G.sphere(0.072, 7, 5), skin.skin, { fine: true, skin: true }), 0, -0.4, 0.01));
                 if (!foot)
                     elbow.add(at(mk(G.cylinder(0.072, 0.072, 0.055, 8), skin.secondary, { fine: true }), 0, -0.32, 0));
@@ -7506,6 +7566,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 // Ears
                 this.head.add(at(mk(G.sphere(foot ? 0.038 : 0.044, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.172 : 0.198), 0.0, 0.0));
                 this.head.add(at(mk(G.sphere(foot ? 0.022 : 0.026, 5, 4), dark, { fine: true }), sx * (foot ? 0.176 : 0.202), 0.0, 0.0));
+
+                // Sculpted Zygomatic Arch & Athletic Mandible Contour
+                if (foot) {
+                    const zygoma = mk(G.box(0.040, 0.024, 0.026), skin.skin, { fine: true, skin: true });
+                    zygoma.rotation = [0, sx < 0 ? 0.22 : -0.22, sx < 0 ? -0.15 : 0.15];
+                    this.head.add(at(zygoma, sx * 0.115, -0.02, 0.118));
+                }
             }
 
             // Expressive 3D Athlete Eyes
@@ -7687,27 +7754,31 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const land = this.landT > 0 ? Math.sin((this.landT / 0.2) * Math.PI) * 0.12 : 0;
             const bob = Math.abs(sp) * amp * 0.08;
             const bank = this.ease('bank', -Math.max(-0.3, Math.min(0.3, yawRate * 0.028)) * Math.min(1, speed / 4), 9, dt);
+            const pelvicTilt = foot ? Math.min(0.12, speed * 0.022) : 0;
             this.pivot.position[1] = lift - slide * (foot ? 0.52 : 0.42) - crouch - land + bob;
-            this.pivot.rotation[0] = lean + land * 0.8;
+            this.pivot.rotation[0] = lean + land * 0.8 + pelvicTilt;
             this.pivot.rotation[2] = roll + sp * amp * 0.04 + bank;
             let kickLeg = 0;
             let kickKnee = 0;
             if (kickP >= 0) {
                 if (foot) {
                     if (kickP < 0.35) {
+                        // Phase 1: Wind-up — non-kicking foot plants, knee flexes to absorb torque, kicking hip cocks back
                         const w = kickP / 0.35;
-                        kickLeg = 0.95 * w;
-                        kickKnee = 1.95 * w;
+                        kickLeg = 0.98 * w;
+                        kickKnee = 2.05 * w;
                     }
                     else if (kickP < 0.62) {
+                        // Phase 2: Snap strike — explosive forward leg drive, knee extends through ball with ankle plantarflexion
                         const w = (kickP - 0.35) / 0.27;
-                        kickLeg = 0.95 - 3.4 * w;
-                        kickKnee = 1.95 * (1.0 - w * 0.95);
+                        kickLeg = 0.98 - 3.55 * w;
+                        kickKnee = 2.05 * (1.0 - w * 0.96);
                     }
                     else {
+                        // Phase 3: Follow-through — leg decelerates smoothly, torso dips forward over ball to keep trajectory true
                         const w = (kickP - 0.62) / 0.38;
-                        kickLeg = -2.45 * (1.0 - 0.75 * w);
-                        kickKnee = 0.15 * (1.0 - w);
+                        kickLeg = -2.57 * (1.0 - 0.75 * w);
+                        kickKnee = 0.12 * (1.0 - w);
                     }
                 }
                 else {
@@ -7732,8 +7803,8 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 const legAmp = amp * 1.08;
                 this.legL.rotation[0] = sp * legAmp + idle;
                 this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
-                this.kneeL.rotation[0] = amp * (0.22 + 1.35 * Math.max(0, -cs));
-                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.22 + 1.35 * Math.max(0, cs));
+                this.kneeL.rotation[0] = amp * (0.24 + 1.42 * Math.max(0, -cs)) + (kickP >= 0 && kickP < 0.62 ? 0.25 : 0);
+                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.24 + 1.42 * Math.max(0, cs));
             }
             else {
                 const legAmp = this.mode === 'hoops' ? amp * 0.92 : amp;
@@ -7781,10 +7852,10 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             if (a.shotT > 0)
                 this.elbowR.rotation[0] *= 0.15;
             const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : armUp > 1 ? 0.15 : 0.12, 14, dt);
-            this.armL.rotation[2] = -spread + sp * amp * 0.05;
-            this.armR.rotation[2] = spread - sp * amp * 0.05;
-            this.torso.rotation[1] = torsoTwist - sp * amp * (foot ? 0.32 : 0.26) + (kickP >= 0 ? kick * (foot ? 0.42 : 0.35) : 0);
-            this.torso.rotation[2] = Math.sin(ph) * amp * (foot ? 0.075 : 0.065) + (kickP >= 0 ? (foot ? -0.26 : -0.22) * kick : 0);
+            this.armL.rotation[2] = -spread + sp * amp * 0.05 + (foot && kickP >= 0 ? -0.32 * kick : 0);
+            this.armR.rotation[2] = spread - sp * amp * 0.05 + (foot && kickP >= 0 ? 0.32 * kick : 0);
+            this.torso.rotation[1] = torsoTwist - sp * amp * (foot ? 0.32 : 0.26) + (kickP >= 0 ? kick * (foot ? 0.44 : 0.35) : 0);
+            this.torso.rotation[2] = Math.sin(ph) * amp * (foot ? 0.075 : 0.065) + (kickP >= 0 ? (foot ? -0.28 : -0.22) * kick : 0);
             this.head.position[1] = (foot ? 2.05 : 1.99) + Math.abs(sp) * amp * 0.035;
             this.head.rotation[1] = -this.torso.rotation[1] * 0.7 + Math.sin(this.t * 1.3) * 0.04 * (1 - amp);
             this.head.rotation[0] = -lean * 0.45 + (a.shootCharging || a.shotT > 0 ? -0.3 : 0);
