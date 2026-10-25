@@ -41,6 +41,17 @@ const SEASON_CONFIG = {
   nameRu: 'Сезон 1: Битва Команд'
 };
 
+// Configurable Referral Commission Rate (Stage J2: 5% - 10%, default 5%)
+const REFERRAL_COMMISSION_MIN = 0.05;
+const REFERRAL_COMMISSION_MAX = 0.10;
+let REFERRAL_COMMISSION_RATE = 0.05;
+if (process.env.REFERRAL_COMMISSION_RATE) {
+  const parsedRate = parseFloat(process.env.REFERRAL_COMMISSION_RATE);
+  if (!isNaN(parsedRate)) {
+    REFERRAL_COMMISSION_RATE = Math.min(REFERRAL_COMMISSION_MAX, Math.max(REFERRAL_COMMISSION_MIN, parsedRate));
+  }
+}
+
 // Configurable Telegram Stars prices from environment variable or unconfigured
 let ENV_STARS_PRICES = {};
 try {
@@ -1397,7 +1408,8 @@ const server = http.createServer((req, res) => {
     const refData = state.referrals[norm] || {
       ownerId: norm,
       referred: [],
-      claimedMilestones: []
+      claimedMilestones: [],
+      totalCommissionCoins: 0
     };
 
     const qualifiedCount = refData.referred.filter(r => r.qualified).length;
@@ -1410,6 +1422,8 @@ const server = http.createServer((req, res) => {
       totalInvited: totalCount,
       qualifiedCount: qualifiedCount,
       qualifiedFriends: qualifiedCount,
+      commissionRate: REFERRAL_COMMISSION_RATE,
+      totalCommissionCoins: refData.totalCommissionCoins || 0,
       milestones: [
         { friends: 1, coins: 500, xp: 150, label: '1 Friend' },
         { friends: 3, coins: 1500, xp: 300, label: '3 Friends' },
@@ -1424,34 +1438,70 @@ const server = http.createServer((req, res) => {
   // 2. Register Referral (Friend opens game with ref code)
   if (pathname === '/api/referrals/register' && req.method === 'POST') {
     return readJsonBody(req, (err, data) => {
-      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+      if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
 
       const rawRef = data.refCode || data.referralCode;
       const newPlayerId = String(data.playerId || data.friendId || '').trim();
 
       if (!rawRef || !newPlayerId) {
-        return sendJson(res, 400, { error: 'Missing refCode or playerId' });
+        return sendJson(res, 400, { ok: false, error: 'missing_parameters', message: 'Missing refCode or playerId' });
       }
 
       const norm = normalizeRefCode(rawRef);
+
+      // Prevent self-referral
+      if (norm === newPlayerId) {
+        return sendJson(res, 400, { ok: false, error: 'self_referral_prevented', message: 'You cannot refer yourself' });
+      }
+
+      const player = getPlayer(newPlayerId);
+
+      // Prevent duplicate referral (player already has a referrer)
+      if (player && player.referredBy) {
+        return sendJson(res, 400, { ok: false, error: 'already_referred', message: 'Player was already referred by another athlete' });
+      }
+
+      // Check Telegram account uniqueness if provided
+      if (data.telegramId) {
+        const tgStr = String(data.telegramId).trim();
+        const existingTg = Object.values(state.players).find(p => p.telegramId && String(p.telegramId) === tgStr && p.playerId !== newPlayerId);
+        if (existingTg) {
+          return sendJson(res, 400, { ok: false, error: 'duplicate_telegram_account', message: 'Telegram account already registered' });
+        }
+      }
 
       if (!state.referrals[norm]) {
         state.referrals[norm] = {
           ownerId: norm,
           referred: [],
-          claimedMilestones: []
+          claimedMilestones: [],
+          totalCommissionCoins: 0
         };
       }
 
-      // Prevent self-referral
-      if (state.referrals[norm].ownerId === newPlayerId) {
-        return sendJson(res, 400, { error: 'self_referral_prevented', message: 'You cannot refer yourself' });
+      const refRecord = state.referrals[norm];
+
+      // Prevent self-referral via ownerId
+      if (refRecord.ownerId === newPlayerId) {
+        return sendJson(res, 400, { ok: false, error: 'self_referral_prevented', message: 'You cannot refer yourself' });
       }
 
-      // Check if already registered
-      const existing = state.referrals[norm].referred.find(r => r.playerId === newPlayerId);
+      // Prevent referral cycles (e.g. A referred B, so B cannot refer A)
+      const referrerPlayer = state.players[refRecord.ownerId] || state.players[norm];
+      if (referrerPlayer && referrerPlayer.referredBy === newPlayerId) {
+        return sendJson(res, 400, { ok: false, error: 'referral_cycle_prevented', message: 'Mutual referral cycles are strictly forbidden' });
+      }
+
+      // Link player to referrer
+      if (player) {
+        player.referredBy = refRecord.ownerId || norm;
+        if (data.telegramId) player.telegramId = String(data.telegramId);
+      }
+
+      // Check if already in referred array
+      const existing = refRecord.referred.find(r => r.playerId === newPlayerId);
       if (!existing) {
-        state.referrals[norm].referred.push({
+        refRecord.referred.push({
           playerId: newPlayerId,
           registeredAt: Date.now(),
           qualified: false
@@ -1459,7 +1509,13 @@ const server = http.createServer((req, res) => {
         persistState();
       }
 
-      return sendJson(res, 200, { ok: true, success: true, registered: true });
+      return sendJson(res, 200, {
+        ok: true,
+        success: true,
+        registered: true,
+        referrerId: refRecord.ownerId || norm,
+        commissionRate: REFERRAL_COMMISSION_RATE
+      });
     });
   }
 
@@ -2221,6 +2277,102 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 200, { ok: true, history });
   }
 
+  // ==========================================
+  // 8.1 TON Connect & Public Wallet Scaffolding (Stage J4)
+  // ==========================================
+
+  // A. Link Public TON Wallet
+  if (pathname === '/api/wallet/link' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
+
+      const playerId = String(data.playerId || '').trim();
+      const rawAddress = String(data.address || data.walletAddress || '').trim();
+
+      if (!playerId || !rawAddress) {
+        return sendJson(res, 400, { ok: false, error: 'missing_parameters', message: 'Player ID and wallet address are required' });
+      }
+
+      // Strictly reject seed phrases or private keys (any string containing multiple words/spaces)
+      if (/\s+/.test(rawAddress) || rawAddress.split(' ').length > 1) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'seed_phrase_rejected',
+          message: 'Security Alert: Never submit seed phrases or private keys! Enter only a public TON address.'
+        });
+      }
+
+      // Validate public TON address format (domain.ton or base64 user-friendly / raw format)
+      const isTonDomain = /^[a-zA-Z0-9_-]+\.ton$/i.test(rawAddress);
+      const isTonBase64 = /^(EQ|UQ|kQ|0:)[a-zA-Z0-9_\-+/]{46,66}$/i.test(rawAddress);
+
+      if (!isTonDomain && !isTonBase64) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'invalid_ton_address',
+          message: 'Please provide a valid public TON address (EQ..., UQ..., or .ton domain)'
+        });
+      }
+
+      const player = getPlayer(playerId);
+      player.tonWalletAddress = rawAddress;
+      player.walletLinkedAt = Date.now();
+      player.updatedAt = Date.now();
+      persistState();
+
+      return sendJson(res, 200, {
+        ok: true,
+        success: true,
+        playerId,
+        address: rawAddress,
+        status: 'linked_for_tge',
+        mainnetActive: false,
+        message: 'Public TON wallet safely linked for TGE snapshot'
+      });
+    });
+  }
+
+  // B. Query TON Wallet Link Status
+  if (pathname === '/api/wallet/status' && req.method === 'GET') {
+    const playerId = String(parsedUrl.query.playerId || '').trim();
+    if (!playerId) {
+      return sendJson(res, 400, { ok: false, error: 'missing_player_id' });
+    }
+    const player = getPlayer(playerId);
+    return sendJson(res, 200, {
+      ok: true,
+      success: true,
+      playerId,
+      address: player.tonWalletAddress || null,
+      isLinked: Boolean(player.tonWalletAddress),
+      mainnetActive: false,
+      status: player.tonWalletAddress ? 'linked_for_tge' : 'not_linked'
+    });
+  }
+
+  // C. Disconnect TON Wallet
+  if (pathname === '/api/wallet/disconnect' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
+      const playerId = String(data.playerId || '').trim();
+      if (!playerId) {
+        return sendJson(res, 400, { ok: false, error: 'missing_player_id' });
+      }
+      const player = getPlayer(playerId);
+      player.tonWalletAddress = null;
+      player.walletLinkedAt = null;
+      player.updatedAt = Date.now();
+      persistState();
+
+      return sendJson(res, 200, {
+        ok: true,
+        success: true,
+        disconnected: true,
+        playerId
+      });
+    });
+  }
+
   // 8.5 Authoritative Season Status & Pre-Launch State (Item 1)
   if (pathname === '/api/season/status' && req.method === 'GET') {
     const isPrelaunch = SEASON_CONFIG.state === 'prelaunch';
@@ -2949,6 +3101,42 @@ const server = http.createServer((req, res) => {
           { outcome, goals, tackles }
         );
 
+        // Referral commission on eligible match coin earnings (never Stars/cash)
+        let referralCommissionAwarded = 0;
+        let referrerPlayerId = player.referredBy;
+        if (referrerPlayerId && referrerPlayerId !== player.playerId && coinsEarned > 0) {
+          const commission = Math.floor(coinsEarned * REFERRAL_COMMISSION_RATE);
+          if (commission > 0) {
+            const referrer = getPlayer(referrerPlayerId);
+            if (referrer) {
+              referrer.coins += commission;
+              referrer.updatedAt = Date.now();
+              addLedgerEntry(
+                referrer.playerId,
+                'referral_commission',
+                commission,
+                0,
+                referrer.coins,
+                'Referral commission (' + Math.round(REFERRAL_COMMISSION_RATE * 100) + '%) from match win by athlete ' + player.playerId,
+                matchId + '_ref_' + player.playerId,
+                { referredPlayerId: player.playerId, baseCoinsEarned: coinsEarned, rate: REFERRAL_COMMISSION_RATE }
+              );
+              referralCommissionAwarded = commission;
+
+              if (!state.referrals[referrer.playerId]) {
+                state.referrals[referrer.playerId] = {
+                  ownerId: referrer.playerId,
+                  referred: [],
+                  claimedMilestones: [],
+                  totalCommissionCoins: 0
+                };
+              }
+              state.referrals[referrer.playerId].totalCommissionCoins =
+                (state.referrals[referrer.playerId].totalCommissionCoins || 0) + commission;
+            }
+          }
+        }
+
         const resp = {
           ok: true,
           success: true,
@@ -2957,7 +3145,8 @@ const server = http.createServer((req, res) => {
           xp: player.xp,
           coinsEarned,
           xpEarned,
-          outcome
+          outcome,
+          referralCommissionAwarded
         };
 
         if (idempotencyKey) {

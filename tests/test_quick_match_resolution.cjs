@@ -3,10 +3,62 @@
 
 const assert = require('assert');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { spawn } = require('child_process');
 
 console.log('=== FOOTY vs HOOPS: Quick Match Mode Resolution Verification Suite ===\n');
 
 const SERVER_PORT = 8099;
+let spawnedServer = null;
+let tmpDataPath = null;
+
+function checkServerReady() {
+  return new Promise((resolve) => {
+    const req = http.get(`http://127.0.0.1:${SERVER_PORT}/api/health`, (res) => {
+      resolve(res.statusCode === 200);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(500, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
+async function ensureServerRunning() {
+  const isRunning = await checkServerReady();
+  if (isRunning) return;
+
+  tmpDataPath = path.join(__dirname, 'temp_quick_match_data.json');
+  try {
+    fs.copyFileSync(path.join(__dirname, '../server/data.json'), tmpDataPath);
+  } catch (e) {
+    fs.writeFileSync(tmpDataPath, JSON.stringify({ players: {}, economyLedger: [], idempotencyKeys: {}, matches: {} }));
+  }
+
+  spawnedServer = spawn('node', [path.join(__dirname, '../server/server.js')], {
+    env: Object.assign({}, process.env, { PORT: String(SERVER_PORT), SEASON_STATE: 'prelaunch', DATA_FILE: tmpDataPath }),
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 100));
+    if (await checkServerReady()) return;
+  }
+  throw new Error('Failed to auto-spawn test server on port ' + SERVER_PORT);
+}
+
+function cleanupSpawnedServer() {
+  if (spawnedServer) {
+    try { spawnedServer.kill(); } catch (e) {}
+    spawnedServer = null;
+  }
+  if (tmpDataPath) {
+    try { if (fs.existsSync(tmpDataPath)) fs.unlinkSync(tmpDataPath); } catch (e) {}
+    tmpDataPath = null;
+  }
+}
 
 function request(method, reqPath, body) {
   return new Promise((resolve, reject) => {
@@ -273,7 +325,17 @@ async function runTests() {
   console.log(`======================================================\n`);
 }
 
-runTests().catch(e => {
+async function main() {
+  try {
+    await ensureServerRunning();
+    await runTests();
+  } finally {
+    cleanupSpawnedServer();
+  }
+}
+
+main().catch(e => {
+  cleanupSpawnedServer();
   console.error(e);
   process.exit(1);
 });

@@ -427,6 +427,67 @@ html.is-telegram {
   border-color: rgba(249, 115, 22, 0.3);
 }
 
+.fvh-solo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.fvh-solo-header .fvh-hero-badge {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  margin-bottom: 0;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+.fvh-solo-header .fvh-solo-rival-pill {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  box-sizing: border-box;
+}
+
+@media (max-width: 360px) {
+  .fvh-solo-header {
+    gap: 4px;
+  }
+  .fvh-solo-header .fvh-hero-badge,
+  .fvh-solo-header .fvh-solo-rival-pill {
+    font-size: 9.5px;
+    padding: 0 6px;
+    height: 26px;
+  }
+}
+
 .fvh-hero-avatar-box {
   width: 100%;
   height: clamp(140px, 24vh, 250px);
@@ -4585,6 +4646,11 @@ html, body {
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
 }
 
+.fvh-lb-search-box:not(:focus-within) {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+}
+
 .fvh-lb-search-icon {
   font-size: 14px;
   color: var(--text-muted);
@@ -4595,11 +4661,19 @@ html, body {
   flex: 1;
   background: transparent;
   border: none;
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
   color: var(--text-pure);
   font-size: 13px;
   font-weight: 600;
   padding: 10px 0;
+}
+
+.fvh-lb-search-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
 }
 
 .fvh-lb-search-input::placeholder {

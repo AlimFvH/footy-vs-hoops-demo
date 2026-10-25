@@ -4121,7 +4121,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     exports.defaultEquipped = defaultEquipped;
     exports.defaultOwned = defaultOwned;
     exports.boostEffectsOf = boostEffectsOf;
-    exports.CATEGORIES = ['skins', 'stadiums', 'balls', 'other'];
+    exports.CATEGORIES = ['skins', 'balls', 'other'];
     exports.RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
     const FOOTY_BASE = {
         line: 0xf4f7f2,

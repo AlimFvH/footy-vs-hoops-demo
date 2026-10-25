@@ -2055,12 +2055,12 @@
     skin_rookie: { h: 205, s: 0.90, lMult: 1.0, darkShorts: true, name: 'Rookie Blue', ru: 'Стартовая: Синяя' },
     skin_crimson: { h: 358, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Crimson Comet', ru: 'Багровая Комета' },
     skin_neon: { h: 155, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Neon Striker', ru: 'Неоновый Страйкер' },
-    skin_neon_elite: { h: 185, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Cyber Striker', ru: 'Кибер Страйкер' },
+    skin_neon_elite: { h: 185, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Neon Striker Elite', ru: 'Неон Страйкер' },
     skin_frost: { h: 200, s: 0.55, lMult: 1.35, darkShorts: false, name: 'Frost Giant', ru: 'Ледяной Титан' },
     skin_shadow: { h: 275, s: 0.70, lMult: 0.82, darkShorts: true, name: 'Shadow Ninja', ru: 'Теневой Ниндзя' },
     skin_solar: { h: 22, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Solar Flare', ru: 'Стартовая: Огненная' },
     skin_gold: { h: 46, s: 0.95, lMult: 1.18, darkShorts: false, name: 'Golden Legend', ru: 'Золотая Легенда' },
-    skin_cyber: { h: 300, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Cyber Punk', ru: 'Киберпанк' },
+    skin_cyber: { h: 300, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Cyber Blue', ru: 'Кибер-синяя' },
     skin_sunset: { h: 28, s: 0.95, lMult: 1.1, darkShorts: false, name: 'Sunset Gold', ru: 'Закатное Золото' },
     skin_hydro: { h: 175, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Hydro Striker', ru: 'Гидро Страйкер' },
     skin_mars: { h: 10, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Mars Rover', ru: 'Марсианский Ровер' },
@@ -2384,6 +2384,8 @@
         bStart = '#f8fafc'; bMid = '#94a3b8'; bEnd = '#1e293b'; seam = '#0284c7';
       } else if (id === 'ball_hoops_midnight') {
         bStart = '#3b82f6'; bMid = '#1e1b4b'; bEnd = '#050714'; seam = '#f59e0b'; hasRing = true;
+      } else if (id === 'ball_hoops_street') {
+        bStart = '#ea580c'; bMid = '#c2410c'; bEnd = '#451a03'; seam = '#180802';
       } else if (id === 'ball_tidal') {
         bStart = '#38bdf8'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#cffafe';
       } else if (id === 'ball_cyber_neon') {
@@ -2418,8 +2420,8 @@
       var seamColor = '#00f0ff';
       var hasAura = false;
 
-      if (id === 'ball_footy_plasma') {
-        fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#0f172a'; patch = '#10b981'; seamColor = '#00f0ff'; hasAura = true;
+      if (id === 'ball_footy_plasma' || id === 'ball_footy_neon') {
+        fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#082f49'; patch = '#0f172a'; seamColor = '#38bdf8'; hasAura = true;
       } else if (id === 'ball_footy_gold') {
         fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#713f12'; patch = '#ca8a04'; seamColor = '#fef08a'; hasAura = true;
       } else if (id === 'ball_footy_inferno') {
@@ -3917,6 +3919,10 @@
       if (!cat && itemOrId.type === 'pack') cat = 'packs';
     }
 
+    if (cat === 'balls_footy' || cat === 'balls_hoops') {
+      cat = 'balls';
+    }
+
     // Auto-detect or refine category from item ID, slot, or object
     if (!cat || cat === 'other') {
       if (id.startsWith('crowd_')) cat = 'crowd';
@@ -5346,6 +5352,36 @@
 
 
 
+  // Polished Vector Social & Referral Brand Artwork
+  function getTelegramLogoSvg(size) {
+    var sz = size || 38;
+    return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="20" cy="20" r="19" fill="url(#tg_grad)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>' +
+      '<defs><linearGradient id="tg_grad" x1="20" y1="0" x2="20" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#2AABEE"/><stop offset="1" stop-color="#229ED9"/></linearGradient></defs>' +
+      '<path d="M10 19.8L28.5 12.2L25 27.5L20 22.8L16.2 25.8L16.8 21.4L25.2 15.2L14.2 20.6L10 19.8Z" fill="#ffffff"/>' +
+      '</svg>';
+  }
+
+  function getXLogoSvg(size) {
+    var sz = size || 38;
+    return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="40" height="40" rx="10" fill="#090d16" stroke="rgba(255,255,255,0.22)" stroke-width="1.2"/>' +
+      '<path d="M26.8 11H30L22.9 19.1L31.2 30H24.8L19.8 23.4L14.1 30H10.9L18.4 21.4L10.5 11H17.1L21.6 17.1L26.8 11ZM25.7 28.1H27.5L16.1 12.8H14.2L25.7 28.1Z" fill="#ffffff"/>' +
+      '</svg>';
+  }
+
+  function getInviteFriendsSvg(size) {
+    var sz = size || 40;
+    return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="40" height="40" rx="10" fill="#0f172a" stroke="rgba(0,240,255,0.35)" stroke-width="1.2"/>' +
+      '<circle cx="15" cy="14" r="5" fill="#38bdf8"/>' +
+      '<path d="M8 28C8 23.6 11.6 20 16 20C17.8 20 19.5 20.6 20.8 21.7C19.6 23.2 19 25 19 27V28H8Z" fill="#0284c7"/>' +
+      '<circle cx="26" cy="16" r="4.5" fill="#f97316"/>' +
+      '<path d="M21 28C21 24.1 24.1 21 28 21C31.9 21 35 24.1 35 28H21Z" fill="#ea580c"/>' +
+      '<path d="M28 10V14M26 12H30" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+
   // Build Quests & Mission Operations Board Page (3 Separated Top-Level Categories)
   // Build Quests & Social Ops Page (Strictly 2 tabs: Invite a Friend & Social Tasks)
   function buildQuestsPage(app, initialMainTab) {
@@ -5457,7 +5493,7 @@
       var hero = document.createElement('div');
       hero.className = 'fvh-quest-ref-hero';
       hero.innerHTML =
-        '<div class="fvh-quest-ref-icon">👥</div>' +
+        '<div class="fvh-quest-ref-icon" style="margin-bottom:8px;display:flex;justify-content:center;">' + getInviteFriendsSvg(44) + '</div>' +
         '<div class="fvh-quest-ref-title">' + tr('tabInviteFriends') + '</div>' +
         '<div class="fvh-quest-ref-desc" style="color:var(--text-muted);font-size:12px;margin:6px 0 12px;line-height:1.45;">' +
         tr('refRuleText') +
@@ -5547,14 +5583,14 @@
           id: 'q_sub_tg',
           title: tr('socialTgTask'),
           reward: 50,
-          icon: '📢',
+          iconHtml: getTelegramLogoSvg(36),
           url: 'https://t.me/FootyVsHoops'
         },
         {
           id: 'q_sub_x',
           title: tr('socialXTask'),
           reward: 50,
-          icon: '🐦',
+          iconHtml: getXLogoSvg(36),
           url: 'https://x.com/FootyVsHoops'
         }
       ];
@@ -5580,7 +5616,7 @@
 
         card.innerHTML =
           '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
-          '  <div style="font-size:24px;width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + task.icon + '</div>' +
+          '  <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (task.iconHtml || task.icon) + '</div>' +
           '  <div style="flex:1;min-width:0;">' +
           '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + task.title + '</div>' +
           '    <div style="font-size:11.5px;font-weight:800;color:#facc15;margin-top:2px;display:inline-flex;align-items:center;gap:4px;">' +
@@ -6665,13 +6701,26 @@
     searchWrap.innerHTML =
       '<div class="fvh-lb-search-box">' +
       '  <span class="fvh-lb-search-icon">🔍</span>' +
-      '  <input type="text" class="fvh-lb-search-input" placeholder="' + tr('searchAthletePlaceholder') + '" />' +
+      '  <input type="text" class="fvh-lb-search-input" placeholder="' + tr('searchAthletePlaceholder') + '" enterkeyhint="done" autocapitalize="none" autocorrect="off" spellcheck="false" />' +
       '  <button class="fvh-lb-search-clear" style="display:none;">✕</button>' +
       '</div>';
     body.appendChild(searchWrap);
 
     var searchInput = searchWrap.querySelector('.fvh-lb-search-input');
     var searchClear = searchWrap.querySelector('.fvh-lb-search-clear');
+
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        searchInput.blur();
+      }
+    });
+
+    var dismissSearchKeyboard = function (e) {
+      if (document.activeElement === searchInput && !searchWrap.contains(e.target)) {
+        searchInput.blur();
+      }
+    };
+    document.addEventListener('touchstart', dismissSearchKeyboard, { passive: true });
 
     // Container for results (Podium + Rows)
     var resultsMount = document.createElement('div');
@@ -6820,8 +6869,14 @@
 
     renderAthletesDisplay('');
 
-    // 7. Docked Current Player Bar
-    if (data.player) {
+    // 7. Docked Current Player Bar (rendered ONLY if user is outside the visible top leaderboard ranks)
+    var isPlayerInTop = false;
+    if (data.top && Array.isArray(data.top)) {
+      isPlayerInTop = data.top.some(function (ath) {
+        return ath.isCurrentUser || (data.player && (ath.id === data.player.id || ath.name === data.player.name));
+      });
+    }
+    if (data.player && !isPlayerInTop) {
       var pTier = data.player.tier || getRankTier(data.player.score || 0);
       var sticky = document.createElement('div');
       sticky.className = 'fvh-leaderboard-sticky-player ' + myChar;
@@ -6832,10 +6887,10 @@
         '</div>' +
         '<div class="fvh-lb-sticky-info">' +
         '  <div class="fvh-lb-sticky-title">' +
-        (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) + ' · ' + tr('yourRank') +
+        (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) + ' · ' + (getActiveLang() === 'ru' ? 'Ваша позиция в таблице' : 'Your Rank') +
         '  </div>' +
         '  <div class="fvh-lb-sticky-sub">' +
-        (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : (getActiveLang() === 'ru' ? 'Лидер дивизиона!' : 'Division Leader!')) +
+        (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : (getActiveLang() === 'ru' ? 'Сезон 1 · Предзапуск' : 'Season 1 · Pre-Launch')) +
         '  </div>' +
         '</div>' +
         '<div class="fvh-lb-sticky-score">' +
@@ -7235,6 +7290,160 @@
     };
 
     body.appendChild(tokenCard);
+
+    // 3.5 TON Connect & Public Airdrop Wallet Card (Stage J4)
+    var walletAddress = d.tonWalletAddress || (d.profile && d.profile.tonAddress) || '';
+    var isWalletConnected = Boolean(walletAddress);
+
+    function formatAbbreviatedAddress(addr) {
+      if (!addr || addr.length < 10) return addr || '';
+      return addr.slice(0, 4) + '...' + addr.slice(-4);
+    }
+
+    var walletCard = document.createElement('div');
+    walletCard.className = 'fvh-card-panel fvh-ton-wallet-card';
+    walletCard.style.background = isWalletConnected
+      ? 'linear-gradient(135deg, rgba(0, 152, 234, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)'
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.95) 100%)';
+    walletCard.style.border = isWalletConnected ? '1.5px solid rgba(0, 152, 234, 0.45)' : '1px solid rgba(255, 255, 255, 0.12)';
+    walletCard.style.padding = '16px 18px';
+
+    var statusBadgeHtml = isWalletConnected
+      ? '<span style="font-size:11px;color:#22c55e;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:3px 10px;font-weight:800;">✓ ' + tr('profileTgeWalletConnected') + '</span>'
+      : '<span style="font-size:11px;color:#38bdf8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);border-radius:20px;padding:3px 10px;font-weight:800;">' + tr('profileTgeWalletNotConnected') + '</span>';
+
+    walletCard.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+      '  <div style="display:flex;align-items:center;gap:10px;">' +
+      '    <div style="width:34px;height:34px;border-radius:10px;background:rgba(0,152,234,0.15);border:1px solid rgba(0,152,234,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;">💎</div>' +
+      '    <div>' +
+      '      <div style="font-size:14px;font-weight:900;color:#fff;">' + tr('profileTgeWalletTitle') + '</div>' +
+      '      <div style="font-size:10.5px;color:var(--text-muted);">' + (getActiveLang() === 'ru' ? 'Снимок TGE & Эйрдроп (Тестнет-каркас)' : 'TGE Snapshot & Airdrop (Scaffolding)') + '</div>' +
+      '    </div>' +
+      '  </div>' +
+      statusBadgeHtml +
+      '</div>' +
+      (isWalletConnected
+        ? '<div style="background:rgba(0,0,0,0.35);border:1px solid rgba(0,152,234,0.25);border-radius:10px;padding:12px 14px;margin-bottom:10px;">' +
+          '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + (getActiveLang() === 'ru' ? 'Привязанный публичный адрес' : 'Linked Public Address') + '</div>' +
+          '  <div style="font-size:15px;font-weight:900;color:#38bdf8;font-family:monospace;margin-top:4px;word-break:break-all;">' + escapeHtml(formatAbbreviatedAddress(walletAddress)) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;">' +
+          '  <button class="btn small fvh-btn-copy-ton-addr" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);color:#fff;font-weight:800;padding:8px 12px;cursor:pointer;">📋 ' + (getActiveLang() === 'ru' ? 'Копировать' : 'Copy') + '</button>' +
+          '  <button class="btn small fvh-btn-disconnect-ton" style="flex:1;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#ef4444;font-weight:800;padding:8px 12px;cursor:pointer;">✕ ' + (getActiveLang() === 'ru' ? 'Отключить' : 'Disconnect') + '</button>' +
+          '</div>'
+        : '<p style="font-size:11.5px;color:var(--text-muted);line-height:1.45;margin:0 0 12px;">' + tr('profileTgeModalDesc') + '</p>' +
+          '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#fbbf24;display:flex;align-items:flex-start;gap:6px;">' +
+          '  <span>🛡️</span>' +
+          '  <span>' + tr('profileTgeSecurityWarning') + '</span>' +
+          '</div>' +
+          '<button class="btn primary block fvh-btn-connect-ton" style="font-weight:800;padding:10px 14px;background:#0098ea;border:none;">💎 ' + tr('profileTgeConnectBtn') + '</button>'
+      );
+
+    if (isWalletConnected) {
+      walletCard.querySelector('.fvh-btn-copy-ton-addr').onclick = function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(walletAddress).then(function () {
+            app.audio.play('click');
+            showToast(getActiveLang() === 'ru' ? 'Адрес кошелька скопирован' : 'Wallet address copied');
+          });
+        }
+      };
+
+      walletCard.querySelector('.fvh-btn-disconnect-ton').onclick = function () {
+        app.audio.play('click');
+        safeEconomyApi('/api/wallet/disconnect', { playerId: getPlayerId() }).then(function () {
+          app.store.update(function (st) {
+            st.tonWalletAddress = null;
+            if (st.profile) st.profile.tonAddress = null;
+          });
+          showToast(getActiveLang() === 'ru' ? 'Кошелек отключен' : 'Wallet disconnected');
+          app.show(buildProfilePage(app), 'profile');
+        }).catch(function () {
+          app.store.update(function (st) {
+            st.tonWalletAddress = null;
+            if (st.profile) st.profile.tonAddress = null;
+          });
+          app.show(buildProfilePage(app), 'profile');
+        });
+      };
+    } else {
+      walletCard.querySelector('.fvh-btn-connect-ton').onclick = function () {
+        app.audio.play('click');
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-back';
+        var modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML =
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+          '  <h3 style="margin:0;font-size:16px;font-weight:900;">💎 ' + tr('profileTgeModalTitle') + '</h3>' +
+          '  <button class="modal-close-x" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
+          '</div>' +
+          '<p style="font-size:12.5px;color:var(--text-muted);line-height:1.45;margin:0 0 12px;">' + tr('profileTgeModalDesc') + '</p>' +
+          '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#fca5a5;display:flex;align-items:flex-start;gap:6px;">' +
+          '  <span>⚠️</span>' +
+          '  <span>' + tr('profileTgeSeedWarningAlert') + '</span>' +
+          '</div>' +
+          '<input type="text" class="fvh-ton-modal-input" placeholder="' + tr('profileTgeAddressPlaceholder') + '" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,0.4);border:1px solid rgba(0,152,234,0.4);border-radius:10px;padding:10px 12px;color:#fff;font-family:monospace;font-size:13px;margin-bottom:14px;outline:none;" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" />' +
+          '<div style="display:flex;gap:8px;">' +
+          '  <button class="btn block fvh-btn-cancel-ton" style="flex:1;">' + (getActiveLang() === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
+          '  <button class="btn primary block fvh-btn-submit-ton" style="flex:1.5;background:#0098ea;border:none;">' + tr('profileTgeConnectBtn') + '</button>' +
+          '</div>';
+
+        modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+        modal.querySelector('.fvh-btn-cancel-ton').onclick = function () { overlay.remove(); };
+
+        var inputEl = modal.querySelector('.fvh-ton-modal-input');
+        modal.querySelector('.fvh-btn-submit-ton').onclick = function () {
+          var raw = (inputEl.value || '').trim();
+          if (!raw) {
+            showToast(tr('profileTgeInvalidAddress'));
+            return;
+          }
+          if (/\s+/.test(raw) || raw.split(' ').length > 1) {
+            alert(tr('profileTgeSeedWarningAlert'));
+            return;
+          }
+          var isDomain = /^[a-zA-Z0-9_-]+\.ton$/i.test(raw);
+          var isBase64 = /^(EQ|UQ|kQ|0:)[a-zA-Z0-9_\-+/]{46,66}$/i.test(raw);
+          if (!isDomain && !isBase64) {
+            showToast(tr('profileTgeInvalidAddress'));
+            return;
+          }
+
+          safeEconomyApi('/api/wallet/link', {
+            playerId: getPlayerId(),
+            address: raw
+          }).then(function (res) {
+            app.store.update(function (st) {
+              st.tonWalletAddress = raw;
+              if (!st.profile) st.profile = {};
+              st.profile.tonAddress = raw;
+            });
+            app.audio.play('claim');
+            showToast(getActiveLang() === 'ru' ? '✓ TON-кошелек успешно привязан!' : '✓ TON wallet linked successfully!');
+            overlay.remove();
+            app.show(buildProfilePage(app), 'profile');
+          }).catch(function (e) {
+            app.store.update(function (st) {
+              st.tonWalletAddress = raw;
+              if (!st.profile) st.profile = {};
+              st.profile.tonAddress = raw;
+            });
+            app.audio.play('claim');
+            showToast(getActiveLang() === 'ru' ? '✓ TON-кошелек привязан' : '✓ TON wallet linked');
+            overlay.remove();
+            app.show(buildProfilePage(app), 'profile');
+          });
+        };
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        setTimeout(function () { inputEl.focus(); }, 100);
+      };
+    }
+
+    body.appendChild(walletCard);
 
     // 4. Transaction History Ledger
     var ledgerCard = document.createElement('div');
@@ -8636,7 +8845,7 @@
         var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
         var localizedName = trItem(arena.name);
 
-        card.className = 'fvh-arena-card r-' + rarKey + (isEquipped ? ' is-equipped' : isOwned ? ' is-owned' : ' is-locked');
+        card.className = 'fvh-arena-card r-' + rarKey + (isEquipped ? ' is-equipped' : ' is-owned');
 
         var isDefaultStadium = Boolean(arena.isDefault);
         var envBadgeHtml = isDefaultStadium
@@ -8653,7 +8862,6 @@
           '<div class="fvh-arena-meta-row">' +
           envBadgeHtml +
           '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-          (isOwned && !isEquipped ? '<span style="font-size:11px;color:#10b981;font-weight:700;">✓ ' + tr('inCollection') + '</span>' : '') +
           '</div>' +
           '<h3 class="fvh-arena-title">' + localizedName + '</h3>' +
           '<p class="fvh-arena-desc">' + arena.desc + '</p>' +
@@ -8667,7 +8875,7 @@
           btn.className = 'btn small block';
           btn.disabled = true;
           btn.textContent = '✓ ' + tr('equipped');
-        } else if (isOwned) {
+        } else {
           btn.className = 'btn small primary block';
           btn.textContent = tr('selectArenaBtn');
           btn.onclick = function () {
@@ -8683,13 +8891,6 @@
             app.audio.play('claim');
             showToast(tr('equipped') + ': ' + localizedName);
             renderArenaGrid();
-          };
-        } else {
-          btn.className = 'btn small block';
-          btn.innerHTML = getFvhCoinSvg('inline') + ' ' + arena.price + ' · ' + tr('buyArenaBtn');
-          btn.onclick = function () {
-            app.audio.play('click');
-            app.go('shop');
           };
         }
 
@@ -8885,11 +9086,11 @@
       quickCard.innerHTML =
         '<div class="fvh-mode-card-header">' +
           '<span class="fvh-mode-badge online">⚡ ' + tr('quickMatchBadge') + '</span>' +
-          '<span class="fvh-mode-server-status"><span class="status-dot"></span> P2P Live</span>' +
+          '<span class="fvh-mode-server-status"><span class="status-dot live"></span> 1v1 PvP</span>' +
         '</div>' +
         '<div class="fvh-mode-card-body">' +
           '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
-          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь в реальном времени против живого соперника 1v1 через WebRTC / P2P.' : 'Battle in real-time against a live 1v1 human opponent via WebRTC / P2P.') + '</div>' +
+          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь в реальном времени против живого соперника 1v1 через WebRTC.' : 'Battle in real-time against a live 1v1 human opponent via WebRTC.') + '</div>' +
           '<div class="fvh-ctrl-row" style="margin:10px 0 12px 0;">' +
             '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
             '<div class="seg seg-sport-online">' +
@@ -8919,34 +9120,6 @@
     }
     renderQuickCard();
     grid.appendChild(quickCard);
-
-    // -------------------------------------------------------------
-    // CARD 3: Private Match (Приватный матч - 1v1 с другом)
-    // -------------------------------------------------------------
-    var privateCard = document.createElement('div');
-    privateCard.className = 'fvh-mode-card private-card';
-    privateCard.innerHTML =
-      '<div class="fvh-mode-card-header">' +
-        '<span class="fvh-mode-badge private">🔑 ' + tr('privateMatchBadge') + '</span>' +
-      '</div>' +
-      '<div class="fvh-mode-card-body">' +
-        '<div class="fvh-mode-title">' + tr('privateMatchTitle') + '</div>' +
-        '<div class="fvh-mode-desc">' + tr('privateMatchDesc') + '</div>' +
-      '</div>' +
-      '<div class="fvh-mode-card-actions two-btn">' +
-        '<button class="btn block fvh-btn-create-room">🏠 ' + tr('privateMatchCreate') + '</button>' +
-        '<button class="btn block fvh-btn-join-room">🔗 ' + tr('privateMatchJoin') + '</button>' +
-      '</div>';
-
-    privateCard.querySelector('.fvh-btn-create-room').onclick = function () {
-      app.audio.play('click');
-      showCreateRoomModal(app, curChar);
-    };
-    privateCard.querySelector('.fvh-btn-join-room').onclick = function () {
-      app.audio.play('click');
-      showJoinRoomModal(app, curChar);
-    };
-    grid.appendChild(privateCard);
 
     body.appendChild(grid);
     page.appendChild(body);
@@ -9208,12 +9381,12 @@
     var heroLoreDesc = isFooty ? tr('teamFootyDesc') : tr('teamHoopsDesc');
 
     heroCard.innerHTML =
-      '<div class="fvh-solo-header" style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:8px;gap:6px;">' +
-      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:11px;padding:3px 8px;font-weight:900;white-space:nowrap;">' + badgeText + '</span>' +
-      '  <span class="fvh-solo-rival-pill" style="font-size:10.5px;color:#f59e0b;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:999px;font-weight:800;white-space:nowrap;">' + rivalText + '</span>' +
+      '<div class="fvh-solo-header">' +
+      '  <span class="fvh-hero-badge ' + curChar + '">' + badgeText + '</span>' +
+      '  <span class="fvh-solo-rival-pill">' + rivalText + '</span>' +
       '</div>' +
       '<div class="fvh-hero-avatar-box solo-avatar-box" style="height:230px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-         getCharacterDisplayHtml(curChar, curChar === 'hoops' ? (d.equipped && (d.equipped['skin.hoops'] || (d.equipped.skin !== 'skin_rookie' ? d.equipped.skin : null))) : (d.equipped && (d.equipped['skin.footy'] || (d.equipped.skin !== 'skin_solar' ? d.equipped.skin : null)))) +
+         getCharacterDisplayHtml(curChar, curChar === 'hoops' ? (d.equipped && (d.equipped['skin.hoops'] || (d.equipped.skin !== 'skin_rookie' ? d.equipped.skin : null))) : (d.equipped && (d.equipped['skin.footy'] || (d.equipped.skin !== 'skin_solar' ? d.equipped.skin : null))), { showJerseyTag: false }) +
       '</div>' +
       '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY' : '🏀 HOOPS') + '</div>' +
       '<div class="fvh-hero-role" style="font-size:12.5px;color:var(--text-muted);font-weight:700;margin-top:2px;text-align:center;">' + heroRoleText + '</div>' +
