@@ -49,12 +49,13 @@ assert(!redesignJs.includes('body.appendChild(featuredHero);'), 'featuredHero mu
 assert(!redesignJs.includes('featuredHero.innerHTML ='), 'featuredHero innerHTML must not be populated in Shop');
 console.log('  [PASS] "Item of the Day" hero spotlight removed; catalog categories immediately visible');
 
-// Test 6: Custom Arena icons replace generic emojis in Mode Selection banner
-console.log('Test 6: Checking Mode Selection custom arena preview...');
-assert(redesignJs.includes('fvh-mode-arena-thumb-preview'), 'Mode banner must use fvh-mode-arena-thumb-preview');
-assert(!redesignJs.includes('fvh-mode-arena-icon'), 'Generic emoji fvh-mode-arena-icon must be replaced');
-assert(redesignCss.includes('.fvh-mode-arena-thumb-preview'), 'CSS for fvh-mode-arena-thumb-preview must exist');
-console.log('  [PASS] Custom arena preview SVG replaces generic emojis in mode banner');
+// Test 6: Arena selection completely removed from Mode Selection screen
+console.log('Test 6: Checking Mode Selection arena removal...');
+const modeSelectFunc = redesignJs.slice(redesignJs.indexOf('function buildModeSelectPage('), redesignJs.indexOf('function showRivalryModal()'));
+assert(!modeSelectFunc.includes('fvh-mode-arena-banner'), 'Mode selection must not render fvh-mode-arena-banner');
+assert(!modeSelectFunc.includes('arenaBanner'), 'Mode selection must not construct arenaBanner');
+assert(modeSelectFunc.includes('fvh-mode-grid'), 'Mode selection must proceed directly to match mode grid');
+console.log('  [PASS] Arena selection banner completely removed from mode selection screen');
 
 // Test 7: Rivalry note eliminates "DEMO" / "ДЕМО"
 console.log('Test 7: Checking Rivalry note text...');
@@ -97,4 +98,48 @@ assert(redesignJs.includes("return buildQuestsPage(app, 'daily')"), 'buildBattle
 assert(redesignJs.includes("Боевой пропуск не поддерживается") || redesignJs.includes("Battle Pass is not supported"), 'openBattlePassCheckout must alert that Battle Pass is not supported');
 console.log('  [PASS] Battle Pass eliminated and cleanly redirected to Quests');
 
-console.log('\nAll 12/12 release verification tests passed successfully!');
+// Test 13: Easy AI Balancing
+console.log('Test 13: Checking Easy AI difficulty settings and gameplay tuning...');
+const gameJs = fs.readFileSync(path.join(__dirname, '../js/game.js'), 'utf8');
+assert(gameJs.includes('easy: { speed: 0.72'), 'Easy AI speed must be tuned to 0.72');
+assert(gameJs.includes('think: 0.45'), 'Easy AI reaction delay must be tuned to 0.45');
+assert(gameJs.includes('shotErr: 0.65'), 'Easy AI shot error must be widened to 0.65');
+assert(gameJs.includes('hoopsErr: 1.5'), 'Easy AI hoops error must be widened to 1.50');
+assert(gameJs.includes('tackleProb: 0.08'), 'Easy AI tackle probability must be reduced to 0.08');
+assert(gameJs.includes('stealProb: 0.08'), 'Easy AI steal probability must be reduced to 0.08');
+assert(gameJs.includes('keeperSpeed: 2.0'), 'Easy AI keeper speed must be reduced to 2.0');
+assert(gameJs.includes('canSprint: false'), 'Easy AI canSprint must be disabled');
+assert(gameJs.includes('KEEPER_REACH = { easy: 1.05'), 'Easy keeper reach must be reduced to 1.05');
+assert(gameJs.includes('KEEPER_MISJUDGE = { easy: 2.4'), 'Easy keeper misjudge must be increased to 2.4');
+// Ensure distinct levels
+assert(gameJs.includes('normal: { speed: 0.97') && gameJs.includes('hard: { speed: 1.05'), 'Normal and Hard difficulties must remain distinct challenges');
+console.log('  [PASS] Easy AI is genuinely easy and distinctly balanced from Normal and Hard');
+
+// Test 14: Football-Only Wardrobe
+console.log('Test 14: Checking Football-Only wardrobe category controls and catalog...');
+const charactersFunc = redesignJs.slice(redesignJs.indexOf('function buildCharactersPage('), redesignJs.indexOf('function buildShopPage('));
+assert(!charactersFunc.includes("{ id: 'balls_hoops', label: tr('catBasketballBalls') }"), 'Wardrobe categories must not contain balls_hoops');
+assert(charactersFunc.includes("{ id: 'skins', label: tr('catSkins') }"), 'Wardrobe must contain skins');
+assert(charactersFunc.includes("{ id: 'balls_footy', label: tr('catFootballBalls') }"), 'Wardrobe must contain balls_footy');
+const shopCatalogFunc = redesignJs.slice(redesignJs.indexOf('function buildDefaultShopCatalog('), redesignJs.indexOf('function buildShopPage('));
+assert(!shopCatalogFunc.includes('skin_solar'), 'Default wardrobe catalog must exclude basketball jersey skin_solar');
+assert(!shopCatalogFunc.includes('ball_hoops_'), 'Default wardrobe catalog must exclude basketball balls');
+assert(shopCatalogFunc.includes('skin_rookie') && shopCatalogFunc.includes('ball_footy_classic'), 'Default catalog must contain football cosmetics');
+console.log('  [PASS] Wardrobe category controls and catalog are strictly football-only');
+
+// Test 15: Safe Area & Bottom Navigation Scroll Clearance
+console.log('Test 15: Checking Mobile safe-area, bottom nav clearance, and Daily Tasks discoverability...');
+assert(redesignCss.includes('calc(var(--safe-bottom) + 95px)'), 'Scroll containers must have safe clearance above bottom nav');
+assert(redesignCss.includes('.solo-avatar-box') && redesignCss.includes('height: 165px !important'), 'Solo hero avatar box must be compact (165px) on mobile');
+assert(redesignCss.includes('.fvh-season-hub-card') && redesignCss.includes('margin-bottom: 24px !important'), 'Daily Tasks card must have generous bottom margin');
+console.log('  [PASS] Mobile layout respects safe-area, allows full Daily Tasks scroll clearance');
+
+// Test 16: Wardrobe Grid Uniformity
+console.log('Test 16: Checking Wardrobe card grid uniformity...');
+assert(redesignCss.includes('.fvh-wardrobe-grid .shop-grid'), 'Wardrobe grid rules must exist');
+assert(redesignCss.includes('.fvh-wardrobe-grid .card.shopc .thumb'), 'Wardrobe card thumb rules must exist');
+assert(redesignCss.includes('.fvh-wardrobe-grid .card.shopc .nm'), 'Wardrobe card name rules must exist');
+assert(redesignCss.includes('.fvh-wardrobe-grid .card.shopc > button.btn'), 'Wardrobe card button rules must exist');
+console.log('  [PASS] Wardrobe cards have uniform widths, image containers, titles, and button heights');
+
+console.log('\nAll 16/16 release verification tests passed successfully!');

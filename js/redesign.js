@@ -4855,14 +4855,14 @@
     var itemsCol = document.createElement('div');
     itemsCol.className = 'list';
 
-    // Slot Category Tabs
+    // Slot Category Tabs (Football only)
+    if (curSlot !== 'balls_footy') curSlot = 'skins';
     var slotSeg = document.createElement('div');
     slotSeg.className = 'seg';
     slotSeg.style.marginBottom = '12px';
     var slots = [
       { id: 'skins', label: tr('catSkins') },
-      { id: 'balls_footy', label: tr('catFootballBalls') },
-      { id: 'balls_hoops', label: tr('catBasketballBalls') }
+      { id: 'balls_footy', label: tr('catFootballBalls') }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
@@ -4927,15 +4927,13 @@
       var crowdObj = CROWD_CATALOG.find(function(c) { return c.id === activeCrowdId; });
       var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
 
-      var curCharSkin = curChar === 'hoops'
-        ? (eq['skin.hoops'] || (eq.skin && eq.skin !== 'skin_rookie' ? eq.skin : 'skin_solar'))
-        : (eq['skin.footy'] || (eq.skin && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'));
-      var activeBallId = eq['ball.' + curChar] || (curChar === 'hoops' ? 'ball_hoops_street' : 'ball_footy_classic');
-      var activeArenaId = eq['stadium.' + curChar] || (curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
+      var curCharSkin = eq['skin.footy'] || (eq.skin && eq.skin !== 'skin_solar' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie');
+      var activeBallId = eq['ball.footy'] || (eq.ball && !eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_footy_classic');
+      var activeArenaId = eq['stadium.footy'] || eq.stadium || 'std_footy_classic';
 
       equipSlotList.innerHTML =
         '<div class="fvh-equipped-slot"><span>' + tr('catSkins') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + (curChar === 'footy' ? tr('catFootballBalls') : tr('catBasketballBalls')) + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>';
+        '<div class="fvh-equipped-slot"><span>' + tr('catFootballBalls') + ':</span><b>' + getItemLabelById(activeBallId, 'Classic Ball') + '</b></div>';
 
       // Load matching items for current slot (OWNED ITEMS ONLY)
       itemsGrid.innerHTML = '';
@@ -4945,7 +4943,11 @@
 
         var matching = baseCatalog.filter(function (it) {
           if (it.category !== curSlot) return false;
-          var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie');
+          // Filter out basketball items safely
+          if (it.id === 'skin_solar' || it.id === 'skin_sunset' || it.id === 'skin_mars' || it.category === 'balls_hoops' || (it.slot && it.slot === 'ball.hoops')) {
+            return false;
+          }
+          var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) || (it.id === 'skin_rookie') || (it.id === 'ball_footy_classic');
           return isOwned;
         });
 
@@ -5614,35 +5616,32 @@
   ];
 
   // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
-  // Canonical Stage 1 Shop & Wardrobe Catalog
+  // Canonical Football-Only Stage 1 Shop & Wardrobe Catalog
   function buildDefaultShopCatalog(curChar) {
     return [
-      // Skins / Jerseys (Common 300, Rare 700, Epic 1500)
+      // Football Kits / Skins (Common 300, Rare 700-800, Epic 1500-1600, Legendary 2500)
       { id: 'skin_rookie', name: 'Rookie Blue', category: 'skins', slot: 'skin', rarity: 'common', price: 0, isDefault: true },
       { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', slot: 'skin', rarity: 'common', price: 300 },
       { id: 'skin_neon', name: 'Neon Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
       { id: 'skin_frost', name: 'Frost Giant', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
       { id: 'skin_shadow', name: 'Shadow Ninja', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
-      { id: 'skin_solar', name: 'Solar Flare', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+      { id: 'skin_gold', name: 'Golden Legend', category: 'skins', slot: 'skin', rarity: 'legendary', price: 2500 },
+      { id: 'skin_cyber', name: 'Cyber Blue', category: 'skins', slot: 'skin', rarity: 'rare', price: 800 },
+      { id: 'skin_hydro', name: 'Hydro Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 750 },
+      { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', slot: 'skin', rarity: 'epic', price: 1600 },
 
       // Football Balls (Common 200, Rare 500, Epic 1000)
       { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
       { id: 'ball_footy_neon', name: 'Cyan Core', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
       { id: 'ball_footy_inferno', name: 'Solar Blaze', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
-      { id: 'ball_footy_gold', name: 'Aura', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
-
-      // Basketball Balls (Common 200, Rare 500, Epic 1000)
-      { id: 'ball_hoops_street', name: 'Street Grip', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_hoops_blaze', name: 'Neon Blaze', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 200 },
-      { id: 'ball_hoops_chrome', name: 'Chrome Spark', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 500 },
-      { id: 'ball_hoops_midnight', name: 'Midnight Matte', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 }
+      { id: 'ball_footy_gold', name: 'Aura', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 }
     ];
   }
 
   // Build Editorial Shop & Sports Boutique Page
   function buildShopPage(app, initialCategory, inspectId) {
     var curCategory = initialCategory || 'skins';
-    if (curCategory === 'all' || curCategory === 'bundles' || curCategory === 'stadiums' || curCategory === 'packs') {
+    if (curCategory === 'all' || curCategory === 'bundles' || curCategory === 'stadiums' || curCategory === 'packs' || curCategory === 'balls_hoops') {
       curCategory = 'skins';
     }
     if (curCategory === 'balls') {
@@ -5690,14 +5689,13 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
 
-    // 1. Category Selector Tabs (Skins, Football Balls, Basketball Balls, FvH Coins)
+    // 1. Category Selector Tabs (Skins, Football Balls, FvH Coins)
     var catSeg = document.createElement('div');
     catSeg.className = 'seg fvh-shop-categories';
     catSeg.style.marginBottom = '16px';
     var categories = [
       { id: 'skins', label: tr('catSkins') },
       { id: 'balls_footy', label: tr('catFootballBalls') },
-      { id: 'balls_hoops', label: tr('catBasketballBalls') },
       { id: 'coins', label: tr('catCoins') }
     ];
     categories.forEach(function (c) {
@@ -8677,29 +8675,6 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-mode-page-body';
 
-    // Arena Selection Banner at top of Mode Selection
-    var currentArenaId = (app.store.data.equipped && (app.store.data.equipped['stadium.' + curChar] || app.store.data.equipped.stadium)) || (curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
-    var currentArenaDef = SCENIC_ARENAS_CATALOG.find(function (a) { return a.id === currentArenaId; }) || (curChar === 'hoops' ? { name: 'Street Classic', icon: '🏀' } : { name: 'Classic Grass', icon: '🏟️' });
-
-    var arenaBanner = document.createElement('div');
-    arenaBanner.className = 'fvh-mode-arena-banner';
-    arenaBanner.style.cursor = 'pointer';
-    arenaBanner.innerHTML =
-      '<div class="fvh-mode-arena-left">' +
-      '  <div class="fvh-mode-arena-thumb-preview">' + renderItemArtwork(currentArenaDef, 'thumb') + '</div>' +
-      '  <div class="fvh-mode-arena-text-block">' +
-      '    <div class="fvh-mode-arena-sub">' + tr('homeArena') + '</div>' +
-      '    <div class="fvh-mode-arena-name" title="' + escapeHtml(trItem(currentArenaDef.name)) + '">' + trItem(currentArenaDef.name) + '</div>' +
-      '  </div>' +
-      '</div>' +
-      '<button class="btn small primary fvh-mode-arena-btn">' + tr('arenaSelectTitle') + ' ➔</button>';
-
-    arenaBanner.onclick = function () {
-      app.audio.play('click');
-      app.show(buildArenaSelectPage(app), 'arenas');
-    };
-    body.appendChild(arenaBanner);
-
     // Mode Grid Container (3 Cards: Practice vs AI, Online 1v1, Private Match)
     var grid = document.createElement('div');
     grid.className = 'fvh-mode-grid';
@@ -9123,7 +9098,7 @@
       '  <span class="fvh-hero-badge ' + curChar + '">' + badgeText + '</span>' +
       '  <span class="fvh-solo-rival-pill">' + rivalText + '</span>' +
       '</div>' +
-      '<div class="fvh-hero-avatar-box solo-avatar-box" style="height:230px;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+      '<div class="fvh-hero-avatar-box solo-avatar-box" style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
          getCharacterDisplayHtml(curChar, curChar === 'hoops' ? (d.equipped && (d.equipped['skin.hoops'] || (d.equipped.skin !== 'skin_rookie' ? d.equipped.skin : null))) : (d.equipped && (d.equipped['skin.footy'] || (d.equipped.skin !== 'skin_solar' ? d.equipped.skin : null))), { showJerseyTag: false }) +
       '</div>' +
       '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY' : '🏀 HOOPS') + '</div>' +

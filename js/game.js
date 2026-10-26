@@ -1857,9 +1857,9 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
     exports.newTackleState = newTackleState;
     exports.makeAgent = makeAgent;
     exports.DIFFICULTY = {
-        easy: { speed: 0.88, think: 0.22, shotErr: 0.26, hoopsErr: 0.9, tackleProb: 0.22, keeperSpeed: 3.0, stealProb: 0.2 },
-        normal: { speed: 0.97, think: 0.13, shotErr: 0.13, hoopsErr: 0.66, tackleProb: 0.42, keeperSpeed: 3.8, stealProb: 0.38 },
-        hard: { speed: 1.05, think: 0.08, shotErr: 0.06, hoopsErr: 0.58, tackleProb: 0.62, keeperSpeed: 5.0, stealProb: 0.55 },
+        easy: { speed: 0.72, think: 0.45, shotErr: 0.65, hoopsErr: 1.50, tackleProb: 0.08, keeperSpeed: 2.0, stealProb: 0.08, canSprint: false },
+        normal: { speed: 0.97, think: 0.13, shotErr: 0.13, hoopsErr: 0.66, tackleProb: 0.42, keeperSpeed: 3.8, stealProb: 0.38, canSprint: true },
+        hard: { speed: 1.05, think: 0.08, shotErr: 0.06, hoopsErr: 0.58, tackleProb: 0.62, keeperSpeed: 5.0, stealProb: 0.55, canSprint: true },
     };
     let nextAgentId = 1;
     function newTackleState() {
@@ -3389,11 +3389,13 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 const side = a.slot === 0 ? -1 : 1;
                 [a.aiTargetX, a.aiTargetZ] = this.clampCourt(side * 2.2, hoopZ - Math.sign(hoopZ) * 2.8);
             }
+            if (this.ai && this.ai.canSprint === false) a.sprint = false;
         }
         thinkCarrier(a, att, oppHoopZ) {
             const hoopD = (0, math_js_4.dist2)(a.x, a.z, 0, oppHoopZ);
             const opp = this.nearestOpponent(a, 6);
             a.sprint = a.stamina > 35 && hoopD > 7;
+            if (this.ai && this.ai.canSprint === false) a.sprint = false;
             const mate = this.agents.find((m) => m.team === a.team && m !== a);
             const mateOpen = mate ? this.openness(mate) : 0;
             const open = opp ? opp.d : 9;
@@ -3511,8 +3513,8 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         restartCountdown: 1.6,
         celebrate: 2.8,
     };
-    const KEEPER_REACH = { easy: 1.3, normal: 1.55, hard: 1.8 };
-    const KEEPER_MISJUDGE = { easy: 1.6, normal: 1.1, hard: 0.7 };
+    const KEEPER_REACH = { easy: 1.05, normal: 1.55, hard: 1.8 };
+    const KEEPER_MISJUDGE = { easy: 2.4, normal: 1.1, hard: 0.7 };
     class FootballSim extends base_js_2.BaseSim {
         constructor(opts) {
             super(opts);
@@ -4195,11 +4197,13 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 a.aiTargetX = (0, math_js_5.clamp)(b.x * 0.5 + side * 5, -exports.FB.W + 3, exports.FB.W - 3);
                 a.aiTargetZ = (0, math_js_5.clamp)((0, math_js_5.lerp)(b.z, oppGoalZ, 0.2) - att * 3, -exports.FB.L + 5, exports.FB.L - 5);
             }
+            if (this.ai && this.ai.canSprint === false) a.sprint = false;
         }
         thinkCarrier(a, att, oppGoalZ) {
             const goalD = (0, math_js_5.dist2)(a.x, a.z, 0, oppGoalZ);
             const opp = this.nearestOpponent(a, 7);
             a.sprint = a.stamina > 35;
+            if (this.ai && this.ai.canSprint === false) a.sprint = false;
             const pressed = !!opp && opp.d < 2.1;
             if (a.aiTimer <= 0) {
                 const inRange = goalD < 17;

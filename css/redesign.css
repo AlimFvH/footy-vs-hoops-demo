@@ -77,7 +77,7 @@ html.is-telegram {
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: calc(var(--safe-top) + 10px) calc(var(--sar) + 12px) calc(var(--safe-bottom) + 74px) calc(var(--sal) + 12px);
+  padding: calc(var(--safe-top) + 10px) calc(var(--sar) + 12px) calc(var(--safe-bottom) + 95px) calc(var(--sal) + 12px);
 }
 
 .screen.menu-bg::before {
@@ -850,7 +850,7 @@ html.is-telegram {
     max-width: 100% !important;
     overflow-x: hidden !important;
     box-sizing: border-box !important;
-    padding: calc(var(--safe-top) + 8px) 10px calc(var(--safe-bottom) + 74px) 10px !important;
+    padding: calc(var(--safe-top) + 8px) 10px calc(var(--safe-bottom) + 95px) 10px !important;
   }
   .fvh-topbar {
     width: 100% !important;
@@ -922,6 +922,29 @@ html.is-telegram {
   .fvh-hero-avatar-box {
     height: clamp(100px, 19vh, 145px) !important;
     border-radius: 12px !important;
+  }
+  .solo-avatar-box {
+    height: 165px !important;
+    min-height: 165px !important;
+  }
+  .solo-avatar-box .fvh-hero-figure-container {
+    max-height: 155px !important;
+    height: 155px !important;
+  }
+  .solo-avatar-box .fvh-hero-cutout-img {
+    max-height: 155px !important;
+    height: 155px !important;
+  }
+  .fvh-hero-card.solo-hero {
+    padding: 10px 12px 10px !important;
+    margin-bottom: 8px !important;
+  }
+  .fvh-hero-lore {
+    margin-top: 2px !important;
+    margin-bottom: 6px !important;
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
+    max-width: 300px !important;
   }
   .fvh-hero-portrait-wrap {
     border-radius: 12px !important;
@@ -1012,6 +1035,7 @@ html.is-telegram {
     width: 100% !important;
     max-width: 100% !important;
     padding: 10px 12px !important;
+    margin-bottom: 24px !important;
     gap: 10px !important;
     box-sizing: border-box !important;
   }
@@ -1254,6 +1278,90 @@ html.is-telegram {
   color: var(--neon-cyan);
 }
 
+/* Wardrobe & Locker Item Grid Uniformity */
+.fvh-wardrobe-grid .shop-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+@media (min-width: 640px) {
+  .fvh-wardrobe-grid .shop-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  }
+}
+
+.fvh-wardrobe-grid .card.shopc {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+  min-height: 220px !important;
+  box-sizing: border-box !important;
+  padding: 10px !important;
+  border-radius: 16px !important;
+}
+
+.fvh-wardrobe-grid .card.shopc .thumbwrap {
+  width: 100% !important;
+  position: relative !important;
+}
+
+.fvh-wardrobe-grid .card.shopc .thumb {
+  width: 100% !important;
+  height: 96px !important;
+  min-height: 96px !important;
+  max-height: 96px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.fvh-wardrobe-grid .card.shopc .thumb svg,
+.fvh-wardrobe-grid .card.shopc .thumb img {
+  max-height: 80px !important;
+  max-width: 80px !important;
+  object-fit: contain !important;
+}
+
+.fvh-wardrobe-grid .card.shopc .nm {
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  min-height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1.2 !important;
+  margin: 6px 0 2px 0 !important;
+  overflow: hidden !important;
+  word-break: break-word !important;
+  color: var(--text-pure) !important;
+}
+
+.fvh-wardrobe-grid .card.shopc .tags {
+  display: flex !important;
+  justify-content: center !important;
+  margin-bottom: 8px !important;
+}
+
+.fvh-wardrobe-grid .card.shopc > button.btn {
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin-top: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+}
+
 /* ==========================================================================
    Cyber Arcade Global Theme Overrides for All Game Screens
    ========================================================================== */
@@ -1263,7 +1371,7 @@ html.is-telegram {
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
-  padding: calc(var(--safe-top) + 8px) 12px calc(var(--safe-bottom) + 74px) 12px !important;
+  padding: calc(var(--safe-top) + 8px) 12px calc(var(--safe-bottom) + 95px) 12px !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
 }
