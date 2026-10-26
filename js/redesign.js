@@ -75,6 +75,7 @@
   var I18N = {
     en: {
       replay: 'REPLAY',
+      goalReplay: 'GOAL REPLAY',
       skipReplay: 'SKIP',
       mute: 'Mute',
       unmute: 'Unmute',
@@ -382,6 +383,14 @@
       subscribeBtn: 'SUBSCRIBE',
       followBtn: 'FOLLOW',
       joinBtn: 'JOIN CHAT',
+      followUsTitle: 'Follow Us',
+      followUsSubtitle: 'Official FOOTY vs HOOPS channels & communities',
+      socialNotice: 'Automated subscription verification is unavailable via third-party platform APIs. Follow to stay tuned.',
+      visitBtn: 'VISIT',
+      subscribedBtn: 'SUBSCRIBED',
+      subscribeFootyHoops: 'Subscribe to @FootyHoops',
+      tgVerifySuccess: '✓ Subscribed to @FootyHoops! +50 FvH Coin',
+      tgVerifyFailed: 'Please subscribe to @FootyHoops to claim this reward',
       inviteFriendBtn: 'INVITE FRIEND',
       itemLockedToast: 'Item is locked! Purchase it from the Stadium Store.',
       catCrowd: 'Supporters & Crowd',
@@ -576,6 +585,7 @@
     },
     ru: {
       replay: 'ПОВТОР',
+      goalReplay: 'ПОВТОР ГОЛА',
       skipReplay: 'ПРОПУСТИТЬ',
       mute: 'Без звука',
       unmute: 'Включить звук',
@@ -884,6 +894,14 @@
       subscribeBtn: 'ПОДПИСАТЬСЯ',
       followBtn: 'ЧИТАТЬ',
       joinBtn: 'ВСТУПИТЬ В ЧАТ',
+      followUsTitle: 'Мы в соцсетях',
+      followUsSubtitle: 'Официальные сообщества и каналы FOOTY vs HOOPS',
+      socialNotice: 'Автоматическая проверка подписки недоступна через внешние API платформ. Подпишитесь, чтобы следить за новостями.',
+      visitBtn: 'ПЕРЕЙТИ',
+      subscribedBtn: 'ПОДПИСАН',
+      subscribeFootyHoops: 'Подписаться на @FootyHoops',
+      tgVerifySuccess: '✓ Подписка на @FootyHoops подтверждена! +50 FvH Coin',
+      tgVerifyFailed: 'Пожалуйста, подпишитесь на @FootyHoops, чтобы получить награду',
       inviteFriendBtn: 'ПРИГЛАСИТЬ ДРУГА',
       catCrowd: 'Болельщики и Трибуны',
       arenaTabEnvironments: 'Стадионы и Миры',
@@ -5273,121 +5291,202 @@
       contentArea.appendChild(statsBox);
     }
 
-    // Tab 2: Social Tasks (Telegram channel & X account only)
+    // Tab 2: Social Tasks & Official Channels
     function renderSocialTab() {
       contentArea.innerHTML = '';
       var claimed = getClaimedList();
+      var isTgDone = claimed.indexOf('q_sub_tg') !== -1;
 
-      var socialTasks = [
-        {
-          id: 'q_sub_tg',
-          title: tr('socialTgTask'),
-          reward: 50,
-          iconHtml: getTelegramLogoSvg(36),
-          url: 'https://t.me/FootyVsHoops'
-        },
-        {
-          id: 'q_sub_x',
-          title: tr('socialXTask'),
-          reward: 50,
-          iconHtml: getXLogoSvg(36),
-          url: 'https://x.com/FootyVsHoops'
-        }
-      ];
+      // 1. Verified Telegram Subscription Task
+      var verifiedTaskBox = document.createElement('div');
+      verifiedTaskBox.className = 'fvh-verified-task-section';
+      verifiedTaskBox.style.marginBottom = '18px';
 
-      var list = document.createElement('div');
-      list.className = 'fvh-social-task-list';
-      list.style.display = 'flex';
-      list.style.flexDirection = 'column';
-      list.style.gap = '10px';
+      var taskHeading = document.createElement('div');
+      taskHeading.style.fontSize = '13px';
+      taskHeading.style.fontWeight = '900';
+      taskHeading.style.color = '#38bdf8';
+      taskHeading.style.textTransform = 'uppercase';
+      taskHeading.style.letterSpacing = '0.5px';
+      taskHeading.style.marginBottom = '8px';
+      taskHeading.textContent = (getActiveLang() === 'ru') ? '⭐ Задание с наградой' : '⭐ Rewarded Mission';
+      verifiedTaskBox.appendChild(taskHeading);
 
-      socialTasks.forEach(function (task) {
-        var isDone = claimed.indexOf(task.id) !== -1;
-        var card = document.createElement('div');
-        card.className = 'fvh-quest-task-card' + (isDone ? ' done' : '');
-        card.style.background = 'rgba(255,255,255,0.04)';
-        card.style.border = isDone ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(255,255,255,0.1)';
-        card.style.borderRadius = '12px';
-        card.style.padding = '14px 16px';
-        card.style.display = 'flex';
-        card.style.alignItems = 'center';
-        card.style.justifyContent = 'space-between';
-        card.style.gap = '12px';
+      var tgCard = document.createElement('div');
+      tgCard.className = 'fvh-quest-task-card' + (isTgDone ? ' done' : '');
+      tgCard.style.background = 'rgba(255,255,255,0.04)';
+      tgCard.style.border = isTgDone ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(0,240,255,0.25)';
+      tgCard.style.borderRadius = '12px';
+      tgCard.style.padding = '14px 16px';
+      tgCard.style.display = 'flex';
+      tgCard.style.alignItems = 'center';
+      tgCard.style.justifyContent = 'space-between';
+      tgCard.style.gap = '12px';
 
-        card.innerHTML =
-          '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
-          '  <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + (task.iconHtml || task.icon) + '</div>' +
-          '  <div style="flex:1;min-width:0;">' +
-          '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + task.title + '</div>' +
-          '    <div style="font-size:11.5px;font-weight:800;color:#facc15;margin-top:2px;display:inline-flex;align-items:center;gap:4px;">' +
-          getFvhCoinSvg('inline') + ' +' + task.reward + ' FvH Coin' +
-          '    </div>' +
-          '  </div>' +
-          '</div>' +
-          '<div class="fvh-task-actions" style="display:flex;gap:6px;flex-shrink:0;"></div>';
+      tgCard.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+        '  <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getSocialIconSvg('tg') + '</div>' +
+        '  <div style="flex:1;min-width:0;">' +
+        '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('subscribeFootyHoops') + '</div>' +
+        '    <div style="font-size:11.5px;font-weight:800;color:#facc15;margin-top:2px;display:inline-flex;align-items:center;gap:4px;">' +
+        getFvhCoinSvg('inline') + ' +50 FvH Coin' +
+        '    </div>' +
+        '  </div>' +
+        '</div>' +
+        '<div class="fvh-task-actions" style="display:flex;gap:6px;flex-shrink:0;"></div>';
 
-        var actBox = card.querySelector('.fvh-task-actions');
+      var actBox = tgCard.querySelector('.fvh-task-actions');
+      if (isTgDone) {
+        var doneBtn = document.createElement('button');
+        doneBtn.className = 'btn small';
+        doneBtn.disabled = true;
+        doneBtn.textContent = tr('taskCompleted');
+        actBox.appendChild(doneBtn);
+      } else {
+        var openBtn = document.createElement('button');
+        openBtn.className = 'btn small';
+        openBtn.textContent = tr('openTaskBtn');
+        openBtn.onclick = function () {
+          app.audio.play('click');
+          var tgUrl = 'https://t.me/FootyHoops';
+          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+            window.Telegram.WebApp.openLink(tgUrl);
+          } else {
+            window.open(tgUrl, '_blank');
+          }
+        };
+        actBox.appendChild(openBtn);
 
-        if (isDone) {
-          var doneBtn = document.createElement('button');
-          doneBtn.className = 'btn small';
-          doneBtn.disabled = true;
-          doneBtn.textContent = tr('taskCompleted');
-          actBox.appendChild(doneBtn);
-        } else {
-          var openBtn = document.createElement('button');
-          openBtn.className = 'btn small';
-          openBtn.textContent = tr('openTaskBtn');
-          openBtn.onclick = function () {
-            app.audio.play('click');
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
-              window.Telegram.WebApp.openLink(task.url);
-            } else {
-              window.open(task.url, '_blank');
-            }
-          };
-          actBox.appendChild(openBtn);
+        var claimBtn = document.createElement('button');
+        claimBtn.className = 'btn small primary';
+        claimBtn.textContent = tr('verifyTaskBtn');
+        claimBtn.onclick = function () {
+          claimBtn.disabled = true;
+          claimBtn.textContent = tr('taskVerifying');
+          var pid = getPlayerId();
+          var tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+          var tgUserId = tgUser ? tgUser.id : (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id);
 
-          var claimBtn = document.createElement('button');
-          claimBtn.className = 'btn small primary';
-          claimBtn.textContent = tr('verifyTaskBtn');
-          claimBtn.onclick = function () {
-            claimBtn.disabled = true;
-            claimBtn.textContent = tr('taskVerifying');
-            var pid = getPlayerId();
-            safeEconomyApi('/api/economy/quest', {
+          if (!tgUserId) {
+            claimBtn.disabled = false;
+            claimBtn.textContent = tr('verifyTaskBtn');
+            showToast(getActiveLang() === 'ru' ? 'Откройте игру через Telegram для подтверждения подписки' : 'Open the game via Telegram to verify subscription');
+            return;
+          }
+
+          fetch(getApiUrl('/api/tasks/verify-telegram'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
               playerId: pid,
-              questId: task.id
-            }).then(function (res) {
+              telegramUserId: tgUserId,
+              claim: true
+            })
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (res && res.ok && res.verified) {
               app.store.update(function (d) {
                 if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
-                if (d.claimedQuests.indexOf(task.id) === -1) d.claimedQuests.push(task.id);
-                if (res && res.coins !== undefined) {
-                  d.coins = res.coins;
-                } else {
-                  d.coins = (d.coins || 0) + task.reward;
-                }
+                if (d.claimedQuests.indexOf('q_sub_tg') === -1) d.claimedQuests.push('q_sub_tg');
+                if (res.coins !== undefined) d.coins = res.coins;
+                else d.coins = (d.coins || 0) + 50;
                 if (!d.transactions) d.transactions = [];
                 d.transactions.unshift({
-                  id: 'tx_quest_' + task.id + '_' + Date.now(),
+                  id: 'tx_quest_q_sub_tg_' + Date.now(),
                   type: 'quest_reward',
-                  amount: task.reward,
-                  description: task.title,
+                  amount: 50,
+                  description: tr('subscribeFootyHoops'),
                   timestamp: Date.now()
                 });
               });
               app.audio.play('claim');
-              showToast('+' + task.reward + ' FvH Coin: ' + task.title);
+              showToast(tr('tgVerifySuccess'));
               renderSocialTab();
-            });
-          };
-          actBox.appendChild(claimBtn);
-        }
+            } else {
+              claimBtn.disabled = false;
+              claimBtn.textContent = tr('verifyTaskBtn');
+              showToast(tr('tgVerifyFailed'));
+            }
+          })
+          .catch(function () {
+            claimBtn.disabled = false;
+            claimBtn.textContent = tr('verifyTaskBtn');
+            showToast(tr('tgVerifyFailed'));
+          });
+        };
+        actBox.appendChild(claimBtn);
+      }
+      verifiedTaskBox.appendChild(tgCard);
+      contentArea.appendChild(verifiedTaskBox);
 
-        list.appendChild(card);
+      // 2. Official Social Channels Section (Item 6 & Item 7)
+      var officialBox = document.createElement('div');
+      officialBox.className = 'fvh-official-socials-section';
+
+      var officialHeading = document.createElement('div');
+      officialHeading.style.display = 'flex';
+      officialHeading.style.flexDirection = 'column';
+      officialHeading.style.gap = '3px';
+      officialHeading.style.marginBottom = '10px';
+      officialHeading.innerHTML =
+        '<div style="font-size:14px;font-weight:900;color:#fff;">🌐 ' + tr('followUsTitle') + '</div>' +
+        '<div style="font-size:11.5px;color:#94a3b8;">' + tr('followUsSubtitle') + '</div>' +
+        '<div style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:6px 10px;margin-top:6px;line-height:1.4;">' +
+        'ℹ️ ' + tr('socialNotice') +
+        '</div>';
+      officialBox.appendChild(officialHeading);
+
+      var channels = [
+        { id: 'q_sub_tg', name: 'Telegram News', handle: '@FootyHoops', url: 'https://t.me/FootyHoops', icon: getSocialIconSvg('tg') },
+        { id: 'q_sub_chat', name: 'Telegram Chat', handle: 'Community Chat', url: 'https://t.me/+zKbH1Po_pdg2MmVi', icon: getSocialIconSvg('chat') },
+        { id: 'q_sub_insta', name: 'Instagram', handle: '@footyvshoops', url: 'https://www.instagram.com/footyvshoops/?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr', icon: getSocialIconSvg('insta') },
+        { id: 'q_sub_x', name: 'X / Twitter', handle: '@footyvshoops', url: 'https://x.com/footyvshoops?s=11', icon: getSocialIconSvg('x') },
+        { id: 'q_sub_yt', name: 'YouTube', handle: '@footyvshoops-cr', url: 'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf', icon: getSocialIconSvg('yt') },
+        { id: 'q_sub_tiktok', name: 'TikTok', handle: '@footy_vs_hoops', url: 'https://www.tiktok.com/@footy_vs_hoops', icon: getSocialIconSvg('tiktok') }
+      ];
+
+      var channelList = document.createElement('div');
+      channelList.style.display = 'flex';
+      channelList.style.flexDirection = 'column';
+      channelList.style.gap = '8px';
+
+      channels.forEach(function (ch) {
+        var card = document.createElement('div');
+        card.className = 'fvh-social-channel-row';
+        card.style.background = 'rgba(255,255,255,0.035)';
+        card.style.border = '1px solid rgba(255,255,255,0.08)';
+        card.style.borderRadius = '10px';
+        card.style.padding = '10px 14px';
+        card.style.display = 'flex';
+        card.style.alignItems = 'center';
+        card.style.justifyContent = 'space-between';
+        card.style.gap = '10px';
+
+        card.innerHTML =
+          '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">' +
+          '  <div style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + ch.icon + '</div>' +
+          '  <div style="flex:1;min-width:0;">' +
+          '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ch.name + '</div>' +
+          '    <div style="font-size:11px;color:#94a3b8;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ch.handle + '</div>' +
+          '  </div>' +
+          '</div>' +
+          '<button class="btn small fvh-btn-visit" style="flex-shrink:0;padding:6px 14px;font-size:12px;font-weight:800;">' + tr('visitBtn') + ' ➔</button>';
+
+        card.querySelector('.fvh-btn-visit').onclick = function () {
+          app.audio.play('click');
+          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+            window.Telegram.WebApp.openLink(ch.url);
+          } else {
+            window.open(ch.url, '_blank');
+          }
+        };
+
+        channelList.appendChild(card);
       });
 
-      contentArea.appendChild(list);
+      officialBox.appendChild(channelList);
+      contentArea.appendChild(officialBox);
     }
 
     function renderQuestsPage() {
@@ -6283,7 +6382,14 @@
       return raw;
     }
 
-    var ranked = athletes.map(function (a) {
+    var filteredAthletes = athletes;
+    if (cat === 'footy') {
+      filteredAthletes = athletes.filter(function (a) { return a.char === 'footy'; });
+    } else if (cat === 'hoops') {
+      filteredAthletes = athletes.filter(function (a) { return a.char === 'hoops'; });
+    }
+
+    var ranked = filteredAthletes.map(function (a) {
       var score = computeScore(a, cat || 'season', timeframe || 'season');
       var tier = getRankTier(score);
       return Object.assign({}, a, {
@@ -8719,7 +8825,6 @@
               '<button type="button" class="' + (selDiff === 'hard' ? 'on' : '') + '" data-diff="hard">' + tr('hard') + '</button>' +
             '</div>' +
           '</div>' +
-          '<div class="fvh-diff-reward-pill" id="fvh-diff-reward-info"></div>' +
         '</div>' +
       '</div>' +
       '<div class="fvh-mode-card-actions">' +
@@ -8743,32 +8848,15 @@
       };
     });
 
-    function updateDiffRewardPill(dVal) {
-      var pill = practiceCard.querySelector('#fvh-diff-reward-info');
-      if (!pill) return;
-      if (dVal === 'easy') {
-        pill.className = 'fvh-diff-reward-pill easy';
-        pill.textContent = tr('diffEasyReward');
-      } else if (dVal === 'hard') {
-        pill.className = 'fvh-diff-reward-pill hard';
-        pill.textContent = tr('diffHardReward');
-      } else {
-        pill.className = 'fvh-diff-reward-pill normal';
-        pill.textContent = tr('diffNormalReward');
-      }
-    }
-
     // Interactive Difficulty selector
     practiceCard.querySelectorAll('.seg-diff button').forEach(function (b) {
       b.onclick = function () {
         practiceCard.querySelectorAll('.seg-diff button').forEach(function (x) { x.classList.remove('on'); });
         b.classList.add('on');
         selDiff = b.dataset.diff;
-        updateDiffRewardPill(selDiff);
         app.audio.play('click');
       };
     });
-    updateDiffRewardPill(selDiff);
 
     practiceCard.querySelector('.fvh-btn-start-practice').onclick = function () {
       app.audio.play('click');
@@ -9034,6 +9122,80 @@
   }
   window.showTeamSelectionModal = showTeamSelectionModal;
 
+  // Dedicated Official Social Channels Section (Item 6)
+  function createOfficialSocialsCard(app) {
+    var card = document.createElement('div');
+    card.className = 'fvh-official-socials-card';
+    card.style.background = 'rgba(255, 255, 255, 0.035)';
+    card.style.border = '1px solid rgba(255, 255, 255, 0.09)';
+    card.style.borderRadius = '16px';
+    card.style.padding = '14px 16px';
+    card.style.margin = '10px 0 16px';
+
+    var channels = [
+      { name: 'Telegram News', handle: '@FootyHoops', url: 'https://t.me/FootyHoops', icon: getSocialIconSvg('tg') },
+      { name: 'Telegram Chat', handle: 'Community Chat', url: 'https://t.me/+zKbH1Po_pdg2MmVi', icon: getSocialIconSvg('chat') },
+      { name: 'Instagram', handle: '@footyvshoops', url: 'https://www.instagram.com/footyvshoops/?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr', icon: getSocialIconSvg('insta') },
+      { name: 'X / Twitter', handle: '@footyvshoops', url: 'https://x.com/footyvshoops?s=11', icon: getSocialIconSvg('x') },
+      { name: 'YouTube', handle: '@footyvshoops-cr', url: 'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf', icon: getSocialIconSvg('yt') },
+      { name: 'TikTok', handle: '@footy_vs_hoops', url: 'https://www.tiktok.com/@footy_vs_hoops', icon: getSocialIconSvg('tiktok') }
+    ];
+
+    var head = document.createElement('div');
+    head.style.display = 'flex';
+    head.style.alignItems = 'center';
+    head.style.justifyContent = 'space-between';
+    head.style.marginBottom = '10px';
+    head.innerHTML =
+      '<div>' +
+      '  <div style="font-size:14px;font-weight:900;color:#fff;letter-spacing:0.3px;">🌐 ' + tr('followUsTitle') + '</div>' +
+      '  <div style="font-size:11px;color:#94a3b8;margin-top:2px;">' + tr('followUsSubtitle') + '</div>' +
+      '</div>';
+    card.appendChild(head);
+
+    var grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+    grid.style.gap = '8px';
+
+    channels.forEach(function (ch) {
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'fvh-social-pill';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      item.style.gap = '8px';
+      item.style.padding = '8px 10px';
+      item.style.background = 'rgba(255, 255, 255, 0.05)';
+      item.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+      item.style.borderRadius = '10px';
+      item.style.cursor = 'pointer';
+      item.style.textAlign = 'left';
+      item.innerHTML =
+        '<div style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
+        ch.icon.replace('width="40" height="40"', 'width="28" height="28"') +
+        '</div>' +
+        '<div style="flex:1;min-width:0;overflow:hidden;">' +
+        '  <div style="font-size:12px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ch.name + '</div>' +
+        '  <div style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ch.handle + '</div>' +
+        '</div>' +
+        '<div style="font-size:10px;color:#38bdf8;font-weight:800;flex-shrink:0;">➔</div>';
+
+      item.onclick = function (e) {
+        e.stopPropagation();
+        if (app && app.audio) app.audio.play('click');
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+          window.Telegram.WebApp.openLink(ch.url);
+        } else {
+          window.open(ch.url, '_blank');
+        }
+      };
+      grid.appendChild(item);
+    });
+    card.appendChild(grid);
+    return card;
+  }
+
   // Complete Redesigned Main Menu
   function renderRedesignedMenu(app) {
     var d = app.store.data;
@@ -9184,7 +9346,10 @@
     };
     screen.appendChild(seasonCard);
 
-    // 6. Unified Persistent Bottom Navigation
+    // 6. Dedicated Official Social Channels Section (Item 6)
+    screen.appendChild(createOfficialSocialsCard(app));
+
+    // 7. Unified Persistent Bottom Navigation
     screen.appendChild(createSharedBottomNav('menu', app));
 
     // Show screen

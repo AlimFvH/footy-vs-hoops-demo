@@ -2552,7 +2552,15 @@ const server = http.createServer((req, res) => {
       return raw; // 'season'
     }
 
-    const ranked = athletes.map(ath => {
+    // Authoritative Server-side Sport Filtering (Requirement 4)
+    let filteredAthletes = athletes;
+    if (qCategory === 'footy') {
+      filteredAthletes = athletes.filter(a => a.char === 'footy');
+    } else if (qCategory === 'hoops') {
+      filteredAthletes = athletes.filter(a => a.char === 'hoops');
+    }
+
+    const ranked = filteredAthletes.map(ath => {
       const score = computeScore(ath, qCategory, qTimeframe);
       const tier = getRankTier(score);
       return Object.assign({}, ath, {
@@ -2646,19 +2654,19 @@ const server = http.createServer((req, res) => {
   // 1. Authoritative Player Economy State
   
   // Telegram Channel / Chat Subscription Verification Endpoint
-  if (pathname === '/api/social/verify-telegram' && req.method === 'POST') {
+  if ((pathname === '/api/social/verify-telegram' || pathname === '/api/tasks/verify-telegram') && req.method === 'POST') {
     return readJsonBody(req, async (err, data) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
       const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
       const target = String(data.target || 'channel').trim(); // 'channel' or 'chat'
       const tokenResult = resolveTelegramBotToken();
       if (!tokenResult.ok) {
-        return sendJson(res, 200, { ok: false, error: tokenResult.error, verified: false });
+        return sendJson(res, 500, { ok: false, error: 'bot_not_configured', verified: false, message: 'Telegram bot service is not configured' });
       }
       const token = tokenResult.token;
 
       if (!telegramUserId) {
-        return sendJson(res, 200, { ok: true, verified: true, reason: 'browser_user' });
+        return sendJson(res, 400, { ok: false, error: 'missing_telegram_user_id', verified: false, message: 'Telegram user ID is required to verify subscription' });
       }
 
       // Target chat ID: @FootyHoops channel or linked chat
@@ -2671,12 +2679,34 @@ const server = http.createServer((req, res) => {
         const tgData = await tgRes.json();
         if (tgData && tgData.ok && tgData.result) {
           const status = tgData.result.status;
-          const isMember = (status === 'member' || status === 'administrator' || status === 'creator' || status === 'restricted');
+          const isMember = (status === 'creator' || status === 'administrator' || status === 'member' || (status === 'restricted' && tgData.result.is_member === true));
+          let claimed = false;
+          let coins = undefined;
+          let xp = undefined;
+          if (isMember && data.playerId && (data.claim === true || data.claimReward === true)) {
+            const player = getPlayer(data.playerId);
+            const questId = 'q_sub_tg';
+            if (player.claimedQuests.includes(questId)) {
+              return sendJson(res, 400, { ok: false, error: 'quest_already_claimed', message: 'Quest already claimed', verified: true });
+            }
+            player.coins += 50;
+            player.xp += 50;
+            player.claimedQuests.push(questId);
+            player.updatedAt = Date.now();
+            addLedgerEntry(player.playerId, 'reward', 50, 50, player.coins, 'Quest reward: ' + questId, questId);
+            persistState();
+            claimed = true;
+            coins = player.coins;
+            xp = player.xp;
+          }
           return sendJson(res, 200, {
             ok: true,
             verified: isMember,
             status: status,
-            target: target
+            target: target,
+            claimed: claimed,
+            coins: coins,
+            xp: xp
           });
         }
         // If chat member check returns error or user left
@@ -2684,7 +2714,7 @@ const server = http.createServer((req, res) => {
       } catch (fetchErr) {
         // Fallback gracefully if Telegram API is unreachable from local node
         console.warn('Telegram getChatMember check timeout/error:', fetchErr.message);
-        return sendJson(res, 200, { ok: true, verified: true, fallback: true });
+        return sendJson(res, 502, { ok: false, error: 'telegram_api_error', verified: false, message: 'Telegram API verification failed or timed out' });
       }
     });
   }
@@ -3034,7 +3064,7 @@ const server = http.createServer((req, res) => {
 
   // 4. Authoritative Rewards (Match, Quest, Battle Pass Tier)
   if (pathname === '/api/economy/reward' && req.method === 'POST') {
-    return readJsonBody(req, (err, data) => {
+    return readJsonBody(req, async (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
       const playerId = String(data.playerId || '').trim();
@@ -3194,6 +3224,67 @@ const server = http.createServer((req, res) => {
       // Case 2: Quest Reward
       if (rewardType === 'quest') {
         const questId = String(data.questId || rewardId);
+        // Third-party social tasks: automated verification unavailable, cannot be claimed
+        if (questId === 'q_sub_x' || questId === 'q_sub_insta' || questId === 'q_sub_yt' || questId === 'q_sub_tiktok') {
+          return sendJson(res, 400, {
+            ok: false,
+            error: 'verification_unavailable',
+            message: 'Automated verification is unavailable for third-party platform tasks. No in-game reward.'
+          });
+        }
+
+        // Telegram subscription task: MUST be verified via Telegram Bot API getChatMember
+        if (questId === 'q_sub_tg') {
+          const telegramUserId = data.telegramUserId || (player.telegramUser && player.telegramUser.id);
+          if (!telegramUserId) {
+            return sendJson(res, 400, {
+              ok: false,
+              error: 'missing_telegram_user_id',
+              message: 'Telegram user ID is required to verify membership in @FootyHoops'
+            });
+          }
+          const tokenResult = resolveTelegramBotToken();
+          if (!tokenResult.ok) {
+            return sendJson(res, 500, {
+              ok: false,
+              error: 'bot_not_configured',
+              message: 'Telegram bot service is not configured'
+            });
+          }
+          try {
+            const tgRes = await fetch(`https://api.telegram.org/bot${tokenResult.token}/getChatMember?chat_id=@FootyHoops&user_id=${encodeURIComponent(telegramUserId)}`, {
+              signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined
+            });
+            const tgData = await tgRes.json();
+            if (!tgData || !tgData.ok || !tgData.result) {
+              return sendJson(res, 502, {
+                ok: false,
+                error: 'telegram_api_error',
+                message: 'Failed to verify membership with Telegram API'
+              });
+            }
+            const status = tgData.result.status;
+            const isMember = (
+              status === 'creator' ||
+              status === 'administrator' ||
+              status === 'member' ||
+              (status === 'restricted' && tgData.result.is_member === true)
+            );
+            if (!isMember) {
+              return sendJson(res, 400, {
+                ok: false,
+                error: 'not_subscribed',
+                message: 'Please subscribe to @FootyHoops to claim this reward'
+              });
+            }
+          } catch (e) {
+            return sendJson(res, 502, {
+              ok: false,
+              error: 'telegram_api_error',
+              message: 'Telegram verification timed out or encountered network error'
+            });
+          }
+        }
         const qDef = QUEST_REWARDS[questId];
         if (!qDef) {
           return sendJson(res, 404, { ok: false, error: 'quest_not_found' });

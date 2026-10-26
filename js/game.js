@@ -6569,32 +6569,6 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         ];
         const crowd = crowdAndStands(root, stands, t.crowd || [0xff2bd6, 0x00e5ff, 0xffffff, 0x3b82f6], t.stand || 0x1e2433, quality);
 
-        // Stadium roof canopies & steel lattice trusses
-        const roofMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1a202c), spec: 0.4, shininess: 30 });
-        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x334155), spec: 0.6, shininess: 50 });
-
-        for (const s of [-1, 1]) {
-            // Sideline roof canopies
-            const roofW = 7.0;
-            const roof = new scene_js_1.Node(G.box(roofW, 0.35, 2 * L + 12), roofMat);
-            roof.setPos(s * (W + 7.5), 11.2, 0);
-            roof.rotation = [0, 0, -s * 0.18];
-            root.add(roof);
-
-            // Roof support truss pillars
-            for (let z = -L; z <= L; z += L) {
-                const truss = new scene_js_1.Node(G.cylinder(0.18, 0.28, 12.0, 8), trussMat);
-                truss.setPos(s * (W + 11.2), 6.0, z);
-                root.add(truss);
-            }
-
-            // End goal roof canopies (North & South)
-            const endRoof = new scene_js_1.Node(G.box(2 * W + 14, 0.35, 6.5), roofMat);
-            endRoof.setPos(0, 10.4, s * (L + GD + 6.5));
-            endRoof.rotation = [-s * 0.18, 0, 0];
-            root.add(endRoof);
-        }
-
         // 4 Monumental Corner Floodlight Towers
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
@@ -6606,14 +6580,14 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
     }
 
     function buildBasketballArenaArchitecture(root, t, W, L, APRON, quality) {
-        // 4-sided indoor basketball arena seating bowl
+        // 4-sided indoor basketball arena seating bowl with visible stands behind both baskets
         const stands = [
             // Sideline lower bowl
             { alongX: false, sign: -1, offset: W + APRON + 2.8, length: 2 * L + 8, rows: 7, center: 0 },
             { alongX: false, sign: 1, offset: W + APRON + 2.8, length: 2 * L + 8, rows: 7, center: 0 },
-            // Baseline stands behind hoops (North & South)
-            { alongX: true, sign: -1, offset: L + APRON + 4.8, length: 2 * W + 12, rows: 6, center: 0 },
-            { alongX: true, sign: 1, offset: L + APRON + 4.8, length: 2 * W + 12, rows: 6, center: 0 }
+            // Baseline stands behind hoops (North & South) - placed right behind court baseline apron for clear visibility
+            { alongX: true, sign: -1, offset: L + APRON + 1.6, length: 2 * W + 6, rows: 7, center: 0 },
+            { alongX: true, sign: 1, offset: L + APRON + 1.6, length: 2 * W + 6, rows: 7, center: 0 }
         ];
         const crowd = crowdAndStands(root, stands, t.crowd || [0xf59e0b, 0xef4444, 0x3b82f6, 0xffffff], t.stand || 0x161c28, quality);
 
@@ -7074,8 +7048,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const { W, L, GW, GH, GD, POST_R } = football_js_2.FB;
         const isDefault = Boolean(t && (t.isDefault || t.id === 'std_footy_classic' || t.id === 'std_footy_night' || t.id === 'std_footy_golden'));
         
-        // Massive seamless ground plane (500x500)
-        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : (t && t.hemiGround ? t.hemiGround : 0x0b1220));
+        // Massive seamless ground plane (500x500) with natural turf tone
+        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : (t && t.hemiGround ? t.hemiGround : 0x1b3820));
         const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.05, fog: false }));
         ground.setPos(0, -0.06, 0);
 
@@ -7343,7 +7317,9 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             buildThemedEnvironment(root, t, W, L, APRON, true, quality);
             const themedStands = [
                 { alongX: false, sign: -1, offset: W + APRON + 3.2, length: 2 * L + 2, rows: 4, center: 0 },
-                { alongX: false, sign: 1, offset: W + APRON + 3.2, length: 2 * L + 2, rows: 4, center: 0 }
+                { alongX: false, sign: 1, offset: W + APRON + 3.2, length: 2 * L + 2, rows: 4, center: 0 },
+                { alongX: true, sign: -1, offset: L + APRON + 1.6, length: 2 * W + 4, rows: 5, center: 0 },
+                { alongX: true, sign: 1, offset: L + APRON + 1.6, length: 2 * W + 4, rows: 5, center: 0 }
             ];
             crowd = crowdAndStands(root, themedStands, t.crowd || [0xf59e0b, 0xef4444, 0x3b82f6, 0xffffff], t.stand || 0x161c28, quality);
         } else {
@@ -7430,9 +7406,17 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             const hz = this.fitHalfZ * this.zoom;
             let hx = Math.min(this.maxHalfX, hz * this.aspect * 0.95, this.mode === 'footy' ? 15 : 7.4);
             hx = Math.max(hx, this.mode === 'footy' ? 9 : 5.2);
-            if (this.aspect < 0.9)
-                hx = this.maxHalfX;
-            const hzAdj = this.aspect < 0.9 ? Math.max(hz, hx / Math.max(this.aspect, 0.3) * 0.46) : hz;
+            if (this.aspect < 0.9) {
+                if (this.mode === 'footy') {
+                    // Mobile iPhone responsive framing:
+                    // Keep the active play area tightly framed vertically and horizontally
+                    // without pushing camera into the stratosphere (d ~ 52-56).
+                    hx = Math.min(this.maxHalfX, Math.max(8.2, this.fitHalfZ * this.aspect * 1.3));
+                } else {
+                    hx = this.maxHalfX;
+                }
+            }
+            const hzAdj = (this.aspect < 0.9 && this.mode !== 'footy') ? Math.max(hz, hx / Math.max(this.aspect, 0.3) * 0.46) : hz;
             const close = exports.CLOSE_UP[this.mode];
             return [hx * this.zoom * close, Math.min(hzAdj, this.limitZ + 8) * close];
         }
@@ -8387,7 +8371,13 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.mode = sim.mode;
             const mode = sim.mode;
             const eq = opts.equipped || {};
-            let stadium = visualOf(eq[mode === 'footy' ? 'stadium.footy' : 'stadium.hoops'], mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
+            let stadiumSlot = mode === 'footy' ? eq['stadium.footy'] : eq['stadium.hoops'];
+            if (mode === 'footy' && stadiumSlot && (stadiumSlot.startsWith('std_hoops') || stadiumSlot === 'std_cyber_megacity')) {
+                stadiumSlot = 'std_footy_classic';
+            } else if (mode === 'hoops' && stadiumSlot && stadiumSlot.startsWith('std_footy')) {
+                stadiumSlot = 'std_hoops_street';
+            }
+            let stadium = visualOf(stadiumSlot, mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
             const CROWD_PALETTES = {
                 crowd_footy_ultras: { palette: [0x00f0ff, 0x0284c7, 0xffffff, 0x38bdf8, 0x1e293b], stand: 0x1e2433 },
                 crowd_hoops_allstars: { palette: [0xff6b00, 0xfb923c, 0xf59e0b, 0x18181b, 0xffffff], stand: 0x1c1917 },
@@ -8618,15 +8608,34 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             if (snap.agents && this.chars) {
                 snap.agents.forEach(agSnap => {
                     const char = this.chars.find(c => c.agent.id === agSnap.id);
-                    if (char && char.root) {
-                        char.root.setPos(agSnap.x, 0, agSnap.z);
-                        char.root.rotation = [0, Math.atan2(agSnap.fx, agSnap.fz), 0];
+                    if (char) {
+                        char.agent.x = agSnap.x;
+                        char.agent.y = agSnap.y || 0;
+                        char.agent.z = agSnap.z;
+                        char.agent.fx = agSnap.fx;
+                        char.agent.fz = agSnap.fz;
+                        char.agent.mx = agSnap.mx || 0;
+                        char.agent.mz = agSnap.mz || 0;
+                        char.agent.kickT = agSnap.kickT || 0;
+                        char.agent.shotT = agSnap.shotT || 0;
+                        char.agent.jumpT = agSnap.jumpT || 0;
+                        char.agent.diveT = agSnap.diveT || 0;
+                        char.agent.celebrateT = agSnap.celebrateT || 0;
+                        if (char.root) {
+                            char.root.setPos(agSnap.x, agSnap.y || 0, agSnap.z);
+                            char.root.rotation = [0, Math.atan2(agSnap.fx, agSnap.fz), 0];
+                        }
                     }
                 });
             }
         }
         renderReplay(dt, snap, goalInfo) {
             if (this.disposed || !snap) return;
+            if (this.chars) {
+                this.chars.forEach(ch => {
+                    if (ch && ch.update) ch.update(dt);
+                });
+            }
             const c = this.rig.cam;
             if (this.mode === 'footy' && goalInfo && typeof goalInfo.goalZ === 'number') {
                 const goalZ = goalInfo.goalZ;
@@ -8753,7 +8762,7 @@ define("i18n/en", ["require", "exports"], function (require, exports) {
         'hud.tackle': 'TACKLE',
         'hud.steal': 'STEAL',
         'hud.ready': 'Get ready',
-        'hud.replay': 'REPLAY',
+        'hud.replay': 'GOAL REPLAY',
         'hud.skipReplay': 'SKIP',
         'hud.mute': 'Mute',
         'hud.unmute': 'Unmute',
@@ -10110,7 +10119,7 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
         'mode.difficulty': 'Сложность', 'mode.duration': 'Длительность матча', 'mode.minutes': '{n} мин', 'mode.start': 'Начать матч', 'mode.start.hoops': 'Начать матч',
         'diff.easy': 'Лёгкая', 'diff.normal': 'Обычная', 'diff.hard': 'Сложная', 'mode.boost': 'Буст на этот матч', 'mode.noBoost': 'Буст не активирован',
         'hud.you': 'ТЫ', 'hud.cpu': 'ПК', 'hud.pause': 'Пауза', 'hud.stamina': 'Выносливость', 'hud.shoot': 'УДАР', 'hud.pass': 'ПАС', 'hud.sprint': 'РЫВОК',
-        'hud.tackle': 'ОТБОР', 'hud.steal': 'ПЕРЕХВАТ', 'hud.ready': 'Приготовься', 'hud.replay': 'ПОВТОР', 'hud.skipReplay': 'ПРОПУСТИТЬ', 'hud.mute': 'Без звука', 'hud.unmute': 'Включить звук', 'hud.go': 'ПОЕХАЛИ!', 'hud.goal': 'ГОЛ!', 'hud.score': 'ОЧКИ!', 'hud.three': 'ТРЁХОЧКОВЫЙ!',
+        'hud.tackle': 'ОТБОР', 'hud.steal': 'ПЕРЕХВАТ', 'hud.ready': 'Приготовься', 'hud.replay': 'ПОВТОР ГОЛА', 'hud.skipReplay': 'ПРОПУСТИТЬ', 'hud.mute': 'Без звука', 'hud.unmute': 'Включить звук', 'hud.go': 'ПОЕХАЛИ!', 'hud.goal': 'ГОЛ!', 'hud.score': 'ОЧКИ!', 'hud.three': 'ТРЁХОЧКОВЫЙ!',
         'hud.dunk': 'ДАНК!', 'hud.ownGoal': 'Автогол', 'hud.noStamina': 'Нет выносливости', 'hud.fullTime': 'Конец матча', 'hud.overtime': 'ОВЕРТАЙМ', 'hud.suddenDeath': 'ВНЕЗАПНАЯ СМЕРТЬ', 'hud.win': 'Ты победил!', 'hud.lose': 'Ты проиграл',
         'hud.draw': 'Ничья', 'hud.possession': 'Мяч', 'hud.mini.footy': 'Гол {a}:{b}',
         'pause.title': 'Пауза', 'pause.resume': 'Продолжить', 'pause.restart': 'Начать заново', 'pause.settings': 'Настройки', 'pause.quit': 'Выйти в меню',
@@ -13742,7 +13751,9 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     x: a.x, y: a.y, z: a.z,
                     vx: a.vx, vz: a.vz,
                     fx: a.fx, fz: a.fz,
+                    mx: a.mx, mz: a.mz,
                     kickT: a.kickT, shotT: a.shotT, jumpT: a.jumpT,
+                    diveT: a.diveT,
                     celebrateT: a.celebrateT
                 }))
             };
@@ -13767,19 +13778,57 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.hud.showReplay(true, () => this.stopReplay());
         }
         stepReplay(dt) {
-            this.replayTimer += dt * 0.82;
             const totalFrames = this.replayActiveFrames.length;
-            const frameDur = 1 / 30;
-            const idx = Math.floor(this.replayTimer / frameDur);
-            if (idx >= totalFrames || !this.view) {
+            if (totalFrames < 2 || !this.view) {
                 this.stopReplay();
                 return;
             }
-            const snap = this.replayActiveFrames[idx];
-            if (snap) {
-                this.view.applySnapshot(snap);
-                this.view.renderReplay(dt, snap, this.replayGoalInfo);
+            const frameDur = 1 / 30;
+            const fPos = this.replayTimer / frameDur;
+            const progress = fPos / totalFrames;
+            // Dynamic broadcast slow-motion curve: smooth playback that gently eases to 0.45x as ball enters net
+            const slowMo = progress > 0.58 ? Math.max(0.42, 1.0 - (progress - 0.58) * 1.4) : 0.88;
+            this.replayTimer += dt * slowMo;
+
+            const curIdx = Math.floor(fPos);
+            if (curIdx >= totalFrames - 1) {
+                this.stopReplay();
+                return;
             }
+            const frac = Math.max(0, Math.min(1, fPos - curIdx));
+            const snapA = this.replayActiveFrames[curIdx];
+            const snapB = this.replayActiveFrames[curIdx + 1] || snapA;
+
+            const lerp = (v0, v1, t) => v0 + (v1 - v0) * t;
+            const blended = {
+                bx: lerp(snapA.bx, snapB.bx, frac),
+                by: lerp(snapA.by, snapB.by, frac),
+                bz: lerp(snapA.bz, snapB.bz, frac),
+                bvx: lerp(snapA.bvx || 0, snapB.bvx || 0, frac),
+                bvy: lerp(snapA.bvy || 0, snapB.bvy || 0, frac),
+                bvz: lerp(snapA.bvz || 0, snapB.bvz || 0, frac),
+                agents: (snapA.agents || []).map((agA, i) => {
+                    const agB = (snapB.agents && snapB.agents[i]) || agA;
+                    return {
+                        id: agA.id,
+                        x: lerp(agA.x, agB.x, frac),
+                        y: lerp(agA.y || 0, agB.y || 0, frac),
+                        z: lerp(agA.z, agB.z, frac),
+                        fx: lerp(agA.fx, agB.fx, frac),
+                        fz: lerp(agA.fz, agB.fz, frac),
+                        mx: lerp(agA.mx || 0, agB.mx || 0, frac),
+                        mz: lerp(agA.mz || 0, agB.mz || 0, frac),
+                        kickT: lerp(agA.kickT || 0, agB.kickT || 0, frac),
+                        shotT: lerp(agA.shotT || 0, agB.shotT || 0, frac),
+                        jumpT: lerp(agA.jumpT || 0, agB.jumpT || 0, frac),
+                        diveT: lerp(agA.diveT || 0, agB.diveT || 0, frac),
+                        celebrateT: lerp(agA.celebrateT || 0, agB.celebrateT || 0, frac)
+                    };
+                })
+            };
+
+            this.view.applySnapshot(blended);
+            this.view.renderReplay(dt, blended, this.replayGoalInfo);
         }
         stopReplay() {
             if (!this.replayActive)
