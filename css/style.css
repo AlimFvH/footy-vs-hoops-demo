@@ -202,6 +202,14 @@ kbd { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(25
 .sb-time.low { color: var(--danger); animation: pulse .5s infinite alternate; }
 @keyframes pulse { to { transform: scale(1.12); } }
 .hud-pause { pointer-events: auto !important; position: absolute; right: 0; top: 0; width: 44px; height: 44px; border-radius: 14px; background: rgba(8,12,24,.78); border: 1px solid var(--line); font-size: 14px; letter-spacing: -2px; backdrop-filter: blur(6px); }
+.hud-mute { pointer-events: auto !important; position: absolute; right: 52px; top: 0; width: 44px; height: 44px; border-radius: 14px; background: rgba(8,12,24,.78); border: 1px solid var(--line); font-size: 16px; backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .15s, background .15s; }
+.hud-mute:active { transform: scale(0.92); }
+.hud-replay-overlay { pointer-events: auto !important; position: absolute; top: calc(var(--sat) + 68px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 6px 16px; background: rgba(12, 18, 32, 0.88); border: 1px solid rgba(255, 207, 51, 0.7); border-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 207, 51, 0.35); z-index: 25; backdrop-filter: blur(8px); animation: fvhReplayGlow 1.2s infinite alternate ease-in-out; }
+@keyframes fvhReplayGlow { from { border-color: rgba(255, 207, 51, 0.45); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 207, 51, 0.2); } to { border-color: rgba(255, 207, 51, 0.95); box-shadow: 0 4px 22px rgba(0, 0, 0, 0.7), 0 0 24px rgba(255, 207, 51, 0.55); } }
+.hud-replay-badge { font-size: 13px; font-weight: 900; letter-spacing: 1.5px; color: #fde047; text-transform: uppercase; text-shadow: 0 0 8px rgba(253, 224, 71, 0.6); }
+.hud-replay-skip { pointer-events: auto !important; background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.32); color: #ffffff; padding: 5px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; letter-spacing: 0.8px; cursor: pointer; transition: background .15s, transform .1s; }
+.hud-replay-skip:hover { background: rgba(255, 255, 255, 0.26); }
+.hud-replay-skip:active { transform: scale(0.94); }
 .stamina { position: absolute; top: calc(var(--sat) + 62px); left: calc(var(--sal) + 12px); width: 130px; font-size: 11px; font-weight: 800; letter-spacing: .8px; color: #cfe; text-transform: uppercase; }
 .stamina .bar { height: 9px; border-radius: 6px; background: rgba(0,0,0,.5); border: 1px solid var(--line); overflow: hidden; margin-top: 3px; }
 .stamina .bar i { display: block; height: 100%; transform-origin: left; background: linear-gradient(90deg, #22d3a0, #b6ff6a); }

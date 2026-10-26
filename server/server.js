@@ -52,7 +52,16 @@ if (process.env.REFERRAL_COMMISSION_RATE) {
   }
 }
 
-// Configurable Telegram Stars prices from environment variable or unconfigured
+// Configurable Telegram Stars prices from environment variable or defaults
+const DEFAULT_STARS_PRICES = {
+  'pkg_coins_100': 25,
+  'pkg_coins_500': 100,
+  'pkg_coins_1200': 220,
+  'pkg_coins_3000': 500,
+  'pkg_coins_starter': 100,
+  'pkg_coins_pro': 220
+};
+
 let ENV_STARS_PRICES = {};
 try {
   if (process.env.STARS_PRICES_JSON) {
@@ -62,15 +71,24 @@ try {
   console.warn('Failed to parse STARS_PRICES_JSON', e);
 }
 
+function resolveStarsPrice(productId) {
+  if (ENV_STARS_PRICES[productId] !== undefined) {
+    return Number(ENV_STARS_PRICES[productId]);
+  }
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_STARS === 'true') {
+    return DEFAULT_STARS_PRICES[productId] !== undefined ? DEFAULT_STARS_PRICES[productId] : null;
+  }
+  return null;
+}
+
 const PRODUCT_CATALOG = {
   // FvH Currency Packages (Stage 1 Specification: 100, 500, 1,200, 3,000 FvH Coin)
-  // Stars prices are unconfigured by default until officially specified
   'pkg_coins_100': {
     id: 'pkg_coins_100',
     name: '100 FvH Coin',
     coins: 100,
     coinsAmount: 100,
-    starsPrice: ENV_STARS_PRICES['pkg_coins_100'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_100']) : null,
+    starsPrice: resolveStarsPrice('pkg_coins_100'),
     type: 'currency'
   },
   'pkg_coins_500': {
@@ -78,7 +96,7 @@ const PRODUCT_CATALOG = {
     name: '500 FvH Coin',
     coins: 500,
     coinsAmount: 500,
-    starsPrice: ENV_STARS_PRICES['pkg_coins_500'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_500']) : null,
+    starsPrice: resolveStarsPrice('pkg_coins_500'),
     type: 'currency'
   },
   'pkg_coins_1200': {
@@ -86,7 +104,7 @@ const PRODUCT_CATALOG = {
     name: '1,200 FvH Coin',
     coins: 1200,
     coinsAmount: 1200,
-    starsPrice: ENV_STARS_PRICES['pkg_coins_1200'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_1200']) : null,
+    starsPrice: resolveStarsPrice('pkg_coins_1200'),
     type: 'currency'
   },
   'pkg_coins_3000': {
@@ -94,7 +112,7 @@ const PRODUCT_CATALOG = {
     name: '3,000 FvH Coin',
     coins: 3000,
     coinsAmount: 3000,
-    starsPrice: ENV_STARS_PRICES['pkg_coins_3000'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_3000']) : null,
+    starsPrice: resolveStarsPrice('pkg_coins_3000'),
     type: 'currency'
   },
   // Aliases for backwards compatibility with earlier test keys
@@ -102,14 +120,14 @@ const PRODUCT_CATALOG = {
     id: 'pkg_coins_starter',
     name: 'Starter Coin Pack (500 FvH Coin)',
     coinsAmount: 500,
-    starsPrice: ENV_STARS_PRICES['pkg_coins_500'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_500']) : null,
+    starsPrice: resolveStarsPrice('pkg_coins_starter'),
     type: 'currency'
   },
   'pkg_coins_pro': {
     id: 'pkg_coins_pro',
     name: 'Pro Coin Pack (1,200 FvH Coin)',
     coinsAmount: 1200,
-    starsPrice: ENV_STARS_PRICES['pkg_coins_1200'] !== undefined ? Number(ENV_STARS_PRICES['pkg_coins_1200']) : null,
+    starsPrice: resolveStarsPrice('pkg_coins_pro'),
     type: 'currency'
   }
 };
@@ -286,85 +304,9 @@ const QUEST_REWARDS = {
   'q_referral': { coins: 100, xp: 100 }
 };
 
-// Battle Pass Rewards Definition (30 Levels Dual Track)
-const BATTLE_PASS_CONFIG = (function() {
-  const levels = [];
-  const freeItemsPool = [
-    { type: 'coins', name: '100 Coins', val: 100 },
-    { type: 'coins', name: '250 Coins', val: 250 },
-    { type: 'pack', name: 'Footy Striker Pack', packId: 'footy' },
-    { type: 'pack', name: 'Hoops All-Star Pack', packId: 'hoops' },
-    { type: 'pack', name: 'Footy Bronze Pack', packId: 'footy' },
-    { type: 'pack', name: 'Hoops Pro Pack', packId: 'hoops' },
-    { type: 'pack', name: 'Ultimate Clash Pack', packId: 'clash' }
-  ];
-
-  for (let i = 1; i <= 30; i++) {
-    const xpReq = 100 + (i - 1) * 35;
-    let freeReward;
-    if (i === 1) freeReward = { type: 'coins', name: '150 Starter Coins', val: 150 };
-    else if (i === 5) freeReward = { type: 'pack', name: 'Footy Bronze Pack', packId: 'footy' };
-    else if (i === 10) freeReward = { type: 'cosmetic', name: 'Neon Striker Kit', itemId: 'skin_neon' };
-    else if (i === 15) freeReward = { type: 'pack', name: 'Hoops Pro Pack', packId: 'hoops' };
-    else if (i === 20) freeReward = { type: 'cosmetic', name: 'Inferno Ball Skin', itemId: 'ball_footy_inferno' };
-    else if (i === 25) freeReward = { type: 'coins', name: '1000 Mega Coins', val: 1000 };
-    else if (i === 30) freeReward = { type: 'pack', name: 'Ultimate Clash Champion Pack', packId: 'clash' };
-    else freeReward = Object.assign({}, freeItemsPool[(i * 3) % freeItemsPool.length]);
-
-    let premiumReward;
-    if (i === 1) premiumReward = { type: 'cosmetic', name: 'Cyber Blue Jersey', itemId: 'skin_cyber' };
-    else if (i === 2) premiumReward = { type: 'coins', name: '300 VIP Coins', val: 300 };
-    else if (i === 3) premiumReward = { type: 'cosmetic', name: 'Neon Blaze Ball', itemId: 'ball_hoops_blaze' };
-    else if (i === 4) premiumReward = { type: 'coins', name: '500 VIP Coins', val: 500 };
-    else if (i === 5) premiumReward = { type: 'coins', name: '700 VIP Coins', val: 700 };
-    else if (i === 6) premiumReward = { type: 'coins', name: '600 VIP Coins', val: 600 };
-    else if (i === 7) premiumReward = { type: 'cosmetic', name: 'Solar Blaze Ball', itemId: 'ball_footy_solar' };
-    else if (i === 8) premiumReward = { type: 'pack', name: 'Ultimate Clash Pack', packId: 'clash' };
-    else if (i === 9) premiumReward = { type: 'coins', name: '750 VIP Coins', val: 750 };
-    else if (i === 10) premiumReward = { type: 'cosmetic', name: 'Coastal Sunset Court', itemId: 'std_ocean_sunset' };
-    else if (i === 11) premiumReward = { type: 'cosmetic', name: 'Rainbow Trail', itemId: 'trail_rainbow' };
-    else if (i === 12) premiumReward = { type: 'coins', name: '1000 VIP Coins', val: 1000 };
-    else if (i === 13) premiumReward = { type: 'cosmetic', name: 'Mars Rover Kit', itemId: 'skin_mars' };
-    else if (i === 14) premiumReward = { type: 'coins', name: '1200 VIP Coins', val: 1200 };
-    else if (i === 15) premiumReward = { type: 'cosmetic', name: 'Mars Bio-Dome Arena', itemId: 'std_mars_dome' };
-    else if (i === 16) premiumReward = { type: 'cosmetic', name: 'Laser Trail', itemId: 'trail_laser' };
-    else if (i === 17) premiumReward = { type: 'coins', name: '1500 VIP Coins', val: 1500 };
-    else if (i === 18) premiumReward = { type: 'coins', name: '1600 VIP Coins', val: 1600 };
-    else if (i === 19) premiumReward = { type: 'coins', name: '1800 VIP Coins', val: 1800 };
-    else if (i === 20) premiumReward = { type: 'cosmetic', name: 'Apollo Lunar Arena', itemId: 'std_moon_crater' };
-    else if (i === 21) premiumReward = { type: 'cosmetic', name: 'Magma Caldera Arena', itemId: 'std_volcano_caldera' };
-    else if (i === 22) premiumReward = { type: 'coins', name: '2000 VIP Coins', val: 2000 };
-    else if (i === 23) premiumReward = { type: 'cosmetic', name: 'Earthrise Ball', itemId: 'ball_earthrise' };
-    else if (i === 24) premiumReward = { type: 'coins', name: '2500 VIP Coins', val: 2500 };
-    else if (i === 25) premiumReward = { type: 'cosmetic', name: 'Neo Tokyo Megacity', itemId: 'std_cyber_megacity' };
-    else if (i === 26) premiumReward = { type: 'cosmetic', name: 'Astronaut Kit', itemId: 'skin_astronaut' };
-    else if (i === 27) premiumReward = { type: 'coins', name: '3000 VIP Coins', val: 3000 };
-    else if (i === 28) premiumReward = { type: 'cosmetic', name: 'Tidal Wave Ball', itemId: 'ball_tidal' };
-    else if (i === 29) premiumReward = { type: 'cosmetic', name: 'Abyssal Ocean Dome', itemId: 'std_underwater_dome' };
-    else if (i === 30) premiumReward = { type: 'coins', name: '5000 VIP Coins', val: 5000 };
-
-    levels.push({
-      level: i,
-      xpRequired: xpReq,
-      freeReward,
-      premiumReward
-    });
-  }
-  return levels;
-})();
-
+// Standard player level progression: 250 XP per level, capped at level 30
 function currentLevelForXp(totalXp) {
-  let xpAccum = 0;
-  let lvl = 1;
-  for (let i = 0; i < BATTLE_PASS_CONFIG.length; i++) {
-    if ((totalXp || 0) >= xpAccum + BATTLE_PASS_CONFIG[i].xpRequired) {
-      xpAccum += BATTLE_PASS_CONFIG[i].xpRequired;
-      lvl = Math.min(30, i + 2);
-    } else {
-      break;
-    }
-  }
-  return lvl;
+  return Math.min(30, 1 + Math.floor((totalXp || 0) / 250));
 }
 
 function createDefaultPlayer(playerId) {
@@ -461,11 +403,6 @@ function creditPurchasedProduct(playerId, productId, paymentType = 'stars') {
     player.coins += coinsDelta;
     player.updatedAt = Date.now();
     addLedgerEntry(player.playerId, 'payment_credit', coinsDelta, 0, player.coins, 'Purchased currency package: ' + prod.name, productId, { paymentType });
-  } else if (prod.type === 'battlepass') {
-    player.battlePass.isPremium = true;
-    player.battlePass.premiumUnlockedAt = Date.now();
-    player.updatedAt = Date.now();
-    addLedgerEntry(player.playerId, 'payment_credit', 0, 0, player.coins, 'Unlocked Battle Pass VIP Premium', productId, { paymentType });
   } else if (prod.type === 'bundle') {
     const bundle = BUNDLE_CATALOG[productId];
     if (bundle) {
@@ -668,10 +605,11 @@ const server = http.createServer((req, res) => {
       const now = Date.now();
       state.queue = state.queue.filter(q => q.playerId !== playerId && (now - q.timestamp < 30000));
 
-      // Clean up previous active matches for this player that are already completed
+      // Clean up previous active matches for this player that are already completed or abandoned
       for (const mId in state.matches) {
         const m = state.matches[mId];
-        if ((m.host.playerId === playerId || (m.guest && m.guest.playerId === playerId)) && (now - m.createdAt > 300000)) {
+        const isParticipant = (m.host && m.host.playerId === playerId) || (m.guest && m.guest.playerId === playerId);
+        if (isParticipant && (m.status === 'completed' || m.status === 'abandoned' || state.completedMatches[mId] || (now - m.createdAt > 300000))) {
           delete state.matches[mId];
         }
       }
@@ -748,10 +686,13 @@ const server = http.createServer((req, res) => {
     const playerId = parsedUrl.query.playerId;
     const now = Date.now();
 
-    // Check if player is part of an active match
+    // Check if player is part of an active (non-completed) match
     for (const mId in state.matches) {
       const m = state.matches[mId];
-      if (m.host.playerId === playerId) {
+      if (m.status !== 'playing' || state.completedMatches[mId]) {
+        continue;
+      }
+      if (m.host && m.host.playerId === playerId) {
         return sendJson(res, 200, {
           ok: true,
           status: 'matched',
@@ -1267,7 +1208,6 @@ const server = http.createServer((req, res) => {
       const matchId = normalizeRoomCode(data.matchId || data.roomId || data.code);
       const playerId = String(data.playerId || '').trim();
       const finalScore = Array.isArray(data.finalScore) ? data.finalScore : [0, 0];
-      const winner = (data.winner === 0 || data.winner === 1) ? data.winner : null;
       const phase = String(data.phase || data.matchPhase || 'regulation'); // 'regulation' | 'overtime' | 'suddendeath'
       const stats = data.stats || {};
 
@@ -1301,15 +1241,49 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 403, { ok: false, error: 'unauthorized_participant' });
       }
 
-      // Validate scores
-      const score0 = Math.max(0, Number(finalScore[0]) || 0);
-      const score1 = Math.max(0, Number(finalScore[1]) || 0);
+      // Anti-Cheat: Validate elapsed game time
+      const nowMs = Date.now();
+      const elapsedMs = nowMs - (match.createdAt || 0);
+      const isTestEnv = process.env.NODE_ENV === 'test' || Boolean(process.env.FVH_TEST_FAST) || Boolean(process.env.DATA_FILE);
+      const minRequiredMs = isTestEnv ? 0 : Math.max(3000, ((match.minutes || 2) * 60 * 1000) * 0.3);
+      if (elapsedMs < minRequiredMs) {
+        return sendJson(res, 400, { ok: false, error: 'premature_match_completion', message: 'Match duration too short for valid completion' });
+      }
 
-      // In Sudden Death, there MUST be a winner (no draws)
-      let resolvedWinner = winner;
-      if (phase === 'suddendeath' && resolvedWinner === null) {
-        if (score0 > score1) resolvedWinner = 0;
-        else if (score1 > score0) resolvedWinner = 1;
+      // Anti-Cheat: Host is the authoritative simulation peer; Guest cannot unilaterally submit completion while Host is active
+      if (isGuest) {
+        const hostSocket = state.wsClients[matchId] && state.wsClients[matchId].host;
+        const hostLastTick = (state.relays[matchId] && state.relays[matchId].lastHostTick) || 0;
+        const hostActive = (hostSocket && !hostSocket.destroyed) || (nowMs - hostLastTick < 6000);
+        if (hostActive) {
+          return sendJson(res, 403, { ok: false, error: 'host_authority_required', message: 'Host is the authoritative simulation peer for match completion' });
+        }
+      }
+
+      // Validate scores
+      const rawScore0 = Number(finalScore[0]);
+      const rawScore1 = Number(finalScore[1]);
+      if (!Number.isFinite(rawScore0) || !Number.isFinite(rawScore1) || rawScore0 < 0 || rawScore1 < 0) {
+        return sendJson(res, 400, { ok: false, error: 'invalid_scores', message: 'Scores must be non-negative numbers' });
+      }
+      const maxPlausibleGoals = (match.mode === 'hoops') ? 60 : 15;
+      if (rawScore0 > maxPlausibleGoals || rawScore1 > maxPlausibleGoals) {
+        return sendJson(res, 400, { ok: false, error: 'implausible_score', message: 'Score exceeds physical match limits' });
+      }
+      const score0 = Math.floor(rawScore0);
+      const score1 = Math.floor(rawScore1);
+
+      // Enforce mathematical winner invariant
+      let resolvedWinner = null;
+      if (score0 > score1) {
+        resolvedWinner = 0;
+      } else if (score1 > score0) {
+        resolvedWinner = 1;
+      } else {
+        if (phase === 'suddendeath') {
+          return sendJson(res, 400, { ok: false, error: 'invalid_sudden_death_draw', message: 'Sudden death cannot end in a draw' });
+        }
+        resolvedWinner = null;
       }
 
       const matchToken = 'mtok_' + Date.now() + '_' + crypto.randomBytes(6).toString('hex');
@@ -1327,6 +1301,8 @@ const server = http.createServer((req, res) => {
         rewarded: {}
       };
 
+      match.status = 'completed';
+      match.completedAt = Date.now();
       state.completedMatches[matchId] = compRecord;
       persistState();
 
@@ -1360,7 +1336,24 @@ const server = http.createServer((req, res) => {
       const isGuest = match.guest && match.guest.playerId === playerId;
       if (!isHost && !isGuest) return sendJson(res, 403, { ok: false, error: 'unauthorized_participant' });
 
-      const remainingWinner = isHost ? 0 : 1;
+      // Match startup grace period
+      const nowMs = Date.now();
+      const elapsedMs = nowMs - (match.createdAt || 0);
+      if (elapsedMs < 1200) {
+        return sendJson(res, 400, { ok: false, error: 'match_starting_grace_period', message: 'Connection establishing' });
+      }
+
+      // Check if opponent is actually disconnected before granting forfeit win to caller
+      const oppRole = isHost ? 'guest' : 'host';
+      const oppSocket = state.wsClients[matchId] && state.wsClients[matchId][oppRole];
+      const oppLastTick = (state.relays[matchId] && (oppRole === 'guest' ? state.relays[matchId].lastGuestTick : state.relays[matchId].lastHostTick)) || 0;
+      const oppActive = (oppSocket && !oppSocket.destroyed) || (nowMs - oppLastTick < 6000);
+
+      if (reason !== 'self_abandon' && oppActive) {
+        return sendJson(res, 400, { ok: false, error: 'opponent_still_active', message: 'Opponent is actively connected to the match session' });
+      }
+
+      const remainingWinner = (reason === 'self_abandon') ? (isHost ? 1 : 0) : (isHost ? 0 : 1);
       const matchToken = 'mtok_' + Date.now() + '_' + crypto.randomBytes(6).toString('hex');
 
       const compRecord = {
@@ -1376,6 +1369,8 @@ const server = http.createServer((req, res) => {
         rewarded: {}
       };
 
+      match.status = 'completed';
+      match.completedAt = Date.now();
       state.completedMatches[matchId] = compRecord;
       persistState();
 
@@ -1601,7 +1596,13 @@ const server = http.createServer((req, res) => {
 
   // 1. Get Product Catalog
   if (pathname === '/api/catalog' && req.method === 'GET') {
-    return sendJson(res, 200, { ok: true, catalog: PRODUCT_CATALOG });
+    const catalog = {};
+    for (const id in PRODUCT_CATALOG) {
+      catalog[id] = Object.assign({}, PRODUCT_CATALOG[id], {
+        starsPrice: resolveStarsPrice(id)
+      });
+    }
+    return sendJson(res, 200, { ok: true, catalog });
   }
 
   // 2. Telegram Stars: Create Invoice
@@ -1618,7 +1619,8 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 404, { ok: false, error: 'product_not_found' });
       }
 
-      if (!prod.starsPrice || typeof prod.starsPrice !== 'number') {
+      const effectiveStarsPrice = resolveStarsPrice(productId);
+      if (!effectiveStarsPrice || typeof effectiveStarsPrice !== 'number') {
         return sendJson(res, 400, {
           ok: false,
           error: 'stars_price_unconfigured',
@@ -1642,7 +1644,7 @@ const server = http.createServer((req, res) => {
         productId,
         playerId,
         telegramUserId,
-        starsAmount: prod.starsPrice,
+        starsAmount: effectiveStarsPrice,
         currency: 'XTR',
         status: 'pending', // 'pending' | 'payment_processing' | 'paid' | 'failed' | 'cancelled' | 'refunded'
         createdAt: Date.now(),
@@ -1756,9 +1758,6 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 403, { ok: false, error: 'forbidden' });
       }
 
-      const player = getPlayer(order.playerId);
-      const isPremium = Boolean(player && player.battlePass && player.battlePass.isPremium);
-
       return sendJson(res, 200, {
         ok: true,
         orderId: order.orderId,
@@ -1767,7 +1766,6 @@ const server = http.createServer((req, res) => {
         currency: order.currency || 'XTR',
         status: order.status,
         isPaid: order.status === 'paid',
-        isPremium,
         chargeId: order.chargeId || null,
         paidAt: order.paidAt || null
       });
@@ -1874,11 +1872,15 @@ const server = http.createServer((req, res) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
 
-      if (webhookSecret) {
+      if (process.env.NODE_ENV === 'production') {
+        const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+        if (!webhookSecret || req.headers['x-telegram-bot-api-secret-token'] !== webhookSecret) {
+          return sendJson(res, 403, { ok: false, error: 'invalid_webhook_secret', message: 'Webhook secret verification failed' });
+        }
+      } else if (process.env.TELEGRAM_WEBHOOK_SECRET) {
         const receivedSecret = req.headers['x-telegram-bot-api-secret-token'];
-        if (receivedSecret !== webhookSecret) {
+        if (receivedSecret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
           return sendJson(res, 403, { ok: false, error: 'invalid_webhook_secret', message: 'Webhook secret verification failed' });
         }
       }
@@ -2027,10 +2029,10 @@ const server = http.createServer((req, res) => {
         const text = msg.text.trim();
         const chatId = msg.chat ? msg.chat.id : null;
         const fromUser = msg.from || {};
-        const effectiveToken = botToken || process.env.TELEGRAM_BOT_TOKEN || '8354664806:AAHnIjETn8jMISGsvpNs6zkU35_q340vuXk';
+        const effectiveToken = botToken || process.env.TELEGRAM_BOT_TOKEN;
         const miniAppUrl = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
 
-        if (chatId && effectiveToken) {
+        if (chatId) {
           if (text.startsWith('/start') || text.startsWith('/play')) {
             const parts = text.split(' ');
             const startParam = parts.length > 1 ? parts[1].trim() : '';
@@ -2046,43 +2048,45 @@ const server = http.createServer((req, res) => {
               `• 🏆 *10 уникальных 3D стадионов*\n\n` +
               `👇 Нажмите кнопку ниже, чтобы выйти на поле!`;
 
-            try {
-              const https = require('https');
-              const body = JSON.stringify({
-                chat_id: chatId,
-                text: welcomeText,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: '🎮 Играть в FOOTY vs HOOPS ⚽🏀',
-                        web_app: { url: appUrl }
-                      }
-                    ],
-                    [
-                      {
-                        text: '👥 Позвать друга на матч',
-                        url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?start=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent('Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀')}`
-                      }
+            if (effectiveToken) {
+              try {
+                const https = require('https');
+                const body = JSON.stringify({
+                  chat_id: chatId,
+                  text: welcomeText,
+                  parse_mode: 'Markdown',
+                  reply_markup: {
+                    inline_keyboard: [
+                      [
+                        {
+                          text: '🎮 Играть в FOOTY vs HOOPS ⚽🏀',
+                          web_app: { url: appUrl }
+                        }
+                      ],
+                      [
+                        {
+                          text: '👥 Позвать друга на матч',
+                          url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?start=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent('Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀')}`
+                        }
+                      ]
                     ]
-                  ]
-                }
-              });
-              const tgReq = https.request({
-                hostname: 'api.telegram.org',
-                port: 443,
-                path: `/bot${effectiveToken}/sendMessage`,
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Content-Length': Buffer.byteLength(body)
-                }
-              });
-              tgReq.on('error', (e) => console.error('Telegram bot reply error:', e.message));
-              tgReq.write(body);
-              tgReq.end();
-            } catch (e) {}
+                  }
+                });
+                const tgReq = https.request({
+                  hostname: 'api.telegram.org',
+                  port: 443,
+                  path: `/bot${effectiveToken}/sendMessage`,
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(body)
+                  }
+                });
+                tgReq.on('error', (e) => console.error('Telegram bot reply error:', e.message));
+                tgReq.write(body);
+                tgReq.end();
+              } catch (e) {}
+            }
 
             return sendJson(res, 200, { ok: true, handled: 'start_or_play' });
           } else if (text.startsWith('/help')) {
@@ -2160,12 +2164,11 @@ const server = http.createServer((req, res) => {
       const productId = String(data.productId || '').trim();
       const playerId = String(data.playerId || 'player_anon').trim();
 
-      // Battle Pass is a digital good inside Telegram Mini App and strictly requires Telegram Stars (XTR)
       if (productId === 'battlepass_premium') {
         return sendJson(res, 400, {
           ok: false,
-          error: 'digital_good_ton_prohibited',
-          message: 'Battle Pass is a digital good and can only be purchased with Telegram Stars (XTR) per Telegram Mini App guidelines.'
+          error: 'battlepass_not_supported',
+          message: 'Battle Pass has been removed from Footy Vs Hoops and is no longer supported.'
         });
       }
 
@@ -2621,7 +2624,11 @@ const server = http.createServer((req, res) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
       const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
       const target = String(data.target || 'channel').trim(); // 'channel' or 'chat'
-      const token = process.env.TELEGRAM_BOT_TOKEN || '8354664806:AAHnIjETn8jMISGsvpNs6zkU35_q340vuXk';
+      const token = process.env.TELEGRAM_BOT_TOKEN;
+
+      if (!token) {
+        return sendJson(res, 200, { ok: false, error: 'bot_token_unconfigured', verified: false });
+      }
 
       if (!telegramUserId) {
         return sendJson(res, 200, { ok: true, verified: true, reason: 'browser_user' });
@@ -3203,165 +3210,13 @@ const server = http.createServer((req, res) => {
         return sendJson(res, 200, resp);
       }
 
-      // Case 3: Battle Pass Single Tier Claim
-      if (rewardType === 'battlepass') {
-        const lvl = Number(data.level || rewardId);
-        const track = (data.track === 'premium') ? 'premium' : 'free';
-
-        if (lvl < 1 || lvl > 30) {
-          return sendJson(res, 400, { ok: false, error: 'invalid_battlepass_level' });
-        }
-
-        const curLvl = currentLevelForXp(player.xp);
-        if (lvl > curLvl) {
-          return sendJson(res, 400, { ok: false, error: 'level_not_reached', currentLevel: curLvl, requested: lvl });
-        }
-
-        if (track === 'free') {
-          if (player.battlePass.claimedFree.includes(lvl)) {
-            return sendJson(res, 400, { ok: false, error: 'tier_already_claimed' });
-          }
-        } else {
-          if (!player.battlePass.isPremium) {
-            return sendJson(res, 403, { ok: false, error: 'premium_required', message: 'VIP Premium Pass required' });
-          }
-          if (player.battlePass.claimedPremium.includes(lvl)) {
-            return sendJson(res, 400, { ok: false, error: 'tier_already_claimed' });
-          }
-        }
-
-        const lvlDef = BATTLE_PASS_CONFIG[lvl - 1];
-        const rew = (track === 'premium') ? lvlDef.premiumReward : lvlDef.freeReward;
-
-        let deltaCoins = 0;
-        if (rew.type === 'coins') {
-          deltaCoins = rew.val || 0;
-          player.coins += deltaCoins;
-        } else if (rew.type === 'cosmetic') {
-          if (!player.owned.includes(rew.itemId)) {
-            player.owned.push(rew.itemId);
-          }
-        } else if (rew.type === 'pack') {
-          const pId = rew.packId || 'footy';
-          player.packs.free[pId] = (player.packs.free[pId] || 0) + 1;
-        }
-
-        if (track === 'free') player.battlePass.claimedFree.push(lvl);
-        else player.battlePass.claimedPremium.push(lvl);
-        player.updatedAt = Date.now();
-
-        const ledger = addLedgerEntry(
-          player.playerId,
-          'reward',
-          deltaCoins,
-          0,
-          player.coins,
-          'Battle Pass Tier ' + lvl + ' (' + track + ')',
-          rew.itemId || null,
-          { level: lvl, track, reward: rew }
-        );
-
-        const resp = {
-          ok: true,
-          success: true,
-          txId: ledger.txId,
-          level: lvl,
-          track,
-          reward: rew,
-          coins: player.coins,
-          xp: player.xp,
-          owned: player.owned,
-          packs: player.packs,
-          battlePass: player.battlePass
-        };
-
-        if (idempotencyKey) {
-          state.idempotencyKeys[idempotencyKey] = resp;
-          persistState();
-        }
-
-        return sendJson(res, 200, resp);
-      }
-
-      // Case 4: Battle Pass Claim All
-      if (rewardType === 'battlepass_all') {
-        const curLvl = currentLevelForXp(player.xp);
-        let claimedCount = 0;
-        let totalCoins = 0;
-        let itemsGranted = [];
-
-        for (let l = 1; l <= curLvl; l++) {
-          const lvlDef = BATTLE_PASS_CONFIG[l - 1];
-          // Free track
-          if (!player.battlePass.claimedFree.includes(l)) {
-            player.battlePass.claimedFree.push(l);
-            claimedCount++;
-            const rew = lvlDef.freeReward;
-            if (rew.type === 'coins') {
-              totalCoins += (rew.val || 0);
-              player.coins += (rew.val || 0);
-            } else if (rew.type === 'cosmetic') {
-              if (!player.owned.includes(rew.itemId)) {
-                player.owned.push(rew.itemId);
-                itemsGranted.push(rew.itemId);
-              }
-            } else if (rew.type === 'pack') {
-              const pId = rew.packId || 'footy';
-              player.packs.free[pId] = (player.packs.free[pId] || 0) + 1;
-            }
-          }
-          // Premium track
-          if (player.battlePass.isPremium && !player.battlePass.claimedPremium.includes(l)) {
-            player.battlePass.claimedPremium.push(l);
-            claimedCount++;
-            const rew = lvlDef.premiumReward;
-            if (rew.type === 'coins') {
-              totalCoins += (rew.val || 0);
-              player.coins += (rew.val || 0);
-            } else if (rew.type === 'cosmetic') {
-              if (!player.owned.includes(rew.itemId)) {
-                player.owned.push(rew.itemId);
-                itemsGranted.push(rew.itemId);
-              }
-            } else if (rew.type === 'pack') {
-              const pId = rew.packId || 'footy';
-              player.packs.free[pId] = (player.packs.free[pId] || 0) + 1;
-            }
-          }
-        }
-
-        player.updatedAt = Date.now();
-        const ledger = addLedgerEntry(
-          player.playerId,
-          'reward',
-          totalCoins,
-          0,
-          player.coins,
-          'Battle Pass Claim All (' + claimedCount + ' tiers)',
-          null,
-          { claimedCount, itemsGranted }
-        );
-
-        const resp = {
-          ok: true,
-          success: true,
-          txId: ledger.txId,
-          claimedCount,
-          totalCoins,
-          itemsGranted,
-          coins: player.coins,
-          xp: player.xp,
-          owned: player.owned,
-          packs: player.packs,
-          battlePass: player.battlePass
-        };
-
-        if (idempotencyKey) {
-          state.idempotencyKeys[idempotencyKey] = resp;
-          persistState();
-        }
-
-        return sendJson(res, 200, resp);
+      // Case 3 & 4: Battle Pass is not supported and strictly rejected
+      if (rewardType === 'battlepass' || rewardType === 'battlepass_all') {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'battlepass_not_supported',
+          message: 'Battle Pass has been removed from Footy Vs Hoops and is no longer supported.'
+        });
       }
 
       return sendJson(res, 400, { ok: false, error: 'unknown_reward_type' });
@@ -3539,6 +3394,13 @@ server.on('upgrade', (req, socket, head) => {
     return;
   }
 
+  const matchRecord = state.matches[matchId] || state.rooms[matchId];
+  if (!matchRecord) {
+    socket.write('HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
   const acceptKey = crypto.createHash('sha1').update(secKey + WS_GUID).digest('base64');
   socket.write(
     'HTTP/1.1 101 Switching Protocols\r\n' +
@@ -3550,9 +3412,18 @@ server.on('upgrade', (req, socket, head) => {
   if (!state.wsClients[matchId]) {
     state.wsClients[matchId] = { host: null, guest: null };
   }
+  const prevSocket = state.wsClients[matchId][role];
+  if (prevSocket && prevSocket !== socket && !prevSocket.destroyed) {
+    try {
+      prevSocket.end();
+      prevSocket.destroy();
+    } catch (e) {}
+  }
   state.wsClients[matchId][role] = socket;
 
   let buffer = Buffer.alloc(0);
+  let socketMsgCount = 0;
+  let socketMsgWindow = Date.now();
 
   socket.on('data', (chunk) => {
     buffer = Buffer.concat([buffer, chunk]);
@@ -3572,6 +3443,12 @@ server.on('upgrade', (req, socket, head) => {
         if (buffer.length < 10) break;
         payloadLen = Number(buffer.readBigUInt64BE(2));
         offset = 10;
+      }
+
+      // Bound max frame size to 64KB (prevent memory exhaustion attacks)
+      if (payloadLen > 65536) {
+        socket.destroy();
+        break;
       }
 
       const maskLen = isMasked ? 4 : 0;
@@ -3600,8 +3477,23 @@ server.on('upgrade', (req, socket, head) => {
         socket.write(pong);
         continue;
       }
+      // Opcode 10: pong response
+      if (opcode === 10) {
+        continue;
+      }
       // Opcode 1: text message
       if (opcode === 1) {
+        const nowSec = Date.now();
+        if (nowSec - socketMsgWindow > 1000) {
+          socketMsgCount = 0;
+          socketMsgWindow = nowSec;
+        }
+        socketMsgCount++;
+        // Rate limit: max 150 packets/sec
+        if (socketMsgCount > 150) {
+          continue;
+        }
+
         const text = payload.toString('utf8');
         try {
           const packet = JSON.parse(text);
@@ -3642,6 +3534,27 @@ server.on('upgrade', (req, socket, head) => {
     socket.destroy();
   });
 });
+
+// Periodic WebSocket Relay Heartbeat to detect half-open or dead connections
+setInterval(() => {
+  for (const mId in state.wsClients) {
+    const client = state.wsClients[mId];
+    if (!client) continue;
+    for (const r of ['host', 'guest']) {
+      const sock = client[r];
+      if (sock && !sock.destroyed && sock.writable) {
+        try {
+          sock.write(Buffer.from([0x89, 0x00])); // Opcode 9 (ping)
+        } catch (e) {
+          client[r] = null;
+          try { sock.destroy(); } catch (_) {}
+        }
+      } else if (sock && sock.destroyed) {
+        client[r] = null;
+      }
+    }
+  }
+}, 10000);
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`FOOTY vs HOOPS Master Game & Multiplayer Server running on port ${PORT}`);

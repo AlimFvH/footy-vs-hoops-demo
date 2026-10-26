@@ -1,6 +1,10 @@
 const https = require('https');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8354664806:AAHnIjETn8jMISGsvpNs6zkU35_q340vuXk';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+if (!BOT_TOKEN) {
+  console.error('Error: TELEGRAM_BOT_TOKEN environment variable is required.');
+  process.exit(1);
+}
 const MINI_APP_URL = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
 
 function callApi(method, body = {}) {

@@ -90,12 +90,11 @@ assert(redesignJs.includes('function triggerHaptic(type)'), 'triggerHaptic helpe
 assert(redesignJs.includes('Telegram.WebApp.HapticFeedback'), 'Telegram HapticFeedback must be invoked');
 console.log('  [PASS] Tactile Haptic Feedback connected to Telegram WebApp');
 
-// Test 12: Battle Pass Row Alignment
-console.log('Test 12: Checking Battle Pass card height parity...');
-assert(redesignJs.includes("freeCard.style.height = '210px'"), 'Free card must have fixed 210px height');
-assert(redesignJs.includes("vipCard.style.height = '210px'"), 'VIP card must have fixed 210px height');
-assert(redesignJs.includes("freeActionBtn.style.height = '36px'"), 'Free action button must have 36px height');
-assert(redesignJs.includes("vipActionBtn.style.height = '36px'"), 'VIP action button must have 36px height');
-console.log('  [PASS] Battle Pass free and VIP tracks have 100% height parity');
+// Test 12: Battle Pass Elimination Verification
+console.log('Test 12: Checking Battle Pass elimination and clean redirection to Quests...');
+assert(redesignJs.includes("function buildBattlePassPage(app)"), 'buildBattlePassPage handler must exist');
+assert(redesignJs.includes("return buildQuestsPage(app, 'daily')"), 'buildBattlePassPage must redirect to Quests');
+assert(redesignJs.includes("Боевой пропуск не поддерживается") || redesignJs.includes("Battle Pass is not supported"), 'openBattlePassCheckout must alert that Battle Pass is not supported');
+console.log('  [PASS] Battle Pass eliminated and cleanly redirected to Quests');
 
 console.log('\nAll 12/12 release verification tests passed successfully!');

@@ -74,6 +74,10 @@
   // Unified Localization Dictionary with Complete En/Ru Parity
   var I18N = {
     en: {
+      replay: 'REPLAY',
+      skipReplay: 'SKIP',
+      mute: 'Mute',
+      unmute: 'Unmute',
       playHero: 'PLAY',
       chooseMode: 'SELECT MODE',
       quickMatch: 'QUICK MATCH',
@@ -571,6 +575,10 @@
       warDiffBreakdown: 'AI Victory Points: Easy +15 · Normal +30 · Hard +60 pts'
     },
     ru: {
+      replay: 'ПОВТОР',
+      skipReplay: 'ПРОПУСТИТЬ',
+      mute: 'Без звука',
+      unmute: 'Включить звук',
       playHero: 'ИГРАТЬ',
       chooseMode: 'ВЫБРАТЬ РЕЖИМ',
       quickMatch: 'БЫСТРЫЙ МАТЧ',
@@ -4596,13 +4604,19 @@
               d.battlePass.premiumUnlockedAt = statusRes.paidAt || Date.now();
             });
           }
+          var successDesc = (productId === 'battlepass_premium')
+            ? (getActiveLang() === 'ru'
+              ? 'Платеж на ' + (statusRes.starsAmount || 250) + ' ⭐ подтвержден Telegram. Доступ к VIP Premium открыт!'
+              : (statusRes.starsAmount || 250) + ' ⭐ confirmed by Telegram. VIP Premium Access unlocked!')
+            : (getActiveLang() === 'ru'
+              ? 'Платеж на ' + (statusRes.starsAmount || starsPrice) + ' ⭐ подтвержден Telegram! Награда успешно начислена.'
+              : (statusRes.starsAmount || starsPrice) + ' ⭐ confirmed by Telegram! Your purchase has been credited.');
+
           modal.innerHTML =
             '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
             '<h3 style="margin:0 0 8px;color:#fde047;">' + tr('paymentSuccess') + '</h3>' +
             '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">' +
-            (getActiveLang() === 'ru'
-              ? 'Платеж на ' + (statusRes.starsAmount || 250) + ' ⭐ подтвержден Telegram. Доступ к VIP Premium открыт!'
-              : (statusRes.starsAmount || 250) + ' ⭐ confirmed by Telegram. VIP Premium Access unlocked!') +
+            successDesc +
             '</p>' +
             '<button class="btn primary block fvh-pay-done">' + tr('claimAndContinue') + '</button>';
 
@@ -4709,23 +4723,7 @@
   };
 
   function openBattlePassCheckout(app, onUnlocked) {
-    openUniversalPaymentModal(app, {
-      productId: 'battlepass_premium',
-      title: tr('bpPurchaseModalTitle'),
-      starsPrice: 250,
-      tonPrice: 1.5,
-      onPurchased: function () {
-        app.store.update(function (d) {
-          if (!d.battlePass) d.battlePass = { claimedFree: [], claimedPremium: [], isPremium: false };
-          d.battlePass.isPremium = true;
-          d.battlePass.premiumUnlockedAt = Date.now();
-        });
-        syncAuthoritativeEconomy(app);
-        app.audio.play('purchase');
-        showToast('👑 ' + tr('bpPremiumActive') + '! ' + tr('bpLateUnlockNotice'));
-        if (onUnlocked) onUnlocked();
-      }
-    });
+    showToast(getActiveLang() === 'ru' ? 'Боевой пропуск не поддерживается' : 'Battle Pass is not supported');
   }
 
   function showRewardModal(reward, lvl, track) {
@@ -4756,309 +4754,9 @@
     document.body.appendChild(overlay);
   }
 
-  // Build the Dual-Track 30-Level Battle Pass Page
+  // Battle Pass removed: redirects cleanly to Quests
   function buildBattlePassPage(app) {
-    var container = document.createElement('div');
-    container.className = 'screen solid page-screen has-nav';
-    container.dataset.id = 'battlepass';
-
-    var page = document.createElement('div');
-    page.className = 'page';
-
-    // Page Head
-    var head = document.createElement('div');
-    head.className = 'page-head';
-    var backBtn = document.createElement('button');
-    backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
-    backBtn.onclick = function () {
-      app.audio.play('click');
-      app.showMenu();
-    };
-    var title = document.createElement('h1');
-    title.textContent = tr('battlePass');
-    head.appendChild(backBtn);
-    head.appendChild(title);
-    page.appendChild(head);
-
-    // Body
-    var body = document.createElement('div');
-    body.className = 'page-body fvh-bp-container';
-
-    // 1. Top Progress Banner Card
-    var headerCard = document.createElement('div');
-    headerCard.className = 'fvh-bp-header-card';
-    body.appendChild(headerCard);
-
-    // 2. VIP Status / Late Unlock Banner
-    var vipBanner = document.createElement('div');
-    vipBanner.className = 'fvh-bp-vip-banner';
-    body.appendChild(vipBanner);
-
-    // 3. Dual-Track Horizontal List (Level 1..30 with Free and Premium rows)
-    var scrollTrack = document.createElement('div');
-    scrollTrack.className = 'fvh-bp-track-scroll fvh-bp-dual-track';
-    body.appendChild(scrollTrack);
-
-    function refreshUI() {
-      var bpState = getBattlePassState(app.store);
-
-      // Header Card
-      headerCard.innerHTML =
-        '<div class="fvh-bp-lvl-badge">' +
-        '<div class="fvh-bp-lvl-num">' + bpState.level + '</div>' +
-        '<div>' +
-        '<div style="font-weight:900;font-size:18px;letter-spacing:0.5px;">' + tr('bpSeason') + '</div>' +
-        '<div style="color:var(--muted);font-size:13px;">' + tr('bpXpNeeded', { cur: bpState.intoLevel, need: bpState.needed, next: Math.min(30, bpState.level + 1) }) + '</div>' +
-        '</div>' +
-        '</div>' +
-        '<div style="flex:1;min-width:200px;">' +
-        '<div class="pbar" style="height:12px;margin:0 0 10px 0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
-        (bpState.claimableCount > 0 ?
-          '<button class="btn small primary claim-all-btn" style="width:100%;font-weight:800;letter-spacing:0.5px;">' + tr('bpClaimAllFreeAndPrem', { n: bpState.claimableCount }) + '</button>' :
-          '<div style="font-size:12px;color:var(--text-muted);text-align:right;">' + tr('bpAllClaimed') + '</div>'
-        ) +
-        '</div>';
-
-      var claimAllBtn = headerCard.querySelector('.claim-all-btn');
-      if (claimAllBtn) {
-        claimAllBtn.onclick = function () {
-          claimAllBattlePassTiers(app, function () {
-            refreshUI();
-          });
-        };
-      }
-
-      // VIP Status Banner
-      if (bpState.isPremium) {
-        vipBanner.innerHTML =
-          '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(255,200,0,0.18) 0%,rgba(180,100,0,0.18) 100%);border:1.5px solid rgba(255,200,0,0.5);border-radius:14px;padding:12px 16px;box-shadow:0 0 20px rgba(255,200,0,0.15);">' +
-          '  <div style="display:flex;align-items:center;gap:10px;">' +
-          '    <span style="font-size:24px;">👑</span>' +
-          '    <div>' +
-          '      <div style="font-weight:900;font-size:14px;color:#fef08a;letter-spacing:0.5px;">' + tr('bpPremiumActive') + '</div>' +
-          '      <div style="font-size:12px;color:var(--text-muted);">' + tr('bpUnlockPremiumDesc') + '</div>' +
-          '    </div>' +
-          '  </div>' +
-          '  <div style="font-size:11px;font-weight:800;color:#fde047;background:rgba(255,200,0,0.2);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,200,0,0.3);">' +
-          '    ✓ VIP UNLOCKED' +
-          '  </div>' +
-          '</div>';
-      } else {
-        vipBanner.innerHTML =
-          '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(255,200,0,0.12) 0%,rgba(120,60,0,0.15) 100%);border:1.5px solid rgba(255,200,0,0.4);border-radius:14px;padding:12px 16px;cursor:pointer;transition:all 0.2s ease;">' +
-          '  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">' +
-          '    <span style="font-size:26px;">👑</span>' +
-          '    <div>' +
-          '      <div style="font-weight:900;font-size:14px;color:#fef08a;letter-spacing:0.5px;">' + tr('bpUnlockPremium') + ' · 250 ⭐</div>' +
-          '      <div style="font-size:12px;color:var(--text-muted);">' + tr('bpLateUnlockNotice') + '</div>' +
-          '    </div>' +
-          '  </div>' +
-          '  <button class="btn primary fvh-unlock-vip-btn" style="font-weight:900;background:linear-gradient(135deg,#fde047 0%,#f59e0b 100%);color:#000;border:none;box-shadow:0 0 16px rgba(253,224,71,0.4);">' +
-          '    ' + tr('bpUnlockPremium') +
-          '  </button>' +
-          '</div>';
-
-        var unlockBtn = vipBanner.querySelector('.fvh-unlock-vip-btn');
-        if (unlockBtn) {
-          unlockBtn.onclick = function (e) {
-            e.stopPropagation();
-            openBattlePassCheckout(app, refreshUI);
-          };
-        }
-        vipBanner.firstElementChild.onclick = function () {
-          openBattlePassCheckout(app, refreshUI);
-        };
-      }
-
-      // Render 30 Dual-Track Columns
-      scrollTrack.innerHTML = '';
-      BATTLE_PASS_LEVELS.forEach(function (lvlDef) {
-        var col = document.createElement('div');
-        col.className = 'fvh-bp-dual-column';
-        col.style.display = 'flex';
-        col.style.flexDirection = 'column';
-        col.style.gap = '10px';
-        col.style.flex = '0 0 170px';
-
-        var isLevelReached = bpState.level >= lvlDef.level;
-        var isMilestone = lvlDef.level % 5 === 0;
-
-        // Tier Header
-        var colHead = document.createElement('div');
-        colHead.className = 'fvh-bp-col-head';
-        colHead.style.display = 'flex';
-        colHead.style.alignItems = 'center';
-        colHead.style.justifyContent = 'space-between';
-        colHead.style.padding = '4px 8px';
-        colHead.style.borderRadius = '8px';
-        colHead.style.background = isLevelReached ? 'rgba(0, 240, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)';
-        colHead.style.border = isLevelReached ? '1px solid rgba(0, 240, 255, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)';
-        colHead.innerHTML =
-          '<span style="font-weight:900;font-size:12px;color:' + (isLevelReached ? 'var(--neon-cyan)' : 'var(--text-muted)') + ';">' +
-          tr('bpTier', { lvl: lvlDef.level }) +
-          '</span>' +
-          '<span>' + (isMilestone ? '⭐' : '') + (isLevelReached ? ' ✓' : ' 🔒') + '</span>';
-        col.appendChild(colHead);
-
-        // --- 1. FREE TRACK CARD ---
-        var freeCard = document.createElement('div');
-        var isFreeClaimed = bpState.claimedFree.indexOf(lvlDef.level) !== -1;
-        freeCard.className = 'fvh-bp-level-card fvh-bp-card-free' +
-          (isLevelReached ? ' unlocked' : '') +
-          (isFreeClaimed ? ' claimed' : '');
-        freeCard.style.height = '210px';
-        freeCard.style.minHeight = '210px';
-        freeCard.style.maxHeight = '210px';
-        freeCard.style.display = 'flex';
-        freeCard.style.flexDirection = 'column';
-        freeCard.style.justifyContent = 'space-between';
-        freeCard.style.boxSizing = 'border-box';
-        freeCard.style.padding = '10px 8px';
-
-        var freeTag = '<div style="font-size:9.5px;font-weight:800;letter-spacing:0.8px;color:#38bdf8;text-transform:uppercase;margin-bottom:4px;flex-shrink:0;">' + tr('bpFreeTrack') + '</div>';
-        var freeIcon = '<div class="fvh-bp-level-reward-icon" style="cursor:pointer;height:52px;display:flex;align-items:center;justify-content:center;margin:4px 0;flex-shrink:0;">' + renderItemArtwork(lvlDef.freeReward, 'thumb') + '</div>';
-        var freeName = '<div class="fvh-bp-level-reward-name" style="cursor:pointer;font-size:11px;min-height:38px;line-height:1.25;margin-bottom:8px;word-break:break-word;">' + trItem(lvlDef.freeReward.name) + '</div>';
-
-        freeCard.innerHTML = freeTag + freeIcon + freeName;
-
-        freeCard.onclick = function () {
-          app.audio.play('click');
-          showRewardModal(lvlDef.freeReward, lvlDef.level, 'free');
-        };
-
-        var freeActionBtn = document.createElement('button');
-        freeActionBtn.style.marginTop = 'auto';
-        freeActionBtn.style.width = '100%';
-        freeActionBtn.style.height = '36px';
-        freeActionBtn.style.minHeight = '36px';
-        freeActionBtn.style.maxHeight = '36px';
-        freeActionBtn.style.display = 'flex';
-        freeActionBtn.style.alignItems = 'center';
-        freeActionBtn.style.justifyContent = 'center';
-        freeActionBtn.style.boxSizing = 'border-box';
-        freeActionBtn.style.flexShrink = '0';
-        if (isFreeClaimed) {
-          freeActionBtn.className = 'btn small';
-          freeActionBtn.disabled = true;
-          freeActionBtn.style.opacity = '0.5';
-          freeActionBtn.textContent = '✓ ' + tr('bpClaimed');
-        } else if (isLevelReached) {
-          freeActionBtn.className = 'btn small primary';
-          freeActionBtn.textContent = tr('bpClaimFree');
-          freeActionBtn.onclick = function (e) {
-            e.stopPropagation();
-            claimBattlePassTier(app, lvlDef.level, 'free', refreshUI);
-          };
-        } else {
-          freeActionBtn.className = 'btn small';
-          freeActionBtn.disabled = true;
-          freeActionBtn.textContent = '🔒 ' + lvlDef.xpRequired + ' XP';
-        }
-        freeCard.appendChild(freeActionBtn);
-        col.appendChild(freeCard);
-
-        // --- 2. PREMIUM VIP TRACK CARD ---
-        var vipCard = document.createElement('div');
-        var isVipClaimed = bpState.claimedPremium.indexOf(lvlDef.level) !== -1;
-        var isVipAvailable = bpState.isPremium && isLevelReached;
-
-        vipCard.className = 'fvh-bp-level-card fvh-bp-card-vip' +
-          (isVipAvailable ? ' unlocked' : '') +
-          (isVipClaimed ? ' claimed' : '');
-        vipCard.style.height = '210px';
-        vipCard.style.minHeight = '210px';
-        vipCard.style.maxHeight = '210px';
-        vipCard.style.display = 'flex';
-        vipCard.style.flexDirection = 'column';
-        vipCard.style.justifyContent = 'space-between';
-        vipCard.style.boxSizing = 'border-box';
-        vipCard.style.padding = '10px 8px';
-        vipCard.style.border = bpState.isPremium ?
-          (isVipAvailable ? '1.5px solid rgba(255, 200, 0, 0.6)' : '1px solid rgba(255, 200, 0, 0.25)') :
-          '1px solid rgba(255, 200, 0, 0.2)';
-        vipCard.style.background = isVipAvailable ?
-          'linear-gradient(180deg, rgba(40, 30, 10, 0.95) 0%, rgba(20, 15, 5, 0.98) 100%)' :
-          'rgba(25, 20, 10, 0.6)';
-
-        var vipTag = '<div style="font-size:9.5px;font-weight:900;letter-spacing:0.8px;color:#fde047;text-transform:uppercase;margin-bottom:4px;flex-shrink:0;">👑 ' + tr('bpPremiumTrack') + '</div>';
-        var vipIcon = '<div class="fvh-bp-level-reward-icon" style="cursor:pointer;height:52px;display:flex;align-items:center;justify-content:center;margin:4px 0;flex-shrink:0;">' + renderItemArtwork(lvlDef.premiumReward, 'thumb') + '</div>';
-        var vipName = '<div class="fvh-bp-level-reward-name" style="cursor:pointer;font-size:11px;min-height:38px;line-height:1.25;color:#fef08a;margin-bottom:8px;word-break:break-word;">' + trItem(lvlDef.premiumReward.name) + '</div>';
-
-        vipCard.innerHTML = vipTag + vipIcon + vipName;
-
-        vipCard.onclick = function () {
-          app.audio.play('click');
-          showRewardModal(lvlDef.premiumReward, lvlDef.level, 'premium');
-        };
-
-        var vipActionBtn = document.createElement('button');
-        vipActionBtn.style.marginTop = 'auto';
-        vipActionBtn.style.width = '100%';
-        vipActionBtn.style.height = '36px';
-        vipActionBtn.style.minHeight = '36px';
-        vipActionBtn.style.maxHeight = '36px';
-        vipActionBtn.style.display = 'flex';
-        vipActionBtn.style.alignItems = 'center';
-        vipActionBtn.style.justifyContent = 'center';
-        vipActionBtn.style.boxSizing = 'border-box';
-        vipActionBtn.style.flexShrink = '0';
-        if (!bpState.isPremium) {
-          vipActionBtn.className = 'btn small';
-          vipActionBtn.style.background = 'rgba(255,200,0,0.15)';
-          vipActionBtn.style.color = '#fde047';
-          vipActionBtn.style.border = '1px solid rgba(255,200,0,0.3)';
-          vipActionBtn.textContent = '🔒 VIP';
-          vipActionBtn.onclick = function (e) {
-            e.stopPropagation();
-            openBattlePassCheckout(app, refreshUI);
-          };
-        } else if (isVipClaimed) {
-          vipActionBtn.className = 'btn small';
-          vipActionBtn.disabled = true;
-          vipActionBtn.style.opacity = '0.5';
-          vipActionBtn.textContent = '✓ ' + tr('bpClaimed');
-        } else if (isVipAvailable) {
-          vipActionBtn.className = 'btn small primary';
-          vipActionBtn.style.background = 'linear-gradient(135deg, #fde047 0%, #f59e0b 100%)';
-          vipActionBtn.style.color = '#000';
-          vipActionBtn.style.fontWeight = '900';
-          vipActionBtn.textContent = tr('bpClaimPremium');
-          vipActionBtn.onclick = function (e) {
-            e.stopPropagation();
-            claimBattlePassTier(app, lvlDef.level, 'premium', refreshUI);
-          };
-        } else {
-          vipActionBtn.className = 'btn small';
-          vipActionBtn.disabled = true;
-          vipActionBtn.textContent = '🔒 LVL ' + lvlDef.level;
-        }
-        vipCard.appendChild(vipActionBtn);
-        col.appendChild(vipCard);
-
-        scrollTrack.appendChild(col);
-      });
-    }
-
-    refreshUI();
-    page.appendChild(body);
-    container.appendChild(page);
-
-    // Auto-scroll to current active level or specific level from URL
-    var urlParams = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : null;
-    var targetLvl = urlParams ? parseInt(urlParams.get('lvl'), 10) : null;
-    var activeLvl = (targetLvl && targetLvl >= 1 && targetLvl <= 30) ? targetLvl : Math.max(1, Math.min(30, (getBattlePassState(app.store).level || 1)));
-    setTimeout(function () {
-      var targetCol = scrollTrack.querySelector('.fvh-bp-dual-column:nth-child(' + activeLvl + ')');
-      if (targetCol) {
-        targetCol.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    }, 150);
-
-    // Persistent Unified Bottom Navigation
-    container.appendChild(createSharedBottomNav('battlepass', app));
-
-    return container;
+    return buildQuestsPage(app, 'daily');
   }
 
   // Boost Items Catalog (Boosts completely removed)
@@ -5711,7 +5409,7 @@
       id: 'pkg_coins_100',
       name: '100 FvH Coin',
       coinsAmount: 100,
-      starsPrice: null,
+      starsPrice: 25,
       icon: '🪙',
       badge: 'STARTER',
       type: 'coins',
@@ -5721,7 +5419,7 @@
       id: 'pkg_coins_500',
       name: '500 FvH Coin',
       coinsAmount: 500,
-      starsPrice: null,
+      starsPrice: 100,
       icon: '💰',
       badge: 'POPULAR',
       type: 'coins',
@@ -5731,7 +5429,7 @@
       id: 'pkg_coins_1200',
       name: '1,200 FvH Coin',
       coinsAmount: 1200,
-      starsPrice: null,
+      starsPrice: 220,
       icon: '💎',
       badge: 'VALUE',
       type: 'coins',
@@ -5741,7 +5439,7 @@
       id: 'pkg_coins_3000',
       name: '3,000 FvH Coin',
       coinsAmount: 3000,
-      starsPrice: null,
+      starsPrice: 500,
       icon: '🏆',
       badge: 'PRO',
       type: 'coins',
@@ -6185,7 +5883,7 @@
           '  <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getFvhCoinSvg('thumb') + '</div>' +
           '  <div>' +
           '    <div style="font-weight:900;font-size:14px;color:#fde047;letter-spacing:0.5px;">' + tr('catCoins') + ' · ' + tr('storeSub') + '</div>' +
-          '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + tr('starsUnconfiguredNotice') + '</div>' +
+          '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + (getActiveLang() === 'ru' ? 'Пополняйте баланс FvH Coin моментально через Telegram Stars ⭐' : 'Recharge FvH Coin instantly with Telegram Stars ⭐') + '</div>' +
           '  </div>' +
           '</div>';
         catalogueGrid.appendChild(noticeBox);
@@ -6216,6 +5914,20 @@
 
           pCard.onclick = function () {
             app.audio.play('click');
+            if (pkg.starsPrice) {
+              openUniversalPaymentModal(app, {
+                productId: pkg.id,
+                title: pkg.name,
+                starsPrice: pkg.starsPrice,
+                coinsAmount: pkg.coinsAmount,
+                onPurchased: function () {
+                  app.audio.play('claim');
+                  showToast('⭐ +' + pkg.coinsAmount.toLocaleString() + ' FvH Coin!');
+                  syncAuthoritativeEconomy(app);
+                }
+              });
+              return;
+            }
             var overlay = document.createElement('div');
             overlay.className = 'modal-back';
             var modal = document.createElement('div');
@@ -7777,7 +7489,16 @@
     this.lastPostTime = 0;
     this.pendingPost = null;
     this.pollInterval = null;
+    this.lastMsgAt = Date.now();
     var self = this;
+
+    this.pingInterval = setInterval(function () {
+      if (self.closed) return;
+      self.sendCtl({ k: 'ping', t: Date.now() });
+      if (self.lastMsgAt && (Date.now() - self.lastMsgAt > 8000)) {
+        if (self.h && self.h.onStatusChange) self.h.onStatusChange('reconnecting');
+      }
+    }, 2500);
 
     function connectWs() {
       if (self.closed) return;
@@ -7791,6 +7512,8 @@
           ws.onopen = function () {
             if (self.closed) { ws.close(); return; }
             self.wsOpen = true;
+            self.lastMsgAt = Date.now();
+            if (self.h && self.h.onStatusChange) self.h.onStatusChange('connected');
             if (self.pollInterval) {
               clearInterval(self.pollInterval);
               self.pollInterval = null;
@@ -7804,6 +7527,15 @@
               var m = parsed.packet || parsed;
               if (!m.k && parsed.type) {
                 m = { k: parsed.type, i: parsed.data, s: parsed.data, l: parsed.data };
+              }
+              self.lastMsgAt = Date.now();
+              if (m.k === 'ping') {
+                self.sendCtl({ k: 'pong', t: m.t });
+                return;
+              }
+              if (m.k === 'pong') {
+                self.rtt = Math.max(1, Math.round(Date.now() - Number(m.t || Date.now())));
+                return;
               }
               if (self.h.onMessage) self.h.onMessage(m, 'fast');
             } catch (e) {}
@@ -7898,6 +7630,10 @@
   RelayLink.prototype.close = function () {
     this.closed = true;
     this.open = false;
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
       this.pollInterval = null;
@@ -7911,9 +7647,11 @@
     }
     if (this.h.onClose) this.h.onClose('local');
   };
+  window.RelayLink = RelayLink;
 
   // Helper to establish WebRTC or Resilient Server Relay Session between two players
   function startWebRTCSession(app, role, roomCode, myName, oppName, modeOrOpts, onConnect, onError) {
+    window.startWebRTCSession = startWebRTCSession;
     if (typeof window.require !== 'function') {
       onError('Module loader unavailable');
       return;
@@ -9451,14 +9189,14 @@
     // 4. Token Rivalry Compact Ticker
     screen.appendChild(createRivalryTicker());
 
-    // 5. Active Season 1 Directives Banner
+    // 5. Active Quests & Missions Banner
     var seasonCard = document.createElement('div');
     seasonCard.className = 'fvh-season-hub-card';
     seasonCard.innerHTML =
       '<div class="fvh-season-hub-left">' +
-      '<div class="fvh-season-hub-tag">👑 ' + tr('seasonBannerTitle') + '</div>' +
-      '<div class="fvh-season-hub-title">' + tr('bpTier', { lvl: bpState.level }) + ' (' + bpState.percent + '% XP)</div>' +
-      '<div class="pbar" style="height:6px;margin:6px 0 0 0;"><i style="width:' + bpState.percent + '%;"></i></div>' +
+      '<div class="fvh-season-hub-tag">🎯 ' + tr('quests') + '</div>' +
+      '<div class="fvh-season-hub-title">' + (getActiveLang() === 'ru' ? 'Ежедневные задания и награды' : 'Daily Quests & Rewards') + '</div>' +
+      '<div class="fvh-season-hub-sub" style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + (getActiveLang() === 'ru' ? 'Выполняйте испытания и получайте FvH Coin' : 'Complete directives to earn FvH Coins') + '</div>' +
       '</div>' +
       '<button class="btn small primary fvh-season-hub-btn">' + tr('quests') + ' ➔</button>';
     seasonCard.querySelector('.fvh-season-hub-btn').onclick = function () {
@@ -9466,10 +9204,8 @@
       app.go('quests');
     };
     seasonCard.onclick = function (e) {
-      if (e.target.tagName !== 'BUTTON') {
-        app.audio.play('click');
-        app.go('battlepass');
-      }
+      app.audio.play('click');
+      app.go('quests');
     };
     screen.appendChild(seasonCard);
 
@@ -9786,7 +9522,7 @@
         app.show(buildShopPage(app), 'shop');
       } else if (page === 'battlepass') {
         app.audio.play('click');
-        app.show(buildBattlePassPage(app), 'battlepass');
+        app.show(buildQuestsPage(app, 'daily'), 'quests');
       } else if (page === 'profile') {
         app.audio.play('click');
         app.show(buildProfilePage(app), 'profile');
@@ -9813,11 +9549,13 @@
 
     // Dedicated Team Selection Screen
     app.showTeamSelection = function () {
+      app.state = 'menu';
       app.show(buildTeamSelectionScreen(app), 'team-select');
     };
 
     // Override showMenu with new redesigned main menu
     app.showMenu = function () {
+      app.state = 'menu';
       updateTelegramBackButton('menu');
       var d = app.store.data;
       if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
@@ -9869,7 +9607,7 @@
               } else if (app.state === 'quests') {
                 app.show(buildQuestsPage(app), 'quests');
               } else if (app.state === 'battlepass') {
-                app.show(buildBattlePassPage(app), 'battlepass');
+                app.show(buildQuestsPage(app, 'daily'), 'quests');
               } else if (app.state === 'profile') {
                 app.show(buildProfilePage(app), 'profile');
               } else if (app.state === 'characters') {
@@ -9961,7 +9699,7 @@
     }
 
     if (params && params.get('opencheckout') === 'bp') {
-      setTimeout(function () { openBattlePassCheckout(app); }, 450);
+      setTimeout(function () { app.go('quests'); }, 450);
     } else if (params && (params.get('openrivalry') || params.get('rivalry'))) {
       setTimeout(function () { showRivalryModal(); }, 400);
     } else if (params && params.get('openbundle')) {

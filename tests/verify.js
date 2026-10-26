@@ -34,67 +34,35 @@ it('index.html links redesign.css and redesign.js', () => {
   assert(html.includes('js/game.js'), 'game.js not linked');
 });
 
-// 2. Battle Pass Logic Verification
-it('Battle Pass has exactly 30 configured levels with rewards', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
-  assert(code.includes('i <= 30') || code.includes('30'), 'Should configure 30 levels');
-  assert(code.includes('BATTLE_PASS_LEVELS'), 'BATTLE_PASS_LEVELS must exist');
+// 2. Player Progression & Battle Pass Removal Verification
+it('Player Progression: Standard XP leveling formula caps at level 30', () => {
+  function currentLevelForXp(totalXp) {
+    return Math.min(30, 1 + Math.floor((totalXp || 0) / 250));
+  }
+  assert.strictEqual(currentLevelForXp(0), 1, 'Initial level should be 1');
+  assert.strictEqual(currentLevelForXp(249), 1, '249 XP should still be level 1');
+  assert.strictEqual(currentLevelForXp(250), 2, '250 XP should be level 2');
+  assert.strictEqual(currentLevelForXp(1000), 5, '1000 XP should be level 5');
+  assert.strictEqual(currentLevelForXp(100000), 30, 'XP above cap should clamp to 30');
 });
 
-// Simulation of Battle Pass Engine
-function simulateBattlePass(xp, claimedLevels = []) {
-  const levels = [];
-  for (let i = 1; i <= 30; i++) {
-    levels.push({ level: i, xpRequired: 100 + (i - 1) * 35 });
-  }
-
-  let currentLevel = 1;
-  let accum = 0;
-  for (let i = 0; i < levels.length; i++) {
-    if (xp >= accum + levels[i].xpRequired) {
-      accum += levels[i].xpRequired;
-      currentLevel = Math.min(30, i + 2);
-    } else {
-      break;
-    }
-  }
-
-  function canClaim(lvl) {
-    if (lvl > currentLevel) return false;
-    if (claimedLevels.includes(lvl)) return false;
-    return true;
-  }
-
-  function claim(lvl) {
-    if (!canClaim(lvl)) return false;
-    claimedLevels.push(lvl);
-    return true;
-  }
-
-  return { currentLevel, canClaim, claim, claimedLevels };
-}
-
-it('Battle Pass: Level 1 is unlocked initially, Level 2 requires XP', () => {
-  const bp0 = simulateBattlePass(0);
-  assert.strictEqual(bp0.currentLevel, 1, 'Initial level should be 1');
-  assert.strictEqual(bp0.canClaim(1), true, 'Level 1 reward must be claimable');
-  assert.strictEqual(bp0.canClaim(2), false, 'Level 2 must be locked at 0 XP');
+it('Battle Pass Removal: battlepass_premium excluded from server catalog and default prices', () => {
+  const srvCode = fs.readFileSync('server/server.js', 'utf8');
+  assert(!srvCode.includes("'battlepass_premium': 250"), 'battlepass_premium must not be in DEFAULT_STARS_PRICES');
+  assert(!srvCode.includes("'battlepass_premium': {"), 'battlepass_premium must not be in PRODUCT_CATALOG');
 });
 
-it('Battle Pass: XP progression unlocks higher levels', () => {
-  const bp = simulateBattlePass(250);
-  assert(bp.currentLevel >= 3, 'Level should be at least 3 with 250 XP');
-  assert.strictEqual(bp.canClaim(1), true);
-  assert.strictEqual(bp.canClaim(2), true);
-  assert.strictEqual(bp.canClaim(3), true);
-  assert.strictEqual(bp.canClaim(4), false);
+it('Battle Pass Rejection: Server rejects battlepass reward claims and invoices', () => {
+  const srvCode = fs.readFileSync('server/server.js', 'utf8');
+  assert(srvCode.includes("error: 'battlepass_not_supported'"), 'Must return battlepass_not_supported error');
 });
 
-it('Battle Pass: Duplicate claim prevention', () => {
-  const bp = simulateBattlePass(500);
-  assert.strictEqual(bp.claim(1), true, 'First claim should succeed');
-  assert.strictEqual(bp.claim(1), false, 'Second claim must be rejected');
-  assert.strictEqual(bp.claimedLevels.filter(x => x === 1).length, 1);
+it('Approved Stars Catalog: Exactly 4 FvH Coin packages configured (100, 500, 1200, 3000)', () => {
+  const srvCode = fs.readFileSync('server/server.js', 'utf8');
+  assert(srvCode.includes("'pkg_coins_100': 25"), '100 coins must be 25 Stars');
+  assert(srvCode.includes("'pkg_coins_500': 100"), '500 coins must be 100 Stars');
+  assert(srvCode.includes("'pkg_coins_1200': 220"), '1200 coins must be 220 Stars');
+  assert(srvCode.includes("'pkg_coins_3000': 500"), '3000 coins must be 500 Stars');
 });
 
 // 3. Economy & Store Simulation
@@ -350,60 +318,21 @@ it('Dynamic 3D Ad Boards: Configured 10.0s cycle (0.5s in, 6.0s on, 0.5s out, 3.
   assert(gameJs.includes('2048') && gameJs.includes('160'), 'Must generate 2048x160 sharp ad canvas');
 });
 
-// 21. Dual-Track Battle Pass (Free & VIP Premium)
-it('Dual-Track Battle Pass: 30 levels with parallel Free and VIP Premium rewards', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
-  assert(code.includes('freeReward') && code.includes('premiumReward'), 'Must configure free and premium rewards');
-  assert(code.includes('claimedFree') && code.includes('claimedPremium'), 'Must store free and premium claimed states');
-  assert(code.includes('bpClaimFree') && code.includes('bpClaimPremium'), 'Must have separate free and VIP claim actions');
-  assert(code.includes('isPremium'), 'Must have isPremium track flag');
-  assert(code.includes('openBattlePassCheckout'), 'Must provide VIP pass unlock checkout');
+// 21. Bot Token Security & Sanitization
+it('Bot Token Security: No hardcoded bot tokens or fallbacks exist in source code', () => {
+  const srvCode = fs.readFileSync('server/server.js', 'utf8');
+  const botScript = fs.readFileSync('scripts/setup_telegram_bot_profile.js', 'utf8');
+  const compromisedTokenFragment = 'AAHnIjET';
+  assert(!srvCode.includes(compromisedTokenFragment), 'server.js must not contain compromised token');
+  assert(!botScript.includes(compromisedTokenFragment), 'setup_telegram_bot_profile.js must not contain compromised token');
+  assert(srvCode.includes('process.env.TELEGRAM_BOT_TOKEN'), 'Must require TELEGRAM_BOT_TOKEN');
 });
 
-// Simulation of Dual-Track Battle Pass Engine
-it('Battle Pass Engine: Free track available, VIP track unlocked via purchase, late unlock unlocks all reached VIP tiers', () => {
-  const sim = {
-    xp: 600, // Reaches Level 4
-    battlePass: {
-      claimedFree: [],
-      claimedPremium: [],
-      isPremium: false
-    }
-  };
-
-  function getSimState(s) {
-    let currentLevel = 1;
-    let accum = 0;
-    for (let i = 1; i <= 30; i++) {
-      const needed = 100 + (i - 1) * 35;
-      if (s.xp >= accum + needed) {
-        accum += needed;
-        currentLevel = Math.min(30, i + 1);
-      } else {
-        break;
-      }
-    }
-    return {
-      level: currentLevel,
-      canClaimFree: (lvl) => lvl <= currentLevel && !s.battlePass.claimedFree.includes(lvl),
-      canClaimVip: (lvl) => s.battlePass.isPremium && lvl <= currentLevel && !s.battlePass.claimedPremium.includes(lvl)
-    };
-  }
-
-  let st = getSimState(sim);
-  assert(st.level >= 4, 'Should be at least level 4');
-  assert.strictEqual(st.canClaimFree(1), true, 'Free level 1 must be claimable');
-  assert.strictEqual(st.canClaimFree(4), true, 'Free level 4 must be claimable');
-  assert.strictEqual(st.canClaimVip(1), false, 'VIP level 1 must be locked before premium purchase');
-
-  // Player buys VIP Pass at Level 4 (Late Unlock)
-  sim.battlePass.isPremium = true;
-  st = getSimState(sim);
-  assert.strictEqual(st.canClaimVip(1), true, 'VIP level 1 retroactively claimable');
-  assert.strictEqual(st.canClaimVip(2), true, 'VIP level 2 retroactively claimable');
-  assert.strictEqual(st.canClaimVip(3), true, 'VIP level 3 retroactively claimable');
-  assert.strictEqual(st.canClaimVip(4), true, 'VIP level 4 claimable');
-  assert.strictEqual(st.canClaimVip(5), false, 'VIP level 5 locked by level requirement');
+// 22. Production Webhook Authentication
+it('Production Webhook Security: TELEGRAM_WEBHOOK_SECRET strictly required in production', () => {
+  const srvCode = fs.readFileSync('server/server.js', 'utf8');
+  assert(srvCode.includes('x-telegram-bot-api-secret-token'), 'Must check x-telegram-bot-api-secret-token header');
+  assert(srvCode.includes('invalid_webhook_secret'), 'Must reject invalid webhook secret');
 });
 
 // 22. Shop Dedicated Bundles (7 Thematic Collections)
