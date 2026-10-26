@@ -5440,10 +5440,10 @@
       var channels = [
         { id: 'q_sub_tg', name: 'Telegram News', handle: '@FootyHoops', url: 'https://t.me/FootyHoops', icon: getSocialIconSvg('tg') },
         { id: 'q_sub_chat', name: 'Telegram Chat', handle: 'Community Chat', url: 'https://t.me/+zKbH1Po_pdg2MmVi', icon: getSocialIconSvg('chat') },
-        { id: 'q_sub_x', name: 'X / Twitter', handle: '@FootyHoops', url: 'https://x.com/FootyHoops', icon: getSocialIconSvg('x') },
-        { id: 'q_sub_insta', name: 'Instagram', handle: '@FootyHoops', url: 'https://www.instagram.com/FootyHoops', icon: getSocialIconSvg('insta') },
-        { id: 'q_sub_yt', name: 'YouTube', handle: '@FootyHoops', url: 'https://www.youtube.com/@FootyHoops', icon: getSocialIconSvg('yt') },
-        { id: 'q_sub_tiktok', name: 'TikTok', handle: '@FootyHoops', url: 'https://www.tiktok.com/@FootyHoops', icon: getSocialIconSvg('tiktok') }
+        { id: 'q_sub_insta', name: 'Instagram', handle: '@footyvshoops', url: 'https://www.instagram.com/footyvshoops?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr', icon: getSocialIconSvg('insta') },
+        { id: 'q_sub_x', name: 'X / Twitter', handle: '@footyvshoops', url: 'https://x.com/footyvshoops?s=11', icon: getSocialIconSvg('x') },
+        { id: 'q_sub_yt', name: 'YouTube', handle: '@footyvshoops-cr', url: 'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf', icon: getSocialIconSvg('yt') },
+        { id: 'q_sub_tiktok', name: 'TikTok', handle: '@footy_vs_hoops', url: 'https://www.tiktok.com/@footy_vs_hoops', icon: getSocialIconSvg('tiktok') }
       ];
 
       var channelList = document.createElement('div');
@@ -6547,6 +6547,11 @@
       resultsMount.innerHTML = '';
       var query = (filterQuery || '').trim().toLowerCase();
       var allAthletes = data.top || [];
+      if (cat === 'footy') {
+        allAthletes = allAthletes.filter(function (a) { return (a.char || 'footy') === 'footy'; });
+      } else if (cat === 'hoops') {
+        allAthletes = allAthletes.filter(function (a) { return a.char === 'hoops'; });
+      }
       var filtered = query 
         ? allAthletes.filter(function (a) { return a.name.toLowerCase().includes(query) || (a.club && a.club.toLowerCase().includes(query)); })
         : allAthletes;
@@ -9135,10 +9140,10 @@
     var channels = [
       { name: 'Telegram News', handle: '@FootyHoops', url: 'https://t.me/FootyHoops', icon: getSocialIconSvg('tg') },
       { name: 'Telegram Chat', handle: 'Community Chat', url: 'https://t.me/+zKbH1Po_pdg2MmVi', icon: getSocialIconSvg('chat') },
-      { name: 'X / Twitter', handle: '@FootyHoops', url: 'https://x.com/FootyHoops', icon: getSocialIconSvg('x') },
-      { name: 'Instagram', handle: '@FootyHoops', url: 'https://www.instagram.com/FootyHoops', icon: getSocialIconSvg('insta') },
-      { name: 'YouTube', handle: '@FootyHoops', url: 'https://www.youtube.com/@FootyHoops', icon: getSocialIconSvg('yt') },
-      { name: 'TikTok', handle: '@FootyHoops', url: 'https://www.tiktok.com/@FootyHoops', icon: getSocialIconSvg('tiktok') }
+      { name: 'Instagram', handle: '@footyvshoops', url: 'https://www.instagram.com/footyvshoops?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr', icon: getSocialIconSvg('insta') },
+      { name: 'X / Twitter', handle: '@footyvshoops', url: 'https://x.com/footyvshoops?s=11', icon: getSocialIconSvg('x') },
+      { name: 'YouTube', handle: '@footyvshoops-cr', url: 'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf', icon: getSocialIconSvg('yt') },
+      { name: 'TikTok', handle: '@footy_vs_hoops', url: 'https://www.tiktok.com/@footy_vs_hoops', icon: getSocialIconSvg('tiktok') }
     ];
 
     var head = document.createElement('div');

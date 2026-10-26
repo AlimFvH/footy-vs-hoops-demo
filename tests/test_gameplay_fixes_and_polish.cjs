@@ -158,7 +158,35 @@ console.log('=== FOOTY vs HOOPS: Critical Gameplay Fixes & Final Polish Test Sui
     assert(!serverCode.includes('@neondatabase/serverless'), 'Neon DB must remain disconnected');
   });
 
+  // Test 14: Exact official social URLs across redesign.js
+  runTest('14. Exact restored official social URLs in both Home Screen and Quests', () => {
+    const requiredUrls = [
+      'https://www.instagram.com/footyvshoops?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr',
+      'https://x.com/footyvshoops?s=11',
+      'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf',
+      'https://www.tiktok.com/@footy_vs_hoops',
+      'https://t.me/FootyHoops',
+      'https://t.me/+zKbH1Po_pdg2MmVi'
+    ];
+    requiredUrls.forEach(url => {
+      assert(redesignCode.includes(url), `redesign.js must contain exact official URL: ${url}`);
+    });
+  });
+
+  // Test 15: Leaderboard sport segregation (Server & Client)
+  runTest('15. Leaderboards strictly segregate football and basketball records with zero cross-contamination', () => {
+    // Server filtering
+    assert(serverCode.includes("qCategory === 'footy'"), 'Server must filter category footy');
+    assert(serverCode.includes("qCategory === 'hoops'"), 'Server must filter category hoops');
+    assert(serverCode.includes("filteredAthletes = athletes.filter(a => a.char === 'footy');") || serverCode.includes("filteredAthletes = athletes.filter(a => (a.char || 'footy') === 'footy');"), 'Server must isolate footy athletes');
+    assert(serverCode.includes("filteredAthletes = athletes.filter(a => a.char === 'hoops');"), 'Server must isolate hoops athletes');
+
+    // Client fallback filtering
+    assert(redesignCode.includes("a.char === 'footy'"), 'Client fallback must isolate footy athletes');
+    assert(redesignCode.includes("a.char === 'hoops'"), 'Client fallback must isolate hoops athletes');
+  });
+
   console.log(`\n======================================================`);
-  console.log(`ALL 13 GAMEPLAY FIXES & RELEASE POLISH TESTS PASSED (${passedTests}/${totalTests})!`);
+  console.log(`ALL 15 GAMEPLAY FIXES & RELEASE POLISH TESTS PASSED (${passedTests}/${totalTests})!`);
   console.log(`======================================================\n`);
 })();

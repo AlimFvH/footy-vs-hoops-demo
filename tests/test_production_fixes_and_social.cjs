@@ -123,17 +123,17 @@ async function runAsyncTest(name, fn) {
     const urls = [
       'https://t.me/FootyHoops',
       'https://t.me/+zKbH1Po_pdg2MmVi',
-      'https://www.instagram.com/FootyHoops',
-      'https://x.com/FootyHoops',
-      'https://www.youtube.com/@FootyHoops',
-      'https://www.tiktok.com/@FootyHoops'
+      'https://www.instagram.com/footyvshoops?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr',
+      'https://x.com/footyvshoops?s=11',
+      'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf',
+      'https://www.tiktok.com/@footy_vs_hoops'
     ];
 
     urls.forEach(url => {
       assert(redesignCode.includes(url), `redesign.js must contain social URL: ${url}`);
     });
 
-    assert(redesignCode.includes('@FootyHoops'), 'Handle @FootyHoops must be present');
+    assert(redesignCode.includes('@footy_vs_hoops'), 'Handle @footy_vs_hoops must be present');
     assert(redesignCode.includes('createOfficialSocialsCard(app)'), 'createOfficialSocialsCard must be defined');
     assert(redesignCode.includes('screen.appendChild(createOfficialSocialsCard(app));'), 'createOfficialSocialsCard must be appended to menu screen');
   });
