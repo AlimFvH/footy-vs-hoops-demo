@@ -8384,6 +8384,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.excite = 0;
             this.celebrateShown = false;
             this.disposed = false;
+            this.mode = sim.mode;
             const mode = sim.mode;
             const eq = opts.equipped || {};
             let stadium = visualOf(eq[mode === 'footy' ? 'stadium.footy' : 'stadium.hoops'], mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
@@ -8624,14 +8625,38 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 });
             }
         }
-        renderReplay(dt, snap) {
+        renderReplay(dt, snap, goalInfo) {
             if (this.disposed || !snap) return;
-            const b = { x: snap.bx, y: snap.by, z: snap.bz };
-            const focusAgent = snap.agents && snap.agents[0] ? snap.agents[0] : { x: 0, z: 0 };
-            this.rig.update(dt, b, focusAgent, false);
+            const c = this.rig.cam;
+            if (this.mode === 'footy' && goalInfo && typeof goalInfo.goalZ === 'number') {
+                const goalZ = goalInfo.goalZ;
+                let scorer = null;
+                if (snap.agents && snap.agents.length > 0) {
+                    scorer = snap.agents.find(a => a.id === goalInfo.scorerId) || snap.agents[0];
+                }
+                const scorerX = scorer ? scorer.x : 0;
+                const scorerZ = scorer ? scorer.z : goalZ * 0.45;
+                const camSide = scorerX >= 0 ? -1 : 1;
+                const halfW = (this.sim && this.sim.P && this.sim.P.halfW) || 14;
+                const camX = camSide * (halfW + 2.5);
+                const camY = 8.5;
+                const camZ = goalZ * 0.62 + scorerZ * 0.22;
+                const targetX = snap.bx * 0.40;
+                const targetY = Math.max(0.7, Math.min(2.2, snap.by * 0.4 + 0.6));
+                const targetZ = snap.bz * 0.55 + goalZ * 0.45;
+                c.position = [camX, camY, camZ];
+                c.target = [targetX, targetY, targetZ];
+                c.up = [0, 1, 0];
+                c.fov = 42;
+                c.update();
+            } else {
+                const b = { x: snap.bx, y: snap.by, z: snap.bz };
+                const focusAgent = snap.agents && snap.agents[0] ? snap.agents[0] : { x: 0, z: 0 };
+                this.rig.update(dt, b, focusAgent, false);
+            }
             const s = this.scene.shadow;
-            s.center = [this.rig.cam.target[0], 0, this.rig.cam.target[2]];
-            this.renderer.render(this.scene, this.rig.cam);
+            s.center = [c.target[0], 0, c.target[2]];
+            this.renderer.render(this.scene, c);
         }
         restoreLivePositions() {
             const sim = this.sim;
@@ -12349,8 +12374,21 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 class: 'hud-replay-skip',
                 type: 'button',
                 on: {
-                    click: () => {
-                        if (this.onSkipReplay) this.onSkipReplay();
+                    click: (e) => {
+                        if (e) { e.preventDefault(); e.stopPropagation(); }
+                        if (this.onSkipReplay) {
+                            const cb = this.onSkipReplay;
+                            this.onSkipReplay = null;
+                            cb();
+                        }
+                    },
+                    pointerdown: (e) => {
+                        if (e) { e.preventDefault(); e.stopPropagation(); }
+                        if (this.onSkipReplay) {
+                            const cb = this.onSkipReplay;
+                            this.onSkipReplay = null;
+                            cb();
+                        }
                     }
                 }
             }, (0, index_js_1.t)('hud.skipReplay'));
@@ -12456,6 +12494,15 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             if (show) {
                 this.replayBadge.textContent = '⚡ ' + (0, index_js_1.t)('hud.replay');
                 this.replaySkipBtn.textContent = '⏩ ' + (0, index_js_1.t)('hud.skipReplay');
+                if (this.touch) {
+                    this.touch.style.pointerEvents = 'none';
+                    this.touch.style.opacity = '0.15';
+                }
+            } else {
+                if (this.touch) {
+                    this.touch.style.pointerEvents = '';
+                    this.touch.style.opacity = '';
+                }
             }
         }
         bindStick() {
@@ -13704,18 +13751,23 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 this.replayBuffer.shift();
             }
         }
-        startReplay() {
+        startReplay(goalInfo) {
             if (this.replayActive || !this.sim || this.replayBuffer.length < 15)
                 return;
             if (this.cfg && (this.cfg.online || this.cfg.demo))
                 return;
+            if (this.sim.mode !== 'footy')
+                return;
             this.replayActive = true;
+            this.replayGoalInfo = goalInfo || null;
             this.replayTimer = 0;
-            this.replayActiveFrames = this.replayBuffer.slice(-90);
+            const count = Math.min(this.replayBuffer.length, 95);
+            this.replayActiveFrames = this.replayBuffer.slice(-count);
+            this.input.releaseAll();
             this.hud.showReplay(true, () => this.stopReplay());
         }
         stepReplay(dt) {
-            this.replayTimer += dt * 0.85;
+            this.replayTimer += dt * 0.82;
             const totalFrames = this.replayActiveFrames.length;
             const frameDur = 1 / 30;
             const idx = Math.floor(this.replayTimer / frameDur);
@@ -13726,7 +13778,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             const snap = this.replayActiveFrames[idx];
             if (snap) {
                 this.view.applySnapshot(snap);
-                this.view.renderReplay(dt, snap);
+                this.view.renderReplay(dt, snap, this.replayGoalInfo);
             }
         }
         stopReplay() {
@@ -13734,9 +13786,13 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 return;
             this.replayActive = false;
             this.replayActiveFrames = [];
+            this.replayGoalInfo = null;
             this.hud.showReplay(false);
-            if (this.view)
+            if (this.view) {
                 this.view.restoreLivePositions();
+                this.view.rig.snap = true;
+            }
+            this.input.releaseAll();
         }
         pickQuality() {
             var _a, _b, _c, _d;
@@ -14002,11 +14058,17 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     this.hud.scoreFx(e.team, 1, true, this.reducedFx());
                     telegram_js_1.telegram.haptic(e.team === 0 ? 'success' : 'warning');
                     if (!this.cfg.online && !this.cfg.demo) {
+                        const goalInfo = {
+                            team: e.team,
+                            scorerId: e.scorerId,
+                            goalZ: (e.team === 0 ? -1 : 1) * 22,
+                            ownGoal: e.ownGoal
+                        };
                         setTimeout(() => {
-                            if (!this.disposed && !this.paused && this.sim && (this.sim.phase === 'celebrate' || this.sim.phase === 'countdown')) {
-                                this.startReplay();
+                            if (!this.disposed && !this.paused && this.sim && (this.sim.phase === 'celebrate' || this.sim.phase === 'countdown' || this.sim.phase === 'ended')) {
+                                this.startReplay(goalInfo);
                             }
-                        }, 1100);
+                        }, 500);
                     }
                     break;
                 case 'score':
@@ -14032,13 +14094,6 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                             this.humanDunks++;
                     }
                     telegram_js_1.telegram.haptic(e.team === 0 ? 'success' : 'warning');
-                    if (!this.cfg.online && !this.cfg.demo && (e.dunk || e.points >= 2)) {
-                        setTimeout(() => {
-                            if (!this.disposed && !this.paused && this.sim && (this.sim.phase === 'celebrate' || this.sim.phase === 'countdown')) {
-                                this.startReplay();
-                            }
-                        }, 1100);
-                    }
                     break;
                 case 'overtime':
                     a.play('whistleRestart');
