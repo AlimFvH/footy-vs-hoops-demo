@@ -71,7 +71,7 @@ async function run() {
   process.env.NODE_ENV = 'test';
   process.env.ENABLE_STARS = 'true';
   process.env.TELEGRAM_WEBHOOK_SECRET = 'stars_test_secret_xyz123';
-  process.env.TELEGRAM_BOT_TOKEN = 'test_mock_bot_token_abc123';
+  process.env.TELEGRAM_BOT_TOKEN = '123456789:test_mock_bot_token_abc123';
 
   // Spawn isolated test instance of server
   const server = require('../server/server.js');
@@ -329,8 +329,68 @@ async function run() {
 
     console.log('  [PASS] All Battle Pass invoice and reward claim attempts strictly rejected by server.');
 
+    // -------------------------------------------------------------
+    // TEST 8: BOT TOKEN DEFENSIVE RESOLUTION & FORMAT VALIDATION
+    // -------------------------------------------------------------
+    console.log('\nTest 8: Testing bot token whitespace trimming, format validation, and unconfigured states...');
+    
+    // A. Whitespace Trimming: Token surrounded by spaces, newlines, and carriage returns
+    const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+    process.env.TELEGRAM_BOT_TOKEN = '  123456789:ABCDEF_mock_token-1234567890 \r\n ';
+    const trimmedRes = await request('POST', '/api/stars/create-invoice', {
+      productId: 'pkg_coins_100',
+      playerId: testPlayerId
+    });
+    assert.strictEqual(trimmedRes.status, 200, 'Invoice creation with whitespace-padded token must succeed');
+    assert.strictEqual(trimmedRes.body.ok, true, 'Response must be ok: true after trimming');
+    assert(trimmedRes.body.orderId.startsWith('stars_'), 'OrderId must be generated');
+    console.log('  [PASS] Leading/trailing whitespace, newlines, and carriage returns are safely trimmed.');
+
+    // B. Invalid Characters: Token with spaces inside must be rejected clearly (not silently modified)
+    process.env.TELEGRAM_BOT_TOKEN = '123456789:invalid token with spaces';
+    const invalidCharRes = await request('POST', '/api/stars/create-invoice', {
+      productId: 'pkg_coins_100',
+      playerId: testPlayerId
+    });
+    assert.strictEqual(invalidCharRes.status, 200);
+    assert.strictEqual(invalidCharRes.body.ok, false);
+    assert.strictEqual(invalidCharRes.body.error, 'bot_token_invalid_format', 'Invalid token format must be rejected clearly');
+    console.log('  [PASS] Tokens with invalid characters are rejected with bot_token_invalid_format (not silently stripped).');
+
+    // C. Invalid Format: Token missing colon separator
+    process.env.TELEGRAM_BOT_TOKEN = '123456789invalidtokennocolon';
+    const noColonRes = await request('POST', '/api/stars/create-invoice', {
+      productId: 'pkg_coins_100',
+      playerId: testPlayerId
+    });
+    assert.strictEqual(noColonRes.status, 200);
+    assert.strictEqual(noColonRes.body.ok, false);
+    assert.strictEqual(noColonRes.body.error, 'bot_token_invalid_format');
+    console.log('  [PASS] Tokens missing colon separator are rejected with bot_token_invalid_format.');
+
+    // D. Missing / Empty Token
+    delete process.env.TELEGRAM_BOT_TOKEN;
+    const missingRes = await request('POST', '/api/stars/create-invoice', {
+      productId: 'pkg_coins_100',
+      playerId: testPlayerId
+    });
+    assert.strictEqual(missingRes.status, 200);
+    assert.strictEqual(missingRes.body.ok, false);
+    assert.strictEqual(missingRes.body.error, 'bot_token_unconfigured');
+    console.log('  [PASS] Unconfigured/missing token returns bot_token_unconfigured.');
+
+    // Restore valid token
+    process.env.TELEGRAM_BOT_TOKEN = originalToken;
+    const validRes = await request('POST', '/api/stars/create-invoice', {
+      productId: 'pkg_coins_100',
+      playerId: testPlayerId
+    });
+    assert.strictEqual(validRes.status, 200);
+    assert.strictEqual(validRes.body.ok, true);
+    console.log('  [PASS] Valid token succeeds cleanly.');
+
     console.log('\n======================================================');
-    console.log('ALL TELEGRAM STARS PURCHASE LIFECYCLE CHECKS PASSED (7/7)!');
+    console.log('ALL TELEGRAM STARS PURCHASE & SECURITY CHECKS PASSED (8/8)!');
     console.log('======================================================\n');
     process.exit(0);
   } finally {

@@ -1,8 +1,13 @@
 const https = require('https');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const rawToken = process.env.TELEGRAM_BOT_TOKEN;
+const BOT_TOKEN = typeof rawToken === 'string' ? rawToken.trim() : '';
 if (!BOT_TOKEN) {
   console.error('Error: TELEGRAM_BOT_TOKEN environment variable is required.');
+  process.exit(1);
+}
+if (!/^[0-9]+:[A-Za-z0-9_-]+$/.test(BOT_TOKEN)) {
+  console.error('Error: TELEGRAM_BOT_TOKEN has an invalid format. Expected format: <id>:<secret_hash>');
   process.exit(1);
 }
 const MINI_APP_URL = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';

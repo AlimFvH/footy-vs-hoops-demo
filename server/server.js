@@ -81,6 +81,30 @@ function resolveStarsPrice(productId) {
   return null;
 }
 
+function resolveTelegramBotToken() {
+  const raw = process.env.TELEGRAM_BOT_TOKEN;
+  if (!raw || typeof raw !== 'string') {
+    return { ok: false, error: 'bot_token_unconfigured', message: 'TELEGRAM_BOT_TOKEN is not configured on the server.' };
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return { ok: false, error: 'bot_token_unconfigured', message: 'TELEGRAM_BOT_TOKEN is empty.' };
+  }
+  // Telegram Bot Token official format: <bot_id>:<token_hash> (digits, colon, alphanumeric/dash/underscore)
+  // Rejects invalid internal characters clearly rather than silently stripping them.
+  if (!/^[0-9]+:[A-Za-z0-9_-]+$/.test(trimmed)) {
+    return { ok: false, error: 'bot_token_invalid_format', message: 'TELEGRAM_BOT_TOKEN has an invalid format. Expected format: <id>:<secret_hash>' };
+  }
+  return { ok: true, token: trimmed };
+}
+
+function resolveTelegramWebhookSecret() {
+  const raw = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!raw || typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  return trimmed || null;
+}
+
 const PRODUCT_CATALOG = {
   // FvH Currency Packages (Stage 1 Specification: 100, 500, 1,200, 3,000 FvH Coin)
   'pkg_coins_100': {
@@ -1628,14 +1652,15 @@ const server = http.createServer((req, res) => {
         });
       }
 
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) {
+      const tokenResult = resolveTelegramBotToken();
+      if (!tokenResult.ok) {
         return sendJson(res, 200, {
           ok: false,
-          error: 'bot_token_unconfigured',
-          message: 'TELEGRAM_BOT_TOKEN is not configured on the server. Stars checkout requires active bot credentials.'
+          error: tokenResult.error,
+          message: tokenResult.message
         });
       }
+      const botToken = tokenResult.token;
 
       const orderId = 'stars_' + crypto.randomBytes(8).toString('hex');
       const order = {
@@ -1777,10 +1802,11 @@ const server = http.createServer((req, res) => {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
       const initData = String(data.initData || '');
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) {
+      const tokenResult = resolveTelegramBotToken();
+      if (!tokenResult.ok) {
         return sendJson(res, 200, { ok: true, devMode: true, validated: false });
       }
+      const botToken = tokenResult.token;
       try {
         const params = new URLSearchParams(initData);
         const hash = params.get('hash');
@@ -1871,16 +1897,17 @@ const server = http.createServer((req, res) => {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      const tokenResult = resolveTelegramBotToken();
+      const botToken = tokenResult.ok ? tokenResult.token : null;
+      const webhookSecret = resolveTelegramWebhookSecret();
 
       if (process.env.NODE_ENV === 'production') {
-        const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
         if (!webhookSecret || req.headers['x-telegram-bot-api-secret-token'] !== webhookSecret) {
           return sendJson(res, 403, { ok: false, error: 'invalid_webhook_secret', message: 'Webhook secret verification failed' });
         }
-      } else if (process.env.TELEGRAM_WEBHOOK_SECRET) {
+      } else if (webhookSecret) {
         const receivedSecret = req.headers['x-telegram-bot-api-secret-token'];
-        if (receivedSecret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+        if (receivedSecret !== webhookSecret) {
           return sendJson(res, 403, { ok: false, error: 'invalid_webhook_secret', message: 'Webhook secret verification failed' });
         }
       }
@@ -2029,7 +2056,7 @@ const server = http.createServer((req, res) => {
         const text = msg.text.trim();
         const chatId = msg.chat ? msg.chat.id : null;
         const fromUser = msg.from || {};
-        const effectiveToken = botToken || process.env.TELEGRAM_BOT_TOKEN;
+        const effectiveToken = botToken;
         const miniAppUrl = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
 
         if (chatId) {
@@ -2624,11 +2651,11 @@ const server = http.createServer((req, res) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
       const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
       const target = String(data.target || 'channel').trim(); // 'channel' or 'chat'
-      const token = process.env.TELEGRAM_BOT_TOKEN;
-
-      if (!token) {
-        return sendJson(res, 200, { ok: false, error: 'bot_token_unconfigured', verified: false });
+      const tokenResult = resolveTelegramBotToken();
+      if (!tokenResult.ok) {
+        return sendJson(res, 200, { ok: false, error: tokenResult.error, verified: false });
       }
+      const token = tokenResult.token;
 
       if (!telegramUserId) {
         return sendJson(res, 200, { ok: true, verified: true, reason: 'browser_user' });

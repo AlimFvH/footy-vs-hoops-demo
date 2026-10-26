@@ -319,13 +319,16 @@ it('Dynamic 3D Ad Boards: Configured 10.0s cycle (0.5s in, 6.0s on, 0.5s out, 3.
 });
 
 // 21. Bot Token Security & Sanitization
-it('Bot Token Security: No hardcoded bot tokens or fallbacks exist in source code', () => {
+it('Bot Token Security: No hardcoded bot tokens or fallbacks exist in source code and format validation is enforced', () => {
   const srvCode = fs.readFileSync('server/server.js', 'utf8');
   const botScript = fs.readFileSync('scripts/setup_telegram_bot_profile.js', 'utf8');
   const compromisedTokenFragment = 'AAHnIjET';
   assert(!srvCode.includes(compromisedTokenFragment), 'server.js must not contain compromised token');
   assert(!botScript.includes(compromisedTokenFragment), 'setup_telegram_bot_profile.js must not contain compromised token');
-  assert(srvCode.includes('process.env.TELEGRAM_BOT_TOKEN'), 'Must require TELEGRAM_BOT_TOKEN');
+  assert(srvCode.includes('resolveTelegramBotToken'), 'Must use resolveTelegramBotToken helper');
+  assert(srvCode.includes('.trim()'), 'Must trim whitespace from token');
+  assert(srvCode.includes('/^[0-9]+:[A-Za-z0-9_-]+$/'), 'Must validate token format against Telegram specification');
+  assert(srvCode.includes('bot_token_invalid_format'), 'Must reject invalid format explicitly without silent stripping');
 });
 
 // 22. Production Webhook Authentication
