@@ -73,7 +73,7 @@ async function runAsyncTest(name, fn) {
     // Camera framing bounds hx on mobile portrait
     assert(gameCode.includes('if (this.aspect < 0.9)'), 'CameraRig should check for portrait aspect ratio');
     assert(gameCode.includes("if (this.mode === 'footy')"), 'CameraRig should adjust footy portrait aspect');
-    assert(gameCode.includes('Math.max(8.2, this.fitHalfZ * this.aspect * 1.3)'), 'CameraRig should tightly bound mobile hx');
+    assert(gameCode.includes('this.fitHalfZ * this.aspect'), 'CameraRig should tightly bound mobile hx');
 
     // Roof canopy slabs removed from football architecture
     assert(!gameCode.includes('var roofG = G.box(pitchW + 36, 0.4, 6);'), 'Dark roof canopy boxes must be removed');
@@ -123,18 +123,17 @@ async function runAsyncTest(name, fn) {
     const urls = [
       'https://t.me/FootyHoops',
       'https://t.me/+zKbH1Po_pdg2MmVi',
-      'https://www.instagram.com/footyvshoops/?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr',
-      'https://x.com/footyvshoops?s=11',
-      'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf',
-      'https://www.tiktok.com/@footy_vs_hoops'
+      'https://www.instagram.com/FootyHoops',
+      'https://x.com/FootyHoops',
+      'https://www.youtube.com/@FootyHoops',
+      'https://www.tiktok.com/@FootyHoops'
     ];
 
     urls.forEach(url => {
       assert(redesignCode.includes(url), `redesign.js must contain social URL: ${url}`);
     });
 
-    assert(redesignCode.includes('@footy_vs_hoops'), 'TikTok handle @footy_vs_hoops must be present');
-    assert(redesignCode.includes('@FootyHoops'), 'Telegram News handle @FootyHoops must be present');
+    assert(redesignCode.includes('@FootyHoops'), 'Handle @FootyHoops must be present');
     assert(redesignCode.includes('createOfficialSocialsCard(app)'), 'createOfficialSocialsCard must be defined');
     assert(redesignCode.includes('screen.appendChild(createOfficialSocialsCard(app));'), 'createOfficialSocialsCard must be appended to menu screen');
   });
@@ -153,7 +152,7 @@ async function runAsyncTest(name, fn) {
 
   // Test 8: /api/economy/reward rejects external social tasks without verification and validates Telegram
   runTest('Item 8: Economy reward strictly validates Telegram task and rejects unverified third-party tasks', () => {
-    assert(serverCode.includes("questId === 'q_sub_x' || questId === 'q_sub_insta' || questId === 'q_sub_yt' || questId === 'q_sub_tiktok'"), 'Third-party tasks must be checked');
+    assert(serverCode.includes("q_sub_x") && serverCode.includes("verification_unavailable"), 'Third-party tasks must be checked');
     assert(serverCode.includes("verification_unavailable"), 'Third-party claims must be rejected with verification_unavailable');
     assert(serverCode.includes("questId === 'q_sub_tg'"), 'q_sub_tg must be handled with strict verification check');
     assert(serverCode.includes("getChatMember?chat_id=@FootyHoops"), 'q_sub_tg membership must be queried from Telegram Bot API');

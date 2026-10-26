@@ -2670,7 +2670,7 @@ const server = http.createServer((req, res) => {
       }
 
       // Target chat ID: @FootyHoops channel or linked chat
-      const chatId = (target === 'chat') ? '-1004427370833' : '@FootyHoops';
+      const chatId = '@FootyHoops';
 
       try {
         const tgRes = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${encodeURIComponent(chatId)}&user_id=${encodeURIComponent(telegramUserId)}`, {
@@ -3225,7 +3225,7 @@ const server = http.createServer((req, res) => {
       if (rewardType === 'quest') {
         const questId = String(data.questId || rewardId);
         // Third-party social tasks: automated verification unavailable, cannot be claimed
-        if (questId === 'q_sub_x' || questId === 'q_sub_insta' || questId === 'q_sub_yt' || questId === 'q_sub_tiktok') {
+        if (questId === 'q_sub_chat' || questId === 'soc_tg_chat' || questId === 'q_sub_x' || questId === 'q_sub_insta' || questId === 'q_sub_yt' || questId === 'q_sub_tiktok') {
           return sendJson(res, 400, {
             ok: false,
             error: 'verification_unavailable',

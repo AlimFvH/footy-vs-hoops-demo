@@ -2699,9 +2699,13 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const carrier = this.agents.find((a) => a.team === team && a.slot === 0);
             b.owner = null;
             b.vx = b.vy = b.vz = 0;
-            b.x = carrier.x;
-            b.z = carrier.z;
-            b.y = b.r + 0.5;
+            const side = 0.42;
+            const rx = carrier.fz;
+            const rz = -carrier.fx;
+            const fwd = carrier.radius + b.r + 0.15;
+            b.x = carrier.x + carrier.fx * fwd + rx * side * -1;
+            b.z = carrier.z + carrier.fz * fwd + rz * side * -1;
+            b.y = b.r + 0.55;
             b.dribblePhase = 0;
             this.lastBounceY = 0;
             this.setOwner(carrier);
@@ -4077,10 +4081,15 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             this.lastGoalTeam = team;
             this.phase = 'celebrate';
             this.phaseTime = 0;
-            if (!ownGoal)
-                scorer.celebrateT = PARAMS.celebrate - 0.2;
             for (const a of this.agents) {
                 this.cancelTackle(a);
+                if (a.team === team && !ownGoal) {
+                    a.celebrateT = PARAMS.celebrate;
+                    a.stun = 0;
+                } else {
+                    a.celebrateT = 0;
+                    a.stun = PARAMS.celebrate;
+                }
             }
             if (b.owner)
                 this.setOwner(null);
@@ -7371,7 +7380,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CameraRig = exports.CLOSE_UP = void 0;
     const NDC_LIMIT = 0.9;
-    exports.CLOSE_UP = { footy: 0.88, hoops: 0.85 };
+    exports.CLOSE_UP = { footy: 0.92, hoops: 0.88 };
     class CameraRig {
         constructor(mode, aspect, halfW, halfL) {
             this.mode = mode;
@@ -7384,9 +7393,9 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.shakeT = 0;
             this.snap = true;
             this.zoom = 1;
-            this.cam.fov = mode === 'footy' ? 38 : 40;
-            this.elev = ((mode === 'footy' ? 44 : 45) * Math.PI) / 180;
-            this.fitHalfZ = mode === 'footy' ? 14 : 8.4;
+            this.cam.fov = mode === 'footy' ? 42 : 40;
+            this.elev = ((mode === 'footy' ? 42 : 45) * Math.PI) / 180;
+            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : 8.4;
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
             this.limitZ = halfL;
@@ -7397,6 +7406,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         setAspect(aspect) {
             this.aspect = aspect;
             this.cam.aspect = aspect;
+            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : 8.4;
             this.snap = true;
         }
         shake(amount) {
@@ -7408,10 +7418,9 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             hx = Math.max(hx, this.mode === 'footy' ? 9 : 5.2);
             if (this.aspect < 0.9) {
                 if (this.mode === 'footy') {
-                    // Mobile iPhone responsive framing:
-                    // Keep the active play area tightly framed vertically and horizontally
-                    // without pushing camera into the stratosphere (d ~ 52-56).
-                    hx = Math.min(this.maxHalfX, Math.max(8.2, this.fitHalfZ * this.aspect * 1.3));
+                    // Mobile iPhone responsive tactical framing:
+                    // Frames player, ball, direction of attack, and nearby play comfortably (d ~ 62-68)
+                    hx = Math.min(this.maxHalfX, Math.max(10.2, this.fitHalfZ * this.aspect * 1.32));
                 } else {
                     hx = this.maxHalfX;
                 }
@@ -7450,10 +7459,10 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         update(dt, ball, human, forceFull = false) {
             const [hx, hz] = this.halfExtents();
             let tx = ball.x * 0.65 + human.x * 0.35;
-            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 3.0 : 2.0);
+            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 4.5 : 2.0);
             const maxX = Math.max(0, this.limitX - hx * 0.55);
             tx = Math.max(-maxX, Math.min(maxX, tx));
-            const maxZ = this.limitZ - hz * 0.6;
+            const maxZ = this.limitZ - hz * 0.65;
             tz = Math.max(-maxZ, Math.min(maxZ, tz));
             if (forceFull) {
                 tx = 0;
@@ -8043,8 +8052,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 armUp = Math.max(armUp, 2.85);
             }
             if (a.celebrateT > 0) {
-                lift = Math.abs(Math.sin(this.t * 9)) * 0.45;
-                armUp = 2.9 + Math.sin(this.t * 12) * 0.3;
+                lift = Math.abs(Math.sin(this.t * 8)) * 0.45;
+                armUp = 2.9 + Math.sin(this.t * 10) * 0.35;
+                kick = Math.sin(this.t * 8) * 0.3;
+            } else if (a.stun > 0 && this.mode === 'footy') {
+                // Defeated / conceded reaction: slumped shoulders, lowered head
+                crouch = 0.28;
+                lean = -0.16;
+                armUp = -0.12;
             }
             if (this.prevLift > 0.2 && lift < 0.08)
                 this.landT = 0.2;
@@ -8609,9 +8624,16 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 snap.agents.forEach(agSnap => {
                     const char = this.chars.find(c => c.agent.id === agSnap.id);
                     if (char) {
+                        const prevX = typeof char.agent.x === 'number' ? char.agent.x : agSnap.x;
+                        const prevZ = typeof char.agent.z === 'number' ? char.agent.z : agSnap.z;
                         char.agent.x = agSnap.x;
                         char.agent.y = agSnap.y || 0;
                         char.agent.z = agSnap.z;
+                        char.agent.vx = (agSnap.x - prevX) * 30;
+                        char.agent.vz = (agSnap.z - prevZ) * 30;
+                        const runSpd = Math.hypot(char.agent.vx, char.agent.vz);
+                        if (!char.agent.runPhase) char.agent.runPhase = 0;
+                        char.agent.runPhase += runSpd * 0.033 * 2.8;
                         char.agent.fx = agSnap.fx;
                         char.agent.fz = agSnap.fz;
                         char.agent.mx = agSnap.mx || 0;
@@ -8757,6 +8779,7 @@ define("i18n/en", ["require", "exports"], function (require, exports) {
         'hud.pause': 'Pause',
         'hud.stamina': 'Stamina',
         'hud.shoot': 'SHOOT',
+        'hud.shootHoops': 'SHOOT',
         'hud.pass': 'PASS',
         'hud.sprint': 'SPRINT',
         'hud.tackle': 'TACKLE',
@@ -10118,7 +10141,7 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
         'mode.hoops.desc': 'Проходи, перехватывай и бросай. Очки — только если мяч упал в кольцо сверху: 2 очка из-под дуги, 3 — из-за неё.',
         'mode.difficulty': 'Сложность', 'mode.duration': 'Длительность матча', 'mode.minutes': '{n} мин', 'mode.start': 'Начать матч', 'mode.start.hoops': 'Начать матч',
         'diff.easy': 'Лёгкая', 'diff.normal': 'Обычная', 'diff.hard': 'Сложная', 'mode.boost': 'Буст на этот матч', 'mode.noBoost': 'Буст не активирован',
-        'hud.you': 'ТЫ', 'hud.cpu': 'ПК', 'hud.pause': 'Пауза', 'hud.stamina': 'Выносливость', 'hud.shoot': 'УДАР', 'hud.pass': 'ПАС', 'hud.sprint': 'РЫВОК',
+        'hud.you': 'ТЫ', 'hud.cpu': 'ПК', 'hud.pause': 'Пауза', 'hud.stamina': 'Выносливость', 'hud.shoot': 'УДАР', 'hud.shootHoops': 'БРОСОК', 'hud.pass': 'ПАС', 'hud.sprint': 'РЫВОК',
         'hud.tackle': 'ОТБОР', 'hud.steal': 'ПЕРЕХВАТ', 'hud.ready': 'Приготовься', 'hud.replay': 'ПОВТОР ГОЛА', 'hud.skipReplay': 'ПРОПУСТИТЬ', 'hud.mute': 'Без звука', 'hud.unmute': 'Включить звук', 'hud.go': 'ПОЕХАЛИ!', 'hud.goal': 'ГОЛ!', 'hud.score': 'ОЧКИ!', 'hud.three': 'ТРЁХОЧКОВЫЙ!',
         'hud.dunk': 'ДАНК!', 'hud.ownGoal': 'Автогол', 'hud.noStamina': 'Нет выносливости', 'hud.fullTime': 'Конец матча', 'hud.overtime': 'ОВЕРТАЙМ', 'hud.suddenDeath': 'ВНЕЗАПНАЯ СМЕРТЬ', 'hud.win': 'Ты победил!', 'hud.lose': 'Ты проиграл',
         'hud.draw': 'Ничья', 'hud.possession': 'Мяч', 'hud.mini.footy': 'Гол {a}:{b}',
@@ -12516,9 +12539,17 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         }
         bindStick() {
             const z = this.stickZone;
-            z.addEventListener('pointerdown', (e) => {
-                if (this.stickPointer !== -1)
+            const end = (e) => {
+                if (e && e.pointerId !== undefined && e.pointerId !== this.stickPointer && this.stickPointer !== -1)
                     return;
+                this.stickPointer = -1;
+                this.input.setStick(0, 0);
+                this.stickKnob.style.transform = 'translate(-50%,-50%)';
+                this.stickBase.classList.remove('active');
+                this.stickBase.style.left = '';
+                this.stickBase.style.top = '';
+            };
+            z.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
                 this.stickPointer = e.pointerId;
                 try {
@@ -12532,26 +12563,20 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 this.stickBase.style.top = `${e.clientY - r.top}px`;
                 this.stickBase.classList.add('active');
                 this.moveStick(e);
-            });
+            }, { passive: false });
             z.addEventListener('pointermove', (e) => {
                 if (e.pointerId === this.stickPointer) {
                     e.preventDefault();
                     this.moveStick(e);
                 }
-            });
-            const end = (e) => {
-                if (e.pointerId !== this.stickPointer)
-                    return;
-                this.stickPointer = -1;
-                this.input.setStick(0, 0);
-                this.stickKnob.style.transform = 'translate(-50%,-50%)';
-                this.stickBase.classList.remove('active');
-                this.stickBase.style.left = '';
-                this.stickBase.style.top = '';
-            };
+            }, { passive: false });
             z.addEventListener('pointerup', end);
             z.addEventListener('pointercancel', end);
             z.addEventListener('lostpointercapture', end);
+            window.addEventListener('pointerup', end);
+            window.addEventListener('pointercancel', end);
+            window.addEventListener('touchend', () => { this.stickPointer = -1; this.input.setStick(0, 0); });
+            window.addEventListener('touchcancel', () => { this.stickPointer = -1; this.input.setStick(0, 0); });
             z.addEventListener('contextmenu', (e) => e.preventDefault());
         }
         moveStick(e) {
@@ -12595,7 +12620,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             const tackleLbl = this.btnTackle.querySelector('.lbl');
             if (tackleLbl) tackleLbl.textContent = steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle');
             const shootLbl = this.btnShoot.querySelector('.lbl');
-            if (shootLbl) shootLbl.textContent = (0, index_js_1.t)('hud.shoot');
+            if (shootLbl) shootLbl.textContent = steal ? (0, index_js_1.t)('hud.shootHoops') : (0, index_js_1.t)('hud.shoot');
             const sprintLbl = this.btnSprint.querySelector('.lbl');
             if (sprintLbl) sprintLbl.textContent = (0, index_js_1.t)('hud.sprint');
             const stamSpan = this.staminaWrap.querySelector('span');
@@ -12607,7 +12632,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             const k = (a) => { var _a; return (0, input_js_1.keyLabel)((_a = keys[a][0]) !== null && _a !== void 0 ? _a : ''); };
             const items = [
                 ['WASD', ''],
-                [k('shoot'), (0, index_js_1.t)('hud.shoot')],
+                [k('shoot'), steal ? (0, index_js_1.t)('hud.shootHoops') : (0, index_js_1.t)('hud.shoot')],
                 [k('tackle'), steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle')],
                 [k('sprint'), (0, index_js_1.t)('hud.sprint')],
                 [k('pause'), (0, index_js_1.t)('hud.pause')],
@@ -12766,9 +12791,16 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             this.cache = {};
             this.power.classList.remove('show');
             this.input.setStick(0, 0);
+            this.input.releaseAll();
             this.stickPointer = -1;
             this.stickBase.classList.remove('active');
+            this.stickBase.style.left = '';
+            this.stickBase.style.top = '';
             this.arrow.classList.remove('show');
+            if (this.touch) {
+                this.touch.style.pointerEvents = '';
+                this.touch.style.opacity = '';
+            }
         }
     }
     exports.Hud = Hud;
@@ -13716,7 +13748,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     sim.step(dt, demo ? (0, types_js_3.emptyInput)() : this.input.snapshot());
                     if (on)
                         on.hostAfterStep(dt);
-                    if (!on && !demo) {
+                    if (!on && !demo && sim.phase === 'playing') {
                         this.recordReplaySnapshot();
                     }
                 }
@@ -13894,11 +13926,12 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.endTimer = 0;
             this.lastCountdownN = -1;
             this.paused = false;
-            this.hold = holdAtStart;
+            this.hold = false;
             this.replayBuffer = [];
             this.replayActive = false;
             this.replayActiveFrames = [];
             this.hud.showReplay(false);
+            this.hud.resetState();
             this.hud.onToggleMute = () => this.audio.toggleMute();
             this.passiveBoostConsumed = false;
             this.turboSpentInMatch = false;
@@ -16102,7 +16135,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                     x.settings.difficulty = difficulty;
                     x.settings.matchMinutes = minutes;
                 });
-                this.launch({ mode: this.selMode, difficulty, minutes, boostId: this.store.data.armedBoost }, !this.store.data.tutorialDone);
+                this.launch({ mode: this.selMode, difficulty, minutes, boostId: this.store.data.armedBoost }, false);
             });
             const back = (0, dom_js_6.h)('button', { class: 'btn icon back', type: 'button', on: { click: () => (this.audio.play('click'), this.showMenu()) } }, document.documentElement.dir === 'rtl' ? '→' : '←');
             const el = (0, dom_js_6.h)('div', { class: 'screen solid page-screen has-nav' }, (0, dom_js_6.h)('div', { class: 'page mode-page' }, (0, dom_js_6.h)('div', { class: 'page-head' }, back, (0, dom_js_6.h)('h1', null, (0, index_js_7.t)('mode.title'))), (0, dom_js_6.h)('div', { class: 'page-body' }, (0, dom_js_6.h)('div', { class: 'modes' }, mkCard('footy'), mkCard('hoops')), (0, dom_js_6.h)('div', { class: 'opt-card' }, (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.difficulty')), (0, kit_js_4.seg)([{ value: 'easy', label: (0, index_js_7.t)('diff.easy') }, { value: 'normal', label: (0, index_js_7.t)('diff.normal') }, { value: 'hard', label: (0, index_js_7.t)('diff.hard') }], difficulty, (v) => (difficulty = v)), (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.duration')), (0, kit_js_4.seg)([1, 2, 3, 5].map((n) => ({ value: n, label: (0, index_js_7.t)('mode.minutes', { n }) })), minutes, (v) => (minutes = v)), (0, dom_js_6.h)('div', { class: 'boost-line' }, boostLine))), (0, dom_js_6.h)('div', { class: 'start-bar' }, startBtn, (0, dom_js_6.h)('button', { class: 'btn block online-entry', type: 'button', on: { click: () => this.showOnline(this.selMode) } }, '🌐 ', (0, index_js_7.t)('mode.online'))), (0, kit_js_4.bottomNav)(null, (n) => this.go(n))));
@@ -16116,10 +16149,9 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             this.closePause();
             this.clearScreen();
             telegram_js_4.telegram.enterMatch(() => this.togglePause());
-            // Boost charge is consumed upon kickoff (passive) or manual activation (turbo), not prematurely here.
-            this.game.start(cfg, tutorial);
+            this.game.start(cfg, false);
             if (tutorial)
-                this.tutorial(true);
+                this.tutorial(false);
         }
         togglePause() {
             if (this.state !== 'match' || !this.game.running)

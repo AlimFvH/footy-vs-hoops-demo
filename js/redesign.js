@@ -5440,10 +5440,10 @@
       var channels = [
         { id: 'q_sub_tg', name: 'Telegram News', handle: '@FootyHoops', url: 'https://t.me/FootyHoops', icon: getSocialIconSvg('tg') },
         { id: 'q_sub_chat', name: 'Telegram Chat', handle: 'Community Chat', url: 'https://t.me/+zKbH1Po_pdg2MmVi', icon: getSocialIconSvg('chat') },
-        { id: 'q_sub_insta', name: 'Instagram', handle: '@footyvshoops', url: 'https://www.instagram.com/footyvshoops/?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr', icon: getSocialIconSvg('insta') },
-        { id: 'q_sub_x', name: 'X / Twitter', handle: '@footyvshoops', url: 'https://x.com/footyvshoops?s=11', icon: getSocialIconSvg('x') },
-        { id: 'q_sub_yt', name: 'YouTube', handle: '@footyvshoops-cr', url: 'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf', icon: getSocialIconSvg('yt') },
-        { id: 'q_sub_tiktok', name: 'TikTok', handle: '@footy_vs_hoops', url: 'https://www.tiktok.com/@footy_vs_hoops', icon: getSocialIconSvg('tiktok') }
+        { id: 'q_sub_x', name: 'X / Twitter', handle: '@FootyHoops', url: 'https://x.com/FootyHoops', icon: getSocialIconSvg('x') },
+        { id: 'q_sub_insta', name: 'Instagram', handle: '@FootyHoops', url: 'https://www.instagram.com/FootyHoops', icon: getSocialIconSvg('insta') },
+        { id: 'q_sub_yt', name: 'YouTube', handle: '@FootyHoops', url: 'https://www.youtube.com/@FootyHoops', icon: getSocialIconSvg('yt') },
+        { id: 'q_sub_tiktok', name: 'TikTok', handle: '@FootyHoops', url: 'https://www.tiktok.com/@FootyHoops', icon: getSocialIconSvg('tiktok') }
       ];
 
       var channelList = document.createElement('div');
@@ -9135,10 +9135,10 @@
     var channels = [
       { name: 'Telegram News', handle: '@FootyHoops', url: 'https://t.me/FootyHoops', icon: getSocialIconSvg('tg') },
       { name: 'Telegram Chat', handle: 'Community Chat', url: 'https://t.me/+zKbH1Po_pdg2MmVi', icon: getSocialIconSvg('chat') },
-      { name: 'Instagram', handle: '@footyvshoops', url: 'https://www.instagram.com/footyvshoops/?exln=MWF1ZGdxM3BqdGt1eA%3D%3D&utm_source=qr', icon: getSocialIconSvg('insta') },
-      { name: 'X / Twitter', handle: '@footyvshoops', url: 'https://x.com/footyvshoops?s=11', icon: getSocialIconSvg('x') },
-      { name: 'YouTube', handle: '@footyvshoops-cr', url: 'https://youtube.com/@footyvshoops-cr?si=ZbQ3MBZ9R22-bybf', icon: getSocialIconSvg('yt') },
-      { name: 'TikTok', handle: '@footy_vs_hoops', url: 'https://www.tiktok.com/@footy_vs_hoops', icon: getSocialIconSvg('tiktok') }
+      { name: 'X / Twitter', handle: '@FootyHoops', url: 'https://x.com/FootyHoops', icon: getSocialIconSvg('x') },
+      { name: 'Instagram', handle: '@FootyHoops', url: 'https://www.instagram.com/FootyHoops', icon: getSocialIconSvg('insta') },
+      { name: 'YouTube', handle: '@FootyHoops', url: 'https://www.youtube.com/@FootyHoops', icon: getSocialIconSvg('yt') },
+      { name: 'TikTok', handle: '@FootyHoops', url: 'https://www.tiktok.com/@FootyHoops', icon: getSocialIconSvg('tiktok') }
     ];
 
     var head = document.createElement('div');
@@ -9240,35 +9240,27 @@
     topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
 
-    // 2. Hero Area: Solo Champion Showcase (Shows ONLY the chosen sport hero!)
+    // 2. Compact Matchup & Team Status Bar (3D character model completely removed from home screen)
     var stage = document.createElement('section');
-    stage.className = 'fvh-hero-stage solo-stage';
+    stage.className = 'fvh-hero-stage solo-stage compact';
 
     var curChar = d.selectedCharacter || 'footy';
     var isFooty = (curChar === 'footy');
 
     var heroCard = document.createElement('div');
-    heroCard.className = 'fvh-hero-card solo-hero ' + curChar;
+    heroCard.className = 'fvh-hero-card solo-hero-compact ' + curChar;
 
     var badgeText = isFooty ? '⚽ ' + tr('teamFootyTitle') : '🏀 ' + tr('teamHoopsTitle');
     var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY';
-    var heroRoleText = isFooty ? tr('teamFootySub') : tr('teamHoopsSub');
-    var heroLoreDesc = isFooty ? tr('teamFootyDesc') : tr('teamHoopsDesc');
 
     heroCard.innerHTML =
-      '<div class="fvh-solo-header">' +
-      '  <span class="fvh-hero-badge ' + curChar + '">' + badgeText + '</span>' +
-      '  <span class="fvh-solo-rival-pill">' + rivalText + '</span>' +
+      '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;margin-bottom:8px;">' +
+      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:12px;font-weight:900;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;">' + badgeText + '</span>' +
+      '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
       '</div>' +
-      '<div class="fvh-hero-avatar-box solo-avatar-box" style="position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-         getCharacterDisplayHtml(curChar, curChar === 'hoops' ? (d.equipped && (d.equipped['skin.hoops'] || (d.equipped.skin !== 'skin_rookie' ? d.equipped.skin : null))) : (d.equipped && (d.equipped['skin.footy'] || (d.equipped.skin !== 'skin_solar' ? d.equipped.skin : null))), { showJerseyTag: false }) +
-      '</div>' +
-      '<div class="fvh-hero-name" style="font-size:22px;font-weight:900;letter-spacing:0.5px;margin-top:6px;text-align:center;">' + (isFooty ? '⚽ FOOTY' : '🏀 HOOPS') + '</div>' +
-      '<div class="fvh-hero-role" style="font-size:12.5px;color:var(--text-muted);font-weight:700;margin-top:2px;text-align:center;">' + heroRoleText + '</div>' +
-      '<div class="fvh-hero-lore" style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:12px;text-align:center;line-height:1.35;max-width:340px;">' + heroLoreDesc + '</div>' +
       '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 8px;font-size:12px;font-weight:900;border-radius:14px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
-      '  <button type="button" class="btn fvh-solo-profile-pill" style="padding:10px 8px;font-size:12px;font-weight:900;border-radius:14px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👤</span> <span>' + tr('profile') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:9px 8px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-profile-pill" style="padding:9px 8px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👤</span> <span>' + tr('profile') + '</span></button>' +
       '</div>';
 
     // Clicking gear button opens locker
@@ -9289,16 +9281,6 @@
         app.go('profile');
       };
     }
-
-    // Tapping the card / hero directly opens the locker
-    heroCard.onclick = function () {
-      app.audio.play('click');
-      if (curChar === 'footy') {
-        app.openCharacterLocker('footy');
-      } else {
-        app.openCharacterLocker('hoops');
-      }
-    };
 
     stage.appendChild(heroCard);
     screen.appendChild(stage);

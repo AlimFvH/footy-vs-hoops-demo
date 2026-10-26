@@ -272,6 +272,40 @@ html.is-telegram {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 0 30px rgba(249, 115, 22, 0.18) !important;
 }
 
+/* Compact Solo Hero Status Card (No 3D Model on Main Menu) */
+.fvh-hero-stage.solo-stage.compact {
+  width: 100% !important;
+  max-width: 480px !important;
+  margin: 0 auto 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.fvh-hero-card.solo-hero-compact {
+  width: 100% !important;
+  max-width: 480px !important;
+  padding: 10px 14px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(160deg, rgba(16, 25, 48, 0.88) 0%, rgba(8, 12, 24, 0.95) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.fvh-hero-card.solo-hero-compact.footy {
+  border-color: rgba(0, 240, 255, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 240, 255, 0.12) !important;
+}
+
+.fvh-hero-card.solo-hero-compact.hoops {
+  border-color: rgba(249, 115, 22, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(249, 115, 22, 0.12) !important;
+}
+
 .solo-avatar-box {
   width: 100% !important;
   height: clamp(230px, 34vh, 290px) !important;
