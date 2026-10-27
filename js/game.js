@@ -2607,7 +2607,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
         step: 1 / 240,
         countdown: 3,
         restartCountdown: 1.6,
-        celebrate: 1.9,
+        celebrate: 1.6,
     };
     function hoopCenter(hoop) {
         return { x: 0, y: exports.BB.RIM_H, z: hoop === 0 ? exports.BB.HOOP_Z : -exports.BB.HOOP_Z };
@@ -3515,7 +3515,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         step: 1 / 120,
         countdown: 3,
         restartCountdown: 1.6,
-        celebrate: 2.8,
+        celebrate: 1.6,
     };
     const KEEPER_REACH = { easy: 1.05, normal: 1.55, hard: 1.8 };
     const KEEPER_MISJUDGE = { easy: 2.4, normal: 1.1, hard: 0.7 };
@@ -4420,6 +4420,11 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         skin('skin_solar', 'Solar Flare', 'epic', 520, { primary: 0xffa31a, secondary: 0xff3d00, shorts: 0x3a1500, hair: 0xffe08a, skin: 0xa86b45, style: 'stripes' }, '🔥'),
         skin('skin_gold', 'Golden Legend', 'legendary', 950, { primary: 0xf6c445, secondary: 0x7a4b00, shorts: 0x3a2600, hair: 0x1a1008, boots: 0xf6c445, accent: 0xfff3b0, style: 'hoops' }, '👑'),
         skin('skin_cyber', 'Cyber Punk', 'legendary', 1100, { primary: 0x2a0f4a, secondary: 0xff2bd6, shorts: 0x120826, hair: 0x00e5ff, skin: 0xd9a47c, boots: 0x00e5ff, accent: 0x00e5ff, style: 'sash' }, '🤖'),
+        skin('skin_premium_black_gold', 'Premium Black & Gold', 'legendary', 1200, { primary: 0x0a0a0a, secondary: 0x78350f, shorts: 0x0a0a0a, accent: 0xf59e0b, style: 'stripes' }, '👑'),
+        skin('skin_neon_cyber', 'Neon Cyber', 'legendary', 1200, { primary: 0x1e1b4b, secondary: 0x9333ea, shorts: 0x1e1b4b, accent: 0x22d3ee, style: 'circuit' }, '⚡'),
+        skin('skin_electric_blue', 'Electric Blue', 'epic', 1000, { primary: 0x1d4ed8, secondary: 0x3b82f6, shorts: 0x1d4ed8, accent: 0x60a5fa, style: 'sash' }, '⚡'),
+        skin('skin_crimson_elite', 'Crimson Elite', 'epic', 1000, { primary: 0x991b1b, secondary: 0xb91c1c, shorts: 0x991b1b, accent: 0xfef08a, style: 'stripes' }, '🔥'),
+        skin('skin_championship', 'Championship Edition', 'legendary', 1500, { primary: 0x0f172a, secondary: 0xeab308, shorts: 0x0f172a, accent: 0xfacc15, style: 'royal' }, '🏆'),
         {
             id: 'std_footy_classic',
             category: 'stadiums',
@@ -4908,38 +4913,15 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             visual: { icon: '🪙', coins: 2 },
         },
         {
-            id: 'ball_footy_classic',
+            id: 'ball_footy_classic_pro',
             category: 'balls',
             slot: 'ball.footy',
             mode: 'footy',
-            name: 'Classic White',
+            name: 'Classic Pro',
             rarity: 'common',
-            price: 0,
+            price: 100,
             icon: '⚽',
-            isDefault: true,
-            visual: { mode: 'footy', base: 0xf5f5f5, accent: 0x222222, style: 'classic' },
-        },
-        {
-            id: 'ball_footy_plasma',
-            category: 'balls',
-            slot: 'ball.footy',
-            mode: 'footy',
-            name: 'Plasma Orb',
-            rarity: 'rare',
-            price: 200,
-            icon: '🔮',
-            visual: { mode: 'footy', base: 0x1ee6c8, accent: 0x0a2a5a, style: 'plasma', glow: 0x1ee6c8 },
-        },
-        {
-            id: 'ball_footy_gold',
-            category: 'balls',
-            slot: 'ball.footy',
-            mode: 'footy',
-            name: 'Golden Cup',
-            rarity: 'epic',
-            price: 420,
-            icon: '🏅',
-            visual: { mode: 'footy', base: 0xf6c445, accent: 0x6a4300, style: 'stars', glow: 0xffd966 },
+            visual: { mode: 'footy', base: 0xffffff, accent: 0x111111, style: 'classic' },
         },
         {
             id: 'ball_footy_inferno',
@@ -4953,49 +4935,92 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             visual: { mode: 'footy', base: 0x2a0a0a, accent: 0xff6a00, style: 'flame', glow: 0xff6a00 },
         },
         {
-            id: 'ball_hoops_street',
+            id: 'ball_footy_cyber_neon',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Cyber Neon',
+            rarity: 'rare',
+            price: 400,
+            icon: '💠',
+            visual: { mode: 'footy', base: 0x0f172a, accent: 0x22d3ee, style: 'plasma', glow: 0x22d3ee },
+        },
+        {
+            id: 'ball_footy_golden_elite',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Golden Elite',
+            rarity: 'epic',
+            price: 600,
+            icon: '🏅',
+            visual: { mode: 'footy', base: 0xf6c445, accent: 0x6a4300, style: 'stars', glow: 0xffd966 },
+        },
+        {
+            id: 'ball_footy_galactic',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Galactic',
+            rarity: 'legendary',
+            price: 900,
+            icon: '🌌',
+            visual: { mode: 'footy', base: 0x1e1b4b, accent: 0x9333ea, style: 'stars', glow: 0xc084fc },
+        },
+        {
+            id: 'ball_hoops_classic_pro',
             category: 'balls',
             slot: 'ball.hoops',
             mode: 'hoops',
-            name: 'Street Orange',
+            name: 'Classic Pro',
             rarity: 'common',
-            price: 0,
+            price: 100,
             icon: '🏀',
-            isDefault: true,
             visual: { mode: 'hoops', base: 0xe8772e, accent: 0x1a0d05, style: 'classic' },
         },
         {
-            id: 'ball_hoops_blaze',
+            id: 'ball_hoops_neon_energy',
             category: 'balls',
             slot: 'ball.hoops',
             mode: 'hoops',
-            name: 'Neon Blaze',
+            name: 'Neon Energy',
             rarity: 'rare',
-            price: 210,
-            icon: '💫',
-            visual: { mode: 'hoops', base: 0x7a2bff, accent: 0x00e5ff, style: 'stripes', glow: 0x9a5bff },
+            price: 300,
+            icon: '⚡',
+            visual: { mode: 'hoops', base: 0x7a2bff, accent: 0x00e5ff, style: 'stripes', glow: 0x00e5ff },
         },
         {
-            id: 'ball_hoops_chrome',
+            id: 'ball_hoops_molten_fire',
             category: 'balls',
             slot: 'ball.hoops',
             mode: 'hoops',
-            name: 'Chrome',
+            name: 'Molten Fire',
             rarity: 'epic',
-            price: 430,
-            icon: '🪩',
-            visual: { mode: 'hoops', base: 0xc9d3e0, accent: 0x3a4658, style: 'chrome' },
+            price: 500,
+            icon: '🔥',
+            visual: { mode: 'hoops', base: 0xb91c1c, accent: 0xf59e0b, style: 'flame', glow: 0xf59e0b },
         },
         {
-            id: 'ball_hoops_midnight',
+            id: 'ball_hoops_golden_elite',
             category: 'balls',
             slot: 'ball.hoops',
             mode: 'hoops',
-            name: 'Midnight',
+            name: 'Golden Elite',
+            rarity: 'epic',
+            price: 600,
+            icon: '🏆',
+            visual: { mode: 'hoops', base: 0xf6c445, accent: 0x78350f, style: 'stars', glow: 0xffd966 },
+        },
+        {
+            id: 'ball_hoops_cosmic',
+            category: 'balls',
+            slot: 'ball.hoops',
+            mode: 'hoops',
+            name: 'Cosmic',
             rarity: 'legendary',
-            price: 720,
+            price: 900,
             icon: '🌌',
-            visual: { mode: 'hoops', base: 0x101a3a, accent: 0xf6c445, style: 'stars', glow: 0x4a6bff },
+            visual: { mode: 'hoops', base: 0x101a3a, accent: 0xc084fc, style: 'stars', glow: 0x9333ea },
         },
         {
             id: 'trail_default',
@@ -5457,7 +5482,10 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.moveTo(X(-cornerDist), Z(s * L));
             g.lineTo(X(-cornerDist), Z(cornerBreakZ));
             // 3-Point Arc
-            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, s < 0 ? 0.22 : Math.PI + 0.22, s < 0 ? Math.PI - 0.22 : Math.PI * 2 - 0.22);
+            const angle = Math.atan2(cornerBreakZ - hz, cornerDist);
+            const startAngle = s < 0 ? angle : Math.PI + angle;
+            const endAngle = s < 0 ? Math.PI - angle : Math.PI * 2 - angle;
+            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, startAngle, endAngle, s > 0);
             g.lineTo(X(cornerDist), Z(s * L));
             g.stroke();
 
@@ -13737,7 +13765,6 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const demo = ((_a = this.cfg) === null || _a === void 0 ? void 0 : _a.demo) === true;
                 const on = (_c = (_b = this.cfg) === null || _b === void 0 ? void 0 : _b.online) !== null && _c !== void 0 ? _c : null;
                 if (this.replayActive) {
-                    this.stepReplay(dt);
                     this.adapt(dt);
                     return;
                 }
@@ -13748,9 +13775,6 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     sim.step(dt, demo ? (0, types_js_3.emptyInput)() : this.input.snapshot());
                     if (on)
                         on.hostAfterStep(dt);
-                    if (!on && !demo && sim.phase === 'playing') {
-                        this.recordReplaySnapshot();
-                    }
                 }
                 view.render(this.paused || this.hold ? 0 : dt);
                 if (!demo) {
@@ -13770,110 +13794,6 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             (_a = window.visualViewport) === null || _a === void 0 ? void 0 : _a.addEventListener('resize', this.resize);
             window.addEventListener('orientationchange', () => setTimeout(this.resize, 200));
             this.resize();
-        }
-        recordReplaySnapshot() {
-            const sim = this.sim;
-            if (!sim) return;
-            const b = sim.ball;
-            const snap = {
-                bx: b.x, by: b.y, bz: b.z,
-                bvx: b.vx, bvy: b.vy, bvz: b.vz,
-                agents: sim.agents.map(a => ({
-                    id: a.id,
-                    x: a.x, y: a.y, z: a.z,
-                    vx: a.vx, vz: a.vz,
-                    fx: a.fx, fz: a.fz,
-                    mx: a.mx, mz: a.mz,
-                    kickT: a.kickT, shotT: a.shotT, jumpT: a.jumpT,
-                    diveT: a.diveT,
-                    celebrateT: a.celebrateT
-                }))
-            };
-            this.replayBuffer.push(snap);
-            if (this.replayBuffer.length > 120) {
-                this.replayBuffer.shift();
-            }
-        }
-        startReplay(goalInfo) {
-            if (this.replayActive || !this.sim || this.replayBuffer.length < 15)
-                return;
-            if (this.cfg && (this.cfg.online || this.cfg.demo))
-                return;
-            if (this.sim.mode !== 'footy')
-                return;
-            this.replayActive = true;
-            this.replayGoalInfo = goalInfo || null;
-            this.replayTimer = 0;
-            const count = Math.min(this.replayBuffer.length, 95);
-            this.replayActiveFrames = this.replayBuffer.slice(-count);
-            this.input.releaseAll();
-            this.hud.showReplay(true, () => this.stopReplay());
-        }
-        stepReplay(dt) {
-            const totalFrames = this.replayActiveFrames.length;
-            if (totalFrames < 2 || !this.view) {
-                this.stopReplay();
-                return;
-            }
-            const frameDur = 1 / 30;
-            const fPos = this.replayTimer / frameDur;
-            const progress = fPos / totalFrames;
-            // Dynamic broadcast slow-motion curve: smooth playback that gently eases to 0.45x as ball enters net
-            const slowMo = progress > 0.58 ? Math.max(0.42, 1.0 - (progress - 0.58) * 1.4) : 0.88;
-            this.replayTimer += dt * slowMo;
-
-            const curIdx = Math.floor(fPos);
-            if (curIdx >= totalFrames - 1) {
-                this.stopReplay();
-                return;
-            }
-            const frac = Math.max(0, Math.min(1, fPos - curIdx));
-            const snapA = this.replayActiveFrames[curIdx];
-            const snapB = this.replayActiveFrames[curIdx + 1] || snapA;
-
-            const lerp = (v0, v1, t) => v0 + (v1 - v0) * t;
-            const blended = {
-                bx: lerp(snapA.bx, snapB.bx, frac),
-                by: lerp(snapA.by, snapB.by, frac),
-                bz: lerp(snapA.bz, snapB.bz, frac),
-                bvx: lerp(snapA.bvx || 0, snapB.bvx || 0, frac),
-                bvy: lerp(snapA.bvy || 0, snapB.bvy || 0, frac),
-                bvz: lerp(snapA.bvz || 0, snapB.bvz || 0, frac),
-                agents: (snapA.agents || []).map((agA, i) => {
-                    const agB = (snapB.agents && snapB.agents[i]) || agA;
-                    return {
-                        id: agA.id,
-                        x: lerp(agA.x, agB.x, frac),
-                        y: lerp(agA.y || 0, agB.y || 0, frac),
-                        z: lerp(agA.z, agB.z, frac),
-                        fx: lerp(agA.fx, agB.fx, frac),
-                        fz: lerp(agA.fz, agB.fz, frac),
-                        mx: lerp(agA.mx || 0, agB.mx || 0, frac),
-                        mz: lerp(agA.mz || 0, agB.mz || 0, frac),
-                        kickT: lerp(agA.kickT || 0, agB.kickT || 0, frac),
-                        shotT: lerp(agA.shotT || 0, agB.shotT || 0, frac),
-                        jumpT: lerp(agA.jumpT || 0, agB.jumpT || 0, frac),
-                        diveT: lerp(agA.diveT || 0, agB.diveT || 0, frac),
-                        celebrateT: lerp(agA.celebrateT || 0, agB.celebrateT || 0, frac)
-                    };
-                })
-            };
-
-            this.view.applySnapshot(blended);
-            this.view.renderReplay(dt, blended, this.replayGoalInfo);
-        }
-        stopReplay() {
-            if (!this.replayActive)
-                return;
-            this.replayActive = false;
-            this.replayActiveFrames = [];
-            this.replayGoalInfo = null;
-            this.hud.showReplay(false);
-            if (this.view) {
-                this.view.restoreLivePositions();
-                this.view.rig.snap = true;
-            }
-            this.input.releaseAll();
         }
         pickQuality() {
             var _a, _b, _c, _d;
@@ -14139,19 +14059,6 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     this.hud.showBanner(e.ownGoal ? (0, index_js_2.t)('hud.ownGoal') : (0, index_js_2.t)('hud.goal'), 'goal', 1800);
                     this.hud.scoreFx(e.team, 1, true, this.reducedFx());
                     telegram_js_1.telegram.haptic(e.team === 0 ? 'success' : 'warning');
-                    if (!this.cfg.online && !this.cfg.demo) {
-                        const goalInfo = {
-                            team: e.team,
-                            scorerId: e.scorerId,
-                            goalZ: (e.team === 0 ? -1 : 1) * 22,
-                            ownGoal: e.ownGoal
-                        };
-                        setTimeout(() => {
-                            if (!this.disposed && !this.paused && this.sim && (this.sim.phase === 'celebrate' || this.sim.phase === 'countdown' || this.sim.phase === 'ended')) {
-                                this.startReplay(goalInfo);
-                            }
-                        }, 500);
-                    }
                     break;
                 case 'score':
                     if (e.dunk) {

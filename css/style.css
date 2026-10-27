@@ -19,8 +19,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#070b14}
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
-  margin: 0; height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text);
-  font-family: var(--font); overscroll-behavior: none; touch-action: none; position: fixed; inset: 0;
+  margin: 0; height: 100%; width: 100%; background: var(--bg); color: var(--text);
+  font-family: var(--font); overscroll-behavior: none; touch-action: pan-y;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 #stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; height: var(--tg-viewport-height, 100dvh); background: #070b14; }

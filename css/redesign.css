@@ -2912,11 +2912,11 @@ html.is-telegram {
     margin-bottom: 12px !important;
   }
   .fvh-wardrobe-avatar {
-    height: 110px !important;
-    max-width: 140px !important;
+    height: clamp(260px, 42vh, 340px) !important;
+    max-width: 280px !important;
   }
   .fvh-wardrobe-avatar svg {
-    max-height: 110px !important;
+    max-height: clamp(250px, 38vh, 310px) !important;
   }
   .fvh-equipped-list {
     margin: 8px 0 !important;

@@ -2090,7 +2090,12 @@
     skin_sunset: { h: 28, s: 0.95, lMult: 1.1, darkShorts: false, name: 'Sunset Gold', ru: 'Закатное Золото' },
     skin_hydro: { h: 175, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Hydro Striker', ru: 'Гидро Страйкер' },
     skin_mars: { h: 10, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Mars Rover', ru: 'Марсианский Ровер' },
-    skin_astronaut: { h: 215, s: 0.15, lMult: 1.3, darkShorts: true, name: 'Astronaut Kit', ru: 'Экипировка Астронавта' }
+    skin_astronaut: { h: 215, s: 0.15, lMult: 1.3, darkShorts: true, name: 'Astronaut Kit', ru: 'Экипировка Астронавта' },
+    skin_premium_black_gold: { h: 40, s: 0.9, lMult: 0.9, darkShorts: true, name: 'Premium Black & Gold', ru: 'Премиум Чёрно-Золотая' },
+    skin_neon_cyber: { h: 250, s: 0.9, lMult: 1.1, darkShorts: true, name: 'Neon Cyber', ru: 'Неоновый Кибер' },
+    skin_electric_blue: { h: 220, s: 0.9, lMult: 1.0, darkShorts: true, name: 'Electric Blue', ru: 'Электрический Синий' },
+    skin_crimson_elite: { h: 360, s: 0.9, lMult: 0.95, darkShorts: true, name: 'Crimson Elite', ru: 'Багровый Элит' },
+    skin_championship: { h: 50, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Championship Edition', ru: 'Чемпионская' }
   };
 
   var HERO_SKIN_CACHE = {};
@@ -2330,6 +2335,16 @@
       primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'hazard';
     } else if (id === 'skin_astronaut') {
       primary = '#1e293b'; secondary = '#94a3b8'; accent = '#38bdf8'; trim = '#facc15'; number = '01'; pattern = 'space';
+    } else if (id === 'skin_premium_black_gold') {
+      primary = '#0a0a0a'; secondary = '#78350f'; accent = '#fef08a'; trim = '#f59e0b'; number = '10'; pattern = 'stripes';
+    } else if (id === 'skin_neon_cyber') {
+      primary = '#1e1b4b'; secondary = '#9333ea'; accent = '#22d3ee'; trim = '#22d3ee'; number = '10'; pattern = 'circuit';
+    } else if (id === 'skin_electric_blue') {
+      primary = '#1d4ed8'; secondary = '#3b82f6'; accent = '#60a5fa'; trim = '#60a5fa'; number = '10'; pattern = 'plain';
+    } else if (id === 'skin_crimson_elite') {
+      primary = '#991b1b'; secondary = '#b91c1c'; accent = '#fef08a'; trim = '#f59e0b'; number = '7'; pattern = 'stripes';
+    } else if (id === 'skin_championship') {
+      primary = '#0f172a'; secondary = '#eab308'; accent = '#facc15'; trim = '#eab308'; number = '1'; pattern = 'royal';
     }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +

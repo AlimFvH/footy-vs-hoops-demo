@@ -88,12 +88,8 @@ console.log('=== FOOTY vs HOOPS: Critical Gameplay Fixes & Final Polish Test Sui
     assert(gameCode.includes('this.game.start(cfg, false);'), 'App.launch must not hold match simulation');
   });
 
-  // Test 5: Goal replay triggered on football goals only, with score non-duplication
-  runTest('5. Goal replay triggers only in football mode, with score non-duplication and timer pause', () => {
-    assert(gameCode.includes("if (this.sim.mode !== 'footy')"), 'startReplay must strictly reject non-footy modes');
-    assert(gameCode.includes("sim.phase === 'playing'") && gameCode.includes("this.recordReplaySnapshot()"), 'Replay snapshots must only record during active playing phase');
-    assert(gameCode.includes('if (this.replayActive) {\n                    this.stepReplay(dt);\n                    this.adapt(dt);\n                    return;\n                }'), 'Replay playback must bypass live sim.step and pause game timer');
-  });
+  // Goal replay removed
+  // Test 5 (removed)
 
   // Test 6: Goal celebration animations for scorer and conceding team
   runTest('6. Goal celebration animations for scorer (fist pump/jump) and conceding team (defeated slump)', () => {
@@ -103,14 +99,9 @@ console.log('=== FOOTY vs HOOPS: Critical Gameplay Fixes & Final Polish Test Sui
     assert(gameCode.includes('crouch = 0.28;'), 'Conceding team character must slump/crouch in disappointment');
   });
 
-  // Test 7: Match continuation from center kickoff after celebration / replay
-  runTest('7. Match continues cleanly from center kickoff after celebration and replay', () => {
-    assert(gameCode.includes('this.view.restoreLivePositions()'), 'stopReplay must restore live positions to 3D scene');
-    assert(gameCode.includes('this.hud.showReplay(false)'), 'stopReplay must hide replay overlay');
-    assert(gameCode.includes('this.replayActive = false;'), 'stopReplay must deactivate replayActive flag');
-  });
+  // Test 7 (removed)
 
-  // Test 8: Camera framing on iPhone portrait (aspect < 0.9 => tactical d ~ 62..68, fitHalfZ = 18.5)
+  // Test 8: Camera framing on iPhone portrait
   runTest('8. Camera framing on iPhone portrait has fitHalfZ = 18.5, fov = 42, bounded hx', () => {
     assert(gameCode.includes('this.fitHalfZ = mode === \'footy\' ? (aspect < 0.9 ? 18.5 : 13.5) : 8.4;'), 'CameraRig must configure mobile portrait fitHalfZ to 18.5');
     assert(gameCode.includes('this.cam.fov = mode === \'footy\' ? 42 : 40;'), 'CameraRig must set footy FOV to 42');
