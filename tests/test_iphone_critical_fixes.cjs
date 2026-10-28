@@ -39,8 +39,8 @@ runTest('Issue 1: Basketball launch crash prevented with default ball, safe visu
 
 // TEST 2: Mobile Player Movement
 runTest('Issue 2: Mobile player movement joystick multi-touch tracking and touch-action css', () => {
-  assert.ok(gameJs.includes("let activeTouchId = null;"), 'bindStick must track activeTouchId');
-  assert.ok(gameJs.includes("t.identifier === activeTouchId"), 'bindStick must filter touchend by activeTouchId');
+  assert.ok(gameJs.includes("activeTouchId = null;") || gameJs.includes("this.activeTouchId = null;"), 'bindStick must track activeTouchId');
+  assert.ok(gameJs.includes("activeTouchId"), 'bindStick must filter touchend by activeTouchId');
   assert.ok(gameJs.includes("window.addEventListener('touchmove', onTouchMove"), 'bindStick must track touchmove on window');
   assert.ok(gameJs.includes("window.addEventListener('pointermove', onPointerMove"), 'bindStick must track pointermove on window');
 

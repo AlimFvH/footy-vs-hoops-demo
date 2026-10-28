@@ -12745,12 +12745,13 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         }
         bindStick() {
             const z = this.stickZone;
-            let activeTouchId = null;
+            this.activeTouchId = null;
+            this.stickPointer = -1;
             const end = (e) => {
                 if (e && e.pointerId !== undefined && e.pointerId !== this.stickPointer && this.stickPointer !== -1)
                     return;
                 this.stickPointer = -1;
-                activeTouchId = null;
+                this.activeTouchId = null;
                 this.input.setStick(0, 0);
                 this.stickKnob.style.transform = 'translate(-50%,-50%)';
                 this.stickBase.classList.remove('active');
@@ -12760,6 +12761,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
 
             // 1. Pointer Events with Window tracking
             z.addEventListener('pointerdown', (e) => {
+                if (this.root.hidden) return;
                 e.preventDefault();
                 e.stopPropagation();
                 this.stickPointer = e.pointerId;
@@ -12777,10 +12779,9 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             }, { passive: false });
 
             const onPointerMove = (e) => {
-                if (e.pointerId === this.stickPointer && this.stickPointer !== -1) {
-                    if (e.cancelable) e.preventDefault();
-                    this.moveStick(e);
-                }
+                if (this.root.hidden || this.stickPointer === -1 || e.pointerId !== this.stickPointer) return;
+                if (e.cancelable) e.preventDefault();
+                this.moveStick(e);
             };
             z.addEventListener('pointermove', onPointerMove, { passive: false });
             window.addEventListener('pointermove', onPointerMove, { passive: false });
@@ -12792,10 +12793,10 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
 
             // 2. Direct Touch Events with specific Touch ID tracking (bulletproof on iOS WebKit)
             z.addEventListener('touchstart', (e) => {
-                if (activeTouchId !== null) return;
+                if (this.root.hidden || this.activeTouchId !== null) return;
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
-                    activeTouchId = t.identifier;
+                    this.activeTouchId = t.identifier;
                     this.stickPointer = t.identifier;
                     e.preventDefault();
                     e.stopPropagation();
@@ -12810,10 +12811,10 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             }, { passive: false });
 
             const onTouchMove = (e) => {
-                if (activeTouchId === null) return;
+                if (this.root.hidden || this.activeTouchId === null) return;
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
-                    if (t.identifier === activeTouchId) {
+                    if (t.identifier === this.activeTouchId) {
                         if (e.cancelable) e.preventDefault();
                         this.moveStick(t);
                         break;
@@ -12824,10 +12825,10 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             window.addEventListener('touchmove', onTouchMove, { passive: false });
 
             const onTouchEnd = (e) => {
-                if (activeTouchId === null) return;
+                if (this.activeTouchId === null) return;
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     const t = e.changedTouches[i];
-                    if (t.identifier === activeTouchId) {
+                    if (t.identifier === this.activeTouchId) {
                         end(e);
                         break;
                     }
@@ -12903,6 +12904,9 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         }
         show(on) {
             this.root.hidden = !on;
+            if (!on) {
+                this.resetState();
+            }
         }
         showBanner(text, kind = 'info', ms = 1400) {
             this.banner.textContent = text;
@@ -12998,11 +13002,17 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 this.boostBtn.classList.remove('active');
                 this.boostLabel.textContent = 'TURBO';
             }
-            if (showFps) {
+            if (showFps || (this.cfg && this.cfg.online)) {
                 this.frames++;
                 this.lastFpsT += dtReal;
                 if (this.lastFpsT >= 0.5) {
-                    this.fps.textContent = `${Math.round(this.frames / this.lastFpsT)} fps`;
+                    const fpsVal = Math.round(this.frames / this.lastFpsT);
+                    const rtt = (this.cfg && this.cfg.online && this.cfg.online.rtt) || 0;
+                    if (rtt > 0) {
+                        this.fps.textContent = `${fpsVal} fps · ${rtt}ms`;
+                    } else if (showFps) {
+                        this.fps.textContent = `${fpsVal} fps`;
+                    }
                     this.frames = 0;
                     this.lastFpsT = 0;
                 }
@@ -13047,13 +13057,14 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             this.boostLabel.textContent = 'TURBO';
         }
         resetState() {
+            this.activeTouchId = null;
+            this.stickPointer = -1;
             this.resetBoost();
             this.hideBanner();
             this.cache = {};
             this.power.classList.remove('show');
             this.input.setStick(0, 0);
             this.input.releaseAll();
-            this.stickPointer = -1;
             this.stickBase.classList.remove('active');
             this.stickBase.style.left = '';
             this.stickBase.style.top = '';
@@ -13355,7 +13366,7 @@ define("core/telegram", ["require", "exports"], function (require, exports) {
             }
         },
         leaveMatch() {
-            var _a;
+            var _a, _b;
             try {
                 (_a = wa === null || wa === void 0 ? void 0 : wa.disableClosingConfirmation) === null || _a === void 0 ? void 0 : _a.call(wa);
                 if (wa === null || wa === void 0 ? void 0 : wa.BackButton) {
@@ -13364,8 +13375,10 @@ define("core/telegram", ["require", "exports"], function (require, exports) {
                     backCb = null;
                     wa.BackButton.hide();
                 }
+                if (wa === null || wa === void 0 ? void 0 : wa.exitFullscreen)
+                    (_b = wa.exitFullscreen) === null || _b === void 0 ? void 0 : _b.call(wa);
             }
-            catch (_b) {
+            catch (_c) {
             }
         },
         openLink(url) {
@@ -13851,7 +13864,8 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
         guestUpdate(sim, nowMs, input) {
             const edge = input.shootPressed || input.shootReleased || input.tacklePressed || input.tackleReleased || input.passPressed;
             const sig = [input.moveX.toFixed(2), input.moveZ.toFixed(2), +input.sprint, +input.shootHeld, +input.tackleHeld].join();
-            if (edge || sig !== this.lastSent || nowMs - this.lastSentAt > 50) {
+            const timeSinceLast = nowMs - this.lastSentAt;
+            if (edge || (sig !== this.lastSent && timeSinceLast >= 32) || timeSinceLast > 90) {
                 this.lastSent = sig;
                 this.lastSentAt = nowMs;
                 this.inSeq = (this.inSeq || 0) + 1;

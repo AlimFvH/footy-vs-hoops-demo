@@ -74,8 +74,13 @@ html.is-telegram {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain !important;
+  height: 100% !important;
+  height: 100dvh !important;
   box-sizing: border-box;
   padding: calc(var(--safe-top) + 10px) calc(var(--sar) + 12px) calc(var(--safe-bottom) + 95px) calc(var(--sal) + 12px);
 }
@@ -887,7 +892,13 @@ html.is-telegram {
   .screen.menu-bg {
     width: 100% !important;
     max-width: 100% !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: contain !important;
+    height: 100% !important;
+    height: 100dvh !important;
     box-sizing: border-box !important;
     padding: calc(var(--safe-top) + 8px) 10px calc(var(--safe-bottom) + 95px) 10px !important;
   }

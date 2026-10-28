@@ -3669,21 +3669,22 @@ server.on('upgrade', (req, socket, head) => {
           const peerSocket = state.wsClients[matchId] && state.wsClients[matchId][targetRole];
           if (peerSocket && !peerSocket.destroyed && peerSocket.writable) {
             peerSocket.write(makeWsTextFrame(text));
+          } else {
+            // 2. Only enqueue into HTTP relay queue for late pollers if peer is NOT on WebSocket
+            if (!state.relays[matchId]) {
+              state.relays[matchId] = { host: [], guest: [], lastHostTick: Date.now(), lastGuestTick: Date.now() };
+            }
+            const relay = state.relays[matchId];
+            if (role === 'host') relay.lastHostTick = Date.now();
+            else relay.lastGuestTick = Date.now();
+            relay[targetRole].push({
+              packet: packet,
+              type: packet.k || packet.type,
+              data: packet.s || packet.i || packet.l || packet.data || packet,
+              timestamp: Date.now()
+            });
+            if (relay[targetRole].length > 30) relay[targetRole].shift();
           }
-          // 2. Also enqueue into HTTP relay queue for late pollers
-          if (!state.relays[matchId]) {
-            state.relays[matchId] = { host: [], guest: [], lastHostTick: Date.now(), lastGuestTick: Date.now() };
-          }
-          const relay = state.relays[matchId];
-          if (role === 'host') relay.lastHostTick = Date.now();
-          else relay.lastGuestTick = Date.now();
-          relay[targetRole].push({
-            packet: packet,
-            type: packet.k || packet.type,
-            data: packet.s || packet.i || packet.l || packet.data || packet,
-            timestamp: Date.now()
-          });
-          if (relay[targetRole].length > 30) relay[targetRole].shift();
         } catch (e) {}
       }
     }

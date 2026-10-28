@@ -6177,54 +6177,25 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
 
-    // 0. Sport Faction Switcher [ ⚽ FOOTY (Футбол) | 🏀 HOOPS (Баскетбол) ]
-    var sportSeg = document.createElement('div');
-    sportSeg.className = 'seg fvh-shop-sport-switcher';
-    sportSeg.style.marginBottom = '12px';
-    sportSeg.style.display = 'grid';
-    sportSeg.style.gridTemplateColumns = '1fr 1fr';
-    sportSeg.style.gap = '6px';
-
-    var footySportBtn = document.createElement('button');
-    footySportBtn.innerHTML = '⚽ FOOTY <small style="opacity:0.8;font-size:11px;">(' + (getActiveLang() === 'ru' ? 'Футбол' : 'Football') + ')</small>';
-    if (shopSport === 'footy') footySportBtn.className = 'on';
-
-    var hoopsSportBtn = document.createElement('button');
-    hoopsSportBtn.innerHTML = '🏀 HOOPS <small style="opacity:0.8;font-size:11px;">(' + (getActiveLang() === 'ru' ? 'Баскетбол' : 'Basketball') + ')</small>';
-    if (shopSport === 'hoops') hoopsSportBtn.className = 'on';
-
-    function updateShopHeader() {
-      var subEl = titleBox.querySelector('small');
-      if (subEl) subEl.textContent = tr(shopSport === 'footy' ? 'storeSubFooty' : 'storeSubHoops');
-    }
-
-    footySportBtn.onclick = function () {
-      if (shopSport === 'footy') return;
-      shopSport = 'footy';
-      footySportBtn.className = 'on';
-      hoopsSportBtn.className = '';
-      if (curCategory === 'balls_hoops') curCategory = 'balls_footy';
-      app.audio.play('click');
-      updateShopHeader();
-      renderCategoryTabs();
-      renderShop();
-    };
-
-    hoopsSportBtn.onclick = function () {
-      if (shopSport === 'hoops') return;
-      shopSport = 'hoops';
-      hoopsSportBtn.className = 'on';
-      footySportBtn.className = '';
-      if (curCategory === 'balls_footy') curCategory = 'balls_hoops';
-      app.audio.play('click');
-      updateShopHeader();
-      renderCategoryTabs();
-      renderShop();
-    };
-
-    sportSeg.appendChild(footySportBtn);
-    sportSeg.appendChild(hoopsSportBtn);
-    body.appendChild(sportSeg);
+    // 0. Locked Faction Shop Header (Strictly displays player's faction items; other faction selector hidden)
+    var factionBadge = document.createElement('div');
+    factionBadge.className = 'fvh-shop-faction-badge ' + shopSport;
+    factionBadge.style.display = 'flex';
+    factionBadge.style.alignItems = 'center';
+    factionBadge.style.justifyContent = 'space-between';
+    factionBadge.style.padding = '8px 14px';
+    factionBadge.style.marginBottom = '12px';
+    factionBadge.style.borderRadius = '12px';
+    factionBadge.style.background = (shopSport === 'footy' ? 'rgba(0, 240, 255, 0.08)' : 'rgba(249, 115, 22, 0.08)');
+    factionBadge.style.border = (shopSport === 'footy' ? '1.5px solid rgba(0, 240, 255, 0.3)' : '1.5px solid rgba(249, 115, 22, 0.3)');
+    factionBadge.innerHTML =
+      '<span style="font-size:12px;font-weight:900;letter-spacing:0.5px;color:#fff;text-transform:uppercase;">' +
+      (shopSport === 'footy' ? '⚽ FOOTY BOUTIQUE' : '🏀 HOOPS BOUTIQUE') +
+      '</span>' +
+      '<span style="font-size:11px;font-weight:700;color:var(--text-muted);">' +
+      (shopSport === 'footy' ? (getActiveLang() === 'ru' ? 'Экипировка для футбола' : 'Football Gear') : (getActiveLang() === 'ru' ? 'Экипировка для баскетбола' : 'Basketball Gear')) +
+      '</span>';
+    body.appendChild(factionBadge);
 
     // 1. Category Selector Tabs (Skins, Balls for chosen sport, FvH Coins)
     var catSeg = document.createElement('div');
@@ -6511,12 +6482,12 @@
           return it.category === 'skins' && it.mode === shopSport;
         }
         if (curCategory === 'balls_footy') {
-          return it.category === 'balls_footy';
+          return it.category === 'balls_footy' && shopSport === 'footy';
         }
         if (curCategory === 'balls_hoops') {
-          return it.category === 'balls_hoops';
+          return it.category === 'balls_hoops' && shopSport === 'hoops';
         }
-        return it.category === curCategory;
+        return it.category === curCategory && (it.mode ? it.mode === shopSport : true);
       });
 
       if (filtered.length === 0) {
@@ -9858,13 +9829,10 @@
     };
     screen.appendChild(seasonCard);
 
-    // 6. Dedicated Official Social Channels Section (Item 6)
-    screen.appendChild(createOfficialSocialsCard(app));
-
     // Bottom Spacer for iOS WebKit Telegram Mini App safe scrolling
     screen.appendChild(createScrollBottomSpacer());
 
-    // 7. Unified Persistent Bottom Navigation
+    // Unified Persistent Bottom Navigation
     screen.appendChild(createSharedBottomNav('menu', app));
 
     // Show screen
