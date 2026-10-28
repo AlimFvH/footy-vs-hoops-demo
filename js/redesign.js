@@ -8313,9 +8313,32 @@
           isStarted = true;
           if (relayFallbackTimer) clearTimeout(relayFallbackTimer);
           var rLink = new RelayLink(roomCode, role);
-          var info = { role: role, mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, myName: myName, oppName: oppName, matchId: roomCode };
-          var session = new sessionMod.OnlineSession(rLink, info);
-          onConnect(session);
+
+          var launchSession = function (effMode, effSeed, effArena) {
+            var finalMode = effMode || mode;
+            var finalSeed = (effSeed !== undefined && effSeed !== null) ? effSeed : seed;
+            var finalArena = effArena || arenaId || (finalMode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch');
+            var info = { role: role, mode: finalMode, minutes: minutes, seed: finalSeed, arenaId: finalArena, myName: myName, oppName: oppName, matchId: roomCode };
+            var session = new sessionMod.OnlineSession(rLink, info);
+            onConnect(session);
+          };
+
+          if (role === 'guest') {
+            // Authoritative server room sync to prevent sport mismatch
+            fetch(getApiUrl('/api/room/status?code=' + encodeURIComponent(roomCode)))
+              .then(function (r) { return r.json(); })
+              .then(function (st) {
+                if (st && st.room && st.room.mode) {
+                  launchSession(st.room.mode, st.room.seed, st.room.arenaId);
+                } else {
+                  launchSession(mode, seed, arenaId);
+                }
+              }).catch(function () {
+                launchSession(mode, seed, arenaId);
+              });
+          } else {
+            launchSession(mode, seed, arenaId);
+          }
         }
 
         // Try WebRTC PeerLink first
@@ -9807,7 +9830,6 @@
 
     var badgeText = isFooty ? '⚽ ' + tr('teamFootyTitle') : '🏀 ' + tr('teamHoopsTitle');
     var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY';
-    var switchBtnText = lang === 'ru' ? '🔄 Сменить' : '🔄 Switch';
 
     // Equipped cosmetics labels
     var equippedJersey = isFooty
@@ -9824,10 +9846,7 @@
 
     heroCard.innerHTML =
       '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:8px;flex-wrap:wrap;">' +
-      '  <div style="display:flex;align-items:center;gap:6px;">' +
-      '    <span class="fvh-hero-badge ' + curChar + '" style="font-size:12px;font-weight:900;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;">' + badgeText + '</span>' +
-      '    <button type="button" class="fvh-btn-switch-team" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#cbd5e1;font-size:11px;font-weight:700;border-radius:14px;padding:3px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' + switchBtnText + '</button>' +
-      '  </div>' +
+      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
       '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
       '</div>' +
       '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:6px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#cbd5e1;box-sizing:border-box;">' +
@@ -9838,19 +9857,9 @@
       '    <span>' + (isFooty ? '⚽' : '🏀') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
       '  </div>' +
       '</div>' +
-      '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:9px 8px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
-      '  <button type="button" class="btn fvh-solo-profile-pill" style="padding:9px 8px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👤</span> <span>' + tr('profile') + '</span></button>' +
+      '<div class="fvh-solo-actions-row" style="width:100%;">' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="width:100%;padding:10px 14px;font-size:12.5px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
       '</div>';
-
-    var switchBtn = heroCard.querySelector('.fvh-btn-switch-team');
-    if (switchBtn) {
-      switchBtn.onclick = function (e) {
-        e.stopPropagation();
-        app.audio.play('click');
-        showTeamSelectionModal(app, true);
-      };
-    }
 
     heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
       e.stopPropagation();
@@ -9861,14 +9870,6 @@
         app.openCharacterLocker('hoops');
       }
     };
-    var soloProfBtn = heroCard.querySelector('.fvh-solo-profile-pill');
-    if (soloProfBtn) {
-      soloProfBtn.onclick = function (e) {
-        e.stopPropagation();
-        app.audio.play('click');
-        app.go('profile');
-      };
-    }
 
     stage.appendChild(heroCard);
     screen.appendChild(stage);

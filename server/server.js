@@ -638,8 +638,8 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      // Check if there is an eligible opponent waiting in the queue (no self-matches, cross-discipline FOOTY vs HOOPS supported)
-      const opponentIdx = state.queue.findIndex(q => q.playerId !== playerId);
+      // Check if there is an eligible opponent waiting in the queue (exact sport mode match to guarantee synchronized gameplay)
+      const opponentIdx = state.queue.findIndex(q => q.playerId !== playerId && q.mode === mode);
 
       if (opponentIdx !== -1) {
         // Real Opponent Found! Pair them into the same game session
@@ -647,10 +647,8 @@ const server = http.createServer((req, res) => {
         const matchId = 'FVH-M' + crypto.randomBytes(4).toString('hex').toUpperCase();
         const seed = (Math.random() * 1e9) | 0;
 
-        // When pairing cross-discipline (e.g. Footy vs Hoops), resolve to one authoritative valid discipline
-        const authDiscipline = (opponent.mode === mode)
-          ? mode
-          : ((opponent.mode === 'hoops' || opponent.mode === 'footy') ? opponent.mode : (mode === 'hoops' ? 'hoops' : 'footy'));
+        // Authoritative discipline guaranteed to match requested mode
+        const authDiscipline = mode;
 
         const matchInfo = {
           matchId,

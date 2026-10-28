@@ -1956,7 +1956,14 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             this.edges2 = { shootPressed: false, shootReleased: false, tacklePressed: false, tackleReleased: false, pass: false };
             this.difficulty = opts.difficulty || 'normal';
             this.ai = exports.DIFFICULTY[this.difficulty] || exports.DIFFICULTY.normal;
-            this.boosts = (_b = opts.boosts) !== null && _b !== void 0 ? _b : types_js_1.NO_BOOSTS;
+            const defB = { speed: 1, staminaRegen: 1, tackleCost: 1, shotPower: 1, accuracy: 0, coins: 1 };
+            this.boosts = Object.assign({}, defB, (typeof types_js_1 !== 'undefined' && types_js_1.NO_BOOSTS) || {}, opts.boosts || {});
+            if (typeof this.boosts.speed !== 'number' || isNaN(this.boosts.speed)) this.boosts.speed = 1;
+            if (typeof this.boosts.staminaRegen !== 'number' || isNaN(this.boosts.staminaRegen)) this.boosts.staminaRegen = 1;
+            if (typeof this.boosts.tackleCost !== 'number' || isNaN(this.boosts.tackleCost)) this.boosts.tackleCost = 1;
+            if (typeof this.boosts.shotPower !== 'number' || isNaN(this.boosts.shotPower)) this.boosts.shotPower = 1;
+            if (typeof this.boosts.accuracy !== 'number' || isNaN(this.boosts.accuracy)) this.boosts.accuracy = 0;
+            if (typeof this.boosts.coins !== 'number' || isNaN(this.boosts.coins)) this.boosts.coins = 1;
             this.turboBoostActive = false;
             this.turboBoostTimer = 0;
             this.matchSeconds = opts.matchSeconds || 60;
@@ -2153,7 +2160,8 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                     a.stamina = Math.max(0, a.stamina - P.staminaDrain * h);
                 }
                 else if (a.tackle.phase !== 'lunge' && a.tackle.phase !== 'charging') {
-                    const reg = P.staminaRegen * (a.human ? this.boosts.staminaRegen : 1);
+                    const bReg = (this.boosts && typeof this.boosts.staminaRegen === 'number' && !isNaN(this.boosts.staminaRegen)) ? this.boosts.staminaRegen : 1;
+                    const reg = P.staminaRegen * (a.human ? bReg : 1);
                     a.stamina = Math.min(100, a.stamina + reg * h);
                 }
             }
@@ -2181,7 +2189,8 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                     mag = 0;
                 }
                 const turboMul = (a.human && this.turboBoostActive) ? 1.35 : 1;
-                let speed = P.baseSpeed * a.speedMul * (a.human ? this.boosts.speed * turboMul : this.ai.speed);
+                const bSpeed = (this.boosts && typeof this.boosts.speed === 'number' && !isNaN(this.boosts.speed)) ? this.boosts.speed : 1;
+                let speed = P.baseSpeed * a.speedMul * (a.human ? bSpeed * turboMul : (this.ai && typeof this.ai.speed === 'number' ? this.ai.speed : 0.8));
                 if (a.role === 'keeper')
                     speed = this.keeperBaseSpeed(a);
                 const sprinting = a.sprint && a.stamina > 2 && mag > 0.2;
@@ -2325,7 +2334,8 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
         beginLunge(a, power, aim) {
             const tp = this.P.tackle;
             const t = a.tackle;
-            const mult = a.human ? this.boosts.tackleCost : 1;
+            const bTackle = (this.boosts && typeof this.boosts.tackleCost === 'number' && !isNaN(this.boosts.tackleCost)) ? this.boosts.tackleCost : 1;
+            const mult = a.human ? bTackle : 1;
             let cost = power === 0 ? tp.quickCost : tp.chargedCost + tp.chargedExtra * power;
             cost *= mult;
             if (a.stamina < cost) {
@@ -2737,7 +2747,8 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             if (opp)
                 q -= (1 - opp.d / 3) * 0.3;
             q -= (0, math_js_4.clamp)((dist - 5) / 18, 0, 0.25);
-            q += this.boosts.accuracy * 0.35;
+            const bAcc = (this.boosts && typeof this.boosts.accuracy === 'number' && !isNaN(this.boosts.accuracy)) ? this.boosts.accuracy : 0;
+            q += bAcc * 0.35;
             return (0, math_js_4.clamp)(q, 0, 1);
         }
         launchShot(a, errX, errZ, dunk = false) {
@@ -3065,8 +3076,9 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const distFromPlayer = o.radius + b.r + 0.12 + 0.18 * (speed > 1 ? Math.sin(b.dribblePhase) * 0.5 + 0.5 : 0);
             const nx = o.x + Math.sin(b.orbitAngle) * distFromPlayer;
             const nz = o.z + Math.cos(b.orbitAngle) * distFromPlayer;
-            b.vx = (nx - b.x) / h;
-            b.vz = (nz - b.z) / h;
+            const safeH = Math.max(0.0001, h);
+            b.vx = (nx - b.x) / safeH;
+            b.vz = (nz - b.z) / safeH;
             b.x = nx;
             b.z = nz;
             b.vy = 0;
@@ -3834,8 +3846,9 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             b.orbitAngle += (0, math_js_5.clamp)(dAngle, -maxTurnSpeed, maxTurnSpeed);
             const nx = o.x + Math.sin(b.orbitAngle) * off;
             const nz = o.z + Math.cos(b.orbitAngle) * off;
-            b.vx = (nx - b.x) / h;
-            b.vz = (nz - b.z) / h;
+            const safeH = Math.max(0.0001, h);
+            b.vx = (nx - b.x) / safeH;
+            b.vz = (nz - b.z) / safeH;
             b.x = nx;
             b.z = nz;
             b.y = b.r;

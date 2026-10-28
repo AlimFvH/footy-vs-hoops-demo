@@ -56,7 +56,7 @@ console.log('✓ Verified: Dominant Play button, secondary hub styling, and mobi
 // 3. Main Menu Redesign Hierarchy & Components
 console.log('\n[TEST 3] Verifying Main Menu structure in renderRedesignedMenu...');
 // Check that renderRedesignedMenu includes Top Bar, Faction Hero Card, Play CTA, Secondary Hub, Ticker
-assert.strictEqual(redesignJs.includes('fvh-btn-switch-team'), true, 'Team switch button must exist in hero card');
+assert.strictEqual(redesignJs.includes('fvh-btn-switch-team'), false, 'Team switch button must be removed from hero card as requested');
 assert.strictEqual(redesignJs.includes('fvh-equipped-preview-bar'), true, 'Equipped cosmetics preview bar must exist in hero card');
 assert.strictEqual(redesignJs.includes('fvh-secondary-hub'), true, 'Secondary hub must be rendered in main menu');
 assert.strictEqual(redesignJs.includes('fvh-hub-shop'), true, 'Shop quick tile must exist in main menu');
