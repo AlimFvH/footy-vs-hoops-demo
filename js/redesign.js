@@ -8288,6 +8288,15 @@
     if (this.ws) {
       try { this.ws.close(); } catch (e) {}
     }
+    if (this.matchId) {
+      try {
+        fetch(getApiUrl('/api/room/cancel'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: this.matchId, role: this.role })
+        }).catch(function () {});
+      } catch (e) {}
+    }
     if (this.h.onClose) this.h.onClose('local');
   };
   window.RelayLink = RelayLink;
@@ -9808,17 +9817,13 @@
       '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
       '</div>' +
       '<div class="fvh-topbar-stats">' +
-      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
-      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
-      '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: curChar, extraClass: 'mini-avatar' }) + '</span><span class="fvh-profile-name">' + escapeHtml(shortName) + '</span><span class="fvh-profile-lvl" style="font-size:10px;opacity:0.75;margin-left:3px;">Lv.' + playerLevel + '</span></button>' +
+      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' <span>' + (d.coins || 0) + '</span></button>' +
       '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
       '</div>';
     screen.appendChild(topbar);
 
     topbar.querySelector('.fvh-topbar-brand').onclick = function () { app.showMenu(); };
     topbar.querySelector('#fvh-btn-coins').onclick = function () { app.audio.play('click'); app.go('shop'); };
-    topbar.querySelector('#fvh-btn-leaderboard').onclick = function () { app.audio.play('click'); app.go('leaderboard'); };
-    topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
 
     // 2. Faction Hero Card: Shows chosen faction, rival, team switcher, equipped cosmetics, locker & profile
@@ -9844,16 +9849,21 @@
       equippedBall = getItemLabelById(equippedBall, equippedBall);
     }
 
+    var charPortraitHtml = getCharacterDisplayHtml(curChar, null, { showJerseyTag: false });
+
     heroCard.innerHTML =
-      '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:8px;flex-wrap:wrap;">' +
+      '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:6px;">' +
       '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
       '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
       '</div>' +
-      '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:6px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#cbd5e1;box-sizing:border-box;">' +
-      '  <div style="display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+      '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
+      charPortraitHtml +
+      '</div>' +
+      '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
+      '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
       '    <span>' + (isFooty ? '👕' : '🎽') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedJersey) + '</strong>' +
       '  </div>' +
-      '  <div style="display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+      '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
       '    <span>' + (isFooty ? '⚽' : '🏀') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
       '  </div>' +
       '</div>' +

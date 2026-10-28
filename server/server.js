@@ -629,12 +629,16 @@ const server = http.createServer((req, res) => {
       const now = Date.now();
       state.queue = state.queue.filter(q => q.playerId !== playerId && (now - q.timestamp < 30000));
 
-      // Clean up previous active matches for this player that are already completed or abandoned
+      // Clean up previous active matches for this player so old matches NEVER hijack new matchmaking
       for (const mId in state.matches) {
         const m = state.matches[mId];
         const isParticipant = (m.host && m.host.playerId === playerId) || (m.guest && m.guest.playerId === playerId);
-        if (isParticipant && (m.status === 'completed' || m.status === 'abandoned' || state.completedMatches[mId] || (now - m.createdAt > 300000))) {
+        if (isParticipant) {
+          m.status = 'abandoned';
+          state.completedMatches[mId] = true;
           delete state.matches[mId];
+          delete state.signals[mId];
+          delete state.relays[mId];
         }
       }
 
@@ -708,13 +712,22 @@ const server = http.createServer((req, res) => {
     const playerId = parsedUrl.query.playerId;
     const now = Date.now();
 
-    // Check if player is part of an active (non-completed) match
+    // Retrieve player's queued ticket to verify requested discipline
+    const myTicket = state.queue.find(q => q.ticketId === ticketId || q.playerId === playerId);
+    const expectedMode = myTicket ? myTicket.mode : null;
+
+    // Check if player is part of an active (non-completed) match for the requested discipline
     for (const mId in state.matches) {
       const m = state.matches[mId];
       if (m.status !== 'playing' || state.completedMatches[mId]) {
         continue;
       }
+      // Strictly prevent returning a match of a different sport discipline
+      if (expectedMode && m.mode !== expectedMode) {
+        continue;
+      }
       if (m.host && m.host.playerId === playerId) {
+        state.queue = state.queue.filter(q => q.playerId !== playerId && q.ticketId !== ticketId);
         return sendJson(res, 200, {
           ok: true,
           status: 'matched',
@@ -728,6 +741,7 @@ const server = http.createServer((req, res) => {
           opponent: m.guest
         });
       } else if (m.guest && m.guest.playerId === playerId) {
+        state.queue = state.queue.filter(q => q.playerId !== playerId && q.ticketId !== ticketId);
         return sendJson(res, 200, {
           ok: true,
           status: 'matched',
@@ -798,6 +812,18 @@ const server = http.createServer((req, res) => {
 
       const playerId = String(data.hostId || data.playerId || 'host_' + Math.random().toString(36).slice(2, 6));
       const playerName = String(data.hostName || data.playerName || 'Host Athlete');
+
+      // Clean up any old rooms or matches created by this host
+      for (const oldCode in state.rooms) {
+        const r = state.rooms[oldCode];
+        if (r && r.host && r.host.playerId === playerId) {
+          delete state.rooms[oldCode];
+          delete state.matches[oldCode];
+          delete state.signals[oldCode];
+          delete state.relays[oldCode];
+        }
+      }
+
       const mode = (data.mode === 'hoops') ? 'hoops' : 'footy';
       const char = data.character || data.char || mode;
       const minutes = Math.max(1, Math.min(5, Number(data.minutes) || 2));
