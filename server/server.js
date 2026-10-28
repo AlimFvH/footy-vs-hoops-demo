@@ -2659,6 +2659,7 @@ const server = http.createServer((req, res) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
       const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
       const target = String(data.target || 'channel').trim(); // 'channel' or 'chat'
+      const questId = String(data.questId || (target === 'chat' ? 'q_sub_chat' : 'q_sub_tg')).trim();
       const tokenResult = resolveTelegramBotToken();
       if (!tokenResult.ok) {
         return sendJson(res, 500, { ok: false, error: 'bot_not_configured', verified: false, message: 'Telegram bot service is not configured' });
@@ -2685,7 +2686,6 @@ const server = http.createServer((req, res) => {
           let xp = undefined;
           if (isMember && data.playerId && (data.claim === true || data.claimReward === true)) {
             const player = getPlayer(data.playerId);
-            const questId = 'q_sub_tg';
             if (player.claimedQuests.includes(questId)) {
               return sendJson(res, 400, { ok: false, error: 'quest_already_claimed', message: 'Quest already claimed', verified: true });
             }
@@ -2704,18 +2704,70 @@ const server = http.createServer((req, res) => {
             verified: isMember,
             status: status,
             target: target,
+            questId: questId,
             claimed: claimed,
             coins: coins,
             xp: xp
           });
         }
         // If chat member check returns error or user left
-        return sendJson(res, 200, { ok: true, verified: false, status: (tgData && tgData.result && tgData.result.status) || 'left', target });
+        return sendJson(res, 200, { ok: true, verified: false, status: (tgData && tgData.result && tgData.result.status) || 'left', target, questId });
       } catch (fetchErr) {
         // Fallback gracefully if Telegram API is unreachable from local node
         console.warn('Telegram getChatMember check timeout/error:', fetchErr.message);
         return sendJson(res, 502, { ok: false, error: 'telegram_api_error', verified: false, message: 'Telegram API verification failed or timed out' });
       }
+    });
+  }
+
+  // Dedicated Claim Social Tasks Endpoint
+  if (pathname === '/api/tasks/claim-social' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
+      const playerId = String(data.playerId || '').trim();
+      const questId = String(data.questId || '').trim();
+      const ALLOWED_SOCIAL_TASKS = ['q_sub_tg', 'q_sub_chat', 'q_sub_insta', 'q_sub_x', 'q_sub_yt', 'q_sub_tiktok'];
+
+      if (!playerId || !questId) {
+        return sendJson(res, 400, { ok: false, error: 'missing_parameters', message: 'playerId and questId are required' });
+      }
+      if (!ALLOWED_SOCIAL_TASKS.includes(questId)) {
+        return sendJson(res, 400, { ok: false, error: 'invalid_quest_id', message: 'Unknown social quest ID' });
+      }
+
+      const player = getPlayer(playerId);
+      if (player.claimedQuests.includes(questId)) {
+        return sendJson(res, 400, { ok: false, error: 'quest_already_claimed', message: 'Task already claimed', verified: true });
+      }
+
+      const coinsAward = 50;
+      const xpAward = 50;
+      player.coins += coinsAward;
+      player.xp += xpAward;
+      player.claimedQuests.push(questId);
+      player.updatedAt = Date.now();
+
+      const ledger = addLedgerEntry(
+        player.playerId,
+        'reward',
+        coinsAward,
+        xpAward,
+        player.coins,
+        'Social quest reward: ' + questId,
+        questId
+      );
+      persistState();
+
+      return sendJson(res, 200, {
+        ok: true,
+        success: true,
+        txId: ledger.txId,
+        questId: questId,
+        coinsEarned: coinsAward,
+        xpEarned: xpAward,
+        coins: player.coins,
+        xp: player.xp
+      });
     });
   }
 
@@ -3224,14 +3276,6 @@ const server = http.createServer((req, res) => {
       // Case 2: Quest Reward
       if (rewardType === 'quest') {
         const questId = String(data.questId || rewardId);
-        // Third-party social tasks: automated verification unavailable, cannot be claimed
-        if (questId === 'q_sub_chat' || questId === 'soc_tg_chat' || questId === 'q_sub_x' || questId === 'q_sub_insta' || questId === 'q_sub_yt' || questId === 'q_sub_tiktok') {
-          return sendJson(res, 400, {
-            ok: false,
-            error: 'verification_unavailable',
-            message: 'Automated verification is unavailable for third-party platform tasks. No in-game reward.'
-          });
-        }
 
         // Telegram subscription task: MUST be verified via Telegram Bot API getChatMember
         if (questId === 'q_sub_tg') {

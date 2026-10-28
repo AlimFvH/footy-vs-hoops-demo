@@ -2696,7 +2696,9 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 a.aiTargetX = a.x;
                 a.aiTargetZ = a.z;
             }
-            const carrier = this.agents.find((a) => a.team === team && a.slot === 0);
+            const t = (typeof team === 'object' && team !== null && typeof team.team === 'number') ? team.team : team;
+            const carrier = this.agents.find((a) => a.team === t && a.slot === 0) || this.agents.find((a) => a.team === t) || this.agents[0];
+            if (!carrier) return;
             b.owner = null;
             b.vx = b.vy = b.vz = 0;
             const side = 0.42;
@@ -2707,6 +2709,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             b.z = carrier.z + carrier.fz * fwd + rz * side * -1;
             b.y = b.r + 0.55;
             b.dribblePhase = 0;
+            b.orbitAngle = undefined;
             this.lastBounceY = 0;
             this.setOwner(carrier);
             carrier.aiTimer = 0.9;
@@ -4431,12 +4434,16 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         skin('skin_footy_golden_legend', 'Golden Legend', 'legendary', 2500, { primary: 0xf59e0b, secondary: 0x78350f, shorts: 0x18181b, style: 'hoops' }, '👑'),
         skin('skin_footy_stealth_shadow', 'Stealth Shadow', 'epic', 1500, { primary: 0x18181b, secondary: 0xa855f7, shorts: 0x09090b, style: 'sash' }, '🥷'),
         skin('skin_footy_neon_matrix', 'Neon Matrix', 'legendary', 2200, { primary: 0x0a1020, secondary: 0x22d3ee, shorts: 0x050b14, style: 'stripes' }, '💠'),
+        skin('skin_hydro', 'Hydro Striker', 'rare', 750, { primary: 0x06b6d4, secondary: 0x0284c7, shorts: 0x082f49, skin: 0xd2a07c, hair: 0x1e293b, boots: 0x06b6d4, accent: 0x38bdf8, style: 'sash' }, '🌊'),
+        skin('skin_astronaut', 'Astronaut Kit', 'epic', 1600, { primary: 0xf8fafc, secondary: 0x0284c7, shorts: 0x0f172a, skin: 0xe2e8f0, hair: 0x0f172a, boots: 0xf59e0b, accent: 0xf59e0b, style: 'plain' }, '🚀'),
         // 5 New Signature Hoops Kits
         skin('skin_hoops_street_legend', 'Street Legend', 'rare', 750, { primary: 0xef4444, secondary: 0xffffff, shorts: 0x1f2937, style: 'stripes' }, '🏀'),
         skin('skin_hoops_golden_state', 'Golden State', 'epic', 1400, { primary: 0x1d4ed8, secondary: 0xfbbf24, shorts: 0x1e3a8a, style: 'sash' }, '🏀'),
         skin('skin_hoops_cyber_dunk', 'Cyber Dunker', 'epic', 1500, { primary: 0x8b5cf6, secondary: 0x06b6d4, shorts: 0x0f172a, style: 'circuit' }, '⚡'),
         skin('skin_hoops_phantom_black', 'Phantom Black', 'legendary', 2500, { primary: 0x09090b, secondary: 0xeab308, shorts: 0x000000, style: 'royal' }, '👑'),
         skin('skin_hoops_neon_splash', 'Neon Splash', 'rare', 800, { primary: 0xec4899, secondary: 0x06b6d4, shorts: 0x1e1b4b, style: 'hoops' }, '🔥'),
+        skin('skin_sunset', 'Sunset Gold', 'rare', 750, { primary: 0xf97316, secondary: 0xd946ef, shorts: 0x4c0519, skin: 0xc68642, hair: 0x18181b, boots: 0xf97316, accent: 0xfde047, style: 'hoops' }, '🌅'),
+        skin('skin_mars', 'Mars Rover', 'epic', 1400, { primary: 0xb91c1c, secondary: 0x450a0a, shorts: 0x18181b, skin: 0xdfa070, hair: 0x09090b, boots: 0xb91c1c, accent: 0xf97316, style: 'circuit' }, '🔴'),
         {
             id: 'std_footy_classic',
             category: 'stadiums',
@@ -4945,7 +4952,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             rarity: 'common',
             price: 100,
             icon: '⚽',
-            visual: { mode: 'footy', base: 0xffffff, accent: 0x111111, style: 'classic' },
+            visual: { mode: 'footy', base: 0xffffff, accent: 0x1e3a8a, style: 'classic' },
         },
         {
             id: 'ball_footy_inferno',
@@ -5009,10 +5016,10 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             slot: 'ball.hoops',
             mode: 'hoops',
             name: 'Classic Pro',
-            rarity: 'common',
+            rarity: 'rare',
             price: 100,
             icon: '🏀',
-            visual: { mode: 'hoops', base: 0xe8772e, accent: 0x1a0d05, style: 'classic' },
+            visual: { mode: 'hoops', base: 0x8b3a1a, accent: 0xf59e0b, style: 'classic' },
         },
         {
             id: 'ball_hoops_neon_energy',
@@ -8527,7 +8534,25 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 return { border: 0xffffff, glow: 0x000000, id: 'frame_default' };
             }
             if (isSkin) {
+                const KNOWN_SKIN_VISUALS = {
+                    skin_sunset: { primary: 0xf97316, secondary: 0xd946ef, shorts: 0x4c0519, skin: 0xc68642, hair: 0x18181b, boots: 0xf97316, accent: 0xfde047, style: 'hoops' },
+                    skin_mars: { primary: 0xb91c1c, secondary: 0x450a0a, shorts: 0x18181b, skin: 0xdfa070, hair: 0x09090b, boots: 0xb91c1c, accent: 0xf97316, style: 'circuit' },
+                    skin_hydro: { primary: 0x06b6d4, secondary: 0x0284c7, shorts: 0x082f49, skin: 0xd2a07c, hair: 0x1e293b, boots: 0x06b6d4, accent: 0x38bdf8, style: 'sash' },
+                    skin_astronaut: { primary: 0xf8fafc, secondary: 0x0284c7, shorts: 0x0f172a, skin: 0xe2e8f0, hair: 0x0f172a, boots: 0xf59e0b, accent: 0xf59e0b, style: 'plain' }
+                };
+                if (id && KNOWN_SKIN_VISUALS[id]) {
+                    return Object.assign({ id }, KNOWN_SKIN_VISUALS[id]);
+                }
+                if (fallback && KNOWN_SKIN_VISUALS[fallback]) {
+                    return Object.assign({ id: fallback }, KNOWN_SKIN_VISUALS[fallback]);
+                }
                 return Object.assign({ primary: isHoops ? 0xff6b00 : 0x2f6bff, secondary: 0xffffff, shorts: isHoops ? 0x14151a : 0x15204a, skin: 0xe0ac86, hair: 0x2a1a10, boots: isHoops ? 0xff6b00 : 0x111111, accent: 0xffffff, style: isHoops ? 'hoops' : 'plain' }, { id: fallback || id || (isHoops ? 'skin_solar' : 'skin_rookie') });
+            }
+            if (id === 'ball_hoops_classic_pro' || fallback === 'ball_hoops_classic_pro') {
+                return { mode: 'hoops', base: 0x8b3a1a, accent: 0xf59e0b, style: 'classic', id: 'ball_hoops_classic_pro' };
+            }
+            if (id === 'ball_footy_classic_pro' || fallback === 'ball_footy_classic_pro') {
+                return { mode: 'footy', base: 0xffffff, accent: 0x1e3a8a, style: 'classic', id: 'ball_footy_classic_pro' };
             }
             if (isHoops) {
                 return { mode: 'hoops', base: 0xe8772e, accent: 0x1a0d05, style: 'classic', id: id || fallback || 'ball_hoops_street' };
@@ -8577,11 +8602,11 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.arena.apply(this.scene);
             renderer.clearColor = (0, math_js_10.rgb)(stadium.fog);
             this.frame = visualOf(eq.frame, 'frame_default');
-            const playerChar = (opts && opts.char) ? opts.char : (mode === 'hoops' ? 'hoops' : 'footy');
+            const playerChar = (mode === 'hoops') ? 'hoops' : (opts && opts.char ? opts.char : 'footy');
             const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
             const charSkinId = playerChar === 'hoops'
-                ? (eq['skin.hoops'] || (eq.skin && eq.skin !== 'skin_rookie' ? eq.skin : 'skin_solar'))
-                : (eq['skin.footy'] || (eq.skin && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'));
+                ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_solar'))
+                : (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie'));
             const skin = visualOf(charSkinId, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
             // Signature Cross-Sport Kits for Football vs Basketball Rivalry
             const hoopsOppKit = {
@@ -8616,7 +8641,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             }
             const fallbackBall = (mode === 'footy') ? 'ball_footy_classic' : 'ball_hoops_street';
             const ballSlot = (mode === 'footy') ? 'ball.footy' : 'ball.hoops';
-            let chosenBallId = eq[ballSlot] || (mode === 'footy' ? (eq.ball !== 'ball_hoops_street' ? eq.ball : null) : (eq.ball !== 'ball_footy_classic' ? eq.ball : null)) || fallbackBall;
+            let chosenBallId = eq[ballSlot] || (mode === 'footy' ? (eq.ball && !eq.ball.includes('hoops') ? eq.ball : null) : (eq.ball && eq.ball.includes('hoops') ? eq.ball : null)) || fallbackBall;
             this.ballVisual = visualOf(chosenBallId, fallbackBall);
             if (!this.ballVisual.mode) {
                 this.ballVisual.mode = mode;
@@ -14055,13 +14080,13 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.hud.onToggleMute = () => this.audio.toggleMute();
             this.passiveBoostConsumed = false;
             this.turboSpentInMatch = false;
-            const charPick = cfg.char || save.selectedCharacter || (cfg.mode === 'hoops' ? 'hoops' : 'footy');
+            const charPick = (cfg.mode === 'hoops') ? 'hoops' : (cfg.mode === 'footy' ? 'footy' : (cfg.char || save.selectedCharacter || 'footy'));
             this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
             this.input.capture = !cfg.demo;
             this.input.releaseAll();
             if (!cfg.demo) {
                 this.hud.setMode(cfg.mode, save.settings.keys);
-                const isFooty = (charPick === 'footy');
+                const isFooty = (cfg.mode === 'footy');
                 const youTxt = online ? (isFooty ? `⚽ ${online.info.myName}` : `🏀 ${online.info.myName}`) : (isFooty ? '⚽ FOOTY' : '🏀 HOOPS');
                 const oppTxt = online ? (isFooty ? `🏀 ${online.info.oppName}` : `⚽ ${online.info.oppName}`) : (isFooty ? '🏀 HOOPS' : '⚽ FOOTY');
                 this.hud.setNames(youTxt, oppTxt);
