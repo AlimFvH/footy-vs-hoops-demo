@@ -9961,23 +9961,6 @@
       }, 350);
     }
   }
-    screen.appendChild(createScrollBottomSpacer());
-
-    // Unified Persistent Bottom Navigation
-    screen.appendChild(createSharedBottomNav('menu', app));
-
-    // Show screen
-    app.show(screen, 'menu');
-
-    // Onboarding: Prompt player to choose Team Football or Team Basketball on initial entry
-    if (!d.teamChosen) {
-      setTimeout(function () {
-        showTeamSelectionModal(app, false);
-      }, 350);
-    }
-  }
-
-
 
   // Hook into App & Page Router
   onAppReady(function (app) {

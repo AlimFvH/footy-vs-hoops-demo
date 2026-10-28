@@ -5,8 +5,16 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const cp = require('child_process');
 
 console.log('--- TEST SUITE: FRIEND INVITES & MAIN MENU REDESIGN ---');
+
+// 0. Strict JavaScript Syntax & AST Check
+console.log('\n[TEST 0] Verifying JavaScript syntax of js/redesign.js, js/game.js, and server/server.js...');
+cp.execSync('node -c js/redesign.js', { stdio: 'inherit' });
+cp.execSync('node -c js/game.js', { stdio: 'inherit' });
+cp.execSync('node -c server/server.js', { stdio: 'inherit' });
+console.log('✓ Verified: Zero syntax errors across client and server scripts.');
 
 // 1. Static Code Analysis Checks
 console.log('\n[TEST 1] Verifying Telegram Bot username & link generation in client code...');
