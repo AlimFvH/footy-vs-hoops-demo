@@ -562,11 +562,16 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar .fvh-hero-portrait-wrap {
-  height: 260px;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
 }
 
 .fvh-wardrobe-avatar .fvh-hero-real-img {
-  max-height: 260px;
+  max-height: clamp(260px, 40vh, 320px) !important;
+  width: auto !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85)) !important;
 }
 
 .fvh-hero-avatar-box svg {
@@ -1270,17 +1275,17 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar {
-  width: 100%;
-  max-width: 240px;
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100% !important;
+  max-width: 340px !important;
+  height: clamp(290px, 45vh, 360px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .fvh-wardrobe-avatar svg {
-  width: 100%;
-  height: 100%;
+  max-height: clamp(250px, 38vh, 300px) !important;
+  width: auto !important;
   filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.7));
 }
 
@@ -1408,6 +1413,29 @@ html.is-telegram {
   padding: calc(var(--safe-top) + 8px) 12px calc(var(--safe-bottom) + 95px) 12px !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+/* Eliminate nested scrolling traps in iOS WebKit / Telegram Mini App */
+.screen.solid.page-screen .page-body,
+.screen.menu-bg .page-body,
+.fvh-quests-container {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+  flex: none !important;
+}
+
+/* Hardened Touch Zones for iOS Mobile Virtual Joystick & Action Buttons */
+.stick-zone,
+.btn-action,
+.hud,
+canvas {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 .screen.page-screen .page {
@@ -1417,6 +1445,8 @@ html.is-telegram {
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
+  height: auto !important;
+  min-height: 100% !important;
 }
 
 .page-head {
@@ -2912,11 +2942,12 @@ html.is-telegram {
     margin-bottom: 12px !important;
   }
   .fvh-wardrobe-avatar {
-    height: clamp(260px, 42vh, 340px) !important;
-    max-width: 280px !important;
+    height: clamp(290px, 45vh, 360px) !important;
+    max-width: 340px !important;
+    width: 100% !important;
   }
   .fvh-wardrobe-avatar svg {
-    max-height: clamp(250px, 38vh, 310px) !important;
+    max-height: clamp(260px, 40vh, 320px) !important;
   }
   .fvh-equipped-list {
     margin: 8px 0 !important;

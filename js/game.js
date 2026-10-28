@@ -4425,6 +4425,18 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         skin('skin_electric_blue', 'Electric Blue', 'epic', 1000, { primary: 0x1d4ed8, secondary: 0x3b82f6, shorts: 0x1d4ed8, accent: 0x60a5fa, style: 'sash' }, '⚡'),
         skin('skin_crimson_elite', 'Crimson Elite', 'epic', 1000, { primary: 0x991b1b, secondary: 0xb91c1c, shorts: 0x991b1b, accent: 0xfef08a, style: 'stripes' }, '🔥'),
         skin('skin_championship', 'Championship Edition', 'legendary', 1500, { primary: 0x0f172a, secondary: 0xeab308, shorts: 0x0f172a, accent: 0xfacc15, style: 'royal' }, '🏆'),
+        // 5 New Signature Footy Kits
+        skin('skin_footy_royal_striker', 'Royal Striker', 'rare', 750, { primary: 0x1e3a8a, secondary: 0xf59e0b, shorts: 0x0f172a, style: 'stripes' }, '⚽'),
+        skin('skin_footy_cyber_strike', 'Cyber Strike', 'epic', 1400, { primary: 0x06b6d4, secondary: 0x3b82f6, shorts: 0x082f49, style: 'sash' }, '⚡'),
+        skin('skin_footy_golden_legend', 'Golden Legend', 'legendary', 2500, { primary: 0xf59e0b, secondary: 0x78350f, shorts: 0x18181b, style: 'hoops' }, '👑'),
+        skin('skin_footy_stealth_shadow', 'Stealth Shadow', 'epic', 1500, { primary: 0x18181b, secondary: 0xa855f7, shorts: 0x09090b, style: 'sash' }, '🥷'),
+        skin('skin_footy_neon_matrix', 'Neon Matrix', 'legendary', 2200, { primary: 0x0a1020, secondary: 0x22d3ee, shorts: 0x050b14, style: 'stripes' }, '💠'),
+        // 5 New Signature Hoops Kits
+        skin('skin_hoops_street_legend', 'Street Legend', 'rare', 750, { primary: 0xef4444, secondary: 0xffffff, shorts: 0x1f2937, style: 'stripes' }, '🏀'),
+        skin('skin_hoops_golden_state', 'Golden State', 'epic', 1400, { primary: 0x1d4ed8, secondary: 0xfbbf24, shorts: 0x1e3a8a, style: 'sash' }, '🏀'),
+        skin('skin_hoops_cyber_dunk', 'Cyber Dunker', 'epic', 1500, { primary: 0x8b5cf6, secondary: 0x06b6d4, shorts: 0x0f172a, style: 'circuit' }, '⚡'),
+        skin('skin_hoops_phantom_black', 'Phantom Black', 'legendary', 2500, { primary: 0x09090b, secondary: 0xeab308, shorts: 0x000000, style: 'royal' }, '👑'),
+        skin('skin_hoops_neon_splash', 'Neon Splash', 'rare', 800, { primary: 0xec4899, secondary: 0x06b6d4, shorts: 0x1e1b4b, style: 'hoops' }, '🔥'),
         {
             id: 'std_footy_classic',
             category: 'stadiums',
@@ -4913,6 +4925,18 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             visual: { icon: '🪙', coins: 2 },
         },
         {
+            id: 'ball_footy_classic',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Classic White',
+            rarity: 'common',
+            price: 0,
+            icon: '⚽',
+            isDefault: true,
+            visual: { mode: 'footy', base: 0xf5f5f5, accent: 0x222222, style: 'classic' },
+        },
+        {
             id: 'ball_footy_classic_pro',
             category: 'balls',
             slot: 'ball.footy',
@@ -4968,6 +4992,18 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             visual: { mode: 'footy', base: 0x1e1b4b, accent: 0x9333ea, style: 'stars', glow: 0xc084fc },
         },
         {
+            id: 'ball_hoops_street',
+            category: 'balls',
+            slot: 'ball.hoops',
+            mode: 'hoops',
+            name: 'Street Orange',
+            rarity: 'common',
+            price: 0,
+            icon: '🏀',
+            isDefault: true,
+            visual: { mode: 'hoops', base: 0xe8772e, accent: 0x1a0d05, style: 'classic' },
+        },
+        {
             id: 'ball_hoops_classic_pro',
             category: 'balls',
             slot: 'ball.hoops',
@@ -5021,6 +5057,72 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             price: 900,
             icon: '🌌',
             visual: { mode: 'hoops', base: 0x101a3a, accent: 0xc084fc, style: 'stars', glow: 0x9333ea },
+        },
+        {
+            id: 'ball_hoops_blaze',
+            category: 'balls',
+            slot: 'ball.hoops',
+            mode: 'hoops',
+            name: 'Neon Blaze',
+            rarity: 'rare',
+            price: 300,
+            icon: '💫',
+            visual: { mode: 'hoops', base: 0xff6a00, accent: 0xffd966, style: 'flame', glow: 0xff6a00 },
+        },
+        {
+            id: 'ball_hoops_chrome',
+            category: 'balls',
+            slot: 'ball.hoops',
+            mode: 'hoops',
+            name: 'Chrome',
+            rarity: 'epic',
+            price: 500,
+            icon: '🪙',
+            visual: { mode: 'hoops', base: 0xd9d9d9, accent: 0x334155, style: 'classic' },
+        },
+        {
+            id: 'ball_hoops_midnight',
+            category: 'balls',
+            slot: 'ball.hoops',
+            mode: 'hoops',
+            name: 'Midnight',
+            rarity: 'legendary',
+            price: 800,
+            icon: '🌑',
+            visual: { mode: 'hoops', base: 0x0f172a, accent: 0x38bdf8, style: 'plasma', glow: 0x38bdf8 },
+        },
+        {
+            id: 'ball_footy_plasma',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Plasma',
+            rarity: 'rare',
+            price: 350,
+            icon: '⚡',
+            visual: { mode: 'footy', base: 0x1e1b4b, accent: 0x06b6d4, style: 'plasma', glow: 0x06b6d4 },
+        },
+        {
+            id: 'ball_footy_gold',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Golden Trophy',
+            rarity: 'legendary',
+            price: 1000,
+            icon: '🏆',
+            visual: { mode: 'footy', base: 0xf59e0b, accent: 0x78350f, style: 'stars', glow: 0xffe27a },
+        },
+        {
+            id: 'ball_footy_neon',
+            category: 'balls',
+            slot: 'ball.footy',
+            mode: 'footy',
+            name: 'Cyan Core',
+            rarity: 'common',
+            price: 200,
+            icon: '💠',
+            visual: { mode: 'footy', base: 0x0a1020, accent: 0x00f0ff, style: 'classic', glow: 0x00f0ff },
         },
         {
             id: 'trail_default',
@@ -5121,7 +5223,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         var _a, _b, _c, _d, _e, _f;
         const base = { speed: 1, staminaRegen: 1, tackleCost: 1, shotPower: 1, accuracy: 0, coins: 1 };
         const it = id ? getItem(id) : undefined;
-        if (!it || it.category !== 'boosts')
+        if (!it || it.category !== 'boosts' || !it.visual)
             return base;
         const v = it.visual;
         return {
@@ -8396,6 +8498,29 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
     function visualOf(id, fallback) {
         var _a;
         const it = (_a = (0, shop_js_1.getItem)(id !== null && id !== void 0 ? id : '')) !== null && _a !== void 0 ? _a : (0, shop_js_1.getItem)(fallback);
+        if (!it || !it.visual) {
+            const isHoops = (id && id.includes('hoops')) || (fallback && fallback.includes('hoops'));
+            const isStd = (id && id.startsWith('std_')) || (fallback && fallback.startsWith('std_'));
+            const isTrail = (id && id.startsWith('trail_')) || (fallback && fallback.startsWith('trail_'));
+            const isFrame = (id && id.startsWith('frame_')) || (fallback && fallback.startsWith('frame_'));
+            const isSkin = (id && id.startsWith('skin_')) || (fallback && fallback.startsWith('skin_'));
+            if (isStd) {
+                return Object.assign({}, isHoops ? { floor: 0x0b0e16, woodA: 0xd4a373, woodB: 0xbc8a5f, line: 0xf6f3ea, paint: 0x1b4b9b, rim: 0xff6a1a, fog: 0x080b14 } : { pitchA: 0x2f8f3e, pitchB: 0x287a35, line: 0xffffff, fog: 0x070b14 }, { id: fallback || id || (isHoops ? 'std_hoops_street' : 'std_footy_classic') });
+            }
+            if (isTrail) {
+                return { type: 'default', color: 0xffffff, id: 'trail_default' };
+            }
+            if (isFrame) {
+                return { border: 0xffffff, glow: 0x000000, id: 'frame_default' };
+            }
+            if (isSkin) {
+                return Object.assign({ primary: isHoops ? 0xff6b00 : 0x2f6bff, secondary: 0xffffff, shorts: isHoops ? 0x14151a : 0x15204a, skin: 0xe0ac86, hair: 0x2a1a10, boots: isHoops ? 0xff6b00 : 0x111111, accent: 0xffffff, style: isHoops ? 'hoops' : 'plain' }, { id: fallback || id || (isHoops ? 'skin_solar' : 'skin_rookie') });
+            }
+            if (isHoops) {
+                return { mode: 'hoops', base: 0xe8772e, accent: 0x1a0d05, style: 'classic', id: id || fallback || 'ball_hoops_street' };
+            }
+            return { mode: 'footy', base: 0xf5f5f5, accent: 0x222222, style: 'classic', id: id || fallback || 'ball_footy_classic' };
+        }
         const vis = Object.assign({}, it.visual);
         if (it && it.id) vis.id = it.id;
         return vis;
@@ -8611,7 +8736,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const b = sim.ball;
             if (b && typeof b.x === 'number' && !isNaN(b.x)) {
                 this.ball.setPos(b.x, b.y, b.z);
-                const br = (typeof b.r === 'number' && b.r > 0) ? b.r : (mode === 'footy' ? 0.22 : 0.30);
+                const br = (typeof b.r === 'number' && b.r > 0) ? b.r : ((this.sim && this.sim.mode === 'footy') ? 0.22 : 0.30);
                 if (!isNaN(b.vz)) this.ball.rotation[0] += (b.vz / br) * dt;
                 if (!isNaN(b.vx)) this.ball.rotation[2] -= (b.vx / br) * dt;
                 const h = Math.max(0, b.y - br);
@@ -12526,7 +12651,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         mkBtn(action, label, cls) {
             const el = (0, dom_js_1.h)('button', { class: `tbtn ${cls}`, type: 'button', 'data-action': action }, (0, dom_js_1.h)('span', { class: 'lbl' }, label), (0, dom_js_1.h)('i', { class: 'ring' }));
             const down = (e) => {
-                e.preventDefault();
+                if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
                 try {
                     el.setPointerCapture(e.pointerId);
@@ -12537,14 +12662,21 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 this.input.setTouchButton(action, true);
             };
             const up = (e) => {
-                e.preventDefault();
+                if (e.cancelable) e.preventDefault();
                 el.classList.remove('down');
                 this.input.setTouchButton(action, false);
             };
             el.addEventListener('pointerdown', down);
             el.addEventListener('pointerup', up);
             el.addEventListener('pointercancel', up);
-            el.addEventListener('lostpointercapture', up);
+            el.addEventListener('touchstart', (e) => {
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+                el.classList.add('down');
+                this.input.setTouchButton(action, true);
+            }, { passive: false });
+            el.addEventListener('touchend', up, { passive: false });
+            el.addEventListener('touchcancel', up, { passive: false });
             el.addEventListener('contextmenu', (e) => e.preventDefault());
             return el;
         }
@@ -12567,18 +12699,23 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
         }
         bindStick() {
             const z = this.stickZone;
+            let activeTouchId = null;
             const end = (e) => {
                 if (e && e.pointerId !== undefined && e.pointerId !== this.stickPointer && this.stickPointer !== -1)
                     return;
                 this.stickPointer = -1;
+                activeTouchId = null;
                 this.input.setStick(0, 0);
                 this.stickKnob.style.transform = 'translate(-50%,-50%)';
                 this.stickBase.classList.remove('active');
                 this.stickBase.style.left = '';
                 this.stickBase.style.top = '';
             };
+
+            // 1. Pointer Events with Window tracking
             z.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.stickPointer = e.pointerId;
                 try {
                     z.setPointerCapture(e.pointerId);
@@ -12592,19 +12729,69 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 this.stickBase.classList.add('active');
                 this.moveStick(e);
             }, { passive: false });
-            z.addEventListener('pointermove', (e) => {
-                if (e.pointerId === this.stickPointer) {
-                    e.preventDefault();
+
+            const onPointerMove = (e) => {
+                if (e.pointerId === this.stickPointer && this.stickPointer !== -1) {
+                    if (e.cancelable) e.preventDefault();
                     this.moveStick(e);
                 }
-            }, { passive: false });
+            };
+            z.addEventListener('pointermove', onPointerMove, { passive: false });
+            window.addEventListener('pointermove', onPointerMove, { passive: false });
+
             z.addEventListener('pointerup', end);
             z.addEventListener('pointercancel', end);
-            z.addEventListener('lostpointercapture', end);
             window.addEventListener('pointerup', end);
             window.addEventListener('pointercancel', end);
-            window.addEventListener('touchend', () => { this.stickPointer = -1; this.input.setStick(0, 0); });
-            window.addEventListener('touchcancel', () => { this.stickPointer = -1; this.input.setStick(0, 0); });
+
+            // 2. Direct Touch Events with specific Touch ID tracking (bulletproof on iOS WebKit)
+            z.addEventListener('touchstart', (e) => {
+                if (activeTouchId !== null) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const t = e.changedTouches[i];
+                    activeTouchId = t.identifier;
+                    this.stickPointer = t.identifier;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const r = z.getBoundingClientRect();
+                    this.stickOrigin = { x: t.clientX, y: t.clientY };
+                    this.stickBase.style.left = `${t.clientX - r.left}px`;
+                    this.stickBase.style.top = `${t.clientY - r.top}px`;
+                    this.stickBase.classList.add('active');
+                    this.moveStick(t);
+                    break;
+                }
+            }, { passive: false });
+
+            const onTouchMove = (e) => {
+                if (activeTouchId === null) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const t = e.changedTouches[i];
+                    if (t.identifier === activeTouchId) {
+                        if (e.cancelable) e.preventDefault();
+                        this.moveStick(t);
+                        break;
+                    }
+                }
+            };
+            z.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+
+            const onTouchEnd = (e) => {
+                if (activeTouchId === null) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const t = e.changedTouches[i];
+                    if (t.identifier === activeTouchId) {
+                        end(e);
+                        break;
+                    }
+                }
+            };
+            z.addEventListener('touchend', onTouchEnd, { passive: false });
+            z.addEventListener('touchcancel', onTouchEnd, { passive: false });
+            window.addEventListener('touchend', onTouchEnd, { passive: false });
+            window.addEventListener('touchcancel', onTouchEnd, { passive: false });
+
             z.addEventListener('contextmenu', (e) => e.preventDefault());
         }
         moveStick(e) {
@@ -15059,11 +15246,12 @@ define("ui/preview", ["require", "exports", "data/shop"], function (require, exp
         svg.setAttribute('viewBox', '0 0 200 130');
         svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
         if (mode === 'footy') {
-            const th = ((_b = (_a = (0, shop_js_7.getItem)(equipped['stadium.footy'])) === null || _a === void 0 ? void 0 : _a.visual) !== null && _b !== void 0 ? _b : (0, shop_js_7.getItem)('std_footy_classic').visual);
-            const l = hex(th.line);
-            let s = `<rect width="200" height="130" fill="${hex(th.pitchB)}"/>`;
+            const it = (0, shop_js_7.getItem)(equipped && equipped['stadium.footy']) || (0, shop_js_7.getItem)('std_footy_classic');
+            const th = (it && it.visual) ? it.visual : { pitchA: 0x2f8f3e, pitchB: 0x287a35, line: 0xffffff };
+            const l = hex(th.line || 0xffffff);
+            let s = `<rect width="200" height="130" fill="${hex(th.pitchB || 0x287a35)}"/>`;
             for (let i = 0; i < 8; i++)
-                s += `<rect x="30" y="${6 + i * 15}" width="140" height="15" fill="${hex(i % 2 ? th.pitchA : th.pitchB)}"/>`;
+                s += `<rect x="30" y="${6 + i * 15}" width="140" height="15" fill="${hex(i % 2 ? (th.pitchA || 0x2f8f3e) : (th.pitchB || 0x287a35))}"/>`;
             s += `<g fill="none" stroke="${l}" stroke-width="1.3"><rect x="30" y="6" width="140" height="118"/><path d="M30 65h140"/><circle cx="100" cy="65" r="14"/>`;
             s += `<rect x="62" y="6" width="76" height="22"/><rect x="62" y="102" width="76" height="22"/><rect x="82" y="6" width="36" height="9"/><rect x="82" y="115" width="36" height="9"/></g>`;
             s += `<rect x="88" y="2" width="24" height="5" fill="none" stroke="#fff" stroke-width="1.5"/><rect x="88" y="123" width="24" height="5" fill="none" stroke="#fff" stroke-width="1.5"/>`;
@@ -15071,15 +15259,16 @@ define("ui/preview", ["require", "exports", "data/shop"], function (require, exp
             svg.innerHTML = s;
         }
         else {
-            const th = ((_d = (_c = (0, shop_js_7.getItem)(equipped['stadium.hoops'])) === null || _c === void 0 ? void 0 : _c.visual) !== null && _d !== void 0 ? _d : (0, shop_js_7.getItem)('std_hoops_street').visual);
-            const l = hex(th.line);
-            let s = `<rect width="200" height="130" fill="${hex(th.floor)}"/><rect x="38" y="4" width="124" height="122" fill="${hex(th.woodA)}"/>`;
+            const it = (0, shop_js_7.getItem)(equipped && equipped['stadium.hoops']) || (0, shop_js_7.getItem)('std_hoops_street');
+            const th = (it && it.visual) ? it.visual : { floor: 0x0b0e16, woodA: 0xd4a373, woodB: 0xbc8a5f, line: 0xf6f3ea, paint: 0x1b4b9b, rim: 0xff6a1a };
+            const l = hex(th.line || 0xf6f3ea);
+            let s = `<rect width="200" height="130" fill="${hex(th.floor || 0x0b0e16)}"/><rect x="38" y="4" width="124" height="122" fill="${hex(th.woodA || 0xd4a373)}"/>`;
             for (let i = 0; i < 12; i++)
-                s += `<rect x="${38 + i * 10.4}" y="4" width="5.2" height="122" fill="${hex(th.woodB)}" opacity=".55"/>`;
+                s += `<rect x="${38 + i * 10.4}" y="4" width="5.2" height="122" fill="${hex(th.woodB || 0xbc8a5f)}" opacity=".55"/>`;
             s += `<g fill="none" stroke="${l}" stroke-width="1.3"><rect x="38" y="4" width="124" height="122"/><path d="M38 65h124"/><circle cx="100" cy="65" r="12"/>`;
-            s += `<rect x="82" y="4" width="36" height="42" fill="${hex(th.paint)}" fill-opacity=".6"/><rect x="82" y="84" width="36" height="42" fill="${hex(th.paint)}" fill-opacity=".6"/>`;
+            s += `<rect x="82" y="4" width="36" height="42" fill="${hex(th.paint || 0x1b4b9b)}" fill-opacity=".6"/><rect x="82" y="84" width="36" height="42" fill="${hex(th.paint || 0x1b4b9b)}" fill-opacity=".6"/>`;
             s += `<path d="M60 4v6a40 40 0 0 0 80 0V4"/><path d="M60 126v-6a40 40 0 0 1 80 0v6"/></g>`;
-            s += `<circle cx="100" cy="12" r="3.2" fill="none" stroke="${hex(th.rim)}" stroke-width="1.6"/><circle cx="100" cy="118" r="3.2" fill="none" stroke="${hex(th.rim)}" stroke-width="1.6"/>`;
+            s += `<circle cx="100" cy="12" r="3.2" fill="none" stroke="${hex(th.rim || 0xff6a1a)}" stroke-width="1.6"/><circle cx="100" cy="118" r="3.2" fill="none" stroke="${hex(th.rim || 0xff6a1a)}" stroke-width="1.6"/>`;
             s += `<circle cx="96" cy="88" r="4" fill="#ff8a2a"/><circle cx="92" cy="95" r="4" fill="#2f6bff"/><circle cx="108" cy="50" r="4" fill="#d93a3a"/>`;
             svg.innerHTML = s;
         }
@@ -15583,6 +15772,10 @@ define("ui/pages", ["require", "exports", "core/input", "core/economy", "core/qu
             return (0, index_js_6.tDyn)(`item.${it.id}`, it.name);
         }
         thumb(it, big = false) {
+            if (!it || !it.visual) {
+                const isHoops = it && (it.mode === 'hoops' || (it.id && it.id.includes('hoops')));
+                return (0, dom_js_5.h)('div', { class: `thumb${big ? ' big' : ''}` }, isHoops ? '🏀' : '⚽');
+            }
             const vis = it.visual;
             const c = (k, f = 0x222222) => '#' + (typeof vis[k] === 'number' ? vis[k] : f).toString(16).padStart(6, '0');
             const box = (0, dom_js_5.h)('div', { class: `thumb${big ? ' big' : ''} t-${it.category}` });
@@ -15980,6 +16173,11 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             var _a;
             (_a = this.current) === null || _a === void 0 ? void 0 : _a.remove();
             this.current = null;
+            if (this.ui) {
+                while (this.ui.firstChild) {
+                    this.ui.removeChild(this.ui.firstChild);
+                }
+            }
         }
         go(page) {
             this.audio.play('click');

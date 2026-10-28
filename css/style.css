@@ -54,7 +54,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .page-head h1 { margin: 0; font-size: 24px; flex: 1; letter-spacing: .4px; }
 .page-body { overflow-y: auto; overflow-x: hidden; touch-action: pan-y; overscroll-behavior: contain; flex: 1 1 auto; min-height: 0; padding-bottom: 6px; }
 .screen.page-screen { justify-content: flex-start; }
-.screen.page-screen > .page { height: 100%; }
+.screen.page-screen > .page { min-height: 100%; height: auto; }
 
 /* ---------- buttons ---------- */
 .btn {
