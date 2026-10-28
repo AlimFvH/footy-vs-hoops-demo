@@ -5474,12 +5474,22 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             }
         }
 
-        // Two-tone hardwood staining: Lighter natural maple inside 3-point arcs
+        // Two-tone hardwood staining: Lighter natural maple inside 3-point boundaries
+        const cornerDist = basketball_js_1.BB.THREE_R * 0.94;
+        const threeR = basketball_js_1.BB.THREE_R;
+        const dzThree = Math.sqrt(Math.max(0, threeR * threeR - cornerDist * cornerDist));
         for (const s of [-1, 1]) {
             const hz = s * basketball_js_1.BB.HOOP_Z;
+            const cornerBreakZ = s * (basketball_js_1.BB.HOOP_Z - dzThree);
+            const thetaL = Math.atan2(s < 0 ? dzThree : -dzThree, -cornerDist);
+            const thetaR = Math.atan2(s < 0 ? dzThree : -dzThree, cornerDist);
             g.save();
             g.beginPath();
-            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, 0, Math.PI * 2);
+            g.moveTo(X(-cornerDist), Z(s * L));
+            g.lineTo(X(-cornerDist), Z(cornerBreakZ));
+            g.arc(X(0), Z(hz), threeR * PPM_B, thetaL, thetaR, s < 0);
+            g.lineTo(X(cornerDist), Z(s * L));
+            g.closePath();
             g.fillStyle = 'rgba(255,248,235,0.06)';
             g.fill();
             g.restore();
@@ -5575,19 +5585,22 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 }
             }
 
-            // Official 3-Point Arc (6.75m radius with straight corner lines)
+            // Official 3-Point Arc with straight corner lines
             const cornerDist = basketball_js_1.BB.THREE_R * 0.94;
-            const cornerBreakZ = s * (basketball_js_1.BB.HOOP_Z - Math.sqrt(Math.max(0, basketball_js_1.BB.THREE_R * basketball_js_1.BB.THREE_R - cornerDist * cornerDist)));
+            const threeR = basketball_js_1.BB.THREE_R;
+            const dzThree = Math.sqrt(Math.max(0, threeR * threeR - cornerDist * cornerDist));
+            const cornerBreakZ = s * (basketball_js_1.BB.HOOP_Z - dzThree);
+            const thetaL = Math.atan2(s < 0 ? dzThree : -dzThree, -cornerDist);
+            const thetaR = Math.atan2(s < 0 ? dzThree : -dzThree, cornerDist);
             
             g.beginPath();
-            // Corner straight lines parallel to sidelines
+            // Start at left corner baseline
             g.moveTo(X(-cornerDist), Z(s * L));
+            // Straight line along sideline to the break point
             g.lineTo(X(-cornerDist), Z(cornerBreakZ));
-            // 3-Point Arc
-            const angle = Math.atan2(cornerBreakZ - hz, cornerDist);
-            const startAngle = s < 0 ? angle : Math.PI + angle;
-            const endAngle = s < 0 ? Math.PI - angle : Math.PI * 2 - angle;
-            g.arc(X(0), Z(hz), basketball_js_1.BB.THREE_R * PPM_B, startAngle, endAngle, s > 0);
+            // Symmetrical arc curving towards center court
+            g.arc(X(0), Z(hz), threeR * PPM_B, thetaL, thetaR, s < 0);
+            // Straight line from right break point down to right corner baseline
             g.lineTo(X(cornerDist), Z(s * L));
             g.stroke();
 

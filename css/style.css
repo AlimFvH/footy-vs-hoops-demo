@@ -190,7 +190,7 @@ kbd { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(25
 /* =================== HUD =================== */
 .hud { position: absolute; inset: 0; pointer-events: none; }
 .hud > * { pointer-events: none; }
-.hud-top { position: absolute; top: calc(var(--sat) + 8px); left: calc(var(--sal) + 10px); right: calc(var(--sar) + 10px); display: flex; justify-content: center; align-items: flex-start; }
+.hud-top { position: absolute; top: calc(env(safe-area-inset-top, 44px) + 52px); left: calc(var(--sal) + 10px); right: calc(var(--sar) + 10px); display: flex; justify-content: center; align-items: flex-start; z-index: 30; }
 .scoreboard { display: flex; align-items: stretch; background: rgba(8,12,24,.78); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; backdrop-filter: blur(6px); font-weight: 800; }
 .sb-team { display: flex; align-items: center; gap: 10px; padding: 6px 14px; min-width: 94px; }
 .sb-team.you { background: linear-gradient(90deg, rgba(34,211,160,.35), transparent); }
@@ -273,7 +273,7 @@ kbd { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(25
   .btn-cluster { width: 214px; height: 214px; } .btn-shoot { width: 96px; height: 96px; } .btn-pass { width: 64px; height: 64px; right: 106px; }
   .btn-tackle { width: 70px; height: 70px; bottom: 106px; } .btn-sprint { width: 58px; height: 58px; right: 96px; bottom: 98px; }
   .stick-zone { width: calc(100% - 230px); height: 75%; } .banner { top: 22%; }
-  .stamina { top: calc(var(--sat) + 8px); left: calc(var(--sal) + 10px); }
+  .stamina { top: calc(var(--sat, 44px) + 96px); left: calc(var(--sal) + 10px); }
   .power { bottom: calc(var(--sab) + 18px); }
 }
 @media (max-width: 440px) {

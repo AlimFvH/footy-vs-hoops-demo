@@ -2320,8 +2320,19 @@
     var isBasketball = false;
     var pattern = 'plain';
 
+    // === FOOTBALL KITS (Footy) ===
     if (id === 'skin_rookie') {
       primary = '#1d4ed8'; secondary = '#0284c7'; accent = '#ffffff'; trim = '#60a5fa'; number = '10'; pattern = 'chevron';
+    } else if (id === 'skin_footy_royal_striker') {
+      primary = '#1e3a8a'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#fbbf24'; number = '7'; pattern = 'sash';
+    } else if (id === 'skin_footy_cyber_strike') {
+      primary = '#082f49'; secondary = '#06b6d4'; accent = '#22d3ee'; trim = '#38bdf8'; number = '99'; pattern = 'cyber_strike';
+    } else if (id === 'skin_footy_golden_legend') {
+      primary = '#ca8a04'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fef08a'; number = '9'; pattern = 'golden_legend';
+    } else if (id === 'skin_footy_stealth_shadow') {
+      primary = '#18181b'; secondary = '#7c3aed'; accent = '#c084fc'; trim = '#a855f7'; number = '11'; pattern = 'stealth';
+    } else if (id === 'skin_footy_neon_matrix') {
+      primary = '#050b14'; secondary = '#10b981'; accent = '#00f0ff'; trim = '#34d399'; number = '8'; pattern = 'matrix';
     } else if (id === 'skin_crimson') {
       primary = '#b91c1c'; secondary = '#7f1d1d'; accent = '#fef08a'; trim = '#f59e0b'; number = '7'; pattern = 'stripes';
     } else if (id === 'skin_neon' || id === 'skin_neon_elite') {
@@ -2329,22 +2340,13 @@
     } else if (id === 'skin_frost') {
       primary = '#0369a1'; secondary = '#e0f2fe'; accent = '#38bdf8'; trim = '#bae6fd'; number = '33'; pattern = 'frost';
     } else if (id === 'skin_shadow') {
-      primary = '#09090b'; secondary = '#7c3aed'; accent = '#c084fc'; trim = '#a855f7'; number = '00'; pattern = 'stealth';
-    } else if (id === 'skin_solar') {
-      isBasketball = true;
-      primary = '#c2410c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#ea580c'; number = '24'; pattern = 'flame';
+      primary = '#09090b'; secondary = '#7c3aed'; accent = '#c084fc'; trim = '#a855f7'; number = '00'; pattern = 'sash';
     } else if (id === 'skin_gold') {
       primary = '#854d0e'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fef08a'; number = '1'; pattern = 'royal';
     } else if (id === 'skin_cyber') {
-      primary = '#4a044e'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#f43f5e'; number = '99'; pattern = 'glitch';
-    } else if (id === 'skin_sunset') {
-      isBasketball = true;
-      primary = '#ea580c'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fb923c'; number = '8'; pattern = 'wave';
+      primary = '#4a044e'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#f43f5e'; number = '23'; pattern = 'glitch';
     } else if (id === 'skin_hydro') {
       primary = '#0369a1'; secondary = '#06b6d4'; accent = '#67e8f9'; trim = '#22d3ee'; number = '11'; pattern = 'aquatic';
-    } else if (id === 'skin_mars') {
-      isBasketball = true;
-      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'hazard';
     } else if (id === 'skin_astronaut') {
       primary = '#1e293b'; secondary = '#94a3b8'; accent = '#38bdf8'; trim = '#facc15'; number = '01'; pattern = 'space';
     } else if (id === 'skin_premium_black_gold') {
@@ -2352,11 +2354,40 @@
     } else if (id === 'skin_neon_cyber') {
       primary = '#1e1b4b'; secondary = '#9333ea'; accent = '#22d3ee'; trim = '#22d3ee'; number = '10'; pattern = 'circuit';
     } else if (id === 'skin_electric_blue') {
-      primary = '#1d4ed8'; secondary = '#3b82f6'; accent = '#60a5fa'; trim = '#60a5fa'; number = '10'; pattern = 'plain';
+      primary = '#1d4ed8'; secondary = '#3b82f6'; accent = '#60a5fa'; trim = '#60a5fa'; number = '10'; pattern = 'sash';
     } else if (id === 'skin_crimson_elite') {
       primary = '#991b1b'; secondary = '#b91c1c'; accent = '#fef08a'; trim = '#f59e0b'; number = '7'; pattern = 'stripes';
     } else if (id === 'skin_championship') {
       primary = '#0f172a'; secondary = '#eab308'; accent = '#facc15'; trim = '#eab308'; number = '1'; pattern = 'royal';
+
+    // === BASKETBALL JERSEYS (Hoops - Authentically Sleeveless Tank Tops) ===
+    } else if (id === 'skin_solar') {
+      isBasketball = true;
+      primary = '#c2410c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#ea580c'; number = '24'; pattern = 'flame';
+    } else if (id === 'skin_hoops_street_legend') {
+      isBasketball = true;
+      primary = '#1f2937'; secondary = '#ef4444'; accent = '#ffffff'; trim = '#dc2626'; number = '3'; pattern = 'street';
+    } else if (id === 'skin_hoops_golden_state') {
+      isBasketball = true;
+      primary = '#1d4ed8'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fbbf24'; number = '30'; pattern = 'bay_arc';
+    } else if (id === 'skin_hoops_cyber_dunk') {
+      isBasketball = true;
+      primary = '#4c1d95'; secondary = '#06b6d4'; accent = '#22d3ee'; trim = '#8b5cf6'; number = '77'; pattern = 'cyber_dunk';
+    } else if (id === 'skin_hoops_phantom_black') {
+      isBasketball = true;
+      primary = '#09090b'; secondary = '#27272a'; accent = '#facc15'; trim = '#eab308'; number = '24'; pattern = 'phantom_black';
+    } else if (id === 'skin_hoops_neon_splash') {
+      isBasketball = true;
+      primary = '#db2777'; secondary = '#06b6d4'; accent = '#fdf4ff'; trim = '#ec4899'; number = '5'; pattern = 'split';
+    } else if (id === 'skin_sunset') {
+      isBasketball = true;
+      primary = '#581c87'; secondary = '#ea580c'; accent = '#ffffff'; trim = '#fb923c'; number = '8'; pattern = 'sunset';
+    } else if (id === 'skin_mars') {
+      isBasketball = true;
+      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'mars';
+    } else if (id.indexOf('hoops') !== -1) {
+      isBasketball = true;
+      primary = '#ea580c'; secondary = '#f59e0b'; accent = '#ffffff'; trim = '#fb923c'; number = '23'; pattern = 'plain';
     }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -2374,21 +2405,45 @@
       '</defs>' +
       '<ellipse cx="50" cy="90" rx="26" ry="5" fill="#000000" opacity="0.35"/>' +
       (isBasketball ?
+        // Authentic Basketball Tank Top (Deep scoop neck, deep armholes, ribbing)
         '<path d="M34 22 C32 30 26 36 24 46 L28 84 L72 84 L76 46 C74 36 68 30 66 22 L56 26 C54 36 46 36 44 26 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.4"/>' +
-        '<path d="M34 22 C32 30 26 36 24 46" stroke="' + trim + '" stroke-width="2.2" fill="none"/>' +
-        '<path d="M66 22 C74 36 76 46 76 46" stroke="' + trim + '" stroke-width="2.2" fill="none"/>' +
-        '<path d="M44 26 C46 36 54 36 56 26" stroke="' + trim + '" stroke-width="2.2" fill="none"/>' :
+        // Ribbed armhole arm trims
+        '<path d="M34 22 C32 30 26 36 24 46" stroke="' + trim + '" stroke-width="2.5" fill="none"/>' +
+        '<path d="M66 22 C74 36 76 46 76 46" stroke="' + trim + '" stroke-width="2.5" fill="none"/>' +
+        // Deep scoop neckline trim
+        '<path d="M44 26 C46 36 54 36 56 26" stroke="' + trim + '" stroke-width="2.5" fill="none"/>' +
+        // Basketball side flank contrasting panels
+        '<polygon points="24,46 28,46 28,84 24,84" fill="' + trim + '" opacity="0.85"/>' +
+        '<polygon points="76,46 72,46 72,84 76,84" fill="' + trim + '" opacity="0.85"/>' :
+        // Authentic Football Kit (Short sleeves, collar, sleeve cuffs)
         '<path d="M28 24 L10 38 L22 48 L28 42 L28 84 L72 84 L72 42 L78 48 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.4"/>' +
         '<polygon points="10,38 14,41 24,33 22,30" fill="url(#trim_' + uid + ')"/>' +
         '<polygon points="90,38 86,41 76,33 78,30" fill="url(#trim_' + uid + ')"/>' +
         '<polygon points="44,24 50,32 56,24 53,24 50,29 47,24" fill="url(#trim_' + uid + ')"/>'
       ) +
+      // Unique kit pattern overlays
       (pattern === 'stripes' ?
         '<line x1="38" y1="36" x2="38" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' +
         '<line x1="62" y1="36" x2="62" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' : '') +
+      (pattern === 'sash' ?
+        '<polygon points="28,24 38,24 72,74 72,84 62,84 28,34" fill="' + secondary + '" opacity="0.85"/>' +
+        '<line x1="38" y1="24" x2="72" y2="74" stroke="' + accent + '" stroke-width="1.5" opacity="0.9"/>' : '') +
       (pattern === 'chevron' ?
         '<path d="M32 44 L50 54 L68 44" stroke="' + accent + '" stroke-width="2.5" fill="none" opacity="0.8"/>' +
         '<path d="M32 52 L50 62 L68 52" stroke="' + accent + '" stroke-width="2" fill="none" opacity="0.6"/>' : '') +
+      (pattern === 'cyber_strike' ?
+        '<polygon points="28,36 44,36 34,84 28,84" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' +
+        '<polygon points="56,36 72,36 66,84 50,84" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' : '') +
+      (pattern === 'golden_legend' ?
+        '<line x1="36" y1="32" x2="36" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
+        '<line x1="44" y1="32" x2="44" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
+        '<line x1="56" y1="32" x2="56" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
+        '<line x1="64" y1="32" x2="64" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
+        '<polygon points="46,36 50,32 54,36 50,42" fill="#ffffff" filter="url(#glow_' + uid + ')"/>' : '') +
+      (pattern === 'matrix' ?
+        '<line x1="36" y1="38" x2="36" y2="52" stroke="#10b981" stroke-width="2" stroke-dasharray="2,2" filter="url(#glow_' + uid + ')"/>' +
+        '<line x1="64" y1="46" x2="64" y2="72" stroke="#00f0ff" stroke-width="2" stroke-dasharray="3,2" filter="url(#glow_' + uid + ')"/>' +
+        '<line x1="44" y1="62" x2="44" y2="80" stroke="#10b981" stroke-width="2" stroke-dasharray="2,2"/>' : '') +
       (pattern === 'circuit' ?
         '<path d="M30 42 L42 42 L48 50 L48 76" stroke="#00f0ff" stroke-width="1.8" fill="none" filter="url(#glow_' + uid + ')"/>' +
         '<circle cx="48" cy="76" r="2.5" fill="#10b981"/>' +
@@ -2398,14 +2453,39 @@
         '<polygon points="28,42 66,84 72,84 34,42" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' : '') +
       (pattern === 'flame' ?
         '<path d="M34 84 Q42 68 46 74 Q50 60 54 74 Q58 68 66 84 Z" fill="' + secondary + '" opacity="0.8"/>' : '') +
+      (pattern === 'bay_arc' ?
+        '<ellipse cx="50" cy="52" rx="16" ry="16" stroke="' + secondary + '" stroke-width="2.5" fill="none"/>' +
+        '<path d="M38 58 Q50 44 62 58" stroke="' + accent + '" stroke-width="2.5" fill="none"/>' : '') +
+      (pattern === 'street' ?
+        '<polygon points="28,48 44,40 46,44 30,52" fill="' + secondary + '"/>' +
+        '<polygon points="54,74 72,66 70,62 52,70" fill="' + secondary + '"/>' : '') +
+      (pattern === 'cyber_dunk' ?
+        '<line x1="32" y1="52" x2="68" y2="52" stroke="#06b6d4" stroke-width="2" opacity="0.8" filter="url(#glow_' + uid + ')"/>' +
+        '<line x1="30" y1="58" x2="70" y2="58" stroke="#a855f7" stroke-width="2" opacity="0.8"/>' : '') +
+      (pattern === 'phantom_black' ?
+        '<line x1="36" y1="36" x2="36" y2="84" stroke="#eab308" stroke-width="1" opacity="0.75"/>' +
+        '<line x1="64" y1="36" x2="64" y2="84" stroke="#eab308" stroke-width="1" opacity="0.75"/>' : '') +
+      (pattern === 'split' ?
+        '<polygon points="50,26 76,46 72,84 50,84" fill="' + secondary + '" opacity="0.9"/>' : '') +
+      (pattern === 'sunset' ?
+        '<rect x="28" y="50" width="44" height="4" fill="#fbbf24" opacity="0.85"/>' +
+        '<rect x="30" y="56" width="40" height="2.5" fill="#f97316" opacity="0.85"/>' : '') +
+      (pattern === 'mars' ?
+        '<ellipse cx="50" cy="42" rx="7" ry="7" fill="' + secondary + '"/>' +
+        '<ellipse cx="50" cy="42" rx="12" ry="3" stroke="' + accent + '" stroke-width="1.2" fill="none" transform="rotate(-20,50,42)"/>' : '') +
+      (pattern === 'space' ?
+        '<circle cx="50" cy="40" r="5" fill="#38bdf8" filter="url(#glow_' + uid + ')"/>' +
+        '<polygon points="36,44 42,44 40,48" fill="#facc15"/>' : '') +
       (pattern === 'royal' ?
         '<polygon points="28,42 66,84 72,84 34,42" fill="' + accent + '" opacity="0.85"/>' +
         '<circle cx="50" cy="40" r="4" fill="' + accent + '" filter="url(#glow_' + uid + ')"/>' : '') +
       (pattern === 'glitch' ?
         '<line x1="30" y1="46" x2="70" y2="46" stroke="#00f0ff" stroke-width="2" opacity="0.8"/>' +
         '<line x1="32" y1="50" x2="68" y2="50" stroke="#f43f5e" stroke-width="2" opacity="0.8"/>' : '') +
+      // Crest / Emblem
       '<circle cx="38" cy="38" r="4" fill="' + accent + '" stroke="' + primary + '" stroke-width="1"/>' +
       '<text x="38" y="41" font-size="5" text-anchor="middle" fill="' + primary + '" font-weight="900">★</text>' +
+      // Athletic Number (Drop Shadow + Fill)
       '<text x="51" y="67" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="#000000" opacity="0.45" text-anchor="middle">' + number + '</text>' +
       '<text x="50" y="66" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" text-anchor="middle">' + number + '</text>' +
       '<rect x="32" y="78" width="6" height="4" rx="0.5" fill="' + accent + '" opacity="0.85"/>' +
@@ -2421,7 +2501,7 @@
     var h = isLg ? 200 : (isSm ? 48 : 76);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
     var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
-    var isHoops = id.indexOf('hoops') !== -1 || id === 'ball_tidal' || id === 'ball_cyber_neon';
+    var isHoops = id.indexOf('hoops') !== -1 || id === 'ball_tidal';
 
     if (isHoops) {
       var bStart = '#ea580c';
@@ -2429,26 +2509,31 @@
       var bEnd = '#451a03';
       var seam = '#180802';
       var hasRing = false;
+      var hasStar = false;
+      var hasCrest = false;
+      var hasPebbles = false;
       var glow = '';
 
-      if (id === 'ball_hoops_blaze' || id === 'ball_hoops_neon_energy') {
-        bStart = '#a855f7'; bMid = '#7c3aed'; bEnd = '#2e1065'; seam = '#00f0ff'; glow = 'filter="drop-shadow(0 0 6px #00f0ff)"';
-      } else if (id === 'ball_hoops_chrome' || id === 'ball_hoops_classic_pro') {
-        bStart = '#f8fafc'; bMid = '#94a3b8'; bEnd = '#1e293b'; seam = '#0284c7';
-      } else if (id === 'ball_hoops_midnight') {
-        bStart = '#3b82f6'; bMid = '#1e1b4b'; bEnd = '#050714'; seam = '#f59e0b'; hasRing = true;
-      } else if (id === 'ball_hoops_street') {
-        bStart = '#ea580c'; bMid = '#c2410c'; bEnd = '#451a03'; seam = '#180802';
+      if (id === 'ball_hoops_street') {
+        bStart = '#ea580c'; bMid = '#c2410c'; bEnd = '#451a03'; seam = '#180802'; hasPebbles = true;
+      } else if (id === 'ball_hoops_classic_pro') {
+        bStart = '#f59e0b'; bMid = '#d97706'; bEnd = '#78350f'; seam = '#09090b'; hasCrest = true;
+      } else if (id === 'ball_hoops_neon_energy') {
+        bStart = '#00f0ff'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#10b981'; glow = 'filter="drop-shadow(0 0 7px #00f0ff)"';
       } else if (id === 'ball_hoops_molten_fire') {
-        bStart = '#ef4444'; bMid = '#b91c1c'; bEnd = '#450a0a'; seam = '#f59e0b'; glow = 'filter="drop-shadow(0 0 7px #f59e0b)"';
+        bStart = '#ef4444'; bMid = '#b91c1c'; bEnd = '#450a0a'; seam = '#f1f5f9'; glow = 'filter="drop-shadow(0 0 8px #f97316)"';
       } else if (id === 'ball_hoops_golden_elite') {
-        bStart = '#fef08a'; bMid = '#eab308'; bEnd = '#713f12'; seam = '#78350f'; glow = 'filter="drop-shadow(0 0 7px #facc15)"';
+        bStart = '#fef08a'; bMid = '#eab308'; bEnd = '#713f12'; seam = '#0f172a'; hasStar = true; glow = 'filter="drop-shadow(0 0 8px #facc15)"';
       } else if (id === 'ball_hoops_cosmic') {
-        bStart = '#38bdf8'; bMid = '#1e1b4b'; bEnd = '#0f0524'; seam = '#c084fc'; glow = 'filter="drop-shadow(0 0 7px #c084fc)"'; hasRing = true;
+        bStart = '#818cf8'; bMid = '#312e81'; bEnd = '#0f0524'; seam = '#d946ef'; hasRing = true; glow = 'filter="drop-shadow(0 0 8px #c084fc)"';
+      } else if (id === 'ball_hoops_midnight') {
+        bStart = '#27272a'; bMid = '#18181b'; bEnd = '#09090b'; seam = '#38bdf8'; glow = 'filter="drop-shadow(0 0 5px #0284c7)"';
+      } else if (id === 'ball_hoops_blaze') {
+        bStart = '#fde047'; bMid = '#ea580c'; bEnd = '#7c2d12'; seam = '#1c1917'; glow = 'filter="drop-shadow(0 0 7px #ea580c)"';
+      } else if (id === 'ball_hoops_chrome') {
+        bStart = '#ffffff'; bMid = '#94a3b8'; bEnd = '#334155'; seam = '#0284c7';
       } else if (id === 'ball_tidal') {
         bStart = '#38bdf8'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#cffafe';
-      } else if (id === 'ball_cyber_neon') {
-        bStart = '#180828'; bMid = '#3b0764'; bEnd = '#090314'; seam = '#f43f5e'; glow = 'filter="drop-shadow(0 0 6px #f43f5e)"'; hasRing = true;
       }
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -2468,6 +2553,12 @@
         '<line x1="50" y1="12" x2="50" y2="88" stroke="' + seam + '" stroke-width="2.2"/>' +
         '<path d="M22 24 C38 36 38 64 22 76" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
         '<path d="M78 24 C62 36 62 64 78 76" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
+        (hasPebbles ?
+          '<circle cx="34" cy="40" r="1.2" fill="rgba(0,0,0,0.4)"/><circle cx="64" cy="42" r="1.2" fill="rgba(0,0,0,0.4)"/><circle cx="42" cy="62" r="1.2" fill="rgba(0,0,0,0.4)"/><circle cx="58" cy="60" r="1.2" fill="rgba(0,0,0,0.4)"/>' : '') +
+        (hasStar ?
+          '<polygon points="50,42 52,48 58,50 52,52 50,58 48,52 42,50 48,48" fill="#fef08a" stroke="#713f12" stroke-width="0.8"/>' : '') +
+        (hasCrest ?
+          '<circle cx="50" cy="50" r="5" fill="#f59e0b" stroke="#000" stroke-width="0.8"/><text x="50" y="52" font-size="4" text-anchor="middle" fill="#000" font-weight="900">PRO</text>' : '') +
         '<ellipse cx="36" cy="32" rx="9" ry="4.5" fill="#ffffff" opacity="0.45" transform="rotate(-28, 36, 32)"/>' +
         '<circle cx="33" cy="29" r="2.5" fill="#ffffff" opacity="0.75"/>' +
         '</svg>';
@@ -2476,21 +2567,28 @@
       var fMid = '#e2e8f0';
       var fEnd = '#0f172a';
       var patch = '#1e293b';
-      var seamColor = '#00f0ff';
+      var seamColor = '#475569';
       var hasAura = false;
+      var auraColor = '#00f0ff';
 
-      if (id === 'ball_footy_plasma' || id === 'ball_footy_neon' || id === 'ball_footy_cyber_neon') {
-        fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#082f49'; patch = '#0f172a'; seamColor = '#38bdf8'; hasAura = true;
-      } else if (id === 'ball_footy_gold' || id === 'ball_footy_golden_elite') {
-        fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#713f12'; patch = '#ca8a04'; seamColor = '#fef08a'; hasAura = true;
-      } else if (id === 'ball_footy_inferno') {
-        fStart = '#fb923c'; fMid = '#ea580c'; fEnd = '#450a0a'; patch = '#1c0505'; seamColor = '#ef4444'; hasAura = true;
+      if (id === 'ball_footy_classic') {
+        fStart = '#ffffff'; fMid = '#e2e8f0'; fEnd = '#334155'; patch = '#0f172a'; seamColor = '#475569';
       } else if (id === 'ball_footy_classic_pro') {
-        fStart = '#ffffff'; fMid = '#cbd5e1'; fEnd = '#1e3a8a'; patch = '#1e3a8a'; seamColor = '#3b82f6';
-      } else if (id === 'ball_footy_solar') {
-        fStart = '#fde047'; fMid = '#f59e0b'; fEnd = '#78350f'; patch = '#9a3412'; seamColor = '#fbbf24'; hasAura = true;
-      } else if (id === 'ball_earthrise') {
-        fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#082f49'; patch = '#15803d'; seamColor = '#ffffff'; hasAura = true;
+        fStart = '#ffffff'; fMid = '#cbd5e1'; fEnd = '#1e3a8a'; patch = '#1d4ed8'; seamColor = '#f59e0b';
+      } else if (id === 'ball_footy_inferno') {
+        fStart = '#fb923c'; fMid = '#ea580c'; fEnd = '#1c0505'; patch = '#ef4444'; seamColor = '#f97316'; hasAura = true; auraColor = '#f97316';
+      } else if (id === 'ball_footy_cyber_neon') {
+        fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#020617'; patch = '#10b981'; seamColor = '#00f0ff'; hasAura = true; auraColor = '#00f0ff';
+      } else if (id === 'ball_footy_golden_elite') {
+        fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#713f12'; patch = '#854d0e'; seamColor = '#fde047'; hasAura = true; auraColor = '#facc15';
+      } else if (id === 'ball_footy_neon') {
+        fStart = '#d9f99d'; fMid = '#84cc16'; fEnd = '#14532d'; patch = '#09090b'; seamColor = '#06b6d4';
+      } else if (id === 'ball_footy_plasma') {
+        fStart = '#c084fc'; fMid = '#7c3aed'; fEnd = '#1e1b4b'; patch = '#ec4899'; seamColor = '#00f0ff'; hasAura = true; auraColor = '#a855f7';
+      } else if (id === 'ball_footy_gold') {
+        fStart = '#fef08a'; fMid = '#ca8a04'; fEnd = '#451a03'; patch = '#a16207'; seamColor = '#facc15'; hasAura = true; auraColor = '#facc15';
+      } else if (id === 'ball_earthrise' || id === 'ball_footy_galactic') {
+        fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#082f49'; patch = '#15803d'; seamColor = '#ffffff'; hasAura = true; auraColor = '#38bdf8';
       }
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -2502,7 +2600,7 @@
         '</radialGradient>' +
         '</defs>' +
         '<ellipse cx="50" cy="92" rx="28" ry="6" fill="#000000" opacity="0.38"/>' +
-        (hasAura ? '<circle cx="50" cy="50" r="42" fill="' + seamColor + '" opacity="0.22"/>' : '') +
+        (hasAura ? '<circle cx="50" cy="50" r="42" fill="' + auraColor + '" opacity="0.25"/>' : '') +
         '<circle cx="50" cy="50" r="38" fill="url(#fb_' + uid + ')" stroke="' + seamColor + '" stroke-width="2"/>' +
         '<polygon points="50,34 63,43 58,58 42,58 37,43" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="2"/>' +
         '<line x1="50" y1="34" x2="50" y2="14" stroke="' + seamColor + '" stroke-width="2"/>' +
@@ -5369,8 +5467,9 @@
       contentArea.innerHTML = '';
       var claimed = getClaimedList();
       var isTgDone = claimed.indexOf('q_sub_tg') !== -1;
+      var lang = getActiveLang();
 
-      // 1. Verified Telegram Subscription Task
+      // 1. Rewarded Missions Section
       var verifiedTaskBox = document.createElement('div');
       verifiedTaskBox.className = 'fvh-verified-task-section';
       verifiedTaskBox.style.marginBottom = '18px';
@@ -5382,70 +5481,150 @@
       taskHeading.style.textTransform = 'uppercase';
       taskHeading.style.letterSpacing = '0.5px';
       taskHeading.style.marginBottom = '8px';
-      taskHeading.textContent = (getActiveLang() === 'ru') ? '⭐ Задание с наградой' : '⭐ Rewarded Mission';
+      taskHeading.textContent = (lang === 'ru') ? '⭐ Активные задания с наградой' : '⭐ Active Rewarded Missions';
       verifiedTaskBox.appendChild(taskHeading);
 
-      var tgCard = document.createElement('div');
-      tgCard.className = 'fvh-quest-task-card' + (isTgDone ? ' done' : '');
-      tgCard.style.background = 'rgba(255,255,255,0.04)';
-      tgCard.style.border = isTgDone ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(0,240,255,0.25)';
-      tgCard.style.borderRadius = '12px';
-      tgCard.style.padding = '14px 16px';
-      tgCard.style.display = 'flex';
-      tgCard.style.alignItems = 'center';
-      tgCard.style.justifyContent = 'space-between';
-      tgCard.style.gap = '12px';
-
-      tgCard.innerHTML =
-        '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
-        '  <div style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getSocialIconSvg('tg') + '</div>' +
-        '  <div style="flex:1;min-width:0;">' +
-        '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('subscribeFootyHoops') + '</div>' +
-        '    <div style="font-size:11.5px;font-weight:800;color:#facc15;margin-top:2px;display:inline-flex;align-items:center;gap:4px;">' +
-        getFvhCoinSvg('inline') + ' +50 FvH Coin' +
-        '    </div>' +
-        '  </div>' +
-        '</div>' +
-        '<div class="fvh-task-actions" style="display:flex;gap:6px;flex-shrink:0;"></div>';
-
-      var actBox = tgCard.querySelector('.fvh-task-actions');
       if (isTgDone) {
-        var doneBtn = document.createElement('button');
-        doneBtn.className = 'btn small';
-        doneBtn.disabled = true;
-        doneBtn.textContent = tr('taskCompleted');
-        actBox.appendChild(doneBtn);
+        // When quest is completed, it never remains as an active unclaimable card!
+        var emptyNotice = document.createElement('div');
+        emptyNotice.className = 'fvh-empty-active-tasks';
+        emptyNotice.style.padding = '14px 16px';
+        emptyNotice.style.background = 'rgba(255,255,255,0.03)';
+        emptyNotice.style.border = '1px dashed rgba(255,255,255,0.15)';
+        emptyNotice.style.borderRadius = '12px';
+        emptyNotice.style.textAlign = 'center';
+        emptyNotice.style.color = '#94a3b8';
+        emptyNotice.style.fontSize = '12px';
+        emptyNotice.style.lineHeight = '1.4';
+        emptyNotice.textContent = (lang === 'ru')
+          ? '🎉 Все активные задания выполнены! Ожидайте новых миссий в Сезоне 1.'
+          : '🎉 All active missions completed! Stay tuned for Season 1 drops.';
+        verifiedTaskBox.appendChild(emptyNotice);
       } else {
-        var openBtn = document.createElement('button');
-        openBtn.className = 'btn small';
-        openBtn.textContent = tr('openTaskBtn');
-        openBtn.onclick = function () {
+        var tgCard = document.createElement('div');
+        tgCard.className = 'fvh-quest-task-card';
+        tgCard.style.background = 'rgba(255,255,255,0.04)';
+        tgCard.style.border = '1px solid rgba(0,240,255,0.25)';
+        tgCard.style.borderRadius = '12px';
+        tgCard.style.padding = '14px 16px';
+        tgCard.style.display = 'flex';
+        tgCard.style.flexDirection = 'column';
+        tgCard.style.gap = '10px';
+
+        var topRow = document.createElement('div');
+        topRow.style.display = 'flex';
+        topRow.style.alignItems = 'center';
+        topRow.style.justifyContent = 'space-between';
+        topRow.style.gap = '12px';
+
+        topRow.innerHTML =
+          '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+          '  <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getSocialIconSvg('tg') + '</div>' +
+          '  <div style="flex:1;min-width:0;">' +
+          '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('subscribeFootyHoops') + '</div>' +
+          '    <div style="font-size:11.5px;font-weight:800;color:#facc15;margin-top:2px;display:inline-flex;align-items:center;gap:4px;">' +
+          getFvhCoinSvg('inline') + ' +50 FvH Coin' +
+          '    </div>' +
+          '  </div>' +
+          '</div>' +
+          '<div class="fvh-task-actions" style="display:flex;align-items:center;gap:6px;flex-shrink:0;"></div>';
+
+        tgCard.appendChild(topRow);
+
+        var alertBox = document.createElement('div');
+        alertBox.className = 'fvh-task-alert';
+        alertBox.style.display = 'none';
+        alertBox.style.padding = '8px 12px';
+        alertBox.style.borderRadius = '8px';
+        alertBox.style.fontSize = '11.5px';
+        alertBox.style.lineHeight = '1.4';
+        tgCard.appendChild(alertBox);
+
+        var actBox = topRow.querySelector('.fvh-task-actions');
+
+        function openTgChannel() {
           app.audio.play('click');
+          window.__fvhTgOpened = true;
           var tgUrl = 'https://t.me/FootyHoops';
-          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+          if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+            window.Telegram.WebApp.openTelegramLink(tgUrl);
+          } else if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
             window.Telegram.WebApp.openLink(tgUrl);
           } else {
             window.open(tgUrl, '_blank');
           }
-        };
-        actBox.appendChild(openBtn);
+          renderStepUI();
+        }
 
-        var claimBtn = document.createElement('button');
-        claimBtn.className = 'btn small primary';
-        claimBtn.textContent = tr('verifyTaskBtn');
-        claimBtn.onclick = function () {
-          claimBtn.disabled = true;
-          claimBtn.textContent = tr('taskVerifying');
+        function verifySubscription(btn) {
+          btn.disabled = true;
+          btn.textContent = tr('taskVerifying');
+          alertBox.style.display = 'none';
+
           var pid = getPlayerId();
           var tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
           var tgUserId = tgUser ? tgUser.id : (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id);
 
           if (!tgUserId) {
-            claimBtn.disabled = false;
-            claimBtn.textContent = tr('verifyTaskBtn');
-            showToast(getActiveLang() === 'ru' ? 'Откройте игру через Telegram для подтверждения подписки' : 'Open the game via Telegram to verify subscription');
+            btn.disabled = false;
+            btn.textContent = tr('verifyTaskBtn');
+            alertBox.style.display = 'block';
+            alertBox.style.background = 'rgba(245,158,11,0.12)';
+            alertBox.style.border = '1px solid rgba(245,158,11,0.3)';
+            alertBox.style.color = '#fde68a';
+            alertBox.textContent = (lang === 'ru')
+              ? '⚠️ Откройте игру через официального Telegram-бота @FootyHoopsGameBot для проверки подписки.'
+              : '⚠️ Open the game via official Telegram bot @FootyHoopsGameBot to verify subscription.';
             return;
           }
+
+          fetch(getApiUrl('/api/tasks/verify-telegram'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              playerId: pid,
+              telegramUserId: tgUserId,
+              claim: false
+            })
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (res && res.ok && res.verified) {
+              window.__fvhTgVerified = true;
+              app.audio.play('claim');
+              showToast((lang === 'ru') ? '✓ Подписка подтверждена! Заберите награду.' : '✓ Subscription verified! Claim your reward.');
+              renderStepUI();
+            } else {
+              btn.disabled = false;
+              btn.textContent = (lang === 'ru') ? '🔄 Проверить снова' : '🔄 Verify Again';
+              alertBox.style.display = 'block';
+              alertBox.style.background = 'rgba(239,68,68,0.12)';
+              alertBox.style.border = '1px solid rgba(239,68,68,0.3)';
+              alertBox.style.color = '#fca5a5';
+              alertBox.innerHTML = (lang === 'ru')
+                ? '❌ Подписка не обнаружена. Пожалуйста, подпишитесь на канал <b>@FootyHoops</b> и нажмите «Проверить снова».'
+                : '❌ Subscription not found. Please subscribe to <b>@FootyHoops</b> and tap Verify Again.';
+            }
+          })
+          .catch(function () {
+            btn.disabled = false;
+            btn.textContent = (lang === 'ru') ? '🔄 Повторить попытку' : '🔄 Retry';
+            alertBox.style.display = 'block';
+            alertBox.style.background = 'rgba(239,68,68,0.12)';
+            alertBox.style.border = '1px solid rgba(239,68,68,0.3)';
+            alertBox.style.color = '#fca5a5';
+            alertBox.textContent = (lang === 'ru')
+              ? '⚠️ Ошибка связи с сервером. Проверьте интернет и попробуйте снова.'
+              : '⚠️ Server connection error. Please check your connection and retry.';
+          });
+        }
+
+        function claimReward(btn) {
+          btn.disabled = true;
+          btn.textContent = '...';
+          var pid = getPlayerId();
+          var tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+          var tgUserId = tgUser ? tgUser.id : (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id);
 
           fetch(getApiUrl('/api/tasks/verify-telegram'), {
             method: 'POST',
@@ -5458,7 +5637,7 @@
           })
           .then(function (r) { return r.json(); })
           .then(function (res) {
-            if (res && res.ok && res.verified) {
+            if (res && res.ok) {
               app.store.update(function (d) {
                 if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
                 if (d.claimedQuests.indexOf('q_sub_tg') === -1) d.claimedQuests.push('q_sub_tg');
@@ -5474,26 +5653,106 @@
                 });
               });
               app.audio.play('claim');
-              showToast(tr('tgVerifySuccess'));
+              showToast((lang === 'ru') ? '⭐ +50 FvH Coin получено!' : '⭐ +50 FvH Coin claimed!');
               renderSocialTab();
             } else {
-              claimBtn.disabled = false;
-              claimBtn.textContent = tr('verifyTaskBtn');
-              showToast(tr('tgVerifyFailed'));
+              btn.disabled = false;
+              btn.textContent = (lang === 'ru') ? '🎁 Забрать (+50 FvH Coin)' : '🎁 Claim (+50 FvH Coin)';
+              showToast((lang === 'ru') ? 'Не удалось забрать награду. Попробуйте снова.' : 'Failed to claim reward. Please retry.');
             }
           })
           .catch(function () {
-            claimBtn.disabled = false;
-            claimBtn.textContent = tr('verifyTaskBtn');
-            showToast(tr('tgVerifyFailed'));
+            btn.disabled = false;
+            btn.textContent = (lang === 'ru') ? '🎁 Забрать (+50 FvH Coin)' : '🎁 Claim (+50 FvH Coin)';
+            showToast((lang === 'ru') ? 'Ошибка сети. Попробуйте снова.' : 'Network error. Please retry.');
           });
-        };
-        actBox.appendChild(claimBtn);
+        }
+
+        function renderStepUI() {
+          actBox.innerHTML = '';
+          if (window.__fvhTgVerified) {
+            // Step 3: Verified -> Claim reward!
+            var claimBtn = document.createElement('button');
+            claimBtn.className = 'btn small primary';
+            claimBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            claimBtn.style.borderColor = '#34d399';
+            claimBtn.style.color = '#fff';
+            claimBtn.style.fontWeight = '900';
+            claimBtn.textContent = (lang === 'ru') ? '🎁 Забрать (+50 FvH Coin)' : '🎁 Claim (+50 FvH Coin)';
+            claimBtn.onclick = function () { claimReward(claimBtn); };
+            actBox.appendChild(claimBtn);
+          } else if (window.__fvhTgOpened) {
+            // Step 2: Opened -> Verify subscription!
+            var openAgainBtn = document.createElement('button');
+            openAgainBtn.className = 'btn small';
+            openAgainBtn.textContent = '↗';
+            openAgainBtn.title = tr('openTaskBtn');
+            openAgainBtn.onclick = openTgChannel;
+            actBox.appendChild(openAgainBtn);
+
+            var verifyBtn = document.createElement('button');
+            verifyBtn.className = 'btn small primary';
+            verifyBtn.textContent = tr('verifyTaskBtn');
+            verifyBtn.onclick = function () { verifySubscription(verifyBtn); };
+            actBox.appendChild(verifyBtn);
+          } else {
+            // Step 1: Initial -> Open channel!
+            var openBtn = document.createElement('button');
+            openBtn.className = 'btn small primary';
+            openBtn.textContent = tr('openTaskBtn');
+            openBtn.onclick = openTgChannel;
+            actBox.appendChild(openBtn);
+          }
+        }
+
+        renderStepUI();
+        verifiedTaskBox.appendChild(tgCard);
       }
-      verifiedTaskBox.appendChild(tgCard);
+
       contentArea.appendChild(verifiedTaskBox);
 
-      // 2. Official Social Channels Section (Item 6 & Item 7)
+      // 2. Separate Completed Tasks Section (if claimed)
+      if (isTgDone) {
+        var completedBox = document.createElement('div');
+        completedBox.className = 'fvh-completed-tasks-section';
+        completedBox.style.marginBottom = '20px';
+
+        var completedHeading = document.createElement('div');
+        completedHeading.style.fontSize = '13px';
+        completedHeading.style.fontWeight = '900';
+        completedHeading.style.color = '#22c55e';
+        completedHeading.style.textTransform = 'uppercase';
+        completedHeading.style.letterSpacing = '0.5px';
+        completedHeading.style.marginBottom = '8px';
+        completedHeading.textContent = (lang === 'ru') ? '✅ Выполненные задания (1)' : '✅ Completed Missions (1)';
+        completedBox.appendChild(completedHeading);
+
+        var doneCard = document.createElement('div');
+        doneCard.className = 'fvh-quest-task-card done';
+        doneCard.style.background = 'rgba(34,197,94,0.06)';
+        doneCard.style.border = '1px solid rgba(34,197,94,0.3)';
+        doneCard.style.borderRadius = '12px';
+        doneCard.style.padding = '12px 16px';
+        doneCard.style.display = 'flex';
+        doneCard.style.alignItems = 'center';
+        doneCard.style.justifyContent = 'space-between';
+        doneCard.style.gap = '12px';
+
+        doneCard.innerHTML =
+          '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+          '  <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + getSocialIconSvg('tg') + '</div>' +
+          '  <div style="flex:1;min-width:0;">' +
+          '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('subscribeFootyHoops') + '</div>' +
+          '    <div style="font-size:11px;color:#22c55e;font-weight:700;margin-top:2px;">✓ ' + ((lang === 'ru') ? 'Получено (+50 FvH Coin)' : 'Claimed (+50 FvH Coin)') + '</div>' +
+          '  </div>' +
+          '</div>' +
+          '<span style="font-size:11px;color:#22c55e;font-weight:800;background:rgba(34,197,94,0.15);padding:4px 10px;border-radius:14px;white-space:nowrap;">' + tr('taskCompleted') + '</span>';
+
+        completedBox.appendChild(doneCard);
+        contentArea.appendChild(completedBox);
+      }
+
+      // 3. Official Social Channels Section (6 channels, informational only, no rewards)
       var officialBox = document.createElement('div');
       officialBox.className = 'fvh-official-socials-section';
 
@@ -5791,12 +6050,13 @@
   // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
   function buildDefaultShopCatalog(curChar) {
     return [
-      // === 5 SIGNATURE FOOTY KITS ===
+      // === SIGNATURE FOOTY KITS ===
       { id: 'skin_rookie', name: 'Rookie Blue', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
       { id: 'skin_footy_royal_striker', name: 'Royal Striker', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 750 },
       { id: 'skin_footy_cyber_strike', name: 'Cyber Strike', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1400 },
       { id: 'skin_footy_golden_legend', name: 'Golden Legend', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
       { id: 'skin_footy_stealth_shadow', name: 'Stealth Shadow', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1500 },
+      { id: 'skin_footy_neon_matrix', name: 'Neon Matrix', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2200 },
       // Additional Footy Kits
       { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300 },
       { id: 'skin_neon', name: 'Neon Striker', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 700 },
@@ -5807,15 +6067,17 @@
       { id: 'skin_hydro', name: 'Hydro Striker', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 750 },
       { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1600 },
 
-      // === 5 SIGNATURE HOOPS KITS ===
+      // === SIGNATURE HOOPS KITS ===
       { id: 'skin_solar', name: 'Solar Street', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
       { id: 'skin_hoops_street_legend', name: 'Street Legend', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750 },
       { id: 'skin_hoops_golden_state', name: 'Golden State', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
       { id: 'skin_hoops_cyber_dunk', name: 'Cyber Dunker', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1500 },
       { id: 'skin_hoops_phantom_black', name: 'Phantom Black', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
       { id: 'skin_hoops_neon_splash', name: 'Neon Splash', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 800 },
+      { id: 'skin_sunset', name: 'Sunset Gold', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750 },
+      { id: 'skin_mars', name: 'Mars Rover', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
 
-      // === 5 SIGNATURE FOOTBALL BALLS ===
+      // === SIGNATURE FOOTBALL BALLS ===
       { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
       { id: 'ball_footy_classic_pro', name: 'Pro Premier', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 450 },
       { id: 'ball_footy_inferno', name: 'Solar Inferno', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 600 },
@@ -5826,7 +6088,7 @@
       { id: 'ball_footy_plasma', name: 'Plasma Energy', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 350 },
       { id: 'ball_footy_gold', name: 'Golden Trophy', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 1000 },
 
-      // === 5 SIGNATURE BASKETBALL BALLS ===
+      // === SIGNATURE BASKETBALL BALLS ===
       { id: 'ball_hoops_street', name: 'Street Classic', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
       { id: 'ball_hoops_classic_pro', name: 'Pro League', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 450 },
       { id: 'ball_hoops_neon_energy', name: 'Neon Energy', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 600 },
@@ -5843,13 +6105,13 @@
   // Build Editorial Shop & Sports Boutique Page
   function buildShopPage(app, initialCategory, inspectId) {
     var curChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
-    var isFooty = (curChar === 'footy');
+    var shopSport = curChar; // Active sport filter in the shop: 'footy' or 'hoops'
     var curCategory = initialCategory || 'skins';
     if (curCategory === 'all' || curCategory === 'bundles' || curCategory === 'stadiums' || curCategory === 'packs') {
       curCategory = 'skins';
     }
-    if (curCategory === 'balls') {
-      curCategory = isFooty ? 'balls_footy' : 'balls_hoops';
+    if (curCategory === 'balls' || curCategory === 'balls_footy' || curCategory === 'balls_hoops') {
+      curCategory = (shopSport === 'footy') ? 'balls_footy' : 'balls_hoops';
     }
     var isPurchasing = false; // Debounce flag to prevent duplicate purchases
 
@@ -5876,7 +6138,7 @@
     titleBox.style.flex = '1 1 auto';
     titleBox.style.minWidth = '0';
     titleBox.style.padding = '0 6px';
-    titleBox.innerHTML = '<h1 style="margin:0;font-size:clamp(16px, 4.8vw, 22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('stadiumStore') + '</h1><small style="color:var(--text-muted);letter-spacing:0.5px;font-size:10.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr(isFooty ? 'storeSubFooty' : 'storeSubHoops') + '</small>';
+    titleBox.innerHTML = '<h1 style="margin:0;font-size:clamp(16px, 4.8vw, 22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('stadiumStore') + '</h1><small style="color:var(--text-muted);letter-spacing:0.5px;font-size:10.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr(shopSport === 'footy' ? 'storeSubFooty' : 'storeSubHoops') + '</small>';
 
     var walletBox = document.createElement('div');
     walletBox.className = 'fvh-wallet-chips';
@@ -5891,29 +6153,89 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
 
-    // 1. Category Selector Tabs (Skins, Football Balls, Basketball Balls, FvH Coins)
+    // 0. Sport Faction Switcher [ ⚽ FOOTY (Футбол) | 🏀 HOOPS (Баскетбол) ]
+    var sportSeg = document.createElement('div');
+    sportSeg.className = 'seg fvh-shop-sport-switcher';
+    sportSeg.style.marginBottom = '12px';
+    sportSeg.style.display = 'grid';
+    sportSeg.style.gridTemplateColumns = '1fr 1fr';
+    sportSeg.style.gap = '6px';
+
+    var footySportBtn = document.createElement('button');
+    footySportBtn.innerHTML = '⚽ FOOTY <small style="opacity:0.8;font-size:11px;">(' + (getActiveLang() === 'ru' ? 'Футбол' : 'Football') + ')</small>';
+    if (shopSport === 'footy') footySportBtn.className = 'on';
+
+    var hoopsSportBtn = document.createElement('button');
+    hoopsSportBtn.innerHTML = '🏀 HOOPS <small style="opacity:0.8;font-size:11px;">(' + (getActiveLang() === 'ru' ? 'Баскетбол' : 'Basketball') + ')</small>';
+    if (shopSport === 'hoops') hoopsSportBtn.className = 'on';
+
+    function updateShopHeader() {
+      var subEl = titleBox.querySelector('small');
+      if (subEl) subEl.textContent = tr(shopSport === 'footy' ? 'storeSubFooty' : 'storeSubHoops');
+    }
+
+    footySportBtn.onclick = function () {
+      if (shopSport === 'footy') return;
+      shopSport = 'footy';
+      footySportBtn.className = 'on';
+      hoopsSportBtn.className = '';
+      if (curCategory === 'balls_hoops') curCategory = 'balls_footy';
+      app.audio.play('click');
+      updateShopHeader();
+      renderCategoryTabs();
+      renderShop();
+    };
+
+    hoopsSportBtn.onclick = function () {
+      if (shopSport === 'hoops') return;
+      shopSport = 'hoops';
+      hoopsSportBtn.className = 'on';
+      footySportBtn.className = '';
+      if (curCategory === 'balls_footy') curCategory = 'balls_hoops';
+      app.audio.play('click');
+      updateShopHeader();
+      renderCategoryTabs();
+      renderShop();
+    };
+
+    sportSeg.appendChild(footySportBtn);
+    sportSeg.appendChild(hoopsSportBtn);
+    body.appendChild(sportSeg);
+
+    // 1. Category Selector Tabs (Skins, Balls for chosen sport, FvH Coins)
     var catSeg = document.createElement('div');
     catSeg.className = 'seg fvh-shop-categories';
     catSeg.style.marginBottom = '16px';
-    var categories = [
-      { id: 'skins', label: tr('catSkins') },
-      { id: 'balls_footy', label: tr('catFootballBalls') },
-      { id: 'balls_hoops', label: tr('catBasketballBalls') },
-      { id: 'coins', label: tr('catCoins') }
-    ];
-    categories.forEach(function (c) {
-      var btn = document.createElement('button');
-      btn.textContent = c.label;
-      if (c.id === curCategory) btn.className = 'on';
-      btn.onclick = function () {
-        curCategory = c.id;
-        catSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
-        btn.className = 'on';
-        app.audio.play('click');
-        renderShop();
-      };
-      catSeg.appendChild(btn);
-    });
+
+    function renderCategoryTabs() {
+      catSeg.innerHTML = '';
+      var categories = (shopSport === 'footy') ? [
+        { id: 'skins', label: '👕 ' + tr('catSkins') },
+        { id: 'balls_footy', label: '⚽ ' + tr('catFootballBalls') },
+        { id: 'coins', label: '⭐ ' + tr('catCoins') }
+      ] : [
+        { id: 'skins', label: '👕 ' + tr('catSkins') },
+        { id: 'balls_hoops', label: '🏀 ' + tr('catBasketballBalls') },
+        { id: 'coins', label: '⭐ ' + tr('catCoins') }
+      ];
+      categories.forEach(function (c) {
+        var btn = document.createElement('button');
+        btn.textContent = c.label;
+        if (c.id === curCategory || (c.id === 'balls_footy' && curCategory === 'balls') || (c.id === 'balls_hoops' && curCategory === 'balls')) {
+          btn.className = 'on';
+        }
+        btn.onclick = function () {
+          curCategory = c.id;
+          catSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
+          btn.className = 'on';
+          app.audio.play('click');
+          renderShop();
+        };
+        catSeg.appendChild(btn);
+      });
+    }
+
+    renderCategoryTabs();
     body.appendChild(catSeg);
 
     // Product Catalogue Grid
@@ -5934,9 +6256,7 @@
       if (btn) {
         btn.onclick = function () {
           curCategory = 'coins';
-          catSeg.querySelectorAll('button').forEach(function (b) {
-            b.className = (b.textContent === tr('catCoins')) ? 'on' : '';
-          });
+          renderCategoryTabs();
           app.audio.play('click');
           renderShop();
         };
@@ -6157,6 +6477,15 @@
       var eq = (app.store && app.store.data && app.store.data.equipped) || {};
 
       var filtered = baseCatalog.filter(function (it) {
+        if (curCategory === 'skins') {
+          return it.category === 'skins' && it.mode === shopSport;
+        }
+        if (curCategory === 'balls_footy') {
+          return it.category === 'balls_footy';
+        }
+        if (curCategory === 'balls_hoops') {
+          return it.category === 'balls_hoops';
+        }
         return it.category === curCategory;
       });
 
@@ -7902,16 +8231,16 @@
           return;
         }
 
-        // If WebRTC negotiation doesn't complete within 2.5 seconds, use RelayLink smoothly
+        // Fast-track WebRTC negotiation or fall back to Server RelayLink smoothly within 1.2s
         relayFallbackTimer = setTimeout(function () {
           if (!isStarted) {
-            console.log('WebRTC negotiation timeout, falling back to Server Relay Link');
+            console.log('WebRTC negotiation timeout (1.2s), fast-tracking Server Relay Link');
             if (link) {
               try { link.close(); } catch (e) {}
             }
             startWithRelay();
           }
-        }, 2500);
+        }, 1200);
 
         link.h.onClose = function () {
           if (!isStarted) startWithRelay();
@@ -8215,54 +8544,62 @@
       statusEl.style.color = '#10b981';
       statusEl.innerHTML = '<b>' + tr('matchFoundTitle') + '</b><br><span style="font-size:13px;color:#fff;">vs ' + opp.name + ' (' + (opp.char === 'footy' ? '⚽ FOOTY' : '🏀 HOOPS') + ')</span>';
 
-      var countdown = 3;
-      timerEl.textContent = tr('startingMatchIn', { n: countdown });
+      timerEl.textContent = (lang === 'ru') ? '⚡ Подключение к матчу...' : '⚡ Connecting to match...';
+      if (actionsEl) {
+        actionsEl.innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:4px 0;">' + ((lang === 'ru') ? 'Синхронизация игрового поля...' : 'Synchronizing arena...') + '</div>';
+      }
       app.audio.play('claim');
 
-      var cdInterval = setInterval(function () {
-        countdown--;
-        if (countdown > 0) {
-          timerEl.textContent = tr('startingMatchIn', { n: countdown });
-        } else {
-          clearInterval(cdInterval);
+      // Authoritative Server Match Configuration Resolution
+      var m = (matchInfo && matchInfo.match) ? matchInfo.match : (matchInfo || {});
+      var rawMode = String((m.mode !== undefined ? m.mode : (matchInfo && matchInfo.mode)) || '').toLowerCase().trim();
+      var resolvedMode = 'footy';
+      if (rawMode === 'hoops') {
+        resolvedMode = 'hoops';
+      } else if (rawMode === 'footy') {
+        resolvedMode = 'footy';
+      } else {
+        var hostChar = (m.host && (m.host.char || m.host.character)) || (matchInfo && matchInfo.opponent && matchInfo.role === 'guest' && matchInfo.opponent.char);
+        if (hostChar === 'hoops') resolvedMode = 'hoops';
+        else if (hostChar === 'footy') resolvedMode = 'footy';
+        else resolvedMode = (curChar === 'hoops') ? 'hoops' : 'footy';
+      }
+
+      var rawMin = Number(m.minutes !== undefined ? m.minutes : (matchInfo && matchInfo.minutes));
+      var resolvedMin = (!isNaN(rawMin) && rawMin >= 1 && rawMin <= 10) ? Math.round(rawMin) : 2;
+
+      var rawSeed = Number(m.seed !== undefined ? m.seed : (matchInfo && matchInfo.seed));
+      var resolvedSeed = (!isNaN(rawSeed) && rawSeed !== 0) ? (rawSeed | 0) : ((Math.random() * 1e9) | 0);
+
+      var resolvedArena = m.arenaId || (matchInfo && matchInfo.arenaId) || null;
+
+      // Parallel fast-track connection with smooth 1.2s Opponent Found celebration
+      var readySession = null;
+      var transitionDone = false;
+
+      function checkLaunch() {
+        if (readySession && transitionDone) {
           overlay.remove();
-
-          // Authoritative Server Match Configuration Resolution
-          var m = (matchInfo && matchInfo.match) ? matchInfo.match : (matchInfo || {});
-          var rawMode = String((m.mode !== undefined ? m.mode : (matchInfo && matchInfo.mode)) || '').toLowerCase().trim();
-          var resolvedMode = 'footy';
-          if (rawMode === 'hoops') {
-            resolvedMode = 'hoops';
-          } else if (rawMode === 'footy') {
-            resolvedMode = 'footy';
-          } else {
-            // Malformed, 'clash', or missing mode: resolve using host character if available, else safe fallback
-            var hostChar = (m.host && (m.host.char || m.host.character)) || (matchInfo && matchInfo.opponent && matchInfo.role === 'guest' && matchInfo.opponent.char);
-            if (hostChar === 'hoops') resolvedMode = 'hoops';
-            else if (hostChar === 'footy') resolvedMode = 'footy';
-            else resolvedMode = (curChar === 'hoops') ? 'hoops' : 'footy';
-          }
-
-          var rawMin = Number(m.minutes !== undefined ? m.minutes : (matchInfo && matchInfo.minutes));
-          var resolvedMin = (!isNaN(rawMin) && rawMin >= 1 && rawMin <= 10) ? Math.round(rawMin) : 2;
-
-          var rawSeed = Number(m.seed !== undefined ? m.seed : (matchInfo && matchInfo.seed));
-          var resolvedSeed = (!isNaN(rawSeed) && rawSeed !== 0) ? (rawSeed | 0) : ((Math.random() * 1e9) | 0);
-
-          var resolvedArena = m.arenaId || (matchInfo && matchInfo.arenaId) || null;
-
-          startWebRTCSession(app, matchInfo.role, matchInfo.matchId, playerName, opp.name, {
-            mode: resolvedMode,
-            minutes: resolvedMin,
-            seed: resolvedSeed,
-            arenaId: resolvedArena
-          }, function (session) {
-            app.launchOnline(session);
-          }, function (err) {
-            showToast(tr('serverUnavailable'));
-          });
+          app.launchOnline(readySession);
         }
-      }, 1000);
+      }
+
+      setTimeout(function () {
+        transitionDone = true;
+        checkLaunch();
+      }, 1200);
+
+      startWebRTCSession(app, matchInfo.role, matchInfo.matchId, playerName, opp.name, {
+        mode: resolvedMode,
+        minutes: resolvedMin,
+        seed: resolvedSeed,
+        arenaId: resolvedArena
+      }, function (session) {
+        readySession = session;
+        checkLaunch();
+      }, function (err) {
+        showMatchmakingError((lang === 'ru') ? 'Не удалось подключиться к сопернику. Попробуйте снова.' : 'Failed to connect to opponent. Please retry.');
+      });
     }
 
     startSearch();
@@ -8978,9 +9315,10 @@
         if (!d.settings) d.settings = {};
         d.settings.difficulty = selDiff;
       });
+      var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
       app.launch({
         mode: selSport,
-        char: selSport,
+        char: playerChosenChar,
         difficulty: selDiff,
         minutes: selMinutes,
         boostId: null
@@ -9905,9 +10243,10 @@
 
     if (targetLaunch) {
       setTimeout(function () {
+        var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
         app.launch({
           mode: targetLaunch,
-          char: targetLaunch,
+          char: playerChosenChar,
           difficulty: 'normal',
           minutes: 2,
           boostId: null
