@@ -643,62 +643,141 @@ html.is-telegram {
   box-sizing: border-box;
 }
 
-/* Dominant PLAY Button */
+/* Dominant HERO PLAY Button (Cohesive Faction Styling) */
 .fvh-btn-play-hero {
   width: 100%;
-  min-height: 60px;
-  background: var(--accent-lime);
+  min-height: 62px;
+  background: linear-gradient(135deg, #00f0ff 0%, #10b981 100%);
   border: 0;
-  border-radius: 16px;
-  color: #0b111e;
+  border-radius: 18px;
+  color: #06111f;
   font-family: inherit;
   font-weight: 900;
-  font-style: italic;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 14px 24px;
+  gap: 3px;
+  padding: 12px 20px;
   cursor: pointer;
-  box-shadow: 0 4px 24px rgba(190, 242, 100, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.15s ease;
+  box-shadow: 0 8px 24px rgba(0, 240, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.fvh-btn-play-hero.hoops {
+  background: linear-gradient(135deg, #ff8a00 0%, #ea580c 100%) !important;
+  color: #120702 !important;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 .fvh-btn-play-hero:hover {
-  background: var(--accent-lime-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(190, 242, 100, 0.45);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 30px rgba(0, 240, 255, 0.42);
+}
+
+.fvh-btn-play-hero.hoops:hover {
+  box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5) !important;
 }
 
 .fvh-btn-play-hero:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+.fvh-btn-play-hero .play-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .fvh-btn-play-hero .play-icon {
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1;
-  color: #0b111e;
 }
 
 .fvh-btn-play-hero .play-text {
-  font-size: clamp(20px, 4.5vw, 24px);
-  letter-spacing: 1px;
-  color: #0b111e;
-}
-
-.fvh-btn-play-hero .play-sub {
-  font-size: 11.5px;
-  font-style: normal;
-  font-weight: 800;
-  color: rgba(11, 17, 30, 0.75);
-  margin-left: 6px;
-  letter-spacing: 0.5px;
+  font-size: clamp(20px, 4.6vw, 24px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
-/* Secondary Actions Bar */
+.fvh-btn-play-hero .play-sub {
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  opacity: 0.85;
+  letter-spacing: 0.4px;
+}
+
+/* Secondary Console Quick Hub (Shop, Quests/Invites, Leaderboard) */
+.fvh-secondary-hub {
+  width: 100%;
+  max-width: 480px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.fvh-hub-tile {
+  background: linear-gradient(145deg, rgba(16, 24, 44, 0.88) 0%, rgba(9, 14, 28, 0.95) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
+  color: inherit;
+  font-family: inherit;
+}
+
+.fvh-hub-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+}
+
+.fvh-hub-tile:active {
+  transform: scale(0.96);
+}
+
+.fvh-hub-tile .tile-icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.fvh-hub-tile .tile-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+}
+
+.fvh-hub-tile .tile-sub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.15;
+}
+
+/* Secondary Actions Bar (Legacy support) */
 .fvh-sub-actions {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -1027,16 +1106,36 @@ html.is-telegram {
     box-sizing: border-box !important;
   }
   .fvh-btn-play-hero {
-    min-height: 48px !important;
-    padding: 8px 12px !important;
-    border-radius: 14px !important;
+    min-height: 58px !important;
+    padding: 10px 14px !important;
+    border-radius: 16px !important;
     box-sizing: border-box !important;
   }
   .fvh-btn-play-hero .play-text {
-    font-size: 18px !important;
+    font-size: 19px !important;
   }
   .fvh-btn-play-hero .play-sub {
-    font-size: 9.5px !important;
+    font-size: 10px !important;
+  }
+  .fvh-secondary-hub {
+    gap: 6px !important;
+    margin-bottom: 10px !important;
+    width: 100% !important;
+  }
+  .fvh-hub-tile {
+    padding: 9px 4px !important;
+    border-radius: 12px !important;
+    min-height: 56px !important;
+  }
+  .fvh-hub-tile .tile-icon {
+    font-size: 18px !important;
+    margin-bottom: 2px !important;
+  }
+  .fvh-hub-tile .tile-title {
+    font-size: 11px !important;
+  }
+  .fvh-hub-tile .tile-sub {
+    font-size: 9px !important;
   }
   .fvh-sub-actions {
     grid-template-columns: repeat(3, 1fr) !important;

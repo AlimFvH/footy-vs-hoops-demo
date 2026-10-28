@@ -5352,12 +5352,17 @@
       return app.store.data.claimedQuests;
     }
 
-    // Tab 1: Invite a Friend
+    // Tab 1: Invite a Friend (Authoritative Telegram Mini App Deep Links)
     function renderReferralsTab() {
       contentArea.innerHTML = '';
       var pid = getPlayerId();
-      var botUsername = 'FootyVsHoopsBot';
-      var refLink = 'https://t.me/' + botUsername + '?start=ref_' + pid;
+      var botUsername = 'FootyHoopsGameBot';
+      var myRefCode = (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id)
+        ? String(app.store.data.telegramUser.id)
+        : pid;
+      var directRefLink = 'https://t.me/' + botUsername + '?startapp=ref_' + encodeURIComponent(myRefCode);
+      var fallbackRefLink = 'https://t.me/' + botUsername + '?start=ref_' + encodeURIComponent(myRefCode);
+      var lang = getActiveLang();
 
       var refData = app.store.data.referrals || [];
       var totalInvited = Array.isArray(refData) ? refData.length : (refData.total || 0);
@@ -5366,73 +5371,100 @@
         : (refData.qualified || 0);
       var earnedCoins = qualifiedFriends * 100;
 
-      // Query authoritative referral stats from server
-      fetch('/api/referrals/stats?playerId=' + encodeURIComponent(pid))
-        .then(function (res) { return res.json(); })
-        .then(function (s) {
-          if (s && s.ok && s.stats) {
-            totalInvited = s.stats.total || totalInvited;
-            qualifiedFriends = s.stats.qualified || qualifiedFriends;
-            earnedCoins = qualifiedFriends * 100;
-          }
-        })
-        .catch(function () {});
-
       // 1. Referral Hero Banner & Honest Qualification Rule
       var hero = document.createElement('div');
       hero.className = 'fvh-quest-ref-hero';
       hero.innerHTML =
         '<div class="fvh-quest-ref-icon" style="margin-bottom:8px;display:flex;justify-content:center;">' + getInviteFriendsSvg(44) + '</div>' +
-        '<div class="fvh-quest-ref-title">' + tr('tabInviteFriends') + '</div>' +
+        '<div class="fvh-quest-ref-title">' + (lang === 'ru' ? 'Пригласи друга в команду' : 'Invite a Teammate') + '</div>' +
         '<div class="fvh-quest-ref-desc" style="color:var(--text-muted);font-size:12px;margin:6px 0 12px;line-height:1.45;">' +
-        tr('refRuleText') +
+        (lang === 'ru'
+          ? 'Отправьте ссылку другу. Когда он выберет фракцию или сыграет матч, вы мгновенно получите <strong style="color:#facc15;">+100 FvH Coins</strong>!'
+          : 'Send your link to a friend. When they pick a faction or finish a match, you instantly receive <strong style="color:#facc15;">+100 FvH Coins</strong>!') +
         '</div>';
       contentArea.appendChild(hero);
 
-      // 2. Link Box with Copy and Telegram Share
+      // 2. Link Box with Direct Mini App Link, Copy, Telegram Share, and Fallback Button
       var linkBox = document.createElement('div');
       linkBox.className = 'fvh-quest-link-box';
       linkBox.style.background = 'rgba(255,255,255,0.05)';
       linkBox.style.border = '1px solid rgba(255,255,255,0.12)';
-      linkBox.style.borderRadius = '12px';
-      linkBox.style.padding = '12px';
+      linkBox.style.borderRadius = '14px';
+      linkBox.style.padding = '14px';
       linkBox.style.marginBottom = '14px';
 
       linkBox.innerHTML =
-        '<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;font-weight:700;">' + tr('refStatTotal') + ' · ' + tr('tabInviteFriends') + '</div>' +
+        '<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;font-weight:700;">' +
+        (lang === 'ru' ? 'ВАША ССЫЛКА ДЛЯ ПРИГЛАШЕНИЯ' : 'YOUR INVITATION LINK') +
+        '</div>' +
         '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
-        '  <input type="text" readonly value="' + escapeHtml(refLink) + '" class="fvh-ref-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#38bdf8;font-size:12px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;">' +
+        '  <input type="text" readonly value="' + escapeHtml(directRefLink) + '" class="fvh-ref-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#38bdf8;font-size:12px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;">' +
         '  <button class="btn primary small fvh-btn-copy-ref" style="white-space:nowrap;padding:8px 14px;font-weight:800;">' + tr('refCopyBtn') + '</button>' +
         '</div>' +
-        '<button class="btn block fvh-btn-share-ref" style="background:#229ed9;color:#fff;font-weight:800;border:none;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">' +
-        '  <span>✈️</span> <span>' + tr('refShareBtn') + '</span>' +
-        '</button>';
+        '<div style="display:flex;flex-direction:column;gap:8px;">' +
+        '  <button class="btn block fvh-btn-share-ref" style="background:linear-gradient(135deg, #229ed9 0%, #0088cc 100%);color:#fff;font-weight:800;border:none;border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(34,158,217,0.35);">' +
+        '    <span>✈️</span> <span>' + (lang === 'ru' ? 'Поделиться в Telegram' : 'Share in Telegram') + '</span>' +
+        '  </button>' +
+        '  <button class="btn block fvh-btn-fallback-ref" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-weight:700;border-radius:10px;padding:9px 12px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:11.5px;">' +
+        '    <span>🤖</span> <span>' + (lang === 'ru' ? 'Резерв: открыть через чат бота' : 'Fallback: Open via Bot Chat') + '</span>' +
+        '  </button>' +
+        '</div>' +
+        '<div style="font-size:10.5px;color:#64748b;margin-top:8px;line-height:1.35;text-align:center;">' +
+        (lang === 'ru'
+          ? '💡 Ссылка открывает Mini App напрямую в Telegram на iOS и Android.'
+          : '💡 Link opens the Mini App directly inside Telegram on iOS and Android.') +
+        '</div>';
 
       var copyBtn = linkBox.querySelector('.fvh-btn-copy-ref');
       copyBtn.onclick = function () {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(refLink).then(function () {
-            app.audio.play('click');
-            showToast(tr('refCopied'));
-          });
-        } else {
-          var inp = linkBox.querySelector('.fvh-ref-input');
-          inp.select();
-          document.execCommand('copy');
+        var copySuccess = function () {
           app.audio.play('click');
           showToast(tr('refCopied'));
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(directRefLink).then(copySuccess).catch(function () {
+            try {
+              var inp = linkBox.querySelector('.fvh-ref-input');
+              inp.select();
+              document.execCommand('copy');
+              copySuccess();
+            } catch (e) {
+              showToast(lang === 'ru' ? 'Скопируйте ссылку вручную из поля' : 'Copy link manually from input');
+            }
+          });
+        } else {
+          try {
+            var inp = linkBox.querySelector('.fvh-ref-input');
+            inp.select();
+            document.execCommand('copy');
+            copySuccess();
+          } catch (e) {
+            showToast(lang === 'ru' ? 'Скопируйте ссылку вручную из поля' : 'Copy link manually from input');
+          }
         }
       };
 
       var shareBtn = linkBox.querySelector('.fvh-btn-share-ref');
       shareBtn.onclick = function () {
         app.audio.play('click');
-        var shareMsg = 'FOOTY vs HOOPS — Choose your faction and battle for $FOOTY and $HOOPS!';
-        var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(refLink) + '&text=' + encodeURIComponent(shareMsg);
+        var shareMsg = lang === 'ru'
+          ? 'Вступай в мою команду в FOOTY vs HOOPS! Забирай 100 FvH Coins и играй в Футбол и Баскетбол 1v1 ⚽🏀'
+          : 'Join my squad in FOOTY vs HOOPS! Claim 100 FvH Coins and battle in 1v1 Football & Basketball ⚽🏀';
+        var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(directRefLink) + '&text=' + encodeURIComponent(shareMsg);
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
           window.Telegram.WebApp.openTelegramLink(shareUrl);
         } else {
           window.open(shareUrl, '_blank');
+        }
+      };
+
+      var fallbackBtn = linkBox.querySelector('.fvh-btn-fallback-ref');
+      fallbackBtn.onclick = function () {
+        app.audio.play('click');
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+          window.Telegram.WebApp.openTelegramLink(fallbackRefLink);
+        } else {
+          window.open(fallbackRefLink, '_blank');
         }
       };
 
@@ -5445,21 +5477,38 @@
       statsBox.style.gridTemplateColumns = 'repeat(3, 1fr)';
       statsBox.style.gap = '8px';
 
-      statsBox.innerHTML =
-        '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
-        '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatTotal') + '</div>' +
-        '  <div style="font-size:16px;font-weight:900;color:#fff;margin-top:2px;">' + totalInvited + '</div>' +
-        '</div>' +
-        '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
-        '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatQualified') + '</div>' +
-        '  <div style="font-size:16px;font-weight:900;color:#22c55e;margin-top:2px;">' + qualifiedFriends + '</div>' +
-        '</div>' +
-        '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
-        '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatEarned') + '</div>' +
-        '  <div style="font-size:16px;font-weight:900;color:#facc15;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:3px;">' + getFvhCoinSvg('inline') + ' ' + earnedCoins + '</div>' +
-        '</div>';
+      function updateStatsDom(total, qualified, coins) {
+        statsBox.innerHTML =
+          '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
+          '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatTotal') + '</div>' +
+          '  <div style="font-size:16px;font-weight:900;color:#fff;margin-top:2px;">' + total + '</div>' +
+          '</div>' +
+          '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
+          '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatQualified') + '</div>' +
+          '  <div style="font-size:16px;font-weight:900;color:#22c55e;margin-top:2px;">' + qualified + '</div>' +
+          '</div>' +
+          '<div class="fvh-quest-stat-tile" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 6px;text-align:center;">' +
+          '  <div style="font-size:10.5px;color:#94a3b8;font-weight:700;">' + tr('refStatEarned') + '</div>' +
+          '  <div style="font-size:16px;font-weight:900;color:#facc15;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:3px;">' + getFvhCoinSvg('inline') + ' ' + coins + '</div>' +
+          '</div>';
+      }
 
+      updateStatsDom(totalInvited, qualifiedFriends, earnedCoins);
       contentArea.appendChild(statsBox);
+
+      // Query authoritative referral stats from server
+      fetch('/api/referrals/stats?playerId=' + encodeURIComponent(myRefCode))
+        .then(function (res) { return res.json(); })
+        .then(function (s) {
+          if (s && s.ok) {
+            var st = s.stats || s;
+            totalInvited = (st.total !== undefined ? st.total : st.totalInvited) || totalInvited;
+            qualifiedFriends = (st.qualified !== undefined ? st.qualified : st.qualifiedCount) || qualifiedFriends;
+            earnedCoins = qualifiedFriends * 100;
+            updateStatsDom(totalInvited, qualifiedFriends, earnedCoins);
+          }
+        })
+        .catch(function () {});
     }
 
     // Tab 2: Social Tasks & Official Channels
@@ -9606,6 +9655,11 @@
         playerId: getAppPlayerId(app),
         team: chosenTeam
       });
+      fetch(getApiUrl('/api/referrals/qualify'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: getAppPlayerId(app) })
+      }).catch(function () {});
       app.audio.play('claim');
       showToast(tr('teamSelectedSuccess'));
       app.showMenu();
@@ -9710,29 +9764,32 @@
     }
     app.closePause();
 
-    var d = app.store.data;
-    var bpState = getBattlePassState(app.store);
+    var lang = getActiveLang();
+    var curChar = d.selectedCharacter || 'footy';
+    var isFooty = (curChar === 'footy');
 
     var screen = document.createElement('div');
     screen.className = 'screen menu-bg';
     screen.dataset.id = 'menu';
 
-    // 1. Top Bar: Clean Minimalist Console Header with Official Emblem
+    // 1. Top Bar: Clean Minimalist Console Header with Official Emblem, Coins, Profile, and Settings
     var topbar = document.createElement('header');
     topbar.className = 'fvh-topbar';
     var playerDisplayName = (d.profile && d.profile.nickname) || d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Alim';
-      var shortName = playerDisplayName.length > 9 ? (playerDisplayName.slice(0, 8) + '…') : playerDisplayName;
-      topbar.innerHTML =
-        '<div class="fvh-topbar-brand" style="cursor:pointer;" title="FOOTY vs HOOPS">' +
-        getOfficialEmblemHtml() +
-        '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
-        '</div>' +
-        '<div class="fvh-topbar-stats">' +
-        '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
-        '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
-        '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: d.selectedCharacter || 'footy', extraClass: 'mini-avatar' }) + '</span>' + escapeHtml(shortName) + '</button>' +
-        '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
-        '</div>';
+    var playerLevel = (d.profile && d.profile.level) ? d.profile.level : (d.level || 1);
+    var shortName = playerDisplayName.length > 9 ? (playerDisplayName.slice(0, 8) + '…') : playerDisplayName;
+
+    topbar.innerHTML =
+      '<div class="fvh-topbar-brand" style="cursor:pointer;" title="FOOTY vs HOOPS">' +
+      getOfficialEmblemHtml() +
+      '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
+      '</div>' +
+      '<div class="fvh-topbar-stats">' +
+      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' ' + (d.coins || 0) + '</button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
+      '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: curChar, extraClass: 'mini-avatar' }) + '</span><span class="fvh-profile-name">' + escapeHtml(shortName) + '</span><span class="fvh-profile-lvl" style="font-size:10px;opacity:0.75;margin-left:3px;">Lv.' + playerLevel + '</span></button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
+      '</div>';
     screen.appendChild(topbar);
 
     topbar.querySelector('.fvh-topbar-brand').onclick = function () { app.showMenu(); };
@@ -9741,30 +9798,60 @@
     topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
 
-    // 2. Compact Matchup & Team Status Bar (3D character model completely removed from home screen)
+    // 2. Faction Hero Card: Shows chosen faction, rival, team switcher, equipped cosmetics, locker & profile
     var stage = document.createElement('section');
     stage.className = 'fvh-hero-stage solo-stage compact';
-
-    var curChar = d.selectedCharacter || 'footy';
-    var isFooty = (curChar === 'footy');
 
     var heroCard = document.createElement('div');
     heroCard.className = 'fvh-hero-card solo-hero-compact ' + curChar;
 
     var badgeText = isFooty ? '⚽ ' + tr('teamFootyTitle') : '🏀 ' + tr('teamHoopsTitle');
     var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY';
+    var switchBtnText = lang === 'ru' ? '🔄 Сменить' : '🔄 Switch';
+
+    // Equipped cosmetics labels
+    var equippedJersey = isFooty
+      ? (d.equippedFootyJersey || d.equippedKit || (lang === 'ru' ? 'Форма FOOTY' : 'FOOTY Kit'))
+      : (d.equippedHoopsJersey || d.equippedJersey || (lang === 'ru' ? 'Джерси HOOPS' : 'HOOPS Jersey'));
+    var equippedBall = isFooty
+      ? (d.equippedFootyBall || d.equippedBall || (lang === 'ru' ? 'Мяч Classic' : 'Classic Ball'))
+      : (d.equippedHoopsBall || (lang === 'ru' ? 'Баскетбольный мяч' : 'Pro Leather'));
+
+    if (typeof getItemLabelById === 'function') {
+      equippedJersey = getItemLabelById(equippedJersey, equippedJersey);
+      equippedBall = getItemLabelById(equippedBall, equippedBall);
+    }
 
     heroCard.innerHTML =
-      '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;margin-bottom:8px;">' +
-      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:12px;font-weight:900;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;">' + badgeText + '</span>' +
+      '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:8px;flex-wrap:wrap;">' +
+      '  <div style="display:flex;align-items:center;gap:6px;">' +
+      '    <span class="fvh-hero-badge ' + curChar + '" style="font-size:12px;font-weight:900;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;">' + badgeText + '</span>' +
+      '    <button type="button" class="fvh-btn-switch-team" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#cbd5e1;font-size:11px;font-weight:700;border-radius:14px;padding:3px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' + switchBtnText + '</button>' +
+      '  </div>' +
       '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
+      '</div>' +
+      '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:6px 10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#cbd5e1;box-sizing:border-box;">' +
+      '  <div style="display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+      '    <span>' + (isFooty ? '👕' : '🎽') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedJersey) + '</strong>' +
+      '  </div>' +
+      '  <div style="display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+      '    <span>' + (isFooty ? '⚽' : '🏀') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
+      '  </div>' +
       '</div>' +
       '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
       '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:9px 8px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
       '  <button type="button" class="btn fvh-solo-profile-pill" style="padding:9px 8px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#fff;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👤</span> <span>' + tr('profile') + '</span></button>' +
       '</div>';
 
-    // Clicking gear button opens locker
+    var switchBtn = heroCard.querySelector('.fvh-btn-switch-team');
+    if (switchBtn) {
+      switchBtn.onclick = function (e) {
+        e.stopPropagation();
+        app.audio.play('click');
+        showTeamSelectionModal(app, true);
+      };
+    }
+
     heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
       e.stopPropagation();
       app.audio.play('click');
@@ -9786,19 +9873,25 @@
     stage.appendChild(heroCard);
     screen.appendChild(stage);
 
-    // 3. Primary Action Deck: Dominant PLAY Button that champions your sport!
+    // 3. Dominant PLAY Button: The primary call-to-action on the screen
     var actionDeck = document.createElement('div');
     actionDeck.className = 'fvh-action-deck';
+    actionDeck.style.width = '100%';
+    actionDeck.style.maxWidth = '480px';
+    actionDeck.style.marginBottom = '10px';
 
     var playBtn = document.createElement('button');
     playBtn.className = 'fvh-btn-play-hero ' + curChar;
-    var playTitle = isFooty ? tr('playForFooty') : tr('playForHoops');
-    var playSub = isFooty ? tr('playFootySub') : tr('playHoopsSub');
+    var playTitle = lang === 'ru' ? 'ИГРАТЬ ➔' : 'PLAY MATCH ➔';
+    var playSub = lang === 'ru' ? '1v1 Онлайн и Одиночный матч' : '1v1 PvP & vs AI';
 
     playBtn.innerHTML =
-      '<span class="play-icon">▶</span>' +
-      '<span class="play-text">' + playTitle + '</span>' +
+      '<div class="play-row">' +
+      '  <span class="play-icon">▶</span>' +
+      '  <span class="play-text">' + playTitle + '</span>' +
+      '</div>' +
       '<span class="play-sub">' + playSub + '</span>';
+
     playBtn.onclick = function () {
       app.audio.play('click');
       app.showModeSelect();
@@ -9806,30 +9899,68 @@
     actionDeck.appendChild(playBtn);
     screen.appendChild(actionDeck);
 
-    // 4. Token Rivalry Compact Ticker
+    // 4. Secondary Console Hub: Quick access to Shop, Quests (with +100 FvH friend invites badge), and Leaderboard
+    var secondaryHub = document.createElement('div');
+    secondaryHub.className = 'fvh-secondary-hub';
+
+    var shopLabel = lang === 'ru' ? 'Магазин' : 'Shop';
+    var shopSub = isFooty ? (lang === 'ru' ? 'Бутик FOOTY' : 'FOOTY Gear') : (lang === 'ru' ? 'Бутик HOOPS' : 'HOOPS Gear');
+    var questsLabel = lang === 'ru' ? 'Задания' : 'Quests';
+    var questsSub = '+100 FvH ' + (lang === 'ru' ? 'за друга' : '/ invite');
+    var leadLabel = lang === 'ru' ? 'Рейтинг' : 'Leaderboard';
+    var leadSub = lang === 'ru' ? 'Топ игроков' : 'Top Athletes';
+
+    secondaryHub.innerHTML =
+      '<button type="button" class="fvh-hub-tile" id="fvh-hub-shop">' +
+      '  <span class="tile-icon">🛒</span>' +
+      '  <span class="tile-title">' + shopLabel + '</span>' +
+      '  <span class="tile-sub">' + shopSub + '</span>' +
+      '</button>' +
+      '<button type="button" class="fvh-hub-tile" id="fvh-hub-quests" style="border-color:rgba(250,204,21,0.3);">' +
+      '  <span class="tile-icon">🎯</span>' +
+      '  <span class="tile-title">' + questsLabel + '</span>' +
+      '  <span class="tile-sub" style="color:#facc15;font-weight:800;">' + questsSub + '</span>' +
+      '</button>' +
+      '<button type="button" class="fvh-hub-tile" id="fvh-hub-leaderboard">' +
+      '  <span class="tile-icon">🏆</span>' +
+      '  <span class="tile-title">' + leadLabel + '</span>' +
+      '  <span class="tile-sub">' + leadSub + '</span>' +
+      '</button>';
+
+    secondaryHub.querySelector('#fvh-hub-shop').onclick = function () {
+      app.audio.play('click');
+      app.go('shop');
+    };
+    secondaryHub.querySelector('#fvh-hub-quests').onclick = function () {
+      app.audio.play('click');
+      app.go('quests');
+    };
+    secondaryHub.querySelector('#fvh-hub-leaderboard').onclick = function () {
+      app.audio.play('click');
+      app.go('leaderboard');
+    };
+
+    screen.appendChild(secondaryHub);
+
+    // 5. Token Rivalry Compact Ticker
     screen.appendChild(createRivalryTicker());
 
-    // 5. Active Quests & Missions Banner
-    var seasonCard = document.createElement('div');
-    seasonCard.className = 'fvh-season-hub-card';
-    seasonCard.innerHTML =
-      '<div class="fvh-season-hub-left">' +
-      '<div class="fvh-season-hub-tag">🎯 ' + tr('quests') + '</div>' +
-      '<div class="fvh-season-hub-title">' + (getActiveLang() === 'ru' ? 'Ежедневные задания и награды' : 'Daily Quests & Rewards') + '</div>' +
-      '<div class="fvh-season-hub-sub" style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + (getActiveLang() === 'ru' ? 'Выполняйте испытания и получайте FvH Coin' : 'Complete directives to earn FvH Coins') + '</div>' +
-      '</div>' +
-      '<button class="btn small primary fvh-season-hub-btn">' + tr('quests') + ' ➔</button>';
-    seasonCard.querySelector('.fvh-season-hub-btn').onclick = function () {
-      app.audio.play('click');
-      app.go('quests');
-    };
-    seasonCard.onclick = function (e) {
-      app.audio.play('click');
-      app.go('quests');
-    };
-    screen.appendChild(seasonCard);
-
     // Bottom Spacer for iOS WebKit Telegram Mini App safe scrolling
+    screen.appendChild(createScrollBottomSpacer());
+
+    // Unified Persistent Bottom Navigation
+    screen.appendChild(createSharedBottomNav('menu', app));
+
+    // Show screen
+    app.show(screen, 'menu');
+
+    // Onboarding: Prompt player to choose Team Football or Team Basketball on initial entry
+    if (!d.teamChosen) {
+      setTimeout(function () {
+        showTeamSelectionModal(app, false);
+      }, 350);
+    }
+  }
     screen.appendChild(createScrollBottomSpacer());
 
     // Unified Persistent Bottom Navigation
@@ -9872,6 +10003,13 @@
             d.stats.winsByDiff[curDiff] = (d.stats.winsByDiff[curDiff] || 0) + 1;
           }
         });
+
+        // Trigger referral qualification if this athlete was invited
+        fetch(getApiUrl('/api/referrals/qualify'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playerId: pid })
+        }).catch(function () {});
 
         if (!sum.online) {
           safeEconomyApi('/api/economy/reward', {
@@ -10304,11 +10442,14 @@
     if (startParam && startParam.startsWith('ref_')) {
       var refCodeFromParam = startParam.slice(4).trim();
       var pid = getAppPlayerId(app);
+      var tgId = (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id)
+        ? app.store.data.telegramUser.id
+        : undefined;
       if (refCodeFromParam && pid) {
         fetch(getApiUrl('/api/referrals/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ friendId: pid, referralCode: refCodeFromParam })
+          body: JSON.stringify({ friendId: pid, referralCode: refCodeFromParam, telegramId: tgId })
         }).catch(function () {});
       }
     }

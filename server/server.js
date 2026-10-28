@@ -1443,6 +1443,14 @@ const server = http.createServer((req, res) => {
       qualifiedFriends: qualifiedCount,
       commissionRate: REFERRAL_COMMISSION_RATE,
       totalCommissionCoins: refData.totalCommissionCoins || 0,
+      referralLink: `https://t.me/FootyHoopsGameBot?startapp=ref_${norm}`,
+      directMiniAppLink: `https://t.me/FootyHoopsGameBot?startapp=ref_${norm}`,
+      fallbackLink: `https://t.me/FootyHoopsGameBot?start=ref_${norm}`,
+      stats: {
+        total: totalCount,
+        qualified: qualifiedCount,
+        earnedCoins: qualifiedCount * 100
+      },
       milestones: [
         { friends: 1, coins: 500, xp: 150, label: '1 Friend' },
         { friends: 3, coins: 1500, xp: 300, label: '3 Friends' },
@@ -1538,28 +1546,42 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // 3. Qualify Referral (Friend completed their first match)
+  // 3. Qualify Referral (Friend selected faction or completed their first match)
   if (pathname === '/api/referrals/qualify' && req.method === 'POST') {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
       const playerId = String(data.playerId || data.friendId || '').trim();
       let qualifiedAny = false;
+      let awardedCoins = 0;
 
       // Find all referral entries with this playerId and qualify them
       Object.keys(state.referrals).forEach(code => {
-        state.referrals[code].referred.forEach(r => {
+        const refRecord = state.referrals[code];
+        if (!refRecord || !Array.isArray(refRecord.referred)) return;
+        refRecord.referred.forEach(r => {
           if (r.playerId === playerId && !r.qualified) {
             r.qualified = true;
             r.qualifiedAt = Date.now();
             qualifiedAny = true;
+            awardedCoins += 100;
+            refRecord.totalCommissionCoins = (refRecord.totalCommissionCoins || 0) + 100;
+
+            // Credit 100 FvH Coin to referrer's authoritative balance
+            const referrerId = refRecord.ownerId || code;
+            const refOwner = getPlayer(referrerId);
+            if (refOwner) {
+              refOwner.coins = (refOwner.coins || 0) + 100;
+              refOwner.xp = (refOwner.xp || 0) + 50;
+              addLedgerEntry(referrerId, 'referral_reward', 100, 50, refOwner.coins, `Referral qualification reward for athlete ${playerId}`, null, { referredPlayerId: playerId });
+            }
           }
         });
       });
 
       if (qualifiedAny) persistState();
 
-      return sendJson(res, 200, { ok: true, success: true, qualified: qualifiedAny });
+      return sendJson(res, 200, { ok: true, success: true, qualified: qualifiedAny, awardedCoins });
     });
   }
 
@@ -2093,7 +2115,7 @@ const server = http.createServer((req, res) => {
                       [
                         {
                           text: '👥 Позвать друга на матч',
-                          url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?start=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent('Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀')}`
+                          url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?startapp=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent('Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀')}`
                         }
                       ]
                     ]
