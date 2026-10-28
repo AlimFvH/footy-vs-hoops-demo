@@ -9804,12 +9804,12 @@
     screen.className = 'screen menu-bg';
     screen.dataset.id = 'menu';
 
-    // 1. Top Bar: Clean Minimalist Console Header with Official Emblem, Coins, Profile, and Settings
+    // 1. Top Bar: Console Header with Official Emblem, Coins, Leaderboard, Profile, and Settings
     var topbar = document.createElement('header');
     topbar.className = 'fvh-topbar';
     var playerDisplayName = (d.profile && d.profile.nickname) || d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Alim';
     var playerLevel = (d.profile && d.profile.level) ? d.profile.level : (d.level || 1);
-    var shortName = playerDisplayName.length > 9 ? (playerDisplayName.slice(0, 8) + '…') : playerDisplayName;
+    var shortName = playerDisplayName.length > 8 ? (playerDisplayName.slice(0, 7) + '…') : playerDisplayName;
 
     topbar.innerHTML =
       '<div class="fvh-topbar-brand" style="cursor:pointer;" title="FOOTY vs HOOPS">' +
@@ -9817,13 +9817,17 @@
       '<div class="logo-text">FOOTY <span class="dot">VS</span> HOOPS</div>' +
       '</div>' +
       '<div class="fvh-topbar-stats">' +
-      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' <span>' + (d.coins || 0) + '</span></button>' +
+      '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' <span>' + (d.coins || 0).toLocaleString() + '</span></button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
+      '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: curChar, extraClass: 'mini-avatar' }) + '</span><span class="fvh-profile-name">' + escapeHtml(shortName) + '</span><span class="fvh-profile-lvl" style="font-size:10px;opacity:0.75;margin-left:3px;">Lv.' + playerLevel + '</span></button>' +
       '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
       '</div>';
     screen.appendChild(topbar);
 
     topbar.querySelector('.fvh-topbar-brand').onclick = function () { app.showMenu(); };
     topbar.querySelector('#fvh-btn-coins').onclick = function () { app.audio.play('click'); app.go('shop'); };
+    topbar.querySelector('#fvh-btn-leaderboard').onclick = function () { app.audio.play('click'); app.go('leaderboard'); };
+    topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
 
     // 2. Faction Hero Card: Shows chosen faction, rival, team switcher, equipped cosmetics, locker & profile

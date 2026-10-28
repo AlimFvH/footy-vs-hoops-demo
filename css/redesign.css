@@ -52,14 +52,13 @@ html, body {
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
-  --tg-safe-top: var(--tg-content-top, var(--tg-safe-top, 0px));
-  --tg-safe-bottom: var(--tg-content-bottom, var(--tg-safe-bottom, 0px));
-  --safe-top: max(var(--sat), var(--tg-safe-top), 0px);
-  --safe-bottom: max(var(--sab), var(--tg-safe-bottom), 0px);
+  --safe-top: max(var(--sat), 8px);
+  --safe-bottom: max(var(--sab), 8px);
 }
 
 html.is-telegram {
-  --safe-top: max(var(--sat), var(--tg-content-top, 0px), 48px);
+  --safe-top: max(var(--sat), var(--tg-content-top, 0px), var(--tg-safe-top, 0px), 48px);
+  --safe-bottom: max(var(--sab), var(--tg-content-bottom, 0px), var(--tg-safe-bottom, 0px), 16px);
 }
 
 /* Overall Screen Atmosphere */
@@ -6234,7 +6233,8 @@ html, body {
   border-radius: 999px !important;
 }
 .fvh-topbar-stats button.fvh-pill.icon-only,
-#fvh-btn-settings {
+#fvh-btn-settings,
+#fvh-btn-leaderboard {
   width: 32px !important;
   min-width: 32px !important;
   max-width: 32px !important;
@@ -6692,38 +6692,95 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   display: block !important;
 }
 
-/* Topbar Mobile Responsiveness (<440px and <=360px) */
-@media (max-width: 440px) {
+/* Topbar Mobile Responsiveness (<480px, <400px, and <=360px) */
+@media (max-width: 480px) {
   .fvh-topbar-brand .logo-text {
     display: none !important;
   }
   .fvh-topbar-brand {
     margin-right: 4px !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  .fvh-topbar-brand .fvh-official-emblem,
+  .fvh-topbar-brand img {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
   }
   .fvh-topbar {
     padding: 6px 10px !important;
-    min-height: 48px !important;
+    min-height: 46px !important;
+    gap: 4px !important;
     overflow: visible !important;
   }
   .fvh-topbar-stats {
     gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  .fvh-topbar-stats button.fvh-pill {
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    padding: 0 7px !important;
+    font-size: 11px !important;
+  }
+  .fvh-topbar-stats button.fvh-pill.icon-only,
+  #fvh-btn-settings,
+  #fvh-btn-leaderboard {
+    width: 30px !important;
+    min-width: 30px !important;
+    max-width: 30px !important;
+    height: 30px !important;
+    font-size: 14px !important;
+  }
+  .fvh-btn-topbar-profile {
+    max-width: 82px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    padding: 0 5px !important;
+  }
+  .fvh-btn-topbar-profile .fvh-profile-name {
+    max-width: 38px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
   }
 }
 @media (max-width: 360px) {
-  .fvh-topbar-brand .logo-text {
-    display: none !important;
+  .fvh-topbar {
+    padding: 4px 6px !important;
+    gap: 2px !important;
+  }
+  .fvh-topbar-brand .fvh-official-emblem,
+  .fvh-topbar-brand img {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+  }
+  .fvh-topbar-stats {
+    gap: 3px !important;
+  }
+  .fvh-topbar-stats button.fvh-pill {
+    padding: 0 5px !important;
+    font-size: 10px !important;
   }
   .fvh-btn-topbar-profile {
-    max-width: 85px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    max-width: 68px !important;
   }
-  #fvh-btn-settings {
-    width: 32px !important;
-    min-width: 32px !important;
-    max-width: 32px !important;
-    height: 32px !important;
-    flex-shrink: 0 !important;
+  .fvh-btn-topbar-profile .fvh-profile-name {
+    max-width: 28px !important;
+  }
+  #fvh-btn-settings,
+  #fvh-btn-leaderboard {
+    width: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    height: 28px !important;
+    font-size: 13px !important;
   }
 }
 

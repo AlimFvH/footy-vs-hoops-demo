@@ -2009,8 +2009,11 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 }
             }
             const h = this.P.step;
-            while (this.acc >= h) {
+            let subSteps = 0;
+            const maxSubSteps = 8;
+            while (this.acc >= h && subSteps < maxSubSteps) {
                 this.acc -= h;
+                subSteps++;
                 this.edges.shootPressed = this.pendShootPressed;
                 this.edges.shootReleased = this.pendShootReleased;
                 this.edges.tacklePressed = this.pendTacklePressed;
@@ -2020,6 +2023,9 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 Object.assign(this.edges2, this.pend2);
                 this.pend2.shootPressed = this.pend2.shootReleased = this.pend2.tacklePressed = this.pend2.tackleReleased = this.pend2.pass = false;
                 this.tick(h);
+            }
+            if (this.acc >= h) {
+                this.acc = 0;
             }
         }
         activateTurboBoost() {
@@ -13999,11 +14005,16 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.replayActive = false;
             this.replayTimer = 0;
             this.replayActiveFrames = [];
+            const isMobileDevice = () => (typeof window !== 'undefined') && (
+                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+            );
             this.resize = () => {
                 var _a;
                 const w = Math.max(1, this.stage.clientWidth || window.innerWidth);
                 const hgt = Math.max(1, this.stage.clientHeight || window.innerHeight);
-                const cap = this.qualityMode === 'high' ? 2.5 : 2.0;
+                const isMob = isMobileDevice();
+                const cap = isMob ? (this.qualityMode === 'high' ? 1.5 : 1.25) : (this.qualityMode === 'high' ? 2.0 : 1.5);
                 this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale;
                 this.renderer.resize(w, hgt, this.dpr);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.setAspect(w / hgt);
@@ -14048,7 +14059,8 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             };
             this.stage = stage;
             this.qualityMode = this.pickQuality();
-            this.renderer = new renderer_js_1.Renderer(canvas, { antialias: true, shadowSize: this.qualityMode === 'high' ? 2048 : 1024 });
+            const initShadowMapSize = isMobileDevice() ? (this.qualityMode === 'high' ? 1024 : 512) : (this.qualityMode === 'high' ? 2048 : 1024);
+            this.renderer = new renderer_js_1.Renderer(canvas, { antialias: true, shadowSize: initShadowMapSize });
             canvas.addEventListener('webglcontextlost', () => { var _a; return (_a = this.onContextLost) === null || _a === void 0 ? void 0 : _a.call(this); });
             window.addEventListener('resize', this.resize);
             (_a = window.visualViewport) === null || _a === void 0 ? void 0 : _a.addEventListener('resize', this.resize);
@@ -14060,9 +14072,12 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             const q = this.getSave().settings.quality;
             if (q === 'low' || q === 'high')
                 return q;
-            const mem = (_a = navigator.deviceMemory) !== null && _a !== void 0 ? _a : 8;
-            const cores = (_b = navigator.hardwareConcurrency) !== null && _b !== void 0 ? _b : 8;
-            const coarse = (_d = (_c = window.matchMedia) === null || _c === void 0 ? void 0 : _c.call(window, '(pointer: coarse)').matches) !== null && _d !== void 0 ? _d : false;
+            const isMob = (typeof window !== 'undefined') && (
+                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+            );
+            const mem = (_a = navigator.deviceMemory) !== null && _a !== void 0 ? _a : (isMob ? 4 : 8);
+            const cores = (_b = navigator.hardwareConcurrency) !== null && _b !== void 0 ? _b : (isMob ? 4 : 8);
             return (mem <= 2 || cores <= 2) ? 'low' : 'high';
         }
         get quality() {
@@ -14074,7 +14089,12 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
         applyQuality() {
             this.qualityMode = this.pickQuality();
             this.dprScale = 1;
-            this.renderer.setShadowSize(this.qualityMode === 'high' ? 2048 : 1024);
+            const isMob = (typeof window !== 'undefined') && (
+                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+            );
+            const shadowMapSize = isMob ? (this.qualityMode === 'high' ? 1024 : 512) : (this.qualityMode === 'high' ? 2048 : 1024);
+            this.renderer.setShadowSize(shadowMapSize);
             this.resize();
         }
         start(cfg, holdAtStart = false) {
@@ -14217,14 +14237,20 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.ema += (dt * 1000 - this.ema) * 0.05;
             if (this.getSave().settings.quality !== 'auto')
                 return;
-            if (this.ema > 28)
+            const isMob = (typeof window !== 'undefined') && (
+                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+            );
+            const threshold = isMob ? 22 : 25;
+            if (this.ema > threshold)
                 this.slowFrames++;
             else
                 this.slowFrames = Math.max(0, this.slowFrames - 2);
-            if (this.slowFrames > 90) {
+            const maxSlow = isMob ? 35 : 60;
+            if (this.slowFrames > maxSlow) {
                 this.slowFrames = 0;
-                if (this.dprScale > 0.65) {
-                    this.dprScale *= 0.8;
+                if (this.dprScale > 0.70) {
+                    this.dprScale *= 0.85;
                     this.resize();
                 }
                 else if (this.renderer.shadowsEnabled) {
