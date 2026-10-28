@@ -106,8 +106,8 @@ runTest('Item 1.1: BasketballSim initializes, steps, handles human & AI movement
 });
 
 runTest('Item 1.2: MatchView cleanly separates football and basketball modes and prevents kit cross-over', () => {
-  assert.ok(gameJs.includes("const playerChar = (mode === 'hoops') ? 'hoops' : (opts && opts.char ? opts.char : 'footy');"),
-    'MatchView must force hoops playerChar when mode is hoops');
+  assert.ok(gameJs.includes("const playerChar = (opts && opts.char) ? opts.char : 'footy';"),
+    'MatchView respects player faction identity from opts.char across both sports');
   assert.ok(gameJs.includes("const charSkinId = playerChar === 'hoops'"),
     'MatchView must resolve charSkinId specifically for hoops vs footy');
   assert.ok(gameJs.includes("const fallbackBall = (mode === 'footy') ? 'ball_footy_classic' : 'ball_hoops_street';"),

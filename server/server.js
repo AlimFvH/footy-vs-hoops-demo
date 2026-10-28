@@ -2570,7 +2570,13 @@ const server = http.createServer((req, res) => {
       });
     });
 
-    ranked.sort((a, b) => b.score - a.score);
+    ranked.sort((a, b) => {
+      return (b.score - a.score)
+        || ((b.wins || 0) - (a.wins || 0))
+        || ((b.winRate || 0) - (a.winRate || 0))
+        || (((b.wins || 0) + (b.losses || 0)) - ((a.wins || 0) + (a.losses || 0)))
+        || String(a.id || '').localeCompare(String(b.id || ''));
+    });
 
     ranked.forEach((ath, idx) => {
       ath.rank = idx + 1;

@@ -191,12 +191,12 @@ kbd { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(25
 .hud { position: absolute; inset: 0; pointer-events: none; }
 .hud > * { pointer-events: none; }
 .hud-top { position: absolute; top: calc(env(safe-area-inset-top, 44px) + 52px); left: calc(var(--sal) + 10px); right: calc(var(--sar) + 10px); display: flex; justify-content: center; align-items: flex-start; z-index: 30; }
-.scoreboard { display: flex; align-items: stretch; background: rgba(8,12,24,.78); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; backdrop-filter: blur(6px); font-weight: 800; }
-.sb-team { display: flex; align-items: center; gap: 10px; padding: 6px 14px; min-width: 94px; }
+.scoreboard { display: flex; align-items: stretch; background: rgba(8,12,24,.78); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; backdrop-filter: blur(6px); font-weight: 800; max-width: calc(100% - 108px); margin: 0 auto; }
+.sb-team { display: flex; align-items: center; gap: 8px; padding: 6px 10px; min-width: 68px; }
 .sb-team.you { background: linear-gradient(90deg, rgba(34,211,160,.35), transparent); }
 .sb-team.cpu { background: linear-gradient(270deg, rgba(255,90,106,.32), transparent); justify-content: flex-end; }
 .hud[data-mode=hoops] .sb-team.you { background: linear-gradient(90deg, rgba(255,138,42,.4), transparent); }
-.sb-name { font-size: 12px; letter-spacing: 1px; color: #d4def7; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+.sb-name { font-size: 11px; letter-spacing: 0.5px; color: #d4def7; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sb-score { font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
 .sb-time { padding: 6px 12px; font-size: 20px; font-variant-numeric: tabular-nums; align-self: center; min-width: 66px; text-align: center; }
 .sb-time.low { color: var(--danger); animation: pulse .5s infinite alternate; }

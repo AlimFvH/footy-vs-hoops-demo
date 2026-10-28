@@ -2792,7 +2792,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             b.vy = vy;
             b.vz = vz;
             b.lastTouch = a;
-            a.pickupLock = 0.55;
+            a.pickupLock = 0.85;
             a.shotT = 0.5;
             a.jumpT = 0.55;
             this.shotReleaseState = {
@@ -2835,27 +2835,20 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 this.launchShot(a, 0, 0, true);
                 return;
             }
+            // Auto square shooter towards hoop on shot release
+            const toHyp = Math.hypot(dx, dz) || 1;
+            a.fx = dx / toHyp;
+            a.fz = dz / toHyp;
+            a.vx = 0;
+            a.vz = 0;
+
             const q = this.shotQuality(Math.max(0.1, charge), a, dist);
-            const toHoop = Math.atan2(dx, dz);
-            const face = Math.atan2(a.fx, a.fz);
-            let diff = toHoop - face;
-            while (diff > Math.PI)
-                diff -= Math.PI * 2;
-            while (diff < -Math.PI)
-                diff += Math.PI * 2;
-            let errX;
-            let errZ;
-            const spread = (1 - q) * 1.15 + 0.04;
+            // Controlled, authentic spread based on timing quality
+            const spread = (1 - q) * 0.42;
             const ang = this.rng.range(0, Math.PI * 2);
-            errX = Math.cos(ang) * spread * this.rng.range(0.3, 1);
-            errZ = Math.sin(ang) * spread * this.rng.range(0.3, 1);
-            if (Math.abs(diff) > 0.7) {
-                errX += Math.sin(face) * dist - dx;
-                errZ += Math.cos(face) * dist - dz;
-            }
-            else {
-                errX += Math.sin(diff) * dist * 0.25;
-            }
+            const errDist = spread * this.rng.range(0.2, 1.0);
+            const errX = Math.cos(ang) * errDist;
+            const errZ = Math.sin(ang) * errDist * 0.6;
             this.launchShot(a, errX, errZ, false);
         }
         humanPass(a) {
@@ -3207,6 +3200,12 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             for (const a of this.agents) {
                 if (a.pickupLock > 0 || a.stun > 0.3)
                     continue;
+                // Ball must move independently when shot and not remain stuck or reattach to shooter mid-air
+                if (this.shot && a === this.shot.shooter) {
+                    if (!this.shot.touchedRim && !this.shot.touchedBoard && b.y > b.r + 0.25 && this.shot.age < 2.5) {
+                        continue;
+                    }
+                }
                 if (this.shotReleaseState && this.shotReleaseState.shooterId === a.id && !this.shotReleaseState.cleared)
                     continue;
                 const d = (0, math_js_4.dist2)(a.x, a.z, b.x, b.z);
@@ -7545,7 +7544,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.zoom = 1;
             this.cam.fov = mode === 'footy' ? 42 : 40;
             this.elev = ((mode === 'footy' ? 42 : 45) * Math.PI) / 180;
-            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : 8.4;
+            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : (aspect < 0.9 ? 16.0 : 14.0);
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
             this.limitZ = halfL;
@@ -7556,7 +7555,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         setAspect(aspect) {
             this.aspect = aspect;
             this.cam.aspect = aspect;
-            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : 8.4;
+            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : (aspect < 0.9 ? 16.0 : 14.0);
             this.snap = true;
         }
         shake(amount) {
@@ -7592,7 +7591,16 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
                     return false;
             }
             const p = (0, math_js_7.project)(c.viewProj, tx, 2.8, tz + hz);
-            return Math.abs(p.y) <= 0.97;
+            if (Math.abs(p.y) > 0.97) return false;
+            if (this.mode === 'hoops' && this.aspect < 0.9) {
+                // Ensure top basket and backboard at z = -12.6, y = 3.6 clear HUD scoreboard (NDC y <= 0.65)
+                const topBasket = (0, math_js_7.project)(c.viewProj, 0, 3.6, -12.6);
+                if (topBasket.w > 0 && topBasket.y > 0.65) return false;
+                // Ensure bottom basket clears joystick area
+                const botBasket = (0, math_js_7.project)(c.viewProj, 0, 3.6, 12.6);
+                if (botBasket.w > 0 && botBasket.y < -0.72) return false;
+            }
+            return true;
         }
         fitDistance(tx, tz, hx, hz) {
             let lo = 6;
@@ -8602,7 +8610,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.arena.apply(this.scene);
             renderer.clearColor = (0, math_js_10.rgb)(stadium.fog);
             this.frame = visualOf(eq.frame, 'frame_default');
-            const playerChar = (mode === 'hoops') ? 'hoops' : (opts && opts.char ? opts.char : 'footy');
+            const playerChar = (opts && opts.char) ? opts.char : 'footy';
             const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
             const charSkinId = playerChar === 'hoops'
                 ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_solar'))
@@ -14080,18 +14088,24 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.hud.onToggleMute = () => this.audio.toggleMute();
             this.passiveBoostConsumed = false;
             this.turboSpentInMatch = false;
-            const charPick = (cfg.mode === 'hoops') ? 'hoops' : (cfg.mode === 'footy' ? 'footy' : (cfg.char || save.selectedCharacter || 'footy'));
+            const playerFaction = (cfg.char || (save && (save.selectedTeam || save.selectedCharacter)) || 'footy');
+            const oppFaction = (playerFaction === 'footy') ? 'hoops' : 'footy';
+            const charPick = playerFaction;
             this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
             this.input.capture = !cfg.demo;
             this.input.releaseAll();
             if (!cfg.demo) {
                 this.hud.setMode(cfg.mode, save.settings.keys);
-                const isFooty = (cfg.mode === 'footy');
-                const youTxt = online ? (isFooty ? `⚽ ${online.info.myName}` : `🏀 ${online.info.myName}`) : (isFooty ? '⚽ FOOTY' : '🏀 HOOPS');
-                const oppTxt = online ? (isFooty ? `🏀 ${online.info.oppName}` : `⚽ ${online.info.oppName}`) : (isFooty ? '🏀 HOOPS' : '⚽ FOOTY');
+                const myIcon = (playerFaction === 'footy') ? '⚽' : '🏀';
+                const oppIcon = (oppFaction === 'footy') ? '⚽' : '🏀';
+                const myName = online ? online.info.myName : (playerFaction === 'footy' ? 'FOOTY' : 'HOOPS');
+                const oppName = online ? online.info.oppName : (oppFaction === 'footy' ? 'FOOTY' : 'HOOPS');
+                const youTxt = `${myIcon} ${myName}`;
+                const oppTxt = `${oppIcon} ${oppName}`;
                 this.hud.setNames(youTxt, oppTxt);
                 this.hud.resetState();
-                this.hud.showBanner(isFooty ? '⚔️ FOOTY vs HOOPS ⚔️' : '⚔️ HOOPS vs FOOTY ⚔️', 'big', 1600);
+                const modeBanner = (cfg.mode === 'footy') ? '⚽ FOOTBALL MATCH ⚽' : '🏀 BASKETBALL MATCH 🏀';
+                this.hud.showBanner(modeBanner, 'big', 1600);
                 this.hud.setBoost(cfg, save);
                 this.hud.onBoostTrigger = () => {
                     if (!this.running || this.paused || this.ended || !this.sim) return;
@@ -16302,8 +16316,12 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             this.setPause(!this.game.paused);
         }
         setPause(p) {
-            if (this.state !== 'match' || this.game.paused === p)
+            if (this.state !== 'match')
                 return;
+            if (this.game.paused === p && !p) {
+                this.closePause();
+                return;
+            }
             if (p && (this.pauseEl || this.current))
                 return;
             this.game.setPaused(p);
@@ -16315,8 +16333,31 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
         openPause() {
             var _a;
             this.audio.play('click');
-            const b = (label, fn, cls = '', icon = '') => (0, dom_js_6.h)('button', { class: `btn block pause-btn ${cls}`, type: 'button', on: { click: () => (this.audio.play('click'), fn()) } }, (0, dom_js_6.h)('span', { class: 'pi' }, icon), (0, dom_js_6.h)('span', { class: 'pl' }, label));
-            const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: 'panel pause-panel' }, (0, dom_js_6.h)('div', { class: 'pause-ico' }, '⏸'), (0, dom_js_6.h)('h2', { class: 'pause-title' }, (0, index_js_7.t)('pause.title')), b((0, index_js_7.t)('pause.resume'), () => this.setPause(false), 'primary', '▶'), ((_a = this.game.cfg) === null || _a === void 0 ? void 0 : _a.online) ? null : b((0, index_js_7.t)('pause.restart'), () => { this.closePause(); this.game.setPaused(false); this.launchAgain(); }, '', '↻'), b((0, index_js_7.t)('pause.settings'), () => this.pages.settingsOverlay(() => undefined), '', '⚙'), b((0, index_js_7.t)('pause.quit'), async () => {
+            if (this.hud && this.hud.touch) {
+                this.hud.touch.style.pointerEvents = 'none';
+            }
+            const b = (label, fn, cls = '', icon = '') => {
+                let triggered = false;
+                const fire = (e) => {
+                    if (triggered) return;
+                    triggered = true;
+                    if (e && e.preventDefault && e.cancelable) e.preventDefault();
+                    if (e && e.stopPropagation) e.stopPropagation();
+                    this.audio.play('click');
+                    fn();
+                };
+                return (0, dom_js_6.h)('button', {
+                    class: `btn block pause-btn ${cls}`,
+                    type: 'button',
+                    style: 'touch-action: manipulation; -webkit-tap-highlight-color: transparent;',
+                    on: {
+                        click: fire,
+                        touchend: fire,
+                        pointerup: fire
+                    }
+                }, (0, dom_js_6.h)('span', { class: 'pi' }, icon), (0, dom_js_6.h)('span', { class: 'pl' }, label));
+            };
+            const el = (0, dom_js_6.h)('div', { class: 'screen dim', style: 'z-index:99999 !important; pointer-events:auto !important;' }, (0, dom_js_6.h)('div', { class: 'panel pause-panel' }, (0, dom_js_6.h)('div', { class: 'pause-ico' }, '⏸'), (0, dom_js_6.h)('h2', { class: 'pause-title' }, (0, index_js_7.t)('pause.title')), b((0, index_js_7.t)('pause.resume'), () => this.setPause(false), 'primary', '▶'), ((_a = this.game.cfg) === null || _a === void 0 ? void 0 : _a.online) ? null : b((0, index_js_7.t)('pause.restart'), () => { this.closePause(); this.game.setPaused(false); this.launchAgain(); }, '', '↻'), b((0, index_js_7.t)('pause.settings'), () => this.pages.settingsOverlay(() => undefined), '', '⚙'), b((0, index_js_7.t)('pause.quit'), async () => {
                 if (await (0, kit_js_4.confirmDialog)(el, { title: (0, index_js_7.t)('pause.quit'), text: (0, index_js_7.t)('pause.quitConfirm'), danger: true })) {
                     this.quitToMenu();
                 }
@@ -16328,6 +16369,15 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             var _a;
             (_a = this.pauseEl) === null || _a === void 0 ? void 0 : _a.remove();
             this.pauseEl = null;
+            if (this.hud && this.hud.touch) {
+                this.hud.touch.style.pointerEvents = '';
+            }
+            if (this.hud) {
+                this.hud.resetState();
+            }
+            if (this.game && this.game.input) {
+                this.game.input.releaseAll();
+            }
         }
         launchAgain() {
             if (!this.lastCfg)

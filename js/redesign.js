@@ -4928,7 +4928,7 @@
 
   // Build Characters & Wardrobe Page
   function buildCharactersPage(app, initialChar, initialSlot) {
-    var curChar = initialChar || (app.store.data.selectedCharacter) || 'footy';
+    var curChar = initialChar || (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || 'footy';
     var curSlot = initialSlot || 'skins';
 
     var container = document.createElement('div');
@@ -4957,7 +4957,7 @@
     body.className = 'page-body';
 
     // Fixed Team: Once chosen, team is permanently locked
-    curChar = app.store.data.selectedCharacter || curChar || 'footy';
+    curChar = (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || curChar || 'footy';
     var isFooty = (curChar === 'footy');
     var lang = getActiveLang();
 
@@ -5057,7 +5057,6 @@
     function updateView() {
       title.textContent = tr('lockerTitle', { char: curChar === 'footy' ? tr('footyChar') : tr('hoopsChar') });
 
-      avatarBox.innerHTML = getCharacterDisplayHtml(curChar, app.store.data.equipped && app.store.data.equipped.skin);
       charName.textContent = curChar === 'footy' ? 'FOOTY' : 'HOOPS';
       charRole.textContent = curChar === 'footy' ? tr('footyRole') : tr('hoopsRole');
 
@@ -5096,6 +5095,7 @@
       var curCharSkin = isFooty
         ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'))
         : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_hoops') || eq.skin === 'skin_solar') ? eq.skin : 'skin_hoops_street_legend'));
+      avatarBox.innerHTML = getCharacterDisplayHtml(curChar, curCharSkin);
       var activeBallId = isFooty
         ? (eq['ball.footy'] || (eq.ball && !eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_footy_classic'))
         : (eq['ball.hoops'] || (eq.ball && eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_hoops_street'));
@@ -6128,7 +6128,7 @@
 
   // Build Editorial Shop & Sports Boutique Page
   function buildShopPage(app, initialCategory, inspectId) {
-    var curChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
+    var curChar = (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || 'footy';
     var shopSport = curChar; // Active sport filter in the shop: 'footy' or 'hoops'
     var curCategory = initialCategory || 'skins';
     if (curCategory === 'all' || curCategory === 'bundles' || curCategory === 'stadiums' || curCategory === 'packs') {
@@ -6686,19 +6686,22 @@
       '<span class="fvh-podium-team-tag hoops">🏀 ' + tr('hoopsChar') + '</span>' :
       '<span class="fvh-podium-team-tag footy">⚽ ' + tr('footyChar') + '</span>';
 
-    var tier = ath.tier || getRankTier(ath.score || 0);
-    var winRate = ath.winRate !== undefined ? ath.winRate : 80;
     var wins = ath.wins || 0;
     var losses = ath.losses || 0;
+    var matches = (ath.matches !== undefined ? ath.matches : (wins + losses));
+    var winRate = (matches > 0 && ath.winRate !== undefined) ? ath.winRate : (matches > 0 ? Math.round((wins / matches) * 100) : 0);
+    var isRu = (getActiveLang() === 'ru');
+    var statsText = matches > 0
+      ? tr('winsLossesLabel', { w: wins, l: losses }) + ' · ' + tr('winRateLabel', { n: winRate })
+      : (matches + (isRu ? ' матчей' : ' matches'));
 
     return '<div class="fvh-podium-col ' + pClass + (isHoops ? ' is-hoops' : ' is-footy') + '">' +
       crownHtml +
       '<div class="fvh-podium-avatar-box ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' + avatarHtml + '</div>' +
       '<div class="fvh-podium-name" title="' + escapeHtml(ath.name) + '">' + escapeHtml(ath.name) + '</div>' +
       teamTag +
-      '<div class="fvh-podium-tier-pill" style="color:' + tier.color + ';border-color:' + tier.color + '60;">' + tier.badge + '</div>' +
       '<div class="fvh-podium-score">' + (ath.score || 0).toLocaleString() + ' <small style="font-size:10px;opacity:0.8;">' + tr('ptsUnit') + '</small></div>' +
-      '<div class="fvh-podium-winrate">' + tr('winsLossesLabel', { w: wins, l: losses }) + ' · ' + tr('winRateLabel', { n: winRate }) + '</div>' +
+      '<div class="fvh-podium-winrate">' + statsText + '</div>' +
       '<div class="fvh-podium-pedestal">' +
       '  <span class="fvh-podium-num">#' + place + '</span>' +
       '  <span class="fvh-podium-medal">' + medalEmoji + '</span>' +
@@ -6981,6 +6984,25 @@
     });
     body.appendChild(timeBar);
 
+    // 2.5 Rules Explanation Card (Explains what ranking measures)
+    var isRu = (getActiveLang() === 'ru');
+    var rulesCard = document.createElement('div');
+    rulesCard.className = 'fvh-lb-rules-card';
+    rulesCard.style.margin = '0 0 12px';
+    rulesCard.style.padding = '10px 14px';
+    rulesCard.style.borderRadius = '12px';
+    rulesCard.style.background = 'rgba(255, 255, 255, 0.05)';
+    rulesCard.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+    rulesCard.style.display = 'flex';
+    rulesCard.style.alignItems = 'center';
+    rulesCard.style.gap = '10px';
+    rulesCard.innerHTML =
+      '<span style="font-size:18px;">ℹ️</span>' +
+      '<div style="font-size:11.5px;color:var(--text-muted);line-height:1.4;">' +
+      (isRu ? '<b style="color:#fff;">Система начисления очков:</b> +20 очков за победу · +10 очков за завершение матча' : '<b style="color:#fff;">Ranking Points:</b> +20 pts for each victory · +10 pts for match completion') +
+      '</div>';
+    body.appendChild(rulesCard);
+
     // 3. Live Search Filter Bar
     var searchWrap = document.createElement('div');
     searchWrap.className = 'fvh-lb-search-wrap';
@@ -7016,7 +7038,15 @@
     function renderAthletesDisplay(filterQuery) {
       resultsMount.innerHTML = '';
       var query = (filterQuery || '').trim().toLowerCase();
-      var allAthletes = data.top || [];
+      var allAthletes = (data.top || []).slice();
+      allAthletes.sort(function (a, b) {
+        return (b.score || 0) - (a.score || 0)
+          || (b.wins || 0) - (a.wins || 0)
+          || (b.winRate || 0) - (a.winRate || 0)
+          || (((b.wins || 0) + (b.losses || 0)) - ((a.wins || 0) + (a.losses || 0)))
+          || String(a.id || a.name || '').localeCompare(String(b.id || b.name || ''));
+      });
+
       if (cat === 'footy') {
         allAthletes = allAthletes.filter(function (a) { return (a.char || 'footy') === 'footy'; });
       } else if (cat === 'hoops') {
@@ -7029,16 +7059,25 @@
       if (filtered.length === 0) {
         var emptyCard = document.createElement('div');
         emptyCard.className = 'fvh-lb-empty-card';
-        emptyCard.innerHTML =
-          '<div style="font-size:36px;margin-bottom:8px;">🔍</div>' +
-          '<div style="font-size:14px;font-weight:800;color:var(--text-pure);">' + tr('noAthletesFound') + '</div>' +
-          '<div style="font-size:12px;color:var(--text-muted);margin:4px 0 14px;">«' + escapeHtml(query) + '»</div>' +
-          '<button class="btn primary small fvh-lb-reset-search-btn">' + tr('retrySync') + '</button>';
-        emptyCard.querySelector('.fvh-lb-reset-search-btn').onclick = function () {
-          searchInput.value = '';
-          searchClear.style.display = 'none';
-          renderAthletesDisplay('');
-        };
+        if (query) {
+          emptyCard.innerHTML =
+            '<div style="font-size:36px;margin-bottom:8px;">🔍</div>' +
+            '<div style="font-size:14px;font-weight:800;color:var(--text-pure);">' + tr('noAthletesFound') + '</div>' +
+            '<div style="font-size:12px;color:var(--text-muted);margin:4px 0 14px;">«' + escapeHtml(query) + '»</div>' +
+            '<button class="btn primary small fvh-lb-reset-search-btn">' + tr('retrySync') + '</button>';
+          emptyCard.querySelector('.fvh-lb-reset-search-btn').onclick = function () {
+            searchInput.value = '';
+            searchClear.style.display = 'none';
+            renderAthletesDisplay('');
+          };
+        } else {
+          emptyCard.innerHTML =
+            '<div style="text-align:center;padding:40px 16px;">' +
+            '  <div style="font-size:40px;margin-bottom:10px;">🏆</div>' +
+            '  <div style="font-size:16px;font-weight:900;color:var(--text-pure);margin-bottom:6px;">' + (isRu ? 'Матчи еще не сыграны' : 'No matches recorded yet') + '</div>' +
+            '  <div style="font-size:12px;color:var(--text-muted);max-width:280px;margin:0 auto 16px;line-height:1.4;">' + (isRu ? 'Сыграйте матч в футбол или баскетбол, чтобы занять первое место в таблице лидеров!' : 'Play a football or basketball match to claim the #1 spot on the leaderboard!') + '</div>' +
+            '</div>';
+        }
         resultsMount.appendChild(emptyCard);
         return;
       }
@@ -7048,17 +7087,17 @@
       scoreboardCard.className = 'fvh-war-scoreboard-card';
       scoreboardCard.innerHTML =
         '<div class="fvh-war-scoreboard-head">' +
-        '  <span class="fvh-war-live-pill">' + (data.isPrelaunch ? ('⏳ ' + (getActiveLang() === 'ru' ? 'ПРЕДСЕЗОН' : 'PRE-LAUNCH')) : ('🔴 ' + (getActiveLang() === 'ru' ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH'))) + '</span>' +
-        '  <span class="fvh-war-rule-tag">' + (data.isPrelaunch ? ('⏳ ' + (getActiveLang() === 'ru' ? 'Скоро запуск' : 'Season Coming Soon')) : ('⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }))) + '</span>' +
+        '  <span class="fvh-war-live-pill">' + (data.isPrelaunch ? ('⏳ ' + (isRu ? 'ПРЕДСЕЗОН' : 'PRE-LAUNCH')) : ('🔴 ' + (isRu ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH'))) + '</span>' +
+        '  <span class="fvh-war-rule-tag">' + (data.isPrelaunch ? ('⏳ ' + (isRu ? 'Скоро запуск' : 'Season Coming Soon')) : ('⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }))) + '</span>' +
         '</div>' +
         '<div class="fvh-war-clash-grid">' +
         '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
-        '    <div class="fvh-team-tag">⚽ ' + tr('teamFootball') + '</div>' +
+        '    <div class="fvh-team-tag">⚽ FOOTY</div>' +
         '    <div class="fvh-team-score-num">' + teamFooty.score.toLocaleString() + '</div>' +
         '    <div class="fvh-team-meta">' +
         '      <span class="fvh-team-pct">' + teamFooty.pct + '%</span>' +
         '      <span class="fvh-team-status ' + (isFootyWinning ? 'lead' : 'behind') + '">' +
-        (isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
+        (isFootyWinning ? ('👑 ' + (isRu ? 'ЛИДИРУЕТ' : 'LEADS')) : (isRu ? 'ОТСТАЕТ' : 'CHASING')) +
         '      </span>' +
         '    </div>' +
         '  </div>' +
@@ -7066,12 +7105,12 @@
         '    <div class="fvh-war-vs-badge">VS</div>' +
         '  </div>' +
         '  <div class="fvh-war-team-panel hoops ' + (!isFootyWinning ? 'is-leading' : '') + '">' +
-        '    <div class="fvh-team-tag">🏀 ' + tr('teamBasketball') + '</div>' +
+        '    <div class="fvh-team-tag">🏀 HOOPS</div>' +
         '    <div class="fvh-team-score-num">' + teamHoops.score.toLocaleString() + '</div>' +
         '    <div class="fvh-team-meta">' +
         '      <span class="fvh-team-pct">' + teamHoops.pct + '%</span>' +
         '      <span class="fvh-team-status ' + (!isFootyWinning ? 'lead' : 'behind') + '">' +
-        (!isFootyWinning ? ('👑 ' + (getActiveLang() === 'ru' ? 'ЛИДИРУЕТ' : 'LEADS')) : (getActiveLang() === 'ru' ? 'ОТСТАЕТ' : 'CHASING')) +
+        (!isFootyWinning ? ('👑 ' + (isRu ? 'ЛИДИРУЕТ' : 'LEADS')) : (isRu ? 'ОТСТАЕТ' : 'CHASING')) +
         '      </span>' +
         '    </div>' +
         '  </div>' +
@@ -7084,7 +7123,7 @@
         '  </div>' +
         '  <div class="fvh-war-tug-labels">' +
         '    <span style="color:#38bdf8;font-weight:900;">⚽ ' + teamFooty.pct + '%</span>' +
-        '    <span style="color:var(--text-muted);font-size:11px;">' + (getActiveLang() === 'ru' ? 'Баланс команд' : 'Team Balance') + '</span>' +
+        '    <span style="color:var(--text-muted);font-size:11px;">' + (isRu ? 'Баланс команд' : 'Team Balance') + '</span>' +
         '    <span style="color:#fb923c;font-weight:900;">🏀 ' + teamHoops.pct + '%</span>' +
         '  </div>' +
         '</div>';
@@ -7112,10 +7151,13 @@
 
       rowsAthletes.forEach(function (ath) {
         var isHoops = (ath.char === 'hoops');
-        var tier = ath.tier || getRankTier(ath.score || 0);
-        var winRate = ath.winRate !== undefined ? ath.winRate : 80;
         var wins = ath.wins || 0;
         var losses = ath.losses || 0;
+        var matches = (ath.matches !== undefined ? ath.matches : (wins + losses));
+        var winRate = (matches > 0 && ath.winRate !== undefined) ? ath.winRate : (matches > 0 ? Math.round((wins / matches) * 100) : 0);
+        var statsText = matches > 0
+          ? tr('winsLossesLabel', { w: wins, l: losses }) + ' (' + tr('winRateLabel', { n: winRate }) + ')'
+          : (matches + (isRu ? ' матчей' : ' matches'));
 
         var row = document.createElement('div');
         row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '') + (isHoops ? ' row-hoops' : ' row-footy');
@@ -7126,20 +7168,20 @@
           '</div>' +
           '<div class="fvh-lb-info">' +
           '  <div class="fvh-lb-name">' +
-          escapeHtml(ath.name) + (ath.isCurrentUser ? ' <span class="fvh-me-badge">' + (getActiveLang() === 'ru' ? 'ВЫ' : 'YOU') + '</span>' : '') +
+          escapeHtml(ath.name) + (ath.isCurrentUser ? ' <span class="fvh-me-badge">' + (isRu ? 'ВЫ' : 'YOU') + '</span>' : '') +
           '  </div>' +
           '  <div class="fvh-lb-club">' +
           '    <span class="fvh-team-pill ' + (isHoops ? 'hoops' : 'footy') + '">' + (isHoops ? '🏀 ' + tr('hoopsChar') : '⚽ ' + tr('footyChar')) + '</span>' +
           '    · ' + escapeHtml(ath.club || 'FvH Club') +
-          '    · <span class="fvh-lb-winrate-text">' + tr('winsLossesLabel', { w: wins, l: losses }) + ' (' + tr('winRateLabel', { n: winRate }) + ')</span>' +
+          '    · <span class="fvh-lb-winrate-text">' + statsText + '</span>' +
           '  </div>' +
           '</div>' +
           '<div class="fvh-lb-score-block">' +
-          '  <div class="fvh-lb-tier-badge" style="color:' + tier.color + ';border-color:' + tier.color + '50;">' + tier.badge + '</div>' +
           '  <div class="fvh-lb-score">' +
           '    <span class="fvh-lb-val">' + (ath.score || 0).toLocaleString() + '</span> ' +
           '    <span class="fvh-lb-unit">' + tr('ptsUnit') + '</span>' +
           '  </div>' +
+          '  <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + matches + (isRu ? ' матчей' : ' matches') + '</div>' +
           '</div>';
         rowsWrap.appendChild(row);
       });
@@ -7168,7 +7210,6 @@
       });
     }
     if (data.player && !isPlayerInTop) {
-      var pTier = data.player.tier || getRankTier(data.player.score || 0);
       var sticky = document.createElement('div');
       sticky.className = 'fvh-leaderboard-sticky-player ' + myChar;
       sticky.innerHTML =
@@ -7178,15 +7219,15 @@
         '</div>' +
         '<div class="fvh-lb-sticky-info">' +
         '  <div class="fvh-lb-sticky-title">' +
-        (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) + ' · ' + (getActiveLang() === 'ru' ? 'Ваша позиция в таблице' : 'Your Rank') +
+        (myChar === 'footy' ? '⚽ ' + tr('teamFootball') : '🏀 ' + tr('teamBasketball')) + ' · ' + (isRu ? 'Ваша позиция в таблице' : 'Your Rank') +
         '  </div>' +
         '  <div class="fvh-lb-sticky-sub">' +
-        (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : (getActiveLang() === 'ru' ? 'Сезон 1 · Предзапуск' : 'Season 1 · Pre-Launch')) +
+        (data.player.pointsToNext > 0 ? tr('pointsToNext', { n: data.player.pointsToNext }) : (isRu ? 'Сезон 1 · Предзапуск' : 'Season 1 · Pre-Launch')) +
         '  </div>' +
         '</div>' +
         '<div class="fvh-lb-sticky-score">' +
-        '  <div class="fvh-lb-sticky-tier" style="color:' + pTier.color + ';">' + pTier.badge + '</div>' +
-        '  <div><b>' + (data.player.score || 0).toLocaleString() + '</b> ' + tr('ptsUnit') + '</div>' +
+        '  <div style="font-size:14px;font-weight:900;color:#fff;"><b>' + (data.player.score || 0).toLocaleString() + '</b> ' + tr('ptsUnit') + '</div>' +
+        '  <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + ((data.player.wins || 0) + (data.player.losses || 0)) + (isRu ? ' матчей' : ' matches') + '</div>' +
         '</div>';
       body.appendChild(sticky);
     }
@@ -9963,11 +10004,56 @@
                 app.store.update(function (d) {
                   d.coins = rewRes.coins;
                   d.xp = rewRes.xp;
+                  if (!d.stats) d.stats = {};
+                  d.stats.wins = (d.stats.wins || 0) + 1;
                 });
               }
             });
           }
         }).catch(function () {});
+
+        // Show clear victory result screen: "Victory — Opponent Disconnected"
+        if (app.game) app.game.stop();
+        if (app.closePause) app.closePause();
+        app.state = 'results';
+        var lang = getActiveLang();
+        var myName = onlineInfo.myName || (app.store && app.store.data && app.store.data.name) || 'You';
+        var oppName = onlineInfo.oppName || (lang === 'ru' ? 'Соперник' : 'Opponent');
+
+        var overlay = document.createElement('div');
+        overlay.className = 'screen dim fvh-forfeit-victory-screen';
+        overlay.style.zIndex = '99999';
+        overlay.style.pointerEvents = 'auto';
+
+        var panel = document.createElement('div');
+        panel.className = 'panel result-panel online-result res-win';
+        panel.style.maxWidth = '460px';
+        panel.style.textAlign = 'center';
+        panel.innerHTML =
+          '<div class="note">' + (lang === 'ru' ? 'ОНЛАЙН-МАТЧ' : 'ONLINE MATCH') + '</div>' +
+          '<h2 class="result-title win" style="margin:8px 0 12px;font-size:clamp(20px, 5.5vw, 26px);color:#4ade80;">' +
+            '🏆 ' + (lang === 'ru' ? 'Победа — соперник отключился' : 'Victory — Opponent Disconnected') +
+          '</h2>' +
+          '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;margin-bottom:14px;">' +
+          '  <div style="font-size:14px;font-weight:800;color:#fff;">' + escapeHtml(myName) + ' vs ' + escapeHtml(oppName) + '</div>' +
+          '  <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">' + (lang === 'ru' ? 'Соперник покинул игру или потерял связь' : 'Opponent left the match or disconnected') + '</div>' +
+          '</div>' +
+          '<div class="fvh-reward-badge" style="display:inline-flex;align-items:center;gap:8px;background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.4);border-radius:20px;padding:6px 14px;margin-bottom:18px;color:#fde047;font-weight:900;font-size:13px;">' +
+            getFvhCoinSvg('inline') + ' +20 FvH Coin · +30 XP' +
+          '</div>' +
+          '<div class="actions-row">' +
+          '  <button class="btn primary block fvh-btn-forfeit-menu">' + (lang === 'ru' ? 'В главное меню' : 'Back to Menu') + '</button>' +
+          '</div>';
+
+        panel.querySelector('.fvh-btn-forfeit-menu').onclick = function () {
+          app.audio.play('click');
+          overlay.remove();
+          app.showMenu();
+        };
+
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+        return;
       }
 
       if (origOnlineLost) {
