@@ -6565,14 +6565,18 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const mkBatch = (o, g, sway = 0, crowd = true) => {
             if (o.m.length === 0)
                 return null;
-            const node = new scene_js_1.Node(g, (0, scene_js_1.material)({ crowd, sway, receiveShadow: false, castShadow: false, spec: 0, rim: 0 }));
+            const node = new scene_js_1.Node(g, (0, scene_js_1.material)({ crowd, sway, receiveShadow: false, castShadow: false, spec: 0.18, rim: 0.28 }));
             node.instances = { matrices: new Float32Array(o.m), colors: new Float32Array(o.c), count: o.m.length / 16, dirty: true };
             return node;
         };
-        const unit = G.box(1, 1, 1);
-        const ball = G.sphere(0.5, 7, 5);
+        // Polished, curved stadium crowd geometry (Smooth athletic torsos, rounded arms, natural caps)
+        const supporterTorso = G.cylinder(0.36, 0.44, 1.0, 8, true);
+        const supporterArm = G.capsule(0.16, 0.82, 6, 2);
+        const supporterHead = G.sphere(0.5, 10, 8);
+        const supporterCap = G.sphere(0.54, 10, 8);
+        const supporterSeat = G.box(0.92, 0.22, 0.88);
         const crowd = new scene_js_1.Node();
-        for (const n of [mkBatch(S, unit, 0, false), mkBatch(B, unit), mkBatch(H, ball), mkBatch(R, ball), mkBatch(A, unit, 1)])
+        for (const n of [mkBatch(S, supporterSeat, 0, false), mkBatch(B, supporterTorso), mkBatch(H, supporterHead), mkBatch(R, supporterCap), mkBatch(A, supporterArm, 1)])
             if (n)
                 crowd.add(n);
         root.add(slabs, crowd);
@@ -6605,18 +6609,30 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const frame = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x080c14), spec: 0.4, shininess: 60, receiveShadow: false });
         return { long, end, largeEnd, frame, all: [long, end, largeEnd], textures: textures, currentSlide: 0 };
     }
-    function ledBoard(root, mats, alongZ, len, x, z, faceSign, height = 1.0, isLarge = false) {
+    function ledBoard(root, mats, alongZ, len, x, z, faceSign, height = 1.0, isLarge = false, customTilt = null) {
         const baseH = isLarge ? 0.5 : 0.4;
         const base = new scene_js_1.Node(alongZ ? G.box(0.34, baseH, len) : G.box(len, baseH, 0.34), mats.frame);
         base.setPos(x, baseH / 2, z);
         root.add(base);
         const pivot = new scene_js_1.Node();
         pivot.setPos(x + (alongZ ? -faceSign * 0.12 : 0), baseH, z + (alongZ ? 0 : -faceSign * 0.12));
-        pivot.rotation = alongZ ? [0, -faceSign * (Math.PI / 2), 0] : [0, faceSign === 1 ? Math.PI : 0, 0];
+        let tilt = isLarge ? -0.22 : -0.62;
+        if (customTilt !== null) {
+            tilt = customTilt;
+            pivot.rotation = alongZ ? [0, -faceSign * (Math.PI / 2), 0] : [0, 0, 0];
+        } else if (!alongZ) {
+            // Baseline courtside tables along X axis:
+            // Top baseline (z < 0): faces south (+Z) toward camera, tilted up [0.38, 0, 0]
+            // Bottom baseline (z > 0): camera is at +Z (south) looking north, so board MUST face +Z (toward camera), tilted up [-0.42, 0, 0]
+            pivot.rotation = [0, 0, 0];
+            tilt = (z < 0) ? 0.38 : -0.42;
+        } else {
+            pivot.rotation = [0, -faceSign * (Math.PI / 2), 0];
+        }
         const mat = alongZ ? mats.long : (isLarge && mats.largeEnd ? mats.largeEnd : mats.end);
         const face = new scene_js_1.Node(G.quad(len, height), mat);
         face.setPos(0, height * 0.46, 0);
-        face.rotation = [isLarge ? -0.22 : -0.62, 0, 0];
+        face.rotation = [tilt, 0, 0];
         pivot.add(face);
         root.add(pivot);
     }
@@ -7477,15 +7493,19 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
 
         const led = ads_js_1.AD_CONFIG.enabled ? ledMaterials(t.board, 2 * L, 2 * W, 'hoops') : null;
         if (led) {
+            // 1. Sideline full-length digital ribbons along East and West boundaries
             for (const s of [-1, 1]) {
                 ledBoard(root, led, true, 2 * L, s * (W + APRON + 0.3), 0, s);
-                for (const e of [-1, 1]) {
-                    const seg = (2 * W - 3.2) / 2;
-                    ledBoard(root, led, false, seg, s * (1.6 + seg / 2), e * (L + APRON + 1.4), e);
-                }
             }
+            // 2. High-visibility Courtside Baseline LED boards directly under both hoops!
             for (const e of [-1, 1]) {
-                ledBoard(root, led, false, 9.0, 0, e * (L + APRON + 2.4), e, 1.8, true);
+                const bz = e * (L + APRON + 0.42);
+                const segW = 6.2;
+                // Flanking left and right of the hoop stanchion base
+                ledBoard(root, led, false, segW, -4.3, bz, e, 1.05);
+                ledBoard(root, led, false, segW, 4.3, bz, e, 1.05);
+                // Center elevated digital ribbon board directly behind hoop stanchion
+                ledBoard(root, led, false, 8.5, 0, e * (L + APRON + 1.6), e, 1.25, true);
             }
         }
 
@@ -7686,7 +7706,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
         { primary: 0x23232b, secondary: 0xff5a1f, shorts: 0x15151a, skin: 0xe0ac86, hair: 0x3a2412, boots: 0xff5a1f, accent: 0xff5a1f, style: 'stripes' },
     ];
     exports.PLAYER_SCALE = 1.22;
-    exports.FOOTY_GROW = 1.28;
+    exports.FOOTY_GROW = 1.0;
     const lin = (c, k = 1) => (0, math_js_8.rgb)(c).map((v) => Math.min(1, v * k));
 
     // Helper: Build crisp 3D squad numbers (#10 for Footy, #23 for Hoops, #1 for Keeper)
@@ -7770,7 +7790,8 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             this.lod = 0;
             const foot = mode === 'footy';
             this.vs = scaleMul * exports.PLAYER_SCALE * (foot ? exports.FOOTY_GROW : 1);
-            const S = (mode === 'hoops' ? 1.0 : 0.9) * this.vs;
+            // In sports, basketball players are naturally taller and leaner (200cm) than soccer strikers (180cm)
+            const S = (mode === 'hoops' ? 1.06 : 0.92) * this.vs;
             const sg = quality >= 1 ? 1 : 0;
             const mk = (g, color, o = {}) => {
                 var _a, _b;
@@ -8610,7 +8631,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             } else if (mode === 'hoops' && stadiumSlot && stadiumSlot.startsWith('std_footy')) {
                 stadiumSlot = 'std_hoops_street';
             }
-            if (!stadiumSlot || stadiumSlot === 'std_urban_rooftop' || stadiumSlot === 'std_classic_pitch') {
+            if (!stadiumSlot || stadiumSlot === 'std_urban_rooftop' || stadiumSlot === 'std_classic_pitch' || stadiumSlot === 'std_volcano_caldera') {
                 stadiumSlot = mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street';
             }
             let stadium = visualOf(stadiumSlot, mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');

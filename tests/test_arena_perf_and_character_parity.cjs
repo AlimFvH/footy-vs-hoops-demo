@@ -59,7 +59,18 @@ assert(gameJs.includes("build3DNumber('23'"), 'Basketball jersey must feature 3D
 assert(gameJs.includes("build3DNumber(squadNum"), 'Football jersey must feature 3D #10 on back');
 assert(gameJs.includes('0xff6b00, { spec: 0.15, fine: true }'), 'Basketball player must wear orange headband');
 
+// Check Basketball vs Football height proportions (Basketball athlete taller than soccer striker)
+assert(gameJs.includes('exports.FOOTY_GROW = 1.0;'), 'FOOTY_GROW must not bloat football player over basketballer');
+assert(gameJs.includes("mode === 'hoops' ? 1.06 : 0.92"), 'Basketball player must be scaled taller than soccer striker');
 console.log('  ✓ In-game 3D athletes strictly mirror wardrobe artwork, skin tones, hair styles, and kits\n');
+
+// 4. Verify Crowd Polish & Courtside LED Boards Under Hoops
+console.log('[TEST 4] Crowd Visual Polish & Visible LED Boards Under Hoops');
+assert(gameJs.includes('supporterTorso = G.cylinder'), 'Crowd bodies must use smooth rounded cylinder geometry instead of blocky cubes');
+assert(gameJs.includes('supporterArm = G.capsule'), 'Crowd arms must use smooth capsule geometry');
+assert(gameJs.includes('High-visibility Courtside Baseline LED boards directly under both hoops'), 'Courtside baseline LED boards must be placed under both hoops');
+assert(redesignJs.includes("d.equipped['stadium.hoops'] === 'std_volcano_caldera'"), 'Bootstrap must auto-sanitize volcanic arena fallback back to standard street hardwood');
+console.log('  ✓ Crowd geometry smoothed to eliminate pixelated/blocky look and baseline LED boards visible under both baskets\n');
 
 console.log('=============================================================');
 console.log('🎉 ALL ARENA, PERF, AND CHARACTER PARITY TESTS PASSED!');

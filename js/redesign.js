@@ -9452,11 +9452,18 @@
         d.settings.difficulty = selDiff;
       });
       var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
+      var eq = (app.store && app.store.data && app.store.data.equipped) || {};
+      var ownedList = (app.store && app.store.data && app.store.data.owned) || [];
+      var chosenArena = (selSport === 'hoops') ? (eq['stadium.hoops'] || 'std_hoops_street') : (eq['stadium.footy'] || 'std_footy_classic');
+      if (chosenArena === 'std_volcano_caldera' || chosenArena === 'std_urban_rooftop' || chosenArena === 'std_classic_pitch' || (ownedList.indexOf(chosenArena) === -1 && chosenArena !== 'std_hoops_street' && chosenArena !== 'std_footy_classic')) {
+        chosenArena = (selSport === 'hoops') ? 'std_hoops_street' : 'std_footy_classic';
+      }
       app.launch({
         mode: selSport,
         char: playerChosenChar,
         difficulty: selDiff,
         minutes: selMinutes,
+        arenaId: chosenArena,
         boostId: null
       }, false);
     };
@@ -10434,6 +10441,22 @@
       } catch (e) {
         console.warn('Language change listener not attached', e);
       }
+    }
+
+    // Auto-sanitize legacy stadium slots so standard arenas are active unless explicitly owned
+    if (app && app.store && app.store.data) {
+      var d = app.store.data;
+      if (!d.owned) d.owned = [];
+      if (!d.equipped) d.equipped = {};
+      var ownedList = d.owned;
+      if (!d.equipped['stadium.hoops'] || d.equipped['stadium.hoops'] === 'std_volcano_caldera' || d.equipped['stadium.hoops'] === 'std_urban_rooftop' || ownedList.indexOf(d.equipped['stadium.hoops']) === -1) {
+        d.equipped['stadium.hoops'] = 'std_hoops_street';
+      }
+      if (!d.equipped['stadium.footy'] || d.equipped['stadium.footy'] === 'std_classic_pitch' || ownedList.indexOf(d.equipped['stadium.footy']) === -1) {
+        d.equipped['stadium.footy'] = 'std_footy_classic';
+      }
+      if (d.equipped.stadium) delete d.equipped.stadium;
+      try { app.store.save(); } catch (e) {}
     }
 
     // Initial render or URL parameter
