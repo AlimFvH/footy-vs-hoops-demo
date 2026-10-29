@@ -4433,12 +4433,12 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         visual: Object.assign({ shorts: 0x1c2233, skin: 0xe0ac86, hair: 0x2a1a10, boots: 0x111111, accent: 0xffffff, style: 'plain' }, v),
     });
     exports.ITEMS = [
-        skin('skin_rookie', 'Rookie Blue', 'common', 0, { primary: 0x2f6bff, secondary: 0xffffff, shorts: 0x15204a, style: 'plain' }),
+        skin('skin_rookie', 'Rookie Blue', 'common', 0, { primary: 0x00c8ff, secondary: 0x0a1e3f, shorts: 0x0a1e3f, hair: 0x221810, skin: 0xdfa070, boots: 0x00c8ff, accent: 0xffffff, style: 'plain' }),
         skin('skin_crimson', 'Crimson Comet', 'common', 120, { primary: 0xd93a3a, secondary: 0xffffff, shorts: 0x2a0f0f, hair: 0x101010, skin: 0xc68642, style: 'stripes' }),
         skin('skin_neon', 'Neon Striker', 'rare', 260, { primary: 0x15e6a8, secondary: 0x0a1f3a, shorts: 0x0a1f3a, hair: 0xff3fa0, boots: 0xffffff, accent: 0x15e6a8, style: 'sash' }, '⚡'),
         skin('skin_frost', 'Frost Giant', 'rare', 280, { primary: 0xbfe6ff, secondary: 0x3a7bd5, shorts: 0x244a7a, hair: 0xf2f2f2, skin: 0xf3d2b8, style: 'hoops' }, '❄️'),
         skin('skin_shadow', 'Shadow Ninja', 'epic', 480, { primary: 0x1b1b24, secondary: 0x8a2be2, shorts: 0x0c0c12, hair: 0x050505, boots: 0x8a2be2, accent: 0x8a2be2, style: 'sash' }, '🥷'),
-        skin('skin_solar', 'Solar Flare', 'epic', 520, { primary: 0xffa31a, secondary: 0xff3d00, shorts: 0x3a1500, hair: 0xffe08a, skin: 0xa86b45, style: 'stripes' }, '🔥'),
+        skin('skin_solar', 'Solar Flare', 'epic', 520, { primary: 0xff6b00, secondary: 0x14151a, shorts: 0x14151a, hair: 0x0a0a0a, skin: 0x6c4424, boots: 0xff6b00, accent: 0xffffff, style: 'hoops' }, '🔥'),
         skin('skin_gold', 'Golden Legend', 'legendary', 950, { primary: 0xf6c445, secondary: 0x7a4b00, shorts: 0x3a2600, hair: 0x1a1008, boots: 0xf6c445, accent: 0xfff3b0, style: 'hoops' }, '👑'),
         skin('skin_cyber', 'Cyber Punk', 'legendary', 1100, { primary: 0x2a0f4a, secondary: 0xff2bd6, shorts: 0x120826, hair: 0x00e5ff, skin: 0xd9a47c, boots: 0x00e5ff, accent: 0x00e5ff, style: 'sash' }, '🤖'),
         skin('skin_premium_black_gold', 'Premium Black & Gold', 'legendary', 1200, { primary: 0x0a0a0a, secondary: 0x78350f, shorts: 0x0a0a0a, accent: 0xf59e0b, style: 'stripes' }, '👑'),
@@ -8604,11 +8604,14 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.mode = sim.mode;
             const mode = sim.mode;
             const eq = opts.equipped || {};
-            let stadiumSlot = mode === 'footy' ? eq['stadium.footy'] : eq['stadium.hoops'];
+            let stadiumSlot = opts.arenaId || (mode === 'footy' ? eq['stadium.footy'] : eq['stadium.hoops']);
             if (mode === 'footy' && stadiumSlot && (stadiumSlot.startsWith('std_hoops') || stadiumSlot === 'std_cyber_megacity')) {
                 stadiumSlot = 'std_footy_classic';
             } else if (mode === 'hoops' && stadiumSlot && stadiumSlot.startsWith('std_footy')) {
                 stadiumSlot = 'std_hoops_street';
+            }
+            if (!stadiumSlot || stadiumSlot === 'std_urban_rooftop' || stadiumSlot === 'std_classic_pitch') {
+                stadiumSlot = mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street';
             }
             let stadium = visualOf(stadiumSlot, mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
             const CROWD_PALETTES = {
@@ -8634,14 +8637,40 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const charSkinId = playerChar === 'hoops'
                 ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_solar'))
                 : (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie'));
-            const skin = visualOf(charSkinId, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
+            let skin = Object.assign({}, visualOf(charSkinId, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie'));
+
+            // Ensure player character strictly mirrors their wardrobe athlete identity
+            if (playerChar === 'hoops') {
+                if (!charSkinId || charSkinId === 'skin_solar') {
+                    skin.primary = 0xff6b00;
+                    skin.secondary = 0x14151a;
+                    skin.shorts = 0x14151a;
+                    skin.boots = 0xff6b00;
+                    skin.accent = 0xffffff;
+                    skin.style = 'hoops';
+                }
+                skin.skin = 0x6c4424; // Rich athletic dark skin matching wardrobe
+                skin.hair = 0x0a0a0a; // Deep black cropped fade hair
+            } else {
+                if (!charSkinId || charSkinId === 'skin_rookie') {
+                    skin.primary = 0x00c8ff;
+                    skin.secondary = 0x0a1e3f;
+                    skin.shorts = 0x0a1e3f;
+                    skin.boots = 0x00c8ff;
+                    skin.accent = 0xffffff;
+                    skin.style = 'plain';
+                }
+                skin.skin = 0xdfa070; // Athletic European skin tone matching wardrobe
+                skin.hair = 0x221810; // Dark brown swept fringe hair
+            }
+
             // Signature Cross-Sport Kits for Football vs Basketball Rivalry
             const hoopsOppKit = {
                 primary: 0xff6b00,
                 secondary: 0x14151a,
                 shorts: 0x14151a,
-                skin: 0xc68642,
-                hair: 0x101010,
+                skin: 0x6c4424,
+                hair: 0x0a0a0a,
                 boots: 0xff6b00,
                 accent: 0xffffff,
                 style: 'hoops'
@@ -8654,7 +8683,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 hair: 0x221810,
                 boots: 0x00c8ff,
                 accent: 0xffffff,
-                style: 'footy'
+                style: 'plain'
             };
             const oppSkin = (oppChar === 'hoops') ? hoopsOppKit : footyOppKit;
             const keeperHome = Object.assign(Object.assign({}, characters_js_1.KEEPER_SKIN), { primary: 0x2bd96b, secondary: 0x0a3a1c });
@@ -14014,7 +14043,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const w = Math.max(1, this.stage.clientWidth || window.innerWidth);
                 const hgt = Math.max(1, this.stage.clientHeight || window.innerHeight);
                 const isMob = isMobileDevice();
-                const cap = isMob ? (this.qualityMode === 'high' ? 1.5 : 1.25) : (this.qualityMode === 'high' ? 2.0 : 1.5);
+                const cap = isMob ? (this.qualityMode === 'high' ? 1.25 : 1.0) : (this.qualityMode === 'high' ? 2.0 : 1.5);
                 this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale;
                 this.renderer.resize(w, hgt, this.dpr);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.setAspect(w / hgt);
@@ -14059,8 +14088,8 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             };
             this.stage = stage;
             this.qualityMode = this.pickQuality();
-            const initShadowMapSize = isMobileDevice() ? (this.qualityMode === 'high' ? 1024 : 512) : (this.qualityMode === 'high' ? 2048 : 1024);
-            this.renderer = new renderer_js_1.Renderer(canvas, { antialias: true, shadowSize: initShadowMapSize });
+            const initShadowMapSize = isMobileDevice() ? 0 : (this.qualityMode === 'high' ? 2048 : 1024);
+            this.renderer = new renderer_js_1.Renderer(canvas, { antialias: !isMobileDevice(), shadowSize: initShadowMapSize });
             canvas.addEventListener('webglcontextlost', () => { var _a; return (_a = this.onContextLost) === null || _a === void 0 ? void 0 : _a.call(this); });
             window.addEventListener('resize', this.resize);
             (_a = window.visualViewport) === null || _a === void 0 ? void 0 : _a.addEventListener('resize', this.resize);
@@ -14068,7 +14097,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.resize();
         }
         pickQuality() {
-            var _a, _b, _c, _d;
+            var _a, _b;
             const q = this.getSave().settings.quality;
             if (q === 'low' || q === 'high')
                 return q;
@@ -14076,11 +14105,17 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
                 /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
             );
-            const mem = (_a = navigator.deviceMemory) !== null && _a !== void 0 ? _a : (isMob ? 4 : 8);
-            const cores = (_b = navigator.hardwareConcurrency) !== null && _b !== void 0 ? _b : (isMob ? 4 : 8);
+            if (isMob) return 'low';
+            const mem = (_a = navigator.deviceMemory) !== null && _a !== void 0 ? _a : 8;
+            const cores = (_b = navigator.hardwareConcurrency) !== null && _b !== void 0 ? _b : 8;
             return (mem <= 2 || cores <= 2) ? 'low' : 'high';
         }
         get quality() {
+            const isMob = (typeof window !== 'undefined') && (
+                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+            );
+            if (isMob) return 0;
             return this.qualityMode === 'high' ? 1 : 0;
         }
         reducedFx() {
@@ -14093,7 +14128,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
                 /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
             );
-            const shadowMapSize = isMob ? (this.qualityMode === 'high' ? 1024 : 512) : (this.qualityMode === 'high' ? 2048 : 1024);
+            const shadowMapSize = isMob ? 0 : (this.qualityMode === 'high' ? 2048 : 1024);
             this.renderer.setShadowSize(shadowMapSize);
             this.resize();
         }
@@ -14138,7 +14173,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             const playerFaction = (cfg.char || (save && (save.selectedTeam || save.selectedCharacter)) || 'footy');
             const oppFaction = (playerFaction === 'footy') ? 'hoops' : 'footy';
             const charPick = playerFaction;
-            this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
+            this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick, arenaId: cfg.arenaId || (online && online.info && online.info.arenaId) }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
             this.input.capture = !cfg.demo;
             this.input.releaseAll();
             if (!cfg.demo) {

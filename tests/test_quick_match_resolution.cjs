@@ -263,61 +263,34 @@ async function runTests() {
     assert.strictEqual(cfgHost.seed, cfgGuest.seed);
   });
 
-  await testAsync('Server Matchmaking: Cross-Sport (Footy Host vs Hoops Guest) resolves to agreed "footy" mode', async () => {
+  await testAsync('Server Matchmaking: Cross-Sport Queue Isolation & Matching', async () => {
     const p1 = 'cross_fh_host_' + Date.now();
     const p2 = 'cross_fh_guest_' + Date.now();
+    const p3 = 'cross_fh_peer_' + Date.now();
 
     // Host queues with footy
     const r1 = await request('POST', '/api/matchmaking/join', { playerId: p1, playerName: 'FootyHost', mode: 'footy', char: 'footy' });
     assert.strictEqual(r1.body.status, 'searching');
 
-    // Guest queues with hoops
+    // Guest queues with hoops - must NOT pair with footy host (isolated queues)
     const r2 = await request('POST', '/api/matchmaking/join', { playerId: p2, playerName: 'HoopsGuest', mode: 'hoops', char: 'hoops' });
-    assert.strictEqual(r2.body.status, 'matched');
+    assert.strictEqual(r2.body.status, 'searching', 'Hoops queue must not match with Footy queue');
 
-    // Crucial check: Authoritative mode is footy (not hoops, not clash)
-    assert.strictEqual(r2.body.mode, 'footy');
-    assert.strictEqual(r2.body.match.mode, 'footy');
+    // Peer queues with footy - pairs with footy host!
+    const r3 = await request('POST', '/api/matchmaking/join', { playerId: p3, playerName: 'FootyPeer', mode: 'footy', char: 'footy' });
+    assert.strictEqual(r3.body.status, 'matched');
+    assert.strictEqual(r3.body.mode, 'footy');
 
     const poll1 = await request('GET', `/api/matchmaking/poll?playerId=${p1}`);
     assert.strictEqual(poll1.body.mode, 'footy');
 
-    // Both clients resolve identical mode, even if Guest local character is hoops
     const cfgHost = resolveAuthoritativeMatchConfig(poll1.body, 'footy');
-    const cfgGuest = resolveAuthoritativeMatchConfig(r2.body, 'hoops'); // Guest local char is hoops!
+    const cfgGuest = resolveAuthoritativeMatchConfig(r3.body, 'footy');
 
     assert.strictEqual(cfgHost.mode, 'footy');
-    assert.strictEqual(cfgGuest.mode, 'footy', 'Guest MUST resolve to agreed room discipline "footy", not local "hoops"');
+    assert.strictEqual(cfgGuest.mode, 'footy');
     assert.strictEqual(cfgHost.seed, cfgGuest.seed);
     assert.strictEqual(cfgHost.minutes, cfgGuest.minutes);
-  });
-
-  await testAsync('Server Matchmaking: Cross-Sport (Hoops Host vs Footy Guest) resolves to agreed "hoops" mode', async () => {
-    const p1 = 'cross_hf_host_' + Date.now();
-    const p2 = 'cross_hf_guest_' + Date.now();
-
-    // Host queues with hoops
-    const r1 = await request('POST', '/api/matchmaking/join', { playerId: p1, playerName: 'HoopsHost', mode: 'hoops', char: 'hoops' });
-    assert.strictEqual(r1.body.status, 'searching');
-
-    // Guest queues with footy
-    const r2 = await request('POST', '/api/matchmaking/join', { playerId: p2, playerName: 'FootyGuest', mode: 'footy', char: 'footy' });
-    assert.strictEqual(r2.body.status, 'matched');
-
-    // Crucial check: Authoritative mode is hoops (not footy, not clash)
-    assert.strictEqual(r2.body.mode, 'hoops');
-    assert.strictEqual(r2.body.match.mode, 'hoops');
-
-    const poll1 = await request('GET', `/api/matchmaking/poll?playerId=${p1}`);
-    assert.strictEqual(poll1.body.mode, 'hoops');
-
-    // Both clients resolve identical mode, even if Guest local character is footy
-    const cfgHost = resolveAuthoritativeMatchConfig(poll1.body, 'hoops');
-    const cfgGuest = resolveAuthoritativeMatchConfig(r2.body, 'footy'); // Guest local char is footy!
-
-    assert.strictEqual(cfgHost.mode, 'hoops');
-    assert.strictEqual(cfgGuest.mode, 'hoops', 'Guest MUST resolve to agreed room discipline "hoops", not local "footy"');
-    assert.strictEqual(cfgHost.seed, cfgGuest.seed);
   });
 
   console.log(`\n======================================================`);

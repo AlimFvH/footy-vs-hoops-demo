@@ -9,13 +9,13 @@ const path = require('path');
 console.log('=== TEST: GAMEPLAY PERFORMANCE & TOPBAR NAVIGATION ELEMENTS ===\n');
 
 // 1. Check index.html cache bumping
-console.log('[TEST 1] Cache Invalidation v2.1.1 in index.html');
+console.log('[TEST 1] Cache Invalidation in index.html');
 const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-assert(indexHtml.includes('css/style.css?v=2.1.1'), 'index.html must link css/style.css with v=2.1.1');
-assert(indexHtml.includes('css/redesign.css?v=2.1.1'), 'index.html must link css/redesign.css with v=2.1.1');
-assert(indexHtml.includes('js/game.js?v=2.1.1'), 'index.html must link js/game.js with v=2.1.1');
-assert(indexHtml.includes('js/redesign.js?v=2.1.1'), 'index.html must link js/redesign.js with v=2.1.1');
-console.log('  ✓ All assets properly cache-busted to v=2.1.1\n');
+assert(indexHtml.includes('css/style.css?v=2.1.2'), 'index.html must link css/style.css with v=2.1.2');
+assert(indexHtml.includes('css/redesign.css?v=2.1.2'), 'index.html must link css/redesign.css with v=2.1.2');
+assert(indexHtml.includes('js/game.js?v=2.1.2'), 'index.html must link js/game.js with v=2.1.2');
+assert(indexHtml.includes('js/redesign.js?v=2.1.2'), 'index.html must link js/redesign.js with v=2.1.2');
+console.log('  ✓ All assets properly cache-busted to v=2.1.2\n');
 
 // 2. Check Topbar Elements in js/redesign.js
 console.log('[TEST 2] All 5 Topbar Navigation Elements Present in js/redesign.js');
@@ -55,7 +55,7 @@ console.log('[TEST 4] Mobile Performance: DPR cap, Shadow Map optimization, Subs
 const gameJs = fs.readFileSync(path.join(__dirname, '../js/game.js'), 'utf8');
 
 assert(gameJs.includes('isMobileDevice'), 'Game engine must detect mobile devices');
-assert(gameJs.includes('1024 : 512'), 'Mobile shadow size must be optimized (1024 / 512)');
+assert(gameJs.includes('isMobileDevice() ? 0'), 'Mobile shadow size must be set to 0 to bypass GPU shadow pass overhead');
 assert(gameJs.includes('maxSubSteps = 8'), 'BaseSim.step must cap substeps to prevent spiral of death');
 console.log('  ✓ Mobile DPR capping, shadow map downscaling, and physics substep guard verified\n');
 

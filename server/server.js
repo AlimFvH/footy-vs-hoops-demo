@@ -828,7 +828,7 @@ const server = http.createServer((req, res) => {
       const char = data.character || data.char || mode;
       const minutes = Math.max(1, Math.min(5, Number(data.minutes) || 2));
       const seed = (Math.random() * 1e9) | 0;
-      const arenaId = data.arenaId || (mode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch');
+      const arenaId = data.arenaId || (mode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
 
       state.rooms[code] = {
         roomCode: code,
@@ -974,7 +974,7 @@ const server = http.createServer((req, res) => {
         room.mode = data.mode;
         // Also update default arena if not explicitly passed
         if (!data.arenaId) {
-          room.arenaId = room.mode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch';
+          room.arenaId = room.mode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic';
         }
       }
       if (data.arenaId) {

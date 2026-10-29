@@ -8326,7 +8326,7 @@
           var launchSession = function (effMode, effSeed, effArena) {
             var finalMode = effMode || mode;
             var finalSeed = (effSeed !== undefined && effSeed !== null) ? effSeed : seed;
-            var finalArena = effArena || arenaId || (finalMode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch');
+            var finalArena = effArena || arenaId || (finalMode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
             var info = { role: role, mode: finalMode, minutes: minutes, seed: finalSeed, arenaId: finalArena, myName: myName, oppName: oppName, matchId: roomCode };
             var session = new sessionMod.OnlineSession(rLink, info);
             onConnect(session);
@@ -8761,7 +8761,7 @@
     var room = initialRoomData || {
       roomCode: roomCode,
       mode: 'footy',
-      arenaId: 'std_classic_pitch',
+      arenaId: 'std_footy_classic',
       minutes: 2,
       seed: (Math.random() * 1e9) | 0,
       host: { playerId: playerId, name: playerName, ready: false },
@@ -9004,7 +9004,7 @@
             var oppName = myRole === 'host' ? ((room.guest && room.guest.name) || 'Opponent') : ((room.host && room.host.name) || 'Host');
             var syncOpts = {
               mode: room.mode || 'footy',
-              arenaId: room.arenaId || (room.mode === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch'),
+              arenaId: room.arenaId || (room.mode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic'),
               minutes: room.minutes || 2,
               seed: room.seed
             };
@@ -9052,7 +9052,7 @@
         hostName: playerName,
         character: curChar,
         mode: curChar,
-        arenaId: curChar === 'hoops' ? 'std_urban_rooftop' : 'std_classic_pitch'
+        arenaId: curChar === 'hoops' ? 'std_hoops_street' : 'std_footy_classic'
       })
     }).then(function (r) { return r.json(); }).then(function (res) {
       if (res && res.ok && res.code) {
@@ -9251,7 +9251,13 @@
       var owned = app.store.data.owned || [];
       var eq = app.store.data.equipped || {};
 
-      var filtered = SCENIC_ARENAS_CATALOG.filter(function (a) {
+      var baseArenas = [
+        { id: 'std_footy_classic', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', name: 'Classic Grass', rarity: 'common', price: 0, isDefault: true, icon: '🏟️', desc: tr('arenaDescClassicFooty') },
+        { id: 'std_hoops_street', category: 'stadiums', slot: 'stadium.hoops', mode: 'hoops', name: 'Street Classic', rarity: 'common', price: 0, isDefault: true, icon: '🏀', desc: tr('arenaDescClassicHoops') }
+      ];
+      var combinedArenas = baseArenas.concat(SCENIC_ARENAS_CATALOG);
+
+      var filtered = combinedArenas.filter(function (a) {
         if (curFilter === 'all') return true;
         if (a.id === 'std_ocean_sunset') return true;
         return a.mode === curFilter;
@@ -9260,7 +9266,7 @@
       filtered.forEach(function (arena) {
         var card = document.createElement('div');
         var slotKey = arena.slot || ('stadium.' + arena.mode);
-        var isEquipped = (eq[slotKey] === arena.id);
+        var isEquipped = (eq[slotKey] === arena.id) || (arena.id === 'std_footy_classic' && !eq['stadium.footy']) || (arena.id === 'std_hoops_street' && !eq['stadium.hoops']);
         var isOwned = (owned.indexOf(arena.id) !== -1) || Boolean(arena.isDefault);
         var rarKey = arena.rarity || 'epic';
         var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
@@ -9304,6 +9310,7 @@
               if (!d.equipped) d.equipped = {};
               if (arena.isDefault) {
                 d.equipped[slotKey] = arena.id;
+                if (d.equipped.stadium) delete d.equipped.stadium;
               } else {
                 d.equipped['stadium.footy'] = arena.id;
                 d.equipped['stadium.hoops'] = arena.id;
