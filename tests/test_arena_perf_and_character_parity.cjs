@@ -25,14 +25,14 @@ assert(!serverJs.includes('std_classic_pitch'), 'server.js must not contain std_
 assert(serverJs.includes("mode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic'"), 'server.js must default hoops to std_hoops_street');
 console.log('  ✓ Standard Basketball Arena (std_hoops_street) and Football Pitch (std_footy_classic) fully integrated in selector and server\n');
 
-// 2. Verify Mobile GPU Lag Elimination
-console.log('[TEST 2] Mobile GPU Lag Elimination & Smooth Planar Blob Shadows');
+// 2. Verify Mobile GPU Lag Elimination, WebGL2 Antialiasing & Retina Sharpness
+console.log('[TEST 2] Mobile GPU Optimization, WebGL2 MSAA & Retina Sharpness');
 assert(gameJs.includes('initShadowMapSize = isMobileDevice() ? 0 :'), 'Mobile devices must disable directional shadow maps (shadowSize = 0)');
-assert(gameJs.includes('antialias: !isMobileDevice()'), 'Mobile devices must disable heavy MSAA allocations');
-assert(gameJs.includes("cap = isMob ? (this.qualityMode === 'high' ? 1.25 : 1.0)"), 'Mobile DPR must be capped at 1.25 / 1.0');
+assert(gameJs.includes('this.renderer = new renderer_js_1.Renderer(canvas, { antialias: true,'), 'MSAA antialiasing must be active for smooth non-pixelated 3D player models');
+assert(gameJs.includes("cap = isMob ? (this.qualityMode === 'high' ? 2.0 : 1.75)"), 'Mobile DPR must provide high-density Retina resolution (1.75-2.0)');
 assert(gameJs.includes('this.shadowBlob.visible = true'), 'Planar blob shadows must remain active for all players');
 assert(gameJs.includes('this.ballShadow = new scene_js_5.Node'), 'Ball planar blob shadow must remain active');
-console.log('  ✓ Mobile GPU shadow rendering pass eliminated, DPR capped, planar blob shadows preserved\n');
+console.log('  ✓ Mobile GPU shadow rendering pass eliminated, WebGL2 MSAA active, Retina DPR enabled, planar blob shadows preserved\n');
 
 // 3. Verify Wardrobe to 3D Character Parity
 console.log('[TEST 3] Wardrobe to 3D In-Game Character Visual Parity');

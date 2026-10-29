@@ -7795,10 +7795,10 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const sg = quality >= 1 ? 1 : 0;
             const mk = (g, color, o = {}) => {
                 var _a, _b;
-                const spec = o.spec !== undefined ? o.spec : (o.shoe ? 0.65 : (o.fabric ? 0.35 : 0.22));
-                const shininess = o.shininess !== undefined ? o.shininess : (o.shoe ? 48 : (o.fabric ? 28 : 20));
-                const rim = o.rim !== undefined ? o.rim : (o.fabric ? 0.35 : 0.24);
-                const rimColor = o.rimColor || (o.skin ? [1.0, 0.9, 0.8] : [0.92, 0.96, 1.0]);
+                const spec = o.spec !== undefined ? o.spec : (o.shoe ? 0.72 : (o.fabric ? 0.40 : (o.skin ? 0.28 : 0.32)));
+                const shininess = o.shininess !== undefined ? o.shininess : (o.shoe ? 64 : (o.fabric ? 35 : (o.skin ? 24 : 28)));
+                const rim = o.rim !== undefined ? o.rim : (o.fabric ? 0.42 : (o.skin ? 0.38 : 0.28));
+                const rimColor = o.rimColor || (o.skin ? [1.0, 0.88, 0.75] : [0.95, 0.98, 1.0]);
                 const n = new scene_js_3.Node(g, (0, scene_js_3.material)({
                     color: lin(color),
                     spec: spec,
@@ -7823,36 +7823,36 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             // 1. Muscular Legs, Dynamic Pro Shorts, Compression Socks & Authentic Footwear
             for (const [leg, knee, sx] of [[this.legL, this.kneeL, -0.14], [this.legR, this.kneeR, 0.14]]) {
                 leg.setPos(sx, foot ? 1.02 : 1.05, 0);
-                leg.add(at(mk(G.capsule(foot ? 0.112 : 0.108, foot ? 0.54 : 0.56, 8 + 2 * sg, 3), skin.skin, { skin: true }), 0, -0.22, 0));
+                leg.add(at(mk(G.capsule(foot ? 0.112 : 0.108, foot ? 0.54 : 0.56, 14, 4), skin.skin, { skin: true }), 0, -0.22, 0));
                 
                 // Continuous Spherical Knee Saddle Cap at thigh joint terminus
-                leg.add(at(mk(G.sphere(foot ? 0.092 : 0.094, 10, 8), skin.skin, { skin: true }), 0, -0.47, 0));
+                leg.add(at(mk(G.sphere(foot ? 0.092 : 0.094, 12, 8), skin.skin, { skin: true }), 0, -0.47, 0));
 
                 knee.setPos(0, -0.47, 0);
-                knee.add(at(mk(G.capsule(foot ? 0.088 : 0.086, foot ? 0.54 : 0.56, 8, 3), skin.skin, { skin: true }), 0, -0.2, 0));
+                knee.add(at(mk(G.capsule(foot ? 0.088 : 0.086, foot ? 0.54 : 0.56, 14, 4), skin.skin, { skin: true }), 0, -0.2, 0));
                 
                 // Anatomical Patella Knee Cap (smoothly contoured on front of knee)
-                const patella = mk(G.sphere(0.080, 8, 6), skin.skin, { skin: true, fine: true });
+                const patella = mk(G.sphere(0.080, 10, 8), skin.skin, { skin: true, fine: true });
                 patella.scale = [0.85, 1.25, 0.45];
                 patella.rotation = [-0.15, 0, 0];
                 knee.add(at(patella, 0, 0.02, 0.082));
-                knee.add(at(mk(G.sphere(0.086, 8, 6), skin.skin, { skin: true }), 0, 0, 0));
+                knee.add(at(mk(G.sphere(0.086, 10, 8), skin.skin, { skin: true }), 0, 0, 0));
 
                 if (foot) {
                     // Football: Athletic shorts with lateral lightning stripe and bottom white hem piping
-                    leg.add(at(mk(G.cylinder(0.14, 0.158, 0.36, 9 + sg), skin.shorts, { fabric: true }), 0, -0.13, 0));
+                    leg.add(at(mk(G.cylinder(0.14, 0.158, 0.36, 14), skin.shorts, { fabric: true }), 0, -0.13, 0));
                     leg.add(at(mk(G.box(0.035, 0.34, 0.16), skin.secondary, { fabric: true }), sx < 0 ? -0.145 : 0.145, -0.13, 0));
-                    leg.add(at(mk(G.cylinder(0.162, 0.162, 0.035, 10), white, { fine: true, fabric: true }), 0, -0.295, 0));
+                    leg.add(at(mk(G.cylinder(0.162, 0.162, 0.035, 14), white, { fine: true, fabric: true }), 0, -0.295, 0));
 
                     // Knee-high football compression socks with double white hoop rings
-                    knee.add(at(mk(G.cylinder(0.098, 0.088, 0.5, 8 + sg), sockCol, { fabric: true }), 0, -0.22, 0));
-                    knee.add(at(mk(G.cylinder(0.102, 0.102, 0.03, 8), white, { fine: true }), 0, -0.05, 0));
-                    knee.add(at(mk(G.cylinder(0.101, 0.101, 0.03, 8), white, { fine: true }), 0, -0.10, 0));
-                    knee.add(at(mk(G.cylinder(0.104, 0.104, 0.06, 8), skin.secondary, { fine: true }), 0, -0.01, 0));
+                    knee.add(at(mk(G.cylinder(0.098, 0.088, 0.5, 12), sockCol, { fabric: true }), 0, -0.22, 0));
+                    knee.add(at(mk(G.cylinder(0.102, 0.102, 0.03, 12), white, { fine: true }), 0, -0.05, 0));
+                    knee.add(at(mk(G.cylinder(0.101, 0.101, 0.03, 12), white, { fine: true }), 0, -0.10, 0));
+                    knee.add(at(mk(G.cylinder(0.104, 0.104, 0.06, 12), skin.secondary, { fine: true }), 0, -0.01, 0));
 
                     // High-performance pro football speed boots with strike zone & chrome stud plate
                     knee.add(at(mk(G.box(0.17, 0.085, 0.3), skin.boots, { shoe: true }), 0, -0.41, 0.06));
-                    const toe = mk(G.sphere(0.085, 8, 6), skin.boots, { shoe: true });
+                    const toe = mk(G.sphere(0.085, 10, 8), skin.boots, { shoe: true });
                     toe.scale = [1, 0.8, 1.15];
                     knee.add(at(toe, 0, -0.41, 0.2));
 
@@ -7873,33 +7873,33 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
                     // 6 Molded Chrome Studs under outsole (4 forefoot, 2 rear heel) for authentic pitch traction
                     const studMat = { shoe: true, spec: 0.88, shininess: 90 };
-                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), -0.05, -0.48, 0.16));
-                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), 0.05, -0.48, 0.16));
-                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), -0.048, -0.48, 0.07));
-                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 6), dark, studMat), 0.048, -0.48, 0.07));
-                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.040, 6), dark, studMat), -0.042, -0.48, -0.05));
-                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.040, 6), dark, studMat), 0.042, -0.48, -0.05));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 8), dark, studMat), -0.05, -0.48, 0.16));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 8), dark, studMat), 0.05, -0.48, 0.16));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 8), dark, studMat), -0.048, -0.48, 0.07));
+                    knee.add(at(mk(G.cylinder(0.015, 0.011, 0.038, 8), dark, studMat), 0.048, -0.48, 0.07));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.040, 8), dark, studMat), -0.042, -0.48, -0.05));
+                    knee.add(at(mk(G.cylinder(0.016, 0.012, 0.040, 8), dark, studMat), 0.042, -0.48, -0.05));
                 }
                 else {
                     // Basketball: Loose long basketball shorts with prominent dual side stripes and split hem
-                    leg.add(at(mk(G.cylinder(0.165, 0.195, 0.60, 9 + sg), skin.shorts, { fabric: true }), 0, -0.2, 0));
+                    leg.add(at(mk(G.cylinder(0.165, 0.195, 0.60, 14), skin.shorts, { fabric: true }), 0, -0.2, 0));
                     leg.add(at(mk(G.box(0.045, 0.58, 0.22), skin.secondary, { fabric: true }), sx < 0 ? -0.17 : 0.17, -0.2, 0));
                     leg.add(at(mk(G.box(0.018, 0.56, 0.225), trim, { fine: true, fabric: true }), sx < 0 ? -0.18 : 0.18, -0.2, 0));
-                    leg.add(at(mk(G.cylinder(0.198, 0.198, 0.04, 10), white, { fine: true, fabric: true }), 0, -0.47, 0));
+                    leg.add(at(mk(G.cylinder(0.198, 0.198, 0.04, 14), white, { fine: true, fabric: true }), 0, -0.47, 0));
 
                     // Ribbed crew socks with collegiate dual stripes
-                    knee.add(at(mk(G.cylinder(0.096, 0.090, 0.24, 8), white, { fabric: true }), 0, -0.32, 0));
-                    knee.add(at(mk(G.cylinder(0.098, 0.098, 0.03, 8), skin.secondary, { fine: true }), 0, -0.24, 0));
-                    knee.add(at(mk(G.cylinder(0.097, 0.097, 0.02, 8), skin.primary, { fine: true }), 0, -0.28, 0));
+                    knee.add(at(mk(G.cylinder(0.096, 0.090, 0.24, 12), white, { fabric: true }), 0, -0.32, 0));
+                    knee.add(at(mk(G.cylinder(0.098, 0.098, 0.03, 12), skin.secondary, { fine: true }), 0, -0.24, 0));
+                    knee.add(at(mk(G.cylinder(0.097, 0.097, 0.02, 12), skin.primary, { fine: true }), 0, -0.28, 0));
 
                     // Pro High-Top Basketball Sneaker:
                     // Padded High-top Ankle Collar
-                    const collar = mk(G.cylinder(0.106, 0.106, 0.12, 8), skin.boots, { shoe: true });
+                    const collar = mk(G.cylinder(0.106, 0.106, 0.12, 12), skin.boots, { shoe: true });
                     knee.add(at(collar, 0, -0.38, 0.02));
 
                     // Main Sneaker Upper Body
                     knee.add(at(mk(G.box(0.19, 0.12, 0.32), skin.boots, { shoe: true }), 0, -0.41, 0.06));
-                    const toe = mk(G.sphere(0.095, 8, 6), skin.boots, { shoe: true });
+                    const toe = mk(G.sphere(0.095, 10, 8), skin.boots, { shoe: true });
                     toe.scale = [1, 0.75, 1.1];
                     knee.add(at(toe, 0, -0.42, 0.21));
 
@@ -7917,23 +7917,23 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
 
             // 2. Athletic Hip, Waistband & Drawstring Accent
-            const hip = mk(G.cylinder(0.25, 0.27, foot ? 0.24 : 0.34, 10 + 2 * sg), skin.shorts, { fabric: true });
+            const hip = mk(G.cylinder(0.25, 0.27, foot ? 0.24 : 0.34, 16), skin.shorts, { fabric: true });
             hip.scale = [1, 1, 0.72];
             this.pivot.add(at(hip, 0, foot ? 0.99 : 0.97, 0));
-            const waist = mk(G.cylinder(0.255, 0.255, 0.05, 10), skin.secondary, { fine: true, fabric: true });
+            const waist = mk(G.cylinder(0.255, 0.255, 0.05, 16), skin.secondary, { fine: true, fabric: true });
             waist.scale = [1, 1, 0.72];
             this.pivot.add(at(waist, 0, foot ? 1.1 : 1.14, 0));
 
             // 3. High-Definition Torso & Pro Athletic Jersey (#10 Striker / #23 All-Star)
             this.torso = new scene_js_3.Node();
             this.torso.setPos(0, foot ? 1.44 : 1.38, 0);
-            const chest = mk(G.cylinder(foot ? 0.32 : 0.31, foot ? 0.22 : 0.215, foot ? 0.76 : 0.72, 10 + 2 * sg), skin.primary, { fabric: true, rim: 0.35 });
+            const chest = mk(G.cylinder(foot ? 0.32 : 0.31, foot ? 0.22 : 0.215, foot ? 0.76 : 0.72, 16), skin.primary, { fabric: true, rim: 0.42 });
             chest.scale = [1, 1, 0.63];
             this.torso.add(chest);
 
             // Anatomical Pectoral Muscle Shelf (Left & Right pectorals with sternum division)
             for (const sx of [-1, 1]) {
-                const pec = mk(G.box(foot ? 0.125 : 0.122, foot ? 0.155 : 0.145, 0.038), skin.primary, { fabric: true, rim: 0.28 });
+                const pec = mk(G.box(foot ? 0.125 : 0.122, foot ? 0.155 : 0.145, 0.038), skin.primary, { fabric: true, rim: 0.35 });
                 pec.rotation = [0.12, sx < 0 ? -0.12 : 0.12, 0];
                 this.torso.add(at(pec, sx * 0.12, 0.19, 0.195));
                 
@@ -7950,22 +7950,22 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
             // Muscular Deltoid Shoulders
             for (const sx of [-1, 1])
-                this.torso.add(at(mk(G.sphere(foot ? 0.135 : 0.125, 8, 6), foot ? skin.primary : skin.skin, { fabric: foot, skin: !foot }), sx * (foot ? 0.325 : 0.31), 0.29, 0));
+                this.torso.add(at(mk(G.sphere(foot ? 0.135 : 0.125, 12, 8), foot ? skin.primary : skin.skin, { fabric: foot, skin: !foot }), sx * (foot ? 0.325 : 0.31), 0.29, 0));
 
             if (!foot) {
                 // Basketball Tank Top: Contrasting side flank stripes and ribbed scoop neckline
                 for (const sx of [-1, 1]) {
-                    this.torso.add(at(mk(G.box(0.045, 0.62, 0.24), skin.secondary, { fabric: true, rim: 0.3 }), sx * 0.26, -0.02, 0));
+                    this.torso.add(at(mk(G.box(0.045, 0.62, 0.24), skin.secondary, { fabric: true, rim: 0.38 }), sx * 0.26, -0.02, 0));
                     this.torso.add(at(mk(G.box(0.018, 0.60, 0.245), trim, { fine: true }), sx * 0.275, -0.02, 0));
                 }
-                const hem = at(mk(G.cylinder(0.228, 0.228, 0.05, 10), skin.secondary, { fine: true, fabric: true }), 0, -0.34, 0);
+                const hem = at(mk(G.cylinder(0.228, 0.228, 0.05, 16), skin.secondary, { fine: true, fabric: true }), 0, -0.34, 0);
                 hem.scale = [1, 1, 0.64];
                 this.torso.add(hem);
-                const hoopCollar = mk(G.cylinder(0.125, 0.138, 0.05, 10), white, { fabric: true, fine: true });
+                const hoopCollar = mk(G.cylinder(0.125, 0.138, 0.05, 14), white, { fabric: true, fine: true });
                 this.torso.add(at(hoopCollar, 0, 0.37, 0));
 
                 // Front Collegiate Team Crest Badge for Basketball
-                const hoopsCrest = mk(G.cylinder(0.065, 0.065, 0.02, 6), 0xfb923c, { spec: 0.6, fine: true });
+                const hoopsCrest = mk(G.cylinder(0.065, 0.065, 0.02, 10), 0xfb923c, { spec: 0.6, fine: true });
                 const hoopsStar = mk(G.box(0.045, 0.045, 0.025), white, { fine: true });
                 hoopsStar.rotation = [0, 0, Math.PI / 4];
                 this.torso.add(at(hoopsCrest, 0, 0.03, 0.205), at(hoopsStar, 0, 0.03, 0.21));
@@ -7977,9 +7977,9 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
             else {
                 // Football: Ribbed V-neck collar, dynamic kit accents, and Golden Club Shield
-                const collar = mk(G.cylinder(0.11, 0.125, 0.06, 10), skin.secondary, { fabric: true, fine: true });
+                const collar = mk(G.cylinder(0.11, 0.125, 0.06, 14), skin.secondary, { fabric: true, fine: true });
                 this.torso.add(at(collar, 0, 0.375, 0));
-                const collarTrim = mk(G.cylinder(0.114, 0.128, 0.02, 10), trim, { fabric: true, fine: true });
+                const collarTrim = mk(G.cylinder(0.114, 0.128, 0.02, 14), trim, { fabric: true, fine: true });
                 this.torso.add(at(collarTrim, 0, 0.39, 0));
 
                 // Dynamic V-Chevron Kit Accent across chest
@@ -7994,7 +7994,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.torso.add(at(centerStripe, 0, -0.02, 0.205));
 
                 // Golden Club Crest on left chest
-                this.torso.add(at(mk(G.cylinder(0.045, 0.045, 0.02, 6), 0xf6c445, { spec: 0.6, fine: true }), 0.12, 0.16, 0.21));
+                this.torso.add(at(mk(G.cylinder(0.045, 0.045, 0.02, 10), 0xf6c445, { spec: 0.6, fine: true }), 0.12, 0.16, 0.21));
 
                 // 3D SQUAD NUMBER #10 ON JERSEY BACK (Or #1 for Keeper)
                 const isKeeper = agent && agent.role === 'keeper';
@@ -8005,7 +8005,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
 
             // Defined Athletic Neck
-            this.torso.add(at(mk(G.cylinder(0.068, 0.076, 0.13, 8), skin.skin, { skin: true }), 0, 0.42, 0));
+            this.torso.add(at(mk(G.cylinder(0.068, 0.076, 0.13, 12), skin.skin, { skin: true }), 0, 0.42, 0));
 
             // Clean Athletic Back Yoke and Aerodynamic Trim
             this.torso.add(at(mk(G.box(0.24, 0.055, 0.02), trim, { fine: true, fabric: true }), 0, 0.24, -0.195));
@@ -8014,7 +8014,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             // Custom pattern rendering for equipped skin styles
             if (skin.style !== 'plain') {
                 const band = (y, rz = 0) => {
-                    const bd = mk(G.cylinder(0.265, 0.255, 0.11, 10), skin.secondary, { fabric: true });
+                    const bd = mk(G.cylinder(0.265, 0.255, 0.11, 14), skin.secondary, { fabric: true });
                     bd.scale = [1, 1, 0.65];
                     bd.setPos(0, y, 0);
                     bd.rotation = [0, 0, rz];
@@ -8048,37 +8048,37 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             // 4. Athletic Arms: Short Sleeves with Cuffs, Elbow Saddle Caps & Forearms
             for (const [arm, elbow, sx] of [[this.armL, this.elbowL, -0.38], [this.armR, this.elbowR, 0.38]]) {
                 arm.setPos(sx, foot ? 1.68 : 1.65, 0);
-                arm.add(at(mk(G.capsule(foot ? 0.074 : 0.07, foot ? 0.42 : 0.4, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
+                arm.add(at(mk(G.capsule(foot ? 0.074 : 0.07, foot ? 0.42 : 0.4, 12, 4), skin.skin, { skin: true }), 0, -0.17, 0));
                 
                 // Continuous Spherical Elbow Saddle Cap at joint pivot
-                arm.add(at(mk(G.sphere(0.068, 8, 6), skin.skin, { skin: true }), 0, -0.34, 0));
+                arm.add(at(mk(G.sphere(0.068, 10, 8), skin.skin, { skin: true }), 0, -0.34, 0));
 
                 if (foot) {
                     // Football: Sleeves with contrasting cuffs
-                    arm.add(at(mk(G.cylinder(0.102, 0.090, 0.27, 8), skin.primary, { fabric: true }), 0, -0.1, 0));
-                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.035, 8), white, { fine: true }), 0, -0.23, 0));
-                    arm.add(at(mk(G.cylinder(0.094, 0.094, 0.025, 8), skin.secondary, { fine: true }), 0, -0.25, 0));
+                    arm.add(at(mk(G.cylinder(0.102, 0.090, 0.27, 12), skin.primary, { fabric: true }), 0, -0.1, 0));
+                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.035, 12), white, { fine: true }), 0, -0.23, 0));
+                    arm.add(at(mk(G.cylinder(0.094, 0.094, 0.025, 12), skin.secondary, { fine: true }), 0, -0.25, 0));
                     // Captain's Armband on left arm
                     if (sx < 0) {
-                        arm.add(at(mk(G.cylinder(0.096, 0.096, 0.055, 8), 0xf6c445, { spec: 0.5, fine: true }), 0, -0.15, 0));
+                        arm.add(at(mk(G.cylinder(0.096, 0.096, 0.055, 12), 0xf6c445, { spec: 0.5, fine: true }), 0, -0.15, 0));
                     }
                 }
                 else {
                     // Basketball: Sleeveless armhole trim
-                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.04, 8), white, { fine: true }), 0, -0.04, 0));
+                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.04, 12), white, { fine: true }), 0, -0.04, 0));
                     // Compression shooting sleeve on right arm
                     if (sx > 0) {
-                        arm.add(at(mk(G.cylinder(0.078, 0.072, 0.30, 8), dark, { spec: 0.35 }), 0, -0.16, 0));
+                        arm.add(at(mk(G.cylinder(0.078, 0.072, 0.30, 12), dark, { spec: 0.35 }), 0, -0.16, 0));
                     }
                 }
                 elbow.setPos(0, -0.34, 0);
-                elbow.add(at(mk(G.capsule(foot ? 0.066 : 0.062, foot ? 0.44 : 0.42, 8, 3), skin.skin, { skin: true }), 0, -0.17, 0));
+                elbow.add(at(mk(G.capsule(foot ? 0.066 : 0.062, foot ? 0.44 : 0.42, 12, 4), skin.skin, { skin: true }), 0, -0.17, 0));
                 
                 // Olecranon posterior elbow contour
-                elbow.add(at(mk(G.sphere(0.055, 6, 5), skin.skin, { fine: true, skin: true }), 0, 0.015, -0.065));
-                elbow.add(at(mk(G.sphere(0.072, 7, 5), skin.skin, { fine: true, skin: true }), 0, -0.4, 0.01));
+                elbow.add(at(mk(G.sphere(0.055, 8, 6), skin.skin, { fine: true, skin: true }), 0, 0.015, -0.065));
+                elbow.add(at(mk(G.sphere(0.072, 9, 6), skin.skin, { fine: true, skin: true }), 0, -0.4, 0.01));
                 if (!foot)
-                    elbow.add(at(mk(G.cylinder(0.072, 0.072, 0.055, 8), skin.secondary, { fine: true }), 0, -0.32, 0));
+                    elbow.add(at(mk(G.cylinder(0.072, 0.072, 0.055, 12), skin.secondary, { fine: true }), 0, -0.32, 0));
                 arm.add(elbow);
                 this.pivot.add(arm);
             }
@@ -8089,21 +8089,21 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
             // Sculpted cranium and athletic tapered jaw (8.2:1 athletic proportion for basketball)
             const skullR = foot ? 0.175 : 0.180;
-            const skull = mk(G.sphere(skullR, 12 + 2 * sg, 9), skin.skin, { skin: true });
+            const skull = mk(G.sphere(skullR, 16, 12), skin.skin, { skin: true });
             skull.scale = foot ? [0.94, 1.05, 0.98] : [0.94, 1.06, 0.98];
             this.head.add(skull);
 
             const jawR = foot ? 0.12 : 0.125;
-            const jaw = mk(G.sphere(jawR, 8, 6), skin.skin, { skin: true });
+            const jaw = mk(G.sphere(jawR, 12, 8), skin.skin, { skin: true });
             this.head.add(at(jaw, 0, foot ? -0.082 : -0.088, foot ? 0.05 : 0.055));
 
             // Athletic Cheeks and Ears
             for (const sx of [-1, 1]) {
                 // Cheeks
-                this.head.add(at(mk(G.sphere(foot ? 0.062 : 0.065, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.095 : 0.10), -0.04, foot ? 0.105 : 0.11));
+                this.head.add(at(mk(G.sphere(foot ? 0.062 : 0.065, 8, 6), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.095 : 0.10), -0.04, foot ? 0.105 : 0.11));
                 // Ears
-                this.head.add(at(mk(G.sphere(foot ? 0.038 : 0.040, 6, 5), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.172 : 0.178), 0.0, 0.0));
-                this.head.add(at(mk(G.sphere(foot ? 0.022 : 0.024, 5, 4), dark, { fine: true }), sx * (foot ? 0.176 : 0.182), 0.0, 0.0));
+                this.head.add(at(mk(G.sphere(foot ? 0.038 : 0.040, 8, 6), skin.skin, { fine: true, skin: true }), sx * (foot ? 0.172 : 0.178), 0.0, 0.0));
+                this.head.add(at(mk(G.sphere(foot ? 0.022 : 0.024, 6, 5), dark, { fine: true }), sx * (foot ? 0.176 : 0.182), 0.0, 0.0));
 
                 // Sculpted Zygomatic Arch & Athletic Mandible Contour
                 const zygoma = mk(G.box(0.040, 0.024, 0.026), skin.skin, { fine: true, skin: true });
@@ -8119,13 +8119,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const eyeScale = foot ? 0.85 : 1.0;
             for (const sx of [-1, 1]) {
                 // 1. White Eye Sclera
-                this.head.add(at(mk(G.sphere(0.045 * eyeScale, 8, 6), white, { fine: true }), sx * eyeX, eyeY, eyeZ));
+                this.head.add(at(mk(G.sphere(0.045 * eyeScale, 10, 8), white, { fine: true }), sx * eyeX, eyeY, eyeZ));
                 // 2. Vibrant Colored Iris
-                this.head.add(at(mk(G.sphere(0.027 * eyeScale, 8, 6), irisCol, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.020 * eyeScale));
+                this.head.add(at(mk(G.sphere(0.027 * eyeScale, 10, 8), irisCol, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.020 * eyeScale));
                 // 3. Deep Black Pupil
-                this.head.add(at(mk(G.sphere(0.016 * eyeScale, 6, 5), 0x0a0a0a, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.032 * eyeScale));
+                this.head.add(at(mk(G.sphere(0.016 * eyeScale, 8, 6), 0x0a0a0a, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.032 * eyeScale));
                 // 4. Specular Highlight Glint
-                this.head.add(at(mk(G.sphere(0.007 * eyeScale, 4, 4), white, { emissive: white, fine: true }), sx * eyeX + 0.009 * eyeScale, eyeY + 0.010 * eyeScale, eyeZ + 0.039 * eyeScale));
+                this.head.add(at(mk(G.sphere(0.007 * eyeScale, 6, 6), white, { emissive: white, fine: true }), sx * eyeX + 0.009 * eyeScale, eyeY + 0.010 * eyeScale, eyeZ + 0.039 * eyeScale));
 
                 // Determined Athletic Eyebrows
                 const brow = mk(G.box(0.052 * eyeScale, 0.016 * eyeScale, 0.022 * eyeScale), skin.hair, { fine: true });
@@ -8135,7 +8135,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
 
             // Sculpted Athletic Nose
             this.head.add(at(mk(G.box(0.022, 0.048, 0.024), skin.skin, { fine: true, skin: true }), 0, -0.01, foot ? 0.182 : 0.206));
-            this.head.add(at(mk(G.sphere(0.024, 6, 5), skin.skin, { fine: true, skin: true }), 0, -0.036, foot ? 0.192 : 0.216));
+            this.head.add(at(mk(G.sphere(0.024, 8, 6), skin.skin, { fine: true, skin: true }), 0, -0.036, foot ? 0.192 : 0.216));
 
             // Confident Athletic Smile / Mouth
             this.head.add(at(mk(G.box(foot ? 0.058 : 0.068, 0.014, 0.020), 0x8b3a3a, { fine: true }), 0, foot ? -0.078 : -0.088, foot ? 0.164 : 0.184));
@@ -8143,10 +8143,10 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             // Stylized 3D Hair and Authentic Sports Headwear
             if (foot) {
                 // Football: Modern athletic crop fade with 3D swept fringe and sideburns
-                const hairBase = mk(G.sphere(0.188, 10 + sg, 8), skin.hair, { spec: 0.22 });
+                const hairBase = mk(G.sphere(0.188, 14, 10), skin.hair, { spec: 0.22 });
                 hairBase.scale = [0.96, 0.90, 1.02];
                 this.head.add(at(hairBase, 0, 0.055, -0.025));
-                const hairTop = mk(G.sphere(0.165, 8, 6), skin.hair, { spec: 0.22 });
+                const hairTop = mk(G.sphere(0.165, 12, 8), skin.hair, { spec: 0.22 });
                 this.head.add(at(hairTop, 0, 0.095, 0.01));
                 const hairFringe = mk(G.box(0.155, 0.055, 0.048), skin.hair, { spec: 0.25, fine: true });
                 hairFringe.rotation = [0.15, 0, 0];
@@ -8157,14 +8157,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
             else {
                 // Basketball: Authentic high-fade taper and sports cotton headband
-                const hairBase = mk(G.sphere(0.215, 10 + sg, 8), skin.hair, { spec: 0.18 });
+                const hairBase = mk(G.sphere(0.215, 14, 10), skin.hair, { spec: 0.18 });
                 hairBase.scale = [0.96, 0.95, 1.0];
                 this.head.add(at(hairBase, 0, 0.075, -0.02));
                 const hairTop = mk(G.box(0.22, 0.09, 0.26), skin.hair, { spec: 0.18 });
                 this.head.add(at(hairTop, 0, 0.135, 0.01));
 
                 // Authentic cotton athletic headband with embroidered logo patch
-                const hb = mk(G.cylinder(0.222, 0.222, 0.064, 14), 0xff6b00, { spec: 0.15, fine: true });
+                const hb = mk(G.cylinder(0.222, 0.222, 0.064, 16), 0xff6b00, { spec: 0.15, fine: true });
                 const hbLogo = mk(G.box(0.055, 0.038, 0.022), white, { fine: true });
                 this.head.add(at(hb, 0, 0.078, 0), at(hbLogo, 0, 0.078, 0.218));
             }
@@ -8846,7 +8846,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.chars.forEach((c) => {
                 c.update(dt, hasOwner === c.agent, null);
                 const d = Math.hypot(c.agent.x - cp[0], cp[1], c.agent.z - cp[2]);
-                c.setLod(lowEnd || d > 52 ? 1 : 0);
+                c.setLod(d > 55 ? 1 : 0);
             });
             const b = sim.ball;
             if (b && typeof b.x === 'number' && !isNaN(b.x)) {
@@ -14064,7 +14064,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const w = Math.max(1, this.stage.clientWidth || window.innerWidth);
                 const hgt = Math.max(1, this.stage.clientHeight || window.innerHeight);
                 const isMob = isMobileDevice();
-                const cap = isMob ? (this.qualityMode === 'high' ? 1.25 : 1.0) : (this.qualityMode === 'high' ? 2.0 : 1.5);
+                const cap = isMob ? (this.qualityMode === 'high' ? 2.0 : 1.75) : (this.qualityMode === 'high' ? 2.0 : 1.5);
                 this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale;
                 this.renderer.resize(w, hgt, this.dpr);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.setAspect(w / hgt);
@@ -14110,7 +14110,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.stage = stage;
             this.qualityMode = this.pickQuality();
             const initShadowMapSize = isMobileDevice() ? 0 : (this.qualityMode === 'high' ? 2048 : 1024);
-            this.renderer = new renderer_js_1.Renderer(canvas, { antialias: !isMobileDevice(), shadowSize: initShadowMapSize });
+            this.renderer = new renderer_js_1.Renderer(canvas, { antialias: true, shadowSize: initShadowMapSize });
             canvas.addEventListener('webglcontextlost', () => { var _a; return (_a = this.onContextLost) === null || _a === void 0 ? void 0 : _a.call(this); });
             window.addEventListener('resize', this.resize);
             (_a = window.visualViewport) === null || _a === void 0 ? void 0 : _a.addEventListener('resize', this.resize);
@@ -14122,21 +14122,11 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             const q = this.getSave().settings.quality;
             if (q === 'low' || q === 'high')
                 return q;
-            const isMob = (typeof window !== 'undefined') && (
-                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
-                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
-            );
-            if (isMob) return 'low';
             const mem = (_a = navigator.deviceMemory) !== null && _a !== void 0 ? _a : 8;
             const cores = (_b = navigator.hardwareConcurrency) !== null && _b !== void 0 ? _b : 8;
             return (mem <= 2 || cores <= 2) ? 'low' : 'high';
         }
         get quality() {
-            const isMob = (typeof window !== 'undefined') && (
-                (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
-                /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
-            );
-            if (isMob) return 0;
             return this.qualityMode === 'high' ? 1 : 0;
         }
         reducedFx() {
