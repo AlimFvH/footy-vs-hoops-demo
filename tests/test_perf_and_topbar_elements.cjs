@@ -11,11 +11,11 @@ console.log('=== TEST: GAMEPLAY PERFORMANCE & TOPBAR NAVIGATION ELEMENTS ===\n')
 // 1. Check index.html cache bumping
 console.log('[TEST 1] Cache Invalidation in index.html');
 const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-assert(indexHtml.includes('css/style.css?v=2.1.4'), 'index.html must link css/style.css with v=2.1.4');
-assert(indexHtml.includes('css/redesign.css?v=2.1.4'), 'index.html must link css/redesign.css with v=2.1.4');
-assert(indexHtml.includes('js/game.js?v=2.1.4'), 'index.html must link js/game.js with v=2.1.4');
-assert(indexHtml.includes('js/redesign.js?v=2.1.4'), 'index.html must link js/redesign.js with v=2.1.4');
-console.log('  ✓ All assets properly cache-busted to v=2.1.4\n');
+assert(indexHtml.includes('css/style.css?v=2.1.5'), 'index.html must link css/style.css with v=2.1.5');
+assert(indexHtml.includes('css/redesign.css?v=2.1.5'), 'index.html must link css/redesign.css with v=2.1.5');
+assert(indexHtml.includes('js/game.js?v=2.1.5'), 'index.html must link js/game.js with v=2.1.5');
+assert(indexHtml.includes('js/redesign.js?v=2.1.5'), 'index.html must link js/redesign.js with v=2.1.5');
+console.log('  ✓ All assets properly cache-busted to v=2.1.5\n');
 
 // 2. Check Topbar Elements in js/redesign.js
 console.log('[TEST 2] All 5 Topbar Navigation Elements Present in js/redesign.js');

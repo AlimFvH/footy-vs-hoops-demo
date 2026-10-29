@@ -59,10 +59,10 @@ assert(gameJs.includes("build3DNumber('23'"), 'Basketball jersey must feature 3D
 assert(gameJs.includes("build3DNumber(squadNum"), 'Football jersey must feature 3D #10 on back');
 assert(gameJs.includes('0xff6b00, { spec: 0.15, fine: true }'), 'Basketball player must wear orange headband');
 
-// Check Basketball vs Football height proportions (Basketball athlete taller than soccer striker)
+// Check Basketball vs Football height proportions (Balanced 1:1 rival scale)
 assert(gameJs.includes('exports.FOOTY_GROW = 1.0;'), 'FOOTY_GROW must not bloat football player over basketballer');
-assert(gameJs.includes("mode === 'hoops' ? 1.06 : 0.92"), 'Basketball player must be scaled taller than soccer striker');
-console.log('  ✓ In-game 3D athletes strictly mirror wardrobe artwork, skin tones, hair styles, and kits\n');
+assert(gameJs.includes('const S = 1.0 * this.vs;'), 'Basketballer and Footballer must be balanced at 1:1 rival scale');
+console.log('  ✓ In-game 3D athletes strictly mirror wardrobe artwork, skin tones, hair styles, kits, and 1:1 balanced height\n');
 
 // 4. Verify Crowd Polish & Courtside LED Boards Under Hoops
 console.log('[TEST 4] Crowd Visual Polish & Visible LED Boards Under Hoops');
