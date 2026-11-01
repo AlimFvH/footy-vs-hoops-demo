@@ -8750,6 +8750,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 const c = new characters_js_1.Character(a, s, charSport, 1.0, opts.quality);
                 c.sport = charSport;
                 c.team = a.team;
+                if (typeof window !== 'undefined' && window.CharactersGLB && window.CharactersGLB.enabled) {
+                    c.pivot.visible = false;
+                }
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
@@ -8761,8 +8764,8 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.ballVisual.mode = mode;
             }
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            // Prominent, clearly trackable ball size (r = 0.30m for soccer, 0.32m for basketball)
-            const r = (mode === 'footy') ? 0.30 : 0.32;
+            // Prominent, clearly trackable ball size (r = 0.34m for soccer, 0.32m for basketball)
+            const r = (mode === 'footy') ? 0.34 : 0.32;
             this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: 0.75, shininess: 55, castShadow: true, rim: 0.25, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.4) : [0, 0, 0] }));
             this.ballShadow = new scene_js_5.Node(G.plane(r * 2.8, r * 2.8), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.ballGlow = new scene_js_5.Node(G.ring(r * 1.25, r * 1.9, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));

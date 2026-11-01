@@ -394,25 +394,83 @@
         mat4Multiply(outBone, jointNode.worldMatrix, invBind);
       }
     }
+
+    clone() {
+      // Instant deep-copy of mutable node graph & bone matrices (geometry, buffers, textures are shared)
+      const clonedNodes = this.nodes.map(n => ({
+        name: n.name,
+        children: n.children ? n.children.slice() : [],
+        mesh: n.mesh,
+        skin: n.skin,
+        translation: n.translation ? [n.translation[0], n.translation[1], n.translation[2]] : [0, 0, 0],
+        rotation: n.rotation ? [n.rotation[0], n.rotation[1], n.rotation[2], n.rotation[3]] : [0, 0, 0, 1],
+        scale: n.scale ? [n.scale[0], n.scale[1], n.scale[2]] : [1, 1, 1],
+        hasMatrix: n.hasMatrix,
+        localMatrix: n.localMatrix ? new Float32Array(n.localMatrix) : new Float32Array(16),
+        worldMatrix: new Float32Array(16)
+      }));
+
+      return new GLBModel({
+        nodes: clonedNodes,
+        rootNodeIndices: this.rootNodeIndices.slice(),
+        primitives: this.primitives,
+        skin: this.skin,
+        animations: this.animations,
+        stats: this.stats
+      });
+    }
+  }
+
+  // --- Master Cache & Synchronous Instant Instantiation ---
+  const masterCache = new Map();   // url -> Promise<GLBModel>
+  const resolvedCache = new Map(); // url -> GLBModel
+
+  function getCachedModel(url) {
+    if (resolvedCache.has(url)) {
+      return resolvedCache.get(url).clone();
+    }
+    return null;
   }
 
   // --- Main Loader Function ---
 
   async function loadGLB(arrayBufferOrUrl) {
-    const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-    let arrayBuffer = null;
-
     if (typeof arrayBufferOrUrl === 'string') {
-      const resp = await fetch(arrayBufferOrUrl);
-      if (!resp.ok) throw new Error('Failed to load GLB file: ' + resp.status + ' ' + resp.statusText);
-      arrayBuffer = await resp.arrayBuffer();
-    } else if (arrayBufferOrUrl instanceof ArrayBuffer) {
+      const url = arrayBufferOrUrl;
+      if (resolvedCache.has(url)) {
+        return resolvedCache.get(url).clone();
+      }
+      if (masterCache.has(url)) {
+        const master = await masterCache.get(url);
+        return master.clone();
+      }
+      const p = (async () => {
+        const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Failed to load GLB file: ' + resp.status + ' ' + resp.statusText);
+        const buf = await resp.arrayBuffer();
+        const model = await parseAndBuildModel(buf, t0);
+        resolvedCache.set(url, model);
+        return model;
+      })();
+      masterCache.set(url, p);
+      const master = await p;
+      return master.clone();
+    }
+
+    let arrayBuffer = null;
+    if (arrayBufferOrUrl instanceof ArrayBuffer) {
       arrayBuffer = arrayBufferOrUrl;
     } else if (arrayBufferOrUrl && arrayBufferOrUrl.buffer instanceof ArrayBuffer) {
       arrayBuffer = arrayBufferOrUrl.buffer.slice(arrayBufferOrUrl.byteOffset, arrayBufferOrUrl.byteOffset + arrayBufferOrUrl.byteLength);
     } else {
       throw new Error('Invalid input to loadGLB: expected URL string or ArrayBuffer');
     }
+    const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    return parseAndBuildModel(arrayBuffer, t0);
+  }
+
+  async function parseAndBuildModel(arrayBuffer, t0 = Date.now()) {
 
     const { gltf, bin } = parseGLBContainer(arrayBuffer);
 
@@ -692,6 +750,7 @@
 
   // Export public API
   exports.loadGLB = loadGLB;
+  exports.getCachedModel = getCachedModel;
   exports.parseGLBContainer = parseGLBContainer;
   exports.GLBModel = GLBModel;
 });

@@ -457,25 +457,26 @@
     return primitiveBuffers;
   }
 
-  // 3D Model Matrix Generator with Yaw, Pitch, Roll & Scaling
-  function makeTransformMatrix(out, x, y, z, yaw, scale, pitch = 0, roll = 0) {
-    const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  // 3D Model Matrix Generator with Yaw, Pitch, Roll & Scaling (supports non-uniform sx, sy, sz)
+  function makeTransformMatrix(out, x, y, z, yaw, sx, sy, sz, pitch = 0, roll = 0) {
+    if (sy === undefined) { sy = sx; sz = sx; }
+    const cy = Math.cos(yaw), sy_ = Math.sin(yaw);
     const cp = Math.cos(pitch), sp = Math.sin(pitch);
     const cr = Math.cos(roll), sr = Math.sin(roll);
 
-    out[0] = (cy * cr + sy * sp * sr) * scale;
-    out[1] = (cp * sr) * scale;
-    out[2] = (-sy * cr + cy * sp * sr) * scale;
+    out[0] = (cy * cr + sy_ * sp * sr) * sx;
+    out[1] = (cp * sr) * sx;
+    out[2] = (-sy_ * cr + cy * sp * sr) * sx;
     out[3] = 0;
 
-    out[4] = (-cy * sr + sy * sp * cr) * scale;
-    out[5] = (cp * cr) * scale;
-    out[6] = (sy * sr + cy * sp * cr) * scale;
+    out[4] = (-cy * sr + sy_ * sp * cr) * sy;
+    out[5] = (cp * cr) * sy;
+    out[6] = (sy_ * sr + cy * sp * cr) * sy;
     out[7] = 0;
 
-    out[8] = (sy * cp) * scale;
-    out[9] = (-sp) * scale;
-    out[10] = (cy * cp) * scale;
+    out[8] = (sy_ * cp) * sz;
+    out[9] = (-sp) * sz;
+    out[10] = (cy * cp) * sz;
     out[11] = 0;
 
     out[12] = x;
@@ -499,6 +500,11 @@
       this.isKeeper = !!options.isKeeper;
       this.customTexture = null;
 
+      // Hide procedural body mesh immediately to prevent old blocky characters from flashing
+      if (this.charRef && this.charRef.pivot) {
+        this.charRef.pivot.visible = false;
+      }
+
       // Visual Placement & Orientation
       this.yaw = 0;
       this.targetYaw = 0;
@@ -510,7 +516,19 @@
       this.currentAnim = 'idle';
       this.modelMatrix = new Float32Array(16);
 
-      this.loadModel();
+      // Instant Synchronous Cache Check
+      const loader = getLoader();
+      if (loader && loader.getCachedModel) {
+        const cached = loader.getCachedModel(this.modelUrl);
+        if (cached) {
+          this.model = cached;
+          this.loaded = true;
+        }
+      }
+
+      if (!this.loaded) {
+        this.loadModel();
+      }
     }
 
     async loadModel() {
@@ -524,7 +542,7 @@
         const masterModel = await modelCache.get(this.modelUrl);
 
         // Clone model instance so this character has independent skeletal animations
-        const clone = getLoader().loadGLB ? await loader.loadGLB(this.modelUrl) : masterModel;
+        const clone = masterModel ? (masterModel.clone ? masterModel.clone() : masterModel) : (loader.loadGLB ? await loader.loadGLB(this.modelUrl) : null);
         this.model = clone;
         this.loaded = true;
 
@@ -618,8 +636,8 @@
         if (a.dunk && a.dunk.active) {
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
-          // High parabolic jump arc reaching rim height (3.05m)
-          this.elevationLift = Math.sin(dunkProgress * Math.PI) * 2.45;
+          // Calibrated parabolic jump arc reaching rim height (3.05m)
+          this.elevationLift = Math.sin(dunkProgress * Math.PI) * 0.98;
           this.pitch = 0.28 * (1 - dunkProgress * 0.7); // Athletic forward airborne attack
           // Overhead one-handed slam down into rim
           this.setAnimation('Punch_Right', 2.0);
@@ -627,7 +645,7 @@
         // 2. Jump Shot Elevation & Release (Overhead wrist flick with elevation)
         else if (a.shotT > 0) {
           const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
-          this.elevationLift = Math.sin(shotProgress * Math.PI) * 1.20;
+          this.elevationLift = Math.sin(shotProgress * Math.PI) * 0.65;
           this.pitch = -0.08; // High elevation arch
           this.setAnimation('Punch_Right', 1.8);
         }
@@ -704,11 +722,15 @@
       // 3. Step skeletal bones
       this.model.update(dt);
 
-      // 4. Update world transform matrix with 3D lean & jump elevation
+      // 4. Update world transform matrix with 3D lean, jump elevation, and athletic width
       const px = a.x || 0;
       const py = (a.y || 0) + this.elevationLift;
       const pz = a.z || 0;
-      makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, this.scale, this.pitch, this.roll);
+      // Muscular, broader athletic torso and shoulders for football players
+      const sx = this.isFooty ? (this.scale * 1.15) : this.scale;
+      const sy = this.scale;
+      const sz = this.isFooty ? (this.scale * 1.10) : this.scale;
+      makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, sx, sy, sz, this.pitch, this.roll);
     }
   }
 
@@ -733,6 +755,10 @@
 
       matchView.chars.forEach(c => {
         if (!c.agent) return;
+        // Eliminate old character flash on kickoff
+        if (c.pivot) {
+          c.pivot.visible = false;
+        }
 
         const role = c.agent.role;
         const isKeeper = (role === 'keeper');

@@ -7533,16 +7533,6 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   position: relative !important;
 }
 
-.fvh-catalogue-card.r-legendary::after,
-.card.shopc.r-legendary::after {
-  content: '👑' !important;
-  position: absolute !important;
-  top: 8px !important;
-  right: 10px !important;
-  font-size: 16px !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
-}
-
 .fvh-catalogue-card.r-legendary .rar.legendary,
 .card.shopc.r-legendary .rar.legendary {
   background: linear-gradient(135deg, #facc15 0%, #d97706 100%) !important;

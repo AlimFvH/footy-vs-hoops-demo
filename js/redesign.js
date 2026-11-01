@@ -4109,7 +4109,7 @@
     } else if (id === 'bundle_cyber_neon') {
       bColor = '#7c3aed'; trim = '#d946ef'; icon = '⚡'; title = 'CYBER DECK';
     } else if (id === 'bundle_legendary_champs') {
-      bColor = '#854d0e'; trim = '#facc15'; icon = '👑'; title = 'CHAMPIONS';
+      bColor = '#854d0e'; trim = '#facc15'; icon = '⭐'; title = 'CHAMPIONS';
     }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -4143,7 +4143,7 @@
     } else if (id === 'crowd_emerald_forest') {
       c1 = '#10b981'; c2 = '#059669'; c3 = '#065f46'; c4 = '#ffffff'; icon = '🌲';
     } else if (id === 'crowd_gold_champs') {
-      c1 = '#f6c445'; c2 = '#d97706'; c3 = '#1c1917'; c4 = '#fffbeb'; icon = '👑';
+      c1 = '#f6c445'; c2 = '#d97706'; c3 = '#1c1917'; c4 = '#fffbeb'; icon = '⭐';
     }
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
@@ -8244,7 +8244,7 @@
       nameKey: 'crowdGoldChampsName',
       descKey: 'crowdGoldChampsDesc',
       rarity: 'legendary',
-      icon: '👑',
+      icon: '⭐',
       colors: ['#f6c445', '#d97706', '#1c1917', '#fffbeb'],
       bannerGrad: 'linear-gradient(135deg, #b45309 0%, #1c1917 50%, #fcd34d 100%)',
       isDefault: false,
@@ -10106,28 +10106,7 @@
 
     screen.appendChild(secondaryHub);
 
-    // 5. Live Season Event Banner & Faction Clash Dashboard
-    var seasonBanner = document.createElement('div');
-    seasonBanner.className = 'fvh-season-event-banner';
-    var isRu = (lang === 'ru');
-    seasonBanner.innerHTML =
-      '<div class="fvh-season-header">' +
-      '  <span class="fvh-season-badge">🏆 ' + (isRu ? 'СЕЗОН 1 · БИТВА ФРАКЦИЙ' : 'SEASON 1 · FACTION CLASH') + '</span>' +
-      '  <span class="fvh-season-timer">⏱ ' + (isRu ? '12 дней' : '12 days left') + '</span>' +
-      '</div>' +
-      '<div class="fvh-season-title">FOOTY ⚽ <span style="color:#fde047;">VS</span> 🏀 HOOPS</div>' +
-      '<div class="fvh-season-bar-wrap">' +
-      '  <div class="fvh-season-bar-fill footy" style="width: 53%;"></div>' +
-      '  <div class="fvh-season-bar-fill hoops" style="width: 47%;"></div>' +
-      '</div>' +
-      '<div class="fvh-season-sub">' +
-      '  <span style="color:#00f0ff;font-weight:900;">⚽ 53% ' + (isRu ? 'Побед' : 'Wins') + '</span>' +
-      '  <span style="color:#facc15;font-weight:800;">💰 ' + (isRu ? 'Приз 50 000 FvH' : '50,000 FvH Prize') + '</span>' +
-      '  <span style="color:#f97316;font-weight:900;">47% 🏀</span>' +
-      '</div>';
-    screen.appendChild(seasonBanner);
-
-    // 6. Token Rivalry Compact Ticker
+    // 5. Token Rivalry Compact Ticker
     screen.appendChild(createRivalryTicker());
 
     // Bottom Spacer for iOS WebKit Telegram Mini App safe scrolling
