@@ -137,6 +137,170 @@
   const modelCache = new Map(); // url -> Promise<GLBModel>
   const bufferCache = new Map(); // model -> PrimitiveBuffer[]
   const activeMatches = new Set();
+  const skinTextureCache = new Map(); // key -> WebGLTexture
+
+  function hexToRgb(h) {
+    if (typeof h !== 'number') return null;
+    return [(h >> 16) & 255, (h >> 8) & 255, h & 255];
+  }
+
+  function getOrCreateSkinTexture(gl, model, skin, isFooty) {
+    if (!gl || !model || !skin || !skin.id) return null;
+    const defSkin = isFooty ? 'skin_rookie' : 'skin_solar';
+    if (skin.id === defSkin) return null; // Default texture matches default athlete uniform
+
+    const key = (isFooty ? 'footy_' : 'hoops_') + skin.id + '_' + (skin.primary || 0);
+    if (skinTextureCache.has(key)) {
+      return skinTextureCache.get(key);
+    }
+
+    if (!model.primitives || model.primitives.length === 0) return null;
+    const primWithImg = model.primitives.find(p => p.material && p.material.image && (p.material.image.naturalWidth || p.material.image.width));
+    if (!primWithImg) return null;
+    const srcImg = primWithImg.material.image;
+
+    try {
+      const cvs = document.createElement('canvas');
+      const W = srcImg.naturalWidth || srcImg.width || 1024;
+      const H = srcImg.naturalHeight || srcImg.height || 1024;
+      cvs.width = W;
+      cvs.height = H;
+      const ctx = cvs.getContext('2d');
+      ctx.drawImage(srcImg, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, W, H);
+      const data = imgData.data;
+
+      const pCol = hexToRgb(skin.primary) || (isFooty ? [0, 200, 255] : [255, 107, 0]);
+      const sCol = hexToRgb(skin.secondary) || (isFooty ? [10, 30, 63] : [20, 21, 26]);
+      const shCol = hexToRgb(skin.shorts) || sCol;
+      const accCol = hexToRgb(skin.accent) || [255, 255, 255];
+      const bCol = hexToRgb(skin.boots) || pCol;
+
+      if (isFooty) {
+        // Striker #10 Texture Recoloring
+        for (let y = 0; y < H; y++) {
+          const v = y / H;
+          for (let x = 0; x < W; x++) {
+            const u = x / W;
+            const idx = (y * W + x) * 4;
+            const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+
+            // 1. Jersey (Front u < 0.5 & Back u >= 0.5, v < 0.5)
+            if (v < 0.5) {
+              // Blue jersey fabric (leave white chevron and gold collar trim and white #10 intact)
+              if (b > 120 && b > r + 35 && b > g - 25) {
+                const lum = (r * 0.15 + g * 0.35 + b * 0.5) / 165.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(pCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(pCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(pCol[2] * lum)));
+              }
+            }
+            // 2. Shorts (u < 0.5, 0.5 <= v < 0.75)
+            else if (u < 0.5 && v < 0.75) {
+              // White fabric
+              if (r > 200 && g > 200 && b > 200) {
+                const lum = (r * 0.3 + g * 0.59 + b * 0.11) / 250.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(shCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(shCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(shCol[2] * lum)));
+              }
+              // Cyan side stripe
+              else if (b > 180 && r < 100) {
+                data[idx] = accCol[0];
+                data[idx + 1] = accCol[1];
+                data[idx + 2] = accCol[2];
+              }
+            }
+            // 3. Socks & Limbs (u < 0.5, v >= 0.75)
+            else if (u < 0.5 && v >= 0.75) {
+              // Cyan sock stripes (r < 100, b > 160)
+              if (b > 160 && r < 100) {
+                const lum = b / 240.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(pCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(pCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(pCol[2] * lum)));
+              }
+            }
+            // 4. Cleats / Boots (u >= 0.5, v >= 0.75)
+            else if (u >= 0.5 && v >= 0.75) {
+              // Cyan upper boot body
+              if (b > 160 && r < 100) {
+                const lum = b / 235.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(bCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(bCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(bCol[2] * lum)));
+              }
+            }
+            // Face & hair (u >= 0.5, 0.5 <= v < 0.75) left untouched
+          }
+        }
+      } else {
+        // All-Star #23 Texture Recoloring
+        for (let y = 0; y < H; y++) {
+          const v = y / H;
+          for (let x = 0; x < W; x++) {
+            const u = x / W;
+            const idx = (y * W + x) * 4;
+            const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+
+            // 1. Jersey (Front & Back, v < 0.5)
+            if (v < 0.5) {
+              // Orange jersey fabric (leave white piping, white wordmark and #23 number intact)
+              if (r > 150 && r > b + 60) {
+                const lum = (r * 0.5 + g * 0.4 + b * 0.1) / 180.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(pCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(pCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(pCol[2] * lum)));
+              }
+              // Flank panels (dark)
+              else if (r < 40 && g < 40 && b < 45 && !(r === g && g === b && r > 200)) {
+                const lum = (r + g + b) / 90.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(sCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(sCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(sCol[2] * lum)));
+              }
+            }
+            // 2. Shorts (u < 0.5, v >= 0.5)
+            else if (u < 0.5 && v >= 0.5) {
+              // Orange shorts fabric
+              if (r > 150 && r > b + 60) {
+                const lum = (r * 0.5 + g * 0.4 + b * 0.1) / 180.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(shCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(shCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(shCol[2] * lum)));
+              }
+              // Side panels
+              else if (r < 40 && g < 40 && b < 45) {
+                const lum = (r + g + b) / 90.0;
+                data[idx] = Math.min(255, Math.max(0, Math.round(sCol[0] * lum)));
+                data[idx + 1] = Math.min(255, Math.max(0, Math.round(sCol[1] * lum)));
+                data[idx + 2] = Math.min(255, Math.max(0, Math.round(sCol[2] * lum)));
+              }
+            }
+            // Face, hair, arms (u >= 0.5, v >= 0.5) left untouched
+          }
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      const skinTex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, skinTex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cvs);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+
+      skinTextureCache.set(key, skinTex);
+      return skinTex;
+    } catch (err) {
+      console.warn('[CharactersGLB] Error generating skin texture:', err);
+      return null;
+    }
+  }
 
   function getLoader() {
     if (glbLoaderModule && glbLoaderModule.loadGLB) return glbLoaderModule;
@@ -297,6 +461,10 @@
       this.model = null;
       this.loaded = false;
       this.failed = false;
+      this.skin = options.skin || (charRef ? charRef.skin : null);
+      this.isFooty = options.isFooty !== undefined ? options.isFooty : true;
+      this.isKeeper = !!options.isKeeper;
+      this.customTexture = null;
 
       // Visual Placement & Orientation
       this.yaw = 0;
@@ -339,9 +507,27 @@
     setAnimation(name, speed = 1.0) {
       if (!this.model) return;
       this.model.playbackSpeed = speed;
-      if (this.currentAnim !== name) {
-        this.currentAnim = name;
-        this.model.setAnimation(name);
+
+      // Smart Animation Clip Resolution for High-Performance GLB Skeletons
+      let targetClip = name;
+      const lower = String(name).toLowerCase();
+      if (lower === 'kick' || lower === 'shot' || lower === 'shoot') {
+        targetClip = 'Kick_Right';
+      } else if (lower === 'celebrate' || lower === 'wave' || lower === 'win') {
+        targetClip = 'Wave';
+      } else if (lower === 'tackle' || lower === 'slide' || lower === 'roll') {
+        targetClip = 'Roll';
+      } else if (lower === 'run') {
+        targetClip = 'Run';
+      } else if (lower === 'walk') {
+        targetClip = 'Walk';
+      } else if (lower === 'idle') {
+        targetClip = 'Idle';
+      }
+
+      if (this.currentAnim !== targetClip) {
+        this.currentAnim = targetClip;
+        this.model.setAnimation(targetClip);
       }
     }
 
@@ -365,16 +551,27 @@
       while (dy < -Math.PI) dy += Math.PI * 2;
       this.yaw += dy * Math.min(1, dt * 14);
 
-      // 2. Animation Track Mapping
+      // 2. Realistic Dynamic Animation Track Mapping
       if (a.kickT > 0 || a.shotT > 0) {
-        this.setAnimation('kick', 1.3);
+        // High-impact soccer strike / basketball jump release
+        this.setAnimation('Kick_Right', 1.45);
+      } else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
+        // Acrobatic sliding tackle / aggressive interception dive
+        this.setAnimation('Roll', 1.5);
       } else if (a.celebrateT > 0) {
-        this.setAnimation('celebrate', 1.0);
-      } else if (speed > 0.35) {
-        const animSpeed = Math.max(0.75, Math.min(1.85, speed / 5.2));
-        this.setAnimation('run', animSpeed);
+        // Crowd celebration wave
+        this.setAnimation('Wave', 1.15);
+      } else if (speed > 1.8) {
+        // High-velocity athletic sprint: cadence smoothly syncs with ground speed
+        const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
+        this.setAnimation('Run', sprintCadence);
+      } else if (speed > 0.25) {
+        // Controlled athletic jog / tactical positioning stride
+        const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
+        this.setAnimation('Walk', walkCadence);
       } else {
-        this.setAnimation('idle', 1.0);
+        // Athletic ready stance
+        this.setAnimation('Idle', 1.0);
       }
 
       // 3. Step skeletal bones
@@ -404,24 +601,46 @@
 
       const list = [];
       const mode = matchView.mode;
+      const playerChar = matchView.playerChar || 'footy';
+      const oppChar = matchView.oppChar || (playerChar === 'footy' ? 'hoops' : 'footy');
 
       matchView.chars.forEach(c => {
         if (!c.agent) return;
         const role = c.agent.role;
+        const isKeeper = (role === 'keeper');
+        const isTeam0 = (c.agent.team === 0);
 
-        // 1. Football Striker #10
-        if (mode === 'footy' && role !== 'keeper') {
-          const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', { scale: 1.38 });
+        // Core FOOTY vs HOOPS Rivalry: Football Striker vs Basketball All-Star
+        const charSport = isKeeper ? 'footy' : (c.sport || (isTeam0 ? playerChar : oppChar));
+
+        // 1. Goalkeeper in goal (Goalkeeper #1)
+        if (isKeeper) {
+          const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
+            scale: 1.90, // Substantial athletic stature
+            skin: c.skin,
+            isFooty: true,
+            isKeeper: true
+          });
           list.push(inst);
         }
-        // 2. Football Goalkeeper #1
-        else if (mode === 'footy' && role === 'keeper') {
-          const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', { scale: 1.40 });
+        // 2. Football Athlete (Striker #10)
+        else if (charSport === 'footy') {
+          const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
+            scale: 1.88, // Bold, prominent field presence
+            skin: c.skin,
+            isFooty: true,
+            isKeeper: false
+          });
           list.push(inst);
         }
-        // 3. Basketball All-Star #23
-        else if (mode === 'hoops') {
-          const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', { scale: 1.42 });
+        // 3. Basketball Athlete (All-Star #23)
+        else {
+          const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
+            scale: 1.92, // Tall, athletic basketball forward stature
+            skin: c.skin,
+            isFooty: false,
+            isKeeper: false
+          });
           list.push(inst);
         }
       });
@@ -472,6 +691,11 @@
       list.forEach(inst => {
         if (!inst.loaded || !inst.model) return;
 
+        // Lazy-generate custom skin texture if equipped with an alternative skin
+        if (!inst.customTexture && inst.skin && !inst.isKeeper) {
+          inst.customTexture = getOrCreateSkinTexture(gl, inst.model, inst.skin, inst.isFooty);
+        }
+
         const buffers = getOrCreateBuffers(gl, inst.model);
         gl.uniformMatrix4fv(glLocations.uModel, false, inst.modelMatrix);
 
@@ -484,18 +708,36 @@
         buffers.forEach(pBuf => {
           gl.bindVertexArray(pBuf.vao);
 
-          const hasTex = !!pBuf.texture;
+          const texToBind = inst.customTexture || pBuf.texture;
+          const hasTex = !!texToBind;
           gl.uniform1i(glLocations.uHasTex, hasTex ? 1 : 0);
           if (hasTex) {
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, pBuf.texture);
+            gl.bindTexture(gl.TEXTURE_2D, texToBind);
             gl.uniform1i(glLocations.uTex, 0);
           }
 
           const baseCol = (pBuf.material && pBuf.material.baseColorFactor) ? pBuf.material.baseColorFactor : [1, 1, 1, 1];
           gl.uniform4fv(glLocations.uBaseColor, baseCol);
-          gl.uniform1f(glLocations.uRoughness, pBuf.material ? pBuf.material.roughnessFactor : 0.7);
-          gl.uniform1f(glLocations.uMetallic, pBuf.material ? pBuf.material.metallicFactor : 0.0);
+
+          // 3D PBR Material tuning based on equipped skin
+          let roughness = pBuf.material ? pBuf.material.roughnessFactor : 0.7;
+          let metallic = pBuf.material ? pBuf.material.metallicFactor : 0.0;
+          if (inst.skin && inst.skin.id) {
+            const skId = inst.skin.id;
+            if (skId.includes('gold') || skId.includes('championship')) {
+              metallic = 0.65;
+              roughness = 0.28;
+            } else if (skId.includes('neon') || skId.includes('cyber')) {
+              metallic = 0.35;
+              roughness = 0.38;
+            } else if (skId.includes('frost')) {
+              metallic = 0.20;
+              roughness = 0.30;
+            }
+          }
+          gl.uniform1f(glLocations.uRoughness, roughness);
+          gl.uniform1f(glLocations.uMetallic, metallic);
 
           gl.drawElements(gl.TRIANGLES, pBuf.indexCount, pBuf.indexType, 0);
         });

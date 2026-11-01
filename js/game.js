@@ -3724,9 +3724,15 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                     dz = dz * (1 - k) + (gz / am) * k;
                 }
             }
-            const power = Math.max(0.28, charge);
-            const speed = (0, math_js_5.lerp)(13, 31, power) * this.boosts.shotPower;
-            const vy = 0.8 + 11 * Math.max(0, power - 0.5);
+            const power = Math.max(0.25, charge);
+            const speed = (0, math_js_5.lerp)(14, 33, power) * this.boosts.shotPower;
+            // 3D Ball Elevation Dynamics:
+            // Tap Space = driven low/mid strike
+            // Hold Space = rising rocket aiming for crossbar / top corners
+            // Forward attack stick / direction = lofted chip / chip over keeper
+            const forwardPush = (dz * att < -0.15) || (Math.hypot(a.mx, a.mz) > 0.3 && (a.mz * att < -0.15));
+            const loft = forwardPush ? 2.8 : 0;
+            const vy = (0, math_js_5.lerp)(2.8, 11.2, power) + loft;
             this.kickBall(a, dx, dz, Math.min(speed, 36), vy, 'shot');
         }
         humanPass(a) {
@@ -5812,38 +5818,54 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return c;
     }
     function makeBallTexture(v) {
-        const [c, g] = makeCanvas(512, 256);
-        const base = hex(v.base || (v.mode === 'footy' ? 0xf5f5f5 : 0xe8772e));
-        const acc = hex(v.accent || (v.mode === 'footy' ? 0x111111 : 0x1a0d05));
+        const [c, g] = makeCanvas(1024, 512);
+        const base = hex(v.base || (v.mode === 'footy' ? 0xf8f9fa : 0xe86620));
+        const acc = hex(v.accent || (v.mode === 'footy' ? 0x0f172a : 0x14151a));
         
         g.fillStyle = base;
-        g.fillRect(0, 0, 512, 256);
+        g.fillRect(0, 0, 1024, 512);
 
         if (v.mode === 'footy') {
-            // Subtle embossed leather grain micro-texture
-            g.fillStyle = 'rgba(0,0,0,0.03)';
-            for (let i = 0; i < 4000; i++) {
-                g.fillRect(Math.random() * 512, Math.random() * 256, 1.5, 1.5);
+            // Subtle embossed synthetic leather micro-texture
+            g.fillStyle = 'rgba(0,0,0,0.04)';
+            for (let i = 0; i < 8000; i++) {
+                g.fillRect(Math.random() * 1024, Math.random() * 512, 2.0, 2.0);
             }
 
             // Authentic 32-panel geodesic pattern with double-stitched 3D seams
             const spots = [];
             for (let i = 0; i < 6; i++) {
-                spots.push([i * 85.3 + 20, 128]);
+                spots.push([i * 170.6 + 40, 256]);
             }
             for (let i = 0; i < 6; i++) {
-                spots.push([i * 85.3 + 62, 36], [i * 85.3 + 62, 220]);
+                spots.push([i * 170.6 + 124, 72], [i * 170.6 + 124, 440]);
             }
 
             // Draw stitched hex boundary lines between panels
-            g.strokeStyle = 'rgba(0,0,0,0.45)';
-            g.lineWidth = 3.5;
+            g.strokeStyle = 'rgba(0,0,0,0.50)';
+            g.lineWidth = 6.0;
             for (const [x, y] of spots) {
                 g.beginPath();
                 for (let k = 0; k < 6; k++) {
                     const a = (k / 6) * Math.PI * 2;
-                    const px = x + Math.cos(a) * 44;
-                    const py = y + Math.sin(a) * 44;
+                    const px = x + Math.cos(a) * 88;
+                    const py = y + Math.sin(a) * 88;
+                    if (k === 0) g.moveTo(px, py);
+                    else g.lineTo(px, py);
+                }
+                g.closePath();
+                g.stroke();
+            }
+
+            // Secondary subtle double-stitch line
+            g.strokeStyle = 'rgba(255,255,255,0.45)';
+            g.lineWidth = 2.0;
+            for (const [x, y] of spots) {
+                g.beginPath();
+                for (let k = 0; k < 6; k++) {
+                    const a = (k / 6) * Math.PI * 2;
+                    const px = x + Math.cos(a) * 85;
+                    const py = y + Math.sin(a) * 85;
                     if (k === 0) g.moveTo(px, py);
                     else g.lineTo(px, py);
                 }
@@ -5854,11 +5876,11 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             // Draw contrasting pentagons with embossed highlights
             for (const [x, y] of spots) {
                 // Shadow under pentagon
-                g.fillStyle = 'rgba(0,0,0,0.35)';
+                g.fillStyle = 'rgba(0,0,0,0.40)';
                 g.beginPath();
                 for (let k = 0; k < 5; k++) {
                     const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
-                    g.lineTo(x + Math.cos(a) * 28 + 1, y + Math.sin(a) * 28 + 1.5);
+                    g.lineTo(x + Math.cos(a) * 56 + 2, y + Math.sin(a) * 56 + 3);
                 }
                 g.closePath();
                 g.fill();
@@ -5868,133 +5890,120 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 g.beginPath();
                 for (let k = 0; k < 5; k++) {
                     const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
-                    g.lineTo(x + Math.cos(a) * 27, y + Math.sin(a) * 27);
+                    g.lineTo(x + Math.cos(a) * 54, y + Math.sin(a) * 54);
                 }
                 g.closePath();
                 g.fill();
 
                 // Specular highlight rim inside pentagon
-                g.strokeStyle = 'rgba(255,255,255,0.4)';
-                g.lineWidth = 1.8;
+                g.strokeStyle = 'rgba(255,255,255,0.45)';
+                g.lineWidth = 3.2;
                 g.stroke();
             }
 
             // Special style rendering
             if (v.style === 'plasma') {
                 g.strokeStyle = '#00f0ff';
-                g.lineWidth = 4;
+                g.lineWidth = 8;
                 g.shadowColor = '#00f0ff';
-                g.shadowBlur = 12;
+                g.shadowBlur = 24;
                 for (let i = 0; i < 8; i++) {
                     g.beginPath();
-                    g.arc(i * 64 + 32, 128, 24, 0, Math.PI * 2);
+                    g.arc(i * 128 + 64, 256, 48, 0, Math.PI * 2);
                     g.stroke();
                 }
                 g.shadowBlur = 0;
             } else if (v.style === 'stars') {
                 g.fillStyle = '#ffffff';
                 g.shadowColor = '#ffe27a';
-                g.shadowBlur = 8;
+                g.shadowBlur = 16;
                 for (let i = 0; i < 12; i++) {
-                    const sx = (i * 42.6 + 21) % 512;
-                    const sy = 30 + (i % 3) * 90;
+                    const sx = (i * 85.3 + 42) % 1024;
+                    const sy = 60 + (i % 3) * 180;
                     g.beginPath();
-                    g.arc(sx, sy, 5, 0, Math.PI * 2);
+                    g.arc(sx, sy, 9, 0, Math.PI * 2);
                     g.fill();
                 }
                 g.shadowBlur = 0;
             } else if (v.style === 'flame') {
-                g.fillStyle = 'rgba(255,100,0,0.4)';
+                g.fillStyle = 'rgba(255,100,0,0.45)';
                 for (let i = 0; i < 16; i++) {
                     g.beginPath();
-                    g.arc(i * 32 + 16, 128 + Math.sin(i) * 50, 18, 0, Math.PI * 2);
+                    g.arc(i * 64 + 32, 256 + Math.sin(i) * 100, 36, 0, Math.PI * 2);
                     g.fill();
                 }
             }
         } else {
             // Basketball: authentic composite pebbled leather grip texture
-            g.fillStyle = 'rgba(0,0,0,0.18)';
-            for (let y = 0; y < 256; y += 4) {
-                for (let x = 0; x < 512; x += 4) {
-                    if ((x + y) % 8 === 0) {
-                        g.fillRect(x + 1, y + 1, 1.8, 1.8);
+            g.fillStyle = 'rgba(0,0,0,0.22)';
+            for (let y = 0; y < 512; y += 6) {
+                for (let x = 0; x < 1024; x += 6) {
+                    if ((x + y) % 12 === 0) {
+                        g.fillRect(x + 1, y + 1, 2.5, 2.5);
                     }
                 }
             }
 
             // Highlight pebble dots
-            g.fillStyle = 'rgba(255,255,255,0.15)';
-            for (let y = 0; y < 256; y += 6) {
-                for (let x = 0; x < 512; x += 6) {
-                    g.fillRect(x, y, 1.2, 1.2);
+            g.fillStyle = 'rgba(255,255,255,0.18)';
+            for (let y = 0; y < 512; y += 8) {
+                for (let x = 0; x < 1024; x += 8) {
+                    g.fillRect(x, y, 1.8, 1.8);
                 }
             }
 
             // Deep recessed black rubber grip seams
             g.strokeStyle = acc;
-            g.lineWidth = 7;
+            g.lineWidth = 13;
             g.lineCap = 'round';
 
             // Center horizontal equator seam
             g.beginPath();
-            g.moveTo(0, 128);
-            g.lineTo(512, 128);
+            g.moveTo(0, 256);
+            g.lineTo(1024, 256);
             g.stroke();
 
             // Vertical rib seams
-            for (let x = 0; x <= 512; x += 128) {
+            for (let x = 0; x <= 1024; x += 256) {
                 g.beginPath();
                 g.moveTo(x, 0);
-                g.lineTo(x, 256);
+                g.lineTo(x, 512);
                 g.stroke();
             }
 
             // Curved side ribs
-            for (const x of [64, 192, 320, 448]) {
+            for (const x of [128, 384, 640, 896]) {
                 g.beginPath();
-                g.arc(x, 128, 92, -1.1, 1.1);
+                g.arc(x, 256, 184, -1.1, 1.1);
                 g.stroke();
                 g.beginPath();
-                g.arc(x, 128, 92, Math.PI - 1.1, Math.PI + 1.1);
+                g.arc(x, 256, 184, Math.PI - 1.1, Math.PI + 1.1);
                 g.stroke();
             }
 
             // Inner shadow groove for 3D depth
-            g.strokeStyle = 'rgba(0,0,0,0.85)';
-            g.lineWidth = 3.5;
+            g.strokeStyle = 'rgba(0,0,0,0.92)';
+            g.lineWidth = 6.0;
             g.beginPath();
-            g.moveTo(0, 128);
-            g.lineTo(512, 128);
+            g.moveTo(0, 256);
+            g.lineTo(1024, 256);
             g.stroke();
-            for (let x = 0; x <= 512; x += 128) {
+            for (let x = 0; x <= 1024; x += 256) {
                 g.beginPath();
                 g.moveTo(x, 0);
-                g.lineTo(x, 256);
+                g.lineTo(x, 512);
                 g.stroke();
             }
 
-            // Special style rendering
-            if (v.style === 'stripes') {
-                g.strokeStyle = '#00f0ff';
-                g.lineWidth = 3;
-                g.shadowColor = '#00f0ff';
-                g.shadowBlur = 10;
-                for (let x = 32; x < 512; x += 64) {
-                    g.beginPath();
-                    g.moveTo(x, 0);
-                    g.lineTo(x, 256);
-                    g.stroke();
-                }
-                g.shadowBlur = 0;
-            } else if (v.style === 'chrome') {
-                const grad = g.createLinearGradient(0, 0, 512, 0);
-                grad.addColorStop(0, 'rgba(255,255,255,0.4)');
-                grad.addColorStop(0.5, 'rgba(0,0,0,0.3)');
-                grad.addColorStop(1, 'rgba(255,255,255,0.4)');
-                g.fillStyle = grad;
-                g.fillRect(0, 0, 512, 256);
-            }
+            // White accent seam highlights
+            g.strokeStyle = 'rgba(255,255,255,0.35)';
+            g.lineWidth = 2.0;
+            g.beginPath();
+            g.moveTo(0, 252);
+            g.lineTo(1024, 252);
+            g.stroke();
         }
+
         return c;
     }
     function makeSkyTexture(top, bottom) {
@@ -6769,6 +6778,21 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             }
         }
 
+        // Stadium Cantilevered Canopy Roof over touchline grandstands
+        const canopyMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x222a3d), spec: 0.25 });
+        const canopyTrussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x475569), spec: 0.5 });
+        for (const sx of [-1, 1]) {
+            const canopy = new scene_js_1.Node(G.box(10.0, 0.4, 2 * L + 12), canopyMat);
+            canopy.rotation = [0, 0, -sx * 0.12];
+            canopy.setPos(sx * (W + 7.5), 13.5, 0);
+            root.add(canopy);
+            for (const cz of [-L * 0.8, -L * 0.3, L * 0.3, L * 0.8]) {
+                const col = new scene_js_1.Node(G.cylinder(0.35, 0.35, 14.0, 8), canopyTrussMat);
+                col.setPos(sx * (W + 11.5), 7.0, cz);
+                root.add(col);
+            }
+        }
+
         return crowd;
     }
 
@@ -6784,15 +6808,65 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         ];
         const crowd = crowdAndStands(root, stands, t.crowd || [0xf59e0b, 0xef4444, 0x3b82f6, 0xffffff], t.stand || 0x161c28, quality);
 
-        // Arena perimeter stands and spectator lighting
-
-
         // Courtside Team Benches & Media Desks
         const benchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.3 });
         for (const s of [-1, 1]) {
             const desk = new scene_js_1.Node(G.box(0.7, 0.75, 12.0), benchMat);
             desk.setPos(s * (W + APRON + 1.2), 0.38, 0);
             root.add(desk);
+        }
+
+        // Overhead Central 4-Sided Arena Jumbotron Scoreboard (Suspended at y = 15.5m above center court)
+        const jumbotron = new scene_js_1.Node();
+        const jumbotronH = 2.6;
+        const jumbotronW = 4.4;
+        const jumbotronZ = 4.4;
+        const jumbotronY = 15.5;
+
+        // Dark matte housing structure
+        const jumbotronHousingMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x111625), spec: 0.45 });
+        const housing = new scene_js_1.Node(G.box(jumbotronW, jumbotronH, jumbotronZ), jumbotronHousingMat);
+        housing.setPos(0, jumbotronY, 0);
+        jumbotron.add(housing);
+
+        // 4 Glowing HD Display Screens
+        const screenMat = (0, scene_js_1.material)({
+            color: (0, math_js_6.rgb)(0x0a1020),
+            emissive: [0.18, 0.28, 0.52],
+            spec: 0.85
+        });
+        // North & South screens
+        for (const sz of [-1, 1]) {
+            const screenFace = new scene_js_1.Node(G.plane(jumbotronW * 0.90, jumbotronH * 0.82), screenMat);
+            screenFace.rotation = [sz > 0 ? 0 : Math.PI, 0, 0];
+            screenFace.setPos(0, jumbotronY, sz * (jumbotronZ / 2 + 0.02));
+            jumbotron.add(screenFace);
+        }
+        // East & West screens
+        for (const sx of [-1, 1]) {
+            const screenFace = new scene_js_1.Node(G.plane(jumbotronZ * 0.90, jumbotronH * 0.82), screenMat);
+            screenFace.rotation = [0, sx > 0 ? Math.PI / 2 : -Math.PI / 2, 0];
+            screenFace.setPos(sx * (jumbotronW / 2 + 0.02), jumbotronY, 0);
+            jumbotron.add(screenFace);
+        }
+
+        // Suspension steel cables reaching up to ceiling grid (y = 20m)
+        const cableMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x64748b), spec: 0.7 });
+        for (const cx of [-jumbotronW * 0.42, jumbotronW * 0.42]) {
+            for (const cz of [-jumbotronZ * 0.42, jumbotronZ * 0.42]) {
+                const cable = new scene_js_1.Node(G.cylinder(0.025, 0.025, 5.0, 4), cableMat);
+                cable.setPos(cx, jumbotronY + jumbotronH / 2 + 2.5, cz);
+                jumbotron.add(cable);
+            }
+        }
+        root.add(jumbotron);
+
+        // Overhead arena steel roof truss grid (y = 20m)
+        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1f293d), spec: 0.35 });
+        for (const tz of [-L * 0.75, 0, L * 0.75]) {
+            const trussBeam = new scene_js_1.Node(G.box(2 * (W + APRON + 10), 0.6, 0.6), trussMat);
+            trussBeam.setPos(0, 20, tz);
+            root.add(trussBeam);
         }
 
         return crowd;
@@ -7581,9 +7655,9 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.shakeT = 0;
             this.snap = true;
             this.zoom = 1;
-            this.cam.fov = mode === 'footy' ? 42 : 40;
-            this.elev = ((mode === 'footy' ? 42 : 45) * Math.PI) / 180;
-            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : (aspect < 0.9 ? 16.0 : 14.0);
+            this.cam.fov = mode === 'footy' ? 44 : 42;
+            this.elev = ((mode === 'footy' ? 40 : 42) * Math.PI) / 180;
+            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 13.6 : 12.0);
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
             this.limitZ = halfL;
@@ -7594,7 +7668,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         setAspect(aspect) {
             this.aspect = aspect;
             this.cam.aspect = aspect;
-            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 18.5 : 13.5) : (aspect < 0.9 ? 16.0 : 14.0);
+            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 13.6 : 12.0);
             this.snap = true;
         }
         shake(amount) {
@@ -7705,7 +7779,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
         { primary: 0xd93a3a, secondary: 0x2a0f0f, shorts: 0x2a0f0f, skin: 0xc68642, hair: 0x101010, boots: 0x111111, accent: 0xffffff, style: 'plain' },
         { primary: 0x23232b, secondary: 0xff5a1f, shorts: 0x15151a, skin: 0xe0ac86, hair: 0x3a2412, boots: 0xff5a1f, accent: 0xff5a1f, style: 'stripes' },
     ];
-    exports.PLAYER_SCALE = 1.22;
+    exports.PLAYER_SCALE = 1.35;
     exports.FOOTY_GROW = 1.0;
     const lin = (c, k = 1) => (0, math_js_8.rgb)(c).map((v) => Math.min(1, v * k));
 
@@ -7768,6 +7842,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
         constructor(agent, skin, mode, scaleMul = 1, quality = 1) {
             var _a;
             this.agent = agent;
+            this.skin = skin;
             this.mode = mode;
             this.root = new scene_js_3.Node();
             this.pivot = new scene_js_3.Node();
@@ -8625,16 +8700,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.mode = sim.mode;
             const mode = sim.mode;
             const eq = opts.equipped || {};
-            let stadiumSlot = opts.arenaId || (mode === 'footy' ? eq['stadium.footy'] : eq['stadium.hoops']);
-            if (mode === 'footy' && stadiumSlot && (stadiumSlot.startsWith('std_hoops') || stadiumSlot === 'std_cyber_megacity')) {
-                stadiumSlot = 'std_footy_classic';
-            } else if (mode === 'hoops' && stadiumSlot && stadiumSlot.startsWith('std_footy')) {
-                stadiumSlot = 'std_hoops_street';
-            }
-            if (!stadiumSlot || stadiumSlot === 'std_urban_rooftop' || stadiumSlot === 'std_classic_pitch' || stadiumSlot === 'std_volcano_caldera') {
-                stadiumSlot = mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street';
-            }
-            let stadium = visualOf(stadiumSlot, mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street');
+            // Strict 2-Arena Standard: Football matches use Football Stadium, Basketball matches use Hardwood Arena
+            const stadiumSlot = mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street';
+            let stadium = Object.assign({}, visualOf(stadiumSlot, mode === 'footy' ? 'std_footy_classic' : 'std_hoops_street'), { isDefault: true });
             const CROWD_PALETTES = {
                 crowd_footy_ultras: { palette: [0x00f0ff, 0x0284c7, 0xffffff, 0x38bdf8, 0x1e293b], stand: 0x1e2433 },
                 crowd_hoops_allstars: { palette: [0xff6b00, 0xfb923c, 0xf59e0b, 0x18181b, 0xffffff], stand: 0x1c1917 },
@@ -8655,10 +8723,13 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.frame = visualOf(eq.frame, 'frame_default');
             const playerChar = (opts && opts.char) ? opts.char : 'footy';
             const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
+            this.playerChar = playerChar;
+            this.oppChar = oppChar;
             const charSkinId = playerChar === 'hoops'
                 ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_solar'))
                 : (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie'));
             let skin = Object.assign({}, visualOf(charSkinId, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie'));
+            skin.id = charSkinId || (playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
 
             // Ensure player character strictly mirrors their wardrobe athlete identity
             if (playerChar === 'hoops') {
@@ -8687,6 +8758,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
 
             // Signature Cross-Sport Kits for Football vs Basketball Rivalry
             const hoopsOppKit = {
+                id: 'skin_solar',
                 primary: 0xff6b00,
                 secondary: 0x14151a,
                 shorts: 0x14151a,
@@ -8697,6 +8769,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 style: 'hoops'
             };
             const footyOppKit = {
+                id: 'skin_rookie',
                 primary: 0x00c8ff,
                 secondary: 0x0a1e3f,
                 shorts: 0x0a1e3f,
@@ -8707,12 +8780,14 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 style: 'plain'
             };
             const oppSkin = (oppChar === 'hoops') ? hoopsOppKit : footyOppKit;
-            const keeperHome = Object.assign(Object.assign({}, characters_js_1.KEEPER_SKIN), { primary: 0x2bd96b, secondary: 0x0a3a1c });
+            const keeperHome = Object.assign(Object.assign({}, characters_js_1.KEEPER_SKIN), { id: 'keeper_home', primary: 0x2bd96b, secondary: 0x0a3a1c });
             for (const a of sim.agents) {
                 const isTeam0 = (a.team === 0);
                 const charSport = a.role === 'keeper' ? 'footy' : (isTeam0 ? playerChar : oppChar);
                 const s = a.role === 'keeper' ? (isTeam0 ? keeperHome : characters_js_1.KEEPER_SKIN) : (isTeam0 ? skin : oppSkin);
                 const c = new characters_js_1.Character(a, s, charSport, 1.0, opts.quality);
+                c.sport = charSport;
+                c.team = a.team;
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
@@ -8724,9 +8799,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.ballVisual.mode = mode;
             }
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            const r = (sim && sim.ball && typeof sim.ball.r === 'number' && sim.ball.r > 0) ? sim.ball.r : (mode === 'footy' ? 0.22 : 0.30);
-            this.ball = new scene_js_5.Node(G.sphere(r, 20, 14), (0, scene_js_5.material)({ texture: bt, spec: 0.5, shininess: 40, castShadow: true, rim: 0.15, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.35) : [0, 0, 0] }));
-            this.ballShadow = new scene_js_5.Node(G.plane(1, 1), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            const r = (sim && sim.ball && typeof sim.ball.r === 'number' && sim.ball.r > 0) ? sim.ball.r : (mode === 'footy' ? 0.28 : 0.34);
+            this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: 0.75, shininess: 55, castShadow: true, rim: 0.25, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.4) : [0, 0, 0] }));
+            this.ballShadow = new scene_js_5.Node(G.plane(r * 3.4, r * 3.4), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.ballGlow = new scene_js_5.Node(G.ring(r * 1.5, r * 2.3, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.scene.root.add(this.ball, this.ballShadow, this.ballGlow);
             this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), null);

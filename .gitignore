@@ -9,12 +9,15 @@ npm-debug.log*
 
 # Backups & Temp files
 backups/
+backup/
 backup_*/
+archive/
 temp_build/
 temp_inspect.html
 *.BACKUP.html
 FOOTY vs HOOPS.html
 screenshot_*.png
+/*.png
 
 # OS & Editor
 .DS_Store
