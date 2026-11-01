@@ -6825,58 +6825,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             root.add(desk);
         }
 
-        // Overhead Central 4-Sided Arena Jumbotron Scoreboard (Suspended at y = 15.5m above center court)
-        const jumbotron = new scene_js_1.Node();
-        const jumbotronH = 2.6;
-        const jumbotronW = 4.4;
-        const jumbotronZ = 4.4;
-        const jumbotronY = 15.5;
-
-        // Dark matte housing structure
-        const jumbotronHousingMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x111625), spec: 0.45 });
-        const housing = new scene_js_1.Node(G.box(jumbotronW, jumbotronH, jumbotronZ), jumbotronHousingMat);
-        housing.setPos(0, jumbotronY, 0);
-        jumbotron.add(housing);
-
-        // 4 Glowing HD Display Screens
-        const screenMat = (0, scene_js_1.material)({
-            color: (0, math_js_6.rgb)(0x0a1020),
-            emissive: [0.18, 0.28, 0.52],
-            spec: 0.85
-        });
-        // North & South screens
-        for (const sz of [-1, 1]) {
-            const screenFace = new scene_js_1.Node(G.plane(jumbotronW * 0.90, jumbotronH * 0.82), screenMat);
-            screenFace.rotation = [sz > 0 ? 0 : Math.PI, 0, 0];
-            screenFace.setPos(0, jumbotronY, sz * (jumbotronZ / 2 + 0.02));
-            jumbotron.add(screenFace);
-        }
-        // East & West screens
-        for (const sx of [-1, 1]) {
-            const screenFace = new scene_js_1.Node(G.plane(jumbotronZ * 0.90, jumbotronH * 0.82), screenMat);
-            screenFace.rotation = [0, sx > 0 ? Math.PI / 2 : -Math.PI / 2, 0];
-            screenFace.setPos(sx * (jumbotronW / 2 + 0.02), jumbotronY, 0);
-            jumbotron.add(screenFace);
-        }
-
-        // Suspension steel cables reaching up to ceiling grid (y = 20m)
-        const cableMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x64748b), spec: 0.7 });
-        for (const cx of [-jumbotronW * 0.42, jumbotronW * 0.42]) {
-            for (const cz of [-jumbotronZ * 0.42, jumbotronZ * 0.42]) {
-                const cable = new scene_js_1.Node(G.cylinder(0.025, 0.025, 5.0, 4), cableMat);
-                cable.setPos(cx, jumbotronY + jumbotronH / 2 + 2.5, cz);
-                jumbotron.add(cable);
-            }
-        }
-        root.add(jumbotron);
-
-        // Overhead arena steel roof truss grid (y = 20m)
-        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1f293d), spec: 0.35 });
-        for (const tz of [-L * 0.75, 0, L * 0.75]) {
-            const trussBeam = new scene_js_1.Node(G.box(2 * (W + APRON + 10), 0.6, 0.6), trussMat);
-            trussBeam.setPos(0, 20, tz);
-            root.add(trussBeam);
-        }
+        // Entire overhead arena space is 100% open, unobstructed, and free of any hanging rigs, projectors, or jumbotrons!
 
         return crowd;
     }
@@ -7904,7 +7853,8 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const trim = (_a = skin.accent) !== null && _a !== void 0 ? _a : white;
             this.root.add(this.pivot);
             this.pivot.setScale(S);
-            this.pivot.visible = false; // Conceal legacy procedural mesh immediately to guarantee zero flicker on kickoff!
+            // Character is immediately visible (zero transparency); GLB seamless replaces it on frame 0
+            this.pivot.visible = true;
             const sockCol = skin.style === 'hoops' ? skin.secondary : skin.primary;
 
             // 1. Muscular Legs, Dynamic Pro Shorts, Compression Socks & Authentic Footwear
@@ -8800,7 +8750,6 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 const c = new characters_js_1.Character(a, s, charSport, 1.0, opts.quality);
                 c.sport = charSport;
                 c.team = a.team;
-                if (c.pivot) c.pivot.visible = false; // Conceal procedural mesh immediately to guarantee zero flicker on kickoff!
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
@@ -8812,11 +8761,11 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.ballVisual.mode = mode;
             }
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            // Balanced, authentic ball size (r = 0.20m for soccer, 0.22m for basketball) matching heroic player stature
-            const r = (mode === 'footy') ? 0.20 : 0.22;
+            // Prominent, clearly trackable ball size (r = 0.30m for soccer, 0.32m for basketball)
+            const r = (mode === 'footy') ? 0.30 : 0.32;
             this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: 0.75, shininess: 55, castShadow: true, rim: 0.25, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.4) : [0, 0, 0] }));
-            this.ballShadow = new scene_js_5.Node(G.plane(r * 3.0, r * 3.0), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
-            this.ballGlow = new scene_js_5.Node(G.ring(r * 1.25, r * 1.8, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            this.ballShadow = new scene_js_5.Node(G.plane(r * 2.8, r * 2.8), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            this.ballGlow = new scene_js_5.Node(G.ring(r * 1.25, r * 1.9, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.scene.root.add(this.ball, this.ballShadow, this.ballGlow);
             this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), null);
             // Boosts completely removed

@@ -2307,8 +2307,8 @@
   function getDetailedJerseySvg(item, size) {
     var isLg = size === 'large';
     var isSm = size === 'thumb' || size === 'small';
-    var w = isLg ? 200 : (isSm ? 48 : 76);
-    var h = isLg ? 200 : (isSm ? 48 : 76);
+    var w = isLg ? 220 : (isSm ? 76 : 84);
+    var h = isLg ? 220 : (isSm ? 76 : 84);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
     var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
 
@@ -2550,8 +2550,8 @@
   function getDetailedBallSvg(item, size) {
     var isLg = size === 'large';
     var isSm = size === 'thumb' || size === 'small';
-    var w = isLg ? 200 : (isSm ? 48 : 76);
-    var h = isLg ? 200 : (isSm ? 48 : 76);
+    var w = isLg ? 220 : (isSm ? 76 : 84);
+    var h = isLg ? 220 : (isSm ? 76 : 84);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
     var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
     var isHoops = id.indexOf('hoops') !== -1 || id === 'ball_tidal';
@@ -6674,6 +6674,14 @@
         return;
       }
 
+      // Sort by rarity: Legendary first, then Epic, then Rare, then Common
+      var rarityOrder = { 'legendary': 4, 'epic': 3, 'rare': 2, 'common': 1 };
+      filtered.sort(function(a, b) {
+        var rA = rarityOrder[a.rarity || 'common'] || 1;
+        var rB = rarityOrder[b.rarity || 'common'] || 1;
+        return rB - rA;
+      });
+
       filtered.forEach(function (it) {
         var slotKey = it.slot || (it.category === 'balls_footy' ? 'ball.footy' : it.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
         var isOwned = (owned.indexOf(it.id) !== -1 || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie'));
@@ -10098,7 +10106,28 @@
 
     screen.appendChild(secondaryHub);
 
-    // 5. Token Rivalry Compact Ticker
+    // 5. Live Season Event Banner & Faction Clash Dashboard
+    var seasonBanner = document.createElement('div');
+    seasonBanner.className = 'fvh-season-event-banner';
+    var isRu = (lang === 'ru');
+    seasonBanner.innerHTML =
+      '<div class="fvh-season-header">' +
+      '  <span class="fvh-season-badge">🏆 ' + (isRu ? 'СЕЗОН 1 · БИТВА ФРАКЦИЙ' : 'SEASON 1 · FACTION CLASH') + '</span>' +
+      '  <span class="fvh-season-timer">⏱ ' + (isRu ? '12 дней' : '12 days left') + '</span>' +
+      '</div>' +
+      '<div class="fvh-season-title">FOOTY ⚽ <span style="color:#fde047;">VS</span> 🏀 HOOPS</div>' +
+      '<div class="fvh-season-bar-wrap">' +
+      '  <div class="fvh-season-bar-fill footy" style="width: 53%;"></div>' +
+      '  <div class="fvh-season-bar-fill hoops" style="width: 47%;"></div>' +
+      '</div>' +
+      '<div class="fvh-season-sub">' +
+      '  <span style="color:#00f0ff;font-weight:900;">⚽ 53% ' + (isRu ? 'Побед' : 'Wins') + '</span>' +
+      '  <span style="color:#facc15;font-weight:800;">💰 ' + (isRu ? 'Приз 50 000 FvH' : '50,000 FvH Prize') + '</span>' +
+      '  <span style="color:#f97316;font-weight:900;">47% 🏀</span>' +
+      '</div>';
+    screen.appendChild(seasonBanner);
+
+    // 6. Token Rivalry Compact Ticker
     screen.appendChild(createRivalryTicker());
 
     // Bottom Spacer for iOS WebKit Telegram Mini App safe scrolling

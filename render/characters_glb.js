@@ -499,18 +499,14 @@
       this.isKeeper = !!options.isKeeper;
       this.customTexture = null;
 
-      // Immediately conceal procedural mesh so old characters never flash on kickoff
-      if (this.charRef && this.charRef.pivot) {
-        this.charRef.pivot.visible = false;
-      }
-
       // Visual Placement & Orientation
       this.yaw = 0;
       this.targetYaw = 0;
       this.pitch = 0;
       this.roll = 0;
       this.elevationLift = 0;
-      this.scale = options.scale || 2.28;
+      // Athletic, calibrated player scale (fits comfortably in goal & under rim)
+      this.scale = options.scale || 1.76;
       this.currentAnim = 'idle';
       this.modelMatrix = new Float32Array(16);
 
@@ -580,17 +576,24 @@
       const vz = a.vz || 0;
       const speed = Math.hypot(vx, vz);
 
-      // 1. Facing Orientation: Smooth facing interpolation towards velocity or facing direction
-      if (typeof a.fx === 'number' && typeof a.fz === 'number' && (a.fx !== 0 || a.fz !== 0)) {
+      // 1. Rock-Solid Facing Orientation (Fixes opponent wobbling/shaking):
+      // Only adjust facing when intention or speed has clear non-zero magnitude
+      const fMag = (typeof a.fx === 'number' && typeof a.fz === 'number') ? Math.hypot(a.fx, a.fz) : 0;
+      if (fMag > 0.18) {
         this.targetYaw = Math.atan2(a.fx, a.fz);
-      } else if (speed > 0.3) {
+      } else if (speed > 0.40) {
         this.targetYaw = Math.atan2(vx, vz);
       }
 
       let dy = this.targetYaw - this.yaw;
       while (dy > Math.PI) dy -= Math.PI * 2;
       while (dy < -Math.PI) dy += Math.PI * 2;
-      this.yaw += dy * Math.min(1, dt * 14);
+
+      // Angular deadband: eliminate small floating point jitter
+      if (Math.abs(dy) < 0.04) {
+        dy = 0;
+      }
+      this.yaw += dy * Math.min(1, dt * 8.5);
 
       // 2. Realistic Dynamic Animation Track Mapping & Kinematics
       this.pitch = 0;
@@ -604,49 +607,56 @@
         this.matchView.sim.ball.owner === a
       );
 
-      // A. BASKETBALL SPECIFIC MOTIONS
-      if (!this.isFooty && !this.isKeeper) {
-        // 1. Explosive Slam Dunk Sequence (Airborne rim slam)
+      // Strict Mode Distinction: Any player in basketball match plays BASKETBALL with hands!
+      const isBasketballMode = Boolean(this.matchView && this.matchView.mode === 'hoops');
+
+      // ==========================================
+      // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
+      // ==========================================
+      if (isBasketballMode) {
+        // 1. Explosive Slam Dunk Sequence (Airborne 2-hand/1-hand rim slam)
         if (a.dunk && a.dunk.active) {
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
-          // High parabolic jump arc reaching rim level (3.05m)
-          this.elevationLift = Math.sin(dunkProgress * Math.PI) * 2.85;
-          this.pitch = 0.38 * (1 - dunkProgress * 0.7); // Aggressive forward airborne attack lean
-          this.roll = (dk.hoop && dk.hoop.dir ? dk.hoop.dir : 1) * -0.08;
+          // High parabolic jump arc reaching rim height (3.05m)
+          this.elevationLift = Math.sin(dunkProgress * Math.PI) * 2.45;
+          this.pitch = 0.28 * (1 - dunkProgress * 0.7); // Athletic forward airborne attack
           // Overhead one-handed slam down into rim
           this.setAnimation('Punch_Right', 2.0);
         }
-        // 2. Jump Shot Elevation & Release (Vertical hang-time & high flick)
+        // 2. Jump Shot Elevation & Release (Overhead wrist flick with elevation)
         else if (a.shotT > 0) {
           const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
-          this.elevationLift = Math.sin(shotProgress * Math.PI) * 1.35;
-          this.pitch = -0.12; // Slight fadeaway / high release arch
+          this.elevationLift = Math.sin(shotProgress * Math.PI) * 1.20;
+          this.pitch = -0.08; // High elevation arch
           this.setAnimation('Punch_Right', 1.8);
         }
-        // 3. Interception Lunge / Steal
-        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          this.pitch = 0.30;
-          this.setAnimation('Punch_Left', 1.75);
+        // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
+        else if (a.kickT > 0) {
+          this.pitch = 0.12;
+          this.setAnimation('Punch_Right', 2.2);
         }
-        // 4. Celebration Wave
+        // 4. Interception Lunge / Hand Steal
+        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
+          this.pitch = 0.18;
+          this.setAnimation('Punch_Left', 1.8);
+        }
+        // 5. Celebration Wave
         else if (a.celebrateT > 0) {
           this.setAnimation('Wave', 1.25);
         }
-        // 5. Basketball Dribbling & Running
+        // 6. Basketball Dribbling (Athletic crouch protecting the ball with hand bounce)
         else if (isBallCarrier) {
           if (speed > 0.3) {
-            const sprintCadence = Math.max(1.1, Math.min(2.3, speed / 3.0));
+            const sprintCadence = Math.max(1.1, Math.min(2.2, speed / 3.0));
             this.setAnimation('Run', sprintCadence);
-            this.pitch = 0.20; // Athletic forward crouch protecting the ball
-            const dribblePhase = (this.matchView && this.matchView.sim && this.matchView.sim.ball && this.matchView.sim.ball.dribblePhase) || 0;
-            this.roll = Math.sin(dribblePhase * 7.5) * 0.14; // Dynamic rhythmic crossover sway
+            this.pitch = 0.14; // Athletic forward crouch protecting the ball
           } else {
             this.setAnimation('Idle', 1.0);
-            this.pitch = 0.16; // Low-center triple-threat stance
+            this.pitch = 0.12; // Ready triple-threat stance
           }
         }
-        // 6. Outfield running / walking / idle
+        // 7. Outfield running / walking / idle
         else if (speed > 1.8) {
           const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
           this.setAnimation('Run', sprintCadence);
@@ -657,13 +667,14 @@
           this.setAnimation('Idle', 1.0);
         }
       }
-      // B. FOOTBALL (SOCCER) SPECIFIC MOTIONS
+      // ==========================================
+      // B. FOOTBALL (SOCCER) MATCH ACTIONS
+      // ==========================================
       else {
         // 1. High-Impact Dynamic Soccer Strike / Shot
         if (a.kickT > 0 || a.shotT > 0) {
           const timer = a.kickT || a.shotT || 0;
-          this.pitch = 0.32 * Math.sin(timer * 14); // Torso drive into strike
-          this.roll = -0.18; // Plant foot dynamic lean
+          this.pitch = 0.22 * Math.sin(timer * 12); // Clean torso drive into strike
           this.setAnimation('Kick_Right', 1.9);
         }
         // 2. Sliding Tackle / Interception Dive
@@ -674,7 +685,7 @@
         else if (a.celebrateT > 0) {
           this.setAnimation('Wave', 1.2);
         }
-        // 4. Sprinting
+        // 4. Sprinting (Stable upright posture, zero side wobbling)
         else if (speed > 1.8) {
           const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
           this.setAnimation('Run', sprintCadence);
@@ -722,8 +733,6 @@
 
       matchView.chars.forEach(c => {
         if (!c.agent) return;
-        // Instantly hide legacy procedural body mesh so old characters never flash
-        if (c.pivot) c.pivot.visible = false;
 
         const role = c.agent.role;
         const isKeeper = (role === 'keeper');
@@ -732,10 +741,10 @@
         // Core FOOTY vs HOOPS Rivalry: Football Striker vs Basketball All-Star
         const charSport = isKeeper ? 'footy' : (c.sport || (isTeam0 ? playerChar : oppChar));
 
-        // 1. Goalkeeper in goal (Goalkeeper #1)
+        // 1. Goalkeeper in goal (Goalkeeper #1) - scale 1.82 (athletic keeper, fits perfectly in 2.5m goal)
         if (isKeeper) {
           const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 2.32, // Substantial athletic keeper stature
+            scale: 1.82,
             skin: c.skin,
             isFooty: true,
             isKeeper: true,
@@ -743,10 +752,10 @@
           });
           list.push(inst);
         }
-        // 2. Football Athlete (Striker #10)
+        // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 2.28, // Heroic prominent field presence (Striker #10)
+            scale: 1.76,
             skin: c.skin,
             isFooty: true,
             isKeeper: false,
@@ -754,10 +763,10 @@
           });
           list.push(inst);
         }
-        // 3. Basketball Athlete (All-Star #23)
+        // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 2.36, // Tall athletic forward stature (All-Star #23)
+            scale: 1.82,
             skin: c.skin,
             isFooty: false,
             isKeeper: false,

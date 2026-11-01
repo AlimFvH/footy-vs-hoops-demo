@@ -7433,3 +7433,156 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 .fvh-kpi-item.rate b {
   color: #38bdf8 !important;
 }
+
+
+/* ==========================================================================
+   LIVE SEASON BANNER & COVETED RARITY SHOWCASE
+   ========================================================================== */
+
+/* Live Season Event Banner */
+.fvh-season-event-banner {
+  width: 100% !important;
+  max-width: 480px !important;
+  margin: 10px auto 12px !important;
+  background: linear-gradient(155deg, rgba(22, 34, 62, 0.9) 0%, rgba(12, 16, 32, 0.96) 100%) !important;
+  border: 1.5px solid rgba(250, 204, 21, 0.35) !important;
+  border-radius: 20px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(250, 204, 21, 0.15) !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.fvh-season-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+}
+
+.fvh-season-badge {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  color: #fde047 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+.fvh-season-timer {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+}
+
+.fvh-season-title {
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.8px !important;
+  margin-bottom: 8px !important;
+}
+
+.fvh-season-bar-wrap {
+  width: 100% !important;
+  height: 10px !important;
+  border-radius: 6px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  overflow: hidden !important;
+  margin-bottom: 8px !important;
+}
+
+.fvh-season-bar-fill.footy {
+  background: linear-gradient(90deg, #0284c7 0%, #00f0ff 100%) !important;
+}
+
+.fvh-season-bar-fill.hoops {
+  background: linear-gradient(90deg, #f97316 0%, #ea580c 100%) !important;
+}
+
+.fvh-season-sub {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 11.5px !important;
+}
+
+/* Prominent 3D Artwork Thumbnail Wrap */
+.fvh-catalogue-card .fvh-card-thumb-wrap,
+.card.shopc .thumbwrap {
+  height: 94px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 72%) !important;
+  border-radius: 16px !important;
+  margin: 4px 0 10px !important;
+}
+
+/* Coveted Legendary Cards (Golden Radiance) */
+.fvh-catalogue-card.r-legendary,
+.card.shopc.r-legendary {
+  background: linear-gradient(160deg, rgba(38, 28, 14, 0.95) 0%, rgba(18, 13, 24, 0.98) 100%) !important;
+  border: 2px solid #facc15 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 28px rgba(250, 204, 21, 0.45), inset 0 0 15px rgba(250, 204, 21, 0.12) !important;
+  position: relative !important;
+}
+
+.fvh-catalogue-card.r-legendary::after,
+.card.shopc.r-legendary::after {
+  content: '👑' !important;
+  position: absolute !important;
+  top: 8px !important;
+  right: 10px !important;
+  font-size: 16px !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.fvh-catalogue-card.r-legendary .rar.legendary,
+.card.shopc.r-legendary .rar.legendary {
+  background: linear-gradient(135deg, #facc15 0%, #d97706 100%) !important;
+  color: #1c1404 !important;
+  font-weight: 900 !important;
+  padding: 3px 9px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 8px rgba(250, 204, 21, 0.45) !important;
+}
+
+/* Epic Cards (Cosmic Plasma Glow) */
+.fvh-catalogue-card.r-epic,
+.card.shopc.r-epic {
+  background: linear-gradient(160deg, rgba(28, 16, 48, 0.94) 0%, rgba(14, 9, 26, 0.98) 100%) !important;
+  border: 1.8px solid #c084fc !important;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), 0 0 22px rgba(192, 132, 252, 0.38) !important;
+}
+
+.fvh-catalogue-card.r-epic .rar.epic,
+.card.shopc.r-epic .rar.epic {
+  background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  padding: 3px 9px !important;
+  border-radius: 10px !important;
+}
+
+/* Rare Cards (Cyber Electric Cyan) */
+.fvh-catalogue-card.r-rare,
+.card.shopc.r-rare {
+  background: linear-gradient(160deg, rgba(14, 26, 48, 0.94) 0%, rgba(8, 14, 28, 0.98) 100%) !important;
+  border: 1.8px solid #38bdf8 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.32) !important;
+}
+
+.fvh-catalogue-card.r-rare .rar.rare,
+.card.shopc.r-rare .rar.rare {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+  color: #041424 !important;
+  font-weight: 900 !important;
+  padding: 3px 9px !important;
+  border-radius: 10px !important;
+}
