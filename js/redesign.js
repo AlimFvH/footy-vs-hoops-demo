@@ -14,7 +14,7 @@
           clearInterval(check);
           callback(window.__fvh);
         }
-      }, 50);
+      }, 10);
     }
   }
   function getApiUrl(path) {
@@ -2313,19 +2313,20 @@
     var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
 
     // Palette & Pattern Configs
-    var primary = '#1e3a8a';
-    var secondary = '#38bdf8';
+    var primary = '#1d4ed8';
+    var secondary = '#0284c7';
     var accent = '#ffffff';
-    var trim = '#93c5fd';
+    var trim = '#60a5fa';
     var number = '10';
     var isBasketball = false;
     var pattern = 'plain';
+    var teamName = '';
 
     // === FOOTBALL KITS (Footy) ===
     if (id === 'skin_rookie') {
       primary = '#1d4ed8'; secondary = '#0284c7'; accent = '#ffffff'; trim = '#60a5fa'; number = '10'; pattern = 'chevron';
     } else if (id === 'skin_footy_royal_striker') {
-      primary = '#1e3a8a'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#fbbf24'; number = '7'; pattern = 'sash';
+      primary = '#1e3a8a'; secondary = '#d97706'; accent = '#fef08a'; trim = '#fbbf24'; number = '7'; pattern = 'sash';
     } else if (id === 'skin_footy_cyber_strike') {
       primary = '#082f49'; secondary = '#06b6d4'; accent = '#22d3ee'; trim = '#38bdf8'; number = '99'; pattern = 'cyber_strike';
     } else if (id === 'skin_footy_golden_legend') {
@@ -2361,137 +2362,188 @@
     } else if (id === 'skin_championship') {
       primary = '#0f172a'; secondary = '#eab308'; accent = '#facc15'; trim = '#eab308'; number = '1'; pattern = 'royal';
 
-    // === BASKETBALL JERSEYS (Hoops - Authentically Sleeveless Tank Tops) ===
+    // === BASKETBALL JERSEYS (Hoops - Authentically Sleeveless Pro Cut Tanks) ===
     } else if (id === 'skin_solar') {
-      isBasketball = true;
-      primary = '#c2410c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#ea580c'; number = '24'; pattern = 'flame';
+      isBasketball = true; primary = '#ea580c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#c2410c'; number = '24'; pattern = 'flame'; teamName = 'SOLAR';
     } else if (id === 'skin_hoops_street_legend') {
-      isBasketball = true;
-      primary = '#1f2937'; secondary = '#ef4444'; accent = '#ffffff'; trim = '#dc2626'; number = '3'; pattern = 'street';
+      isBasketball = true; primary = '#1f2937'; secondary = '#ef4444'; accent = '#ffffff'; trim = '#dc2626'; number = '3'; pattern = 'street'; teamName = 'LEGEND';
     } else if (id === 'skin_hoops_golden_state') {
-      isBasketball = true;
-      primary = '#1d4ed8'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fbbf24'; number = '30'; pattern = 'bay_arc';
+      isBasketball = true; primary = '#1d4ed8'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fbbf24'; number = '30'; pattern = 'bay_arc'; teamName = 'BAY';
     } else if (id === 'skin_hoops_cyber_dunk') {
-      isBasketball = true;
-      primary = '#4c1d95'; secondary = '#06b6d4'; accent = '#22d3ee'; trim = '#8b5cf6'; number = '77'; pattern = 'cyber_dunk';
+      isBasketball = true; primary = '#4c1d95'; secondary = '#06b6d4'; accent = '#22d3ee'; trim = '#8b5cf6'; number = '77'; pattern = 'cyber_dunk'; teamName = 'CYBER';
     } else if (id === 'skin_hoops_phantom_black') {
-      isBasketball = true;
-      primary = '#09090b'; secondary = '#27272a'; accent = '#facc15'; trim = '#eab308'; number = '24'; pattern = 'phantom_black';
+      isBasketball = true; primary = '#09090b'; secondary = '#27272a'; accent = '#facc15'; trim = '#eab308'; number = '24'; pattern = 'phantom_black'; teamName = 'PHANTOM';
     } else if (id === 'skin_hoops_neon_splash') {
-      isBasketball = true;
-      primary = '#db2777'; secondary = '#06b6d4'; accent = '#fdf4ff'; trim = '#ec4899'; number = '5'; pattern = 'split';
+      isBasketball = true; primary = '#db2777'; secondary = '#06b6d4'; accent = '#fdf4ff'; trim = '#ec4899'; number = '5'; pattern = 'split'; teamName = 'MIAMI';
     } else if (id === 'skin_sunset') {
-      isBasketball = true;
-      primary = '#581c87'; secondary = '#ea580c'; accent = '#ffffff'; trim = '#fb923c'; number = '8'; pattern = 'sunset';
+      isBasketball = true; primary = '#581c87'; secondary = '#ea580c'; accent = '#ffffff'; trim = '#fb923c'; number = '8'; pattern = 'sunset'; teamName = 'SUNSET';
     } else if (id === 'skin_mars') {
-      isBasketball = true;
-      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'mars';
+      isBasketball = true; primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'mars'; teamName = 'ARES';
     } else if (id.indexOf('hoops') !== -1) {
-      isBasketball = true;
-      primary = '#ea580c'; secondary = '#f59e0b'; accent = '#ffffff'; trim = '#fb923c'; number = '23'; pattern = 'plain';
+      isBasketball = true; primary = '#ea580c'; secondary = '#f59e0b'; accent = '#ffffff'; trim = '#fb923c'; number = '23'; pattern = 'plain'; teamName = 'HOOPS';
     }
 
-    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<defs>' +
+    var defs = '<defs>' +
       '<linearGradient id="jg_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
       '<stop offset="0%" stop-color="' + primary + '"/>' +
-      '<stop offset="60%" stop-color="' + secondary + '"/>' +
+      '<stop offset="45%" stop-color="' + secondary + '"/>' +
       '<stop offset="100%" stop-color="' + primary + '"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="torso_' + uid + '" x1="0%" y1="0%" x2="100%" y2="0%">' +
+      '<stop offset="0%" stop-color="rgba(0,0,0,0.3)"/>' +
+      '<stop offset="25%" stop-color="rgba(255,255,255,0.18)"/>' +
+      '<stop offset="70%" stop-color="rgba(255,255,255,0.06)"/>' +
+      '<stop offset="100%" stop-color="rgba(0,0,0,0.35)"/>' +
       '</linearGradient>' +
       '<linearGradient id="trim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="0%">' +
       '<stop offset="0%" stop-color="' + trim + '"/>' +
       '<stop offset="100%" stop-color="' + accent + '"/>' +
       '</linearGradient>' +
-      '<filter id="glow_' + uid + '"><feGaussianBlur stdDeviation="1.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
-      '</defs>' +
-      '<ellipse cx="50" cy="90" rx="26" ry="5" fill="#000000" opacity="0.35"/>' +
-      (isBasketball ?
-        // Authentic Basketball Tank Top (Deep scoop neck, deep armholes, ribbing)
-        '<path d="M34 22 C32 30 26 36 24 46 L28 84 L72 84 L76 46 C74 36 68 30 66 22 L56 26 C54 36 46 36 44 26 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.4"/>' +
-        // Ribbed armhole arm trims
-        '<path d="M34 22 C32 30 26 36 24 46" stroke="' + trim + '" stroke-width="2.5" fill="none"/>' +
-        '<path d="M66 22 C74 36 76 46 76 46" stroke="' + trim + '" stroke-width="2.5" fill="none"/>' +
-        // Deep scoop neckline trim
-        '<path d="M44 26 C46 36 54 36 56 26" stroke="' + trim + '" stroke-width="2.5" fill="none"/>' +
-        // Basketball side flank contrasting panels
-        '<polygon points="24,46 28,46 28,84 24,84" fill="' + trim + '" opacity="0.85"/>' +
-        '<polygon points="76,46 72,46 72,84 76,84" fill="' + trim + '" opacity="0.85"/>' :
-        // Authentic Football Kit (Short sleeves, collar, sleeve cuffs)
-        '<path d="M28 24 L10 38 L22 48 L28 42 L28 84 L72 84 L72 42 L78 48 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.4"/>' +
-        '<polygon points="10,38 14,41 24,33 22,30" fill="url(#trim_' + uid + ')"/>' +
-        '<polygon points="90,38 86,41 76,33 78,30" fill="url(#trim_' + uid + ')"/>' +
-        '<polygon points="44,24 50,32 56,24 53,24 50,29 47,24" fill="url(#trim_' + uid + ')"/>'
-      ) +
-      // Unique kit pattern overlays
-      (pattern === 'stripes' ?
-        '<line x1="38" y1="36" x2="38" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' +
-        '<line x1="62" y1="36" x2="62" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' : '') +
-      (pattern === 'sash' ?
-        '<polygon points="28,24 38,24 72,74 72,84 62,84 28,34" fill="' + secondary + '" opacity="0.85"/>' +
-        '<line x1="38" y1="24" x2="72" y2="74" stroke="' + accent + '" stroke-width="1.5" opacity="0.9"/>' : '') +
-      (pattern === 'chevron' ?
-        '<path d="M32 44 L50 54 L68 44" stroke="' + accent + '" stroke-width="2.5" fill="none" opacity="0.8"/>' +
-        '<path d="M32 52 L50 62 L68 52" stroke="' + accent + '" stroke-width="2" fill="none" opacity="0.6"/>' : '') +
-      (pattern === 'cyber_strike' ?
-        '<polygon points="28,36 44,36 34,84 28,84" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' +
-        '<polygon points="56,36 72,36 66,84 50,84" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' : '') +
-      (pattern === 'golden_legend' ?
-        '<line x1="36" y1="32" x2="36" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
-        '<line x1="44" y1="32" x2="44" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
-        '<line x1="56" y1="32" x2="56" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
-        '<line x1="64" y1="32" x2="64" y2="84" stroke="#ffffff" stroke-width="1.5" opacity="0.65"/>' +
-        '<polygon points="46,36 50,32 54,36 50,42" fill="#ffffff" filter="url(#glow_' + uid + ')"/>' : '') +
-      (pattern === 'matrix' ?
-        '<line x1="36" y1="38" x2="36" y2="52" stroke="#10b981" stroke-width="2" stroke-dasharray="2,2" filter="url(#glow_' + uid + ')"/>' +
-        '<line x1="64" y1="46" x2="64" y2="72" stroke="#00f0ff" stroke-width="2" stroke-dasharray="3,2" filter="url(#glow_' + uid + ')"/>' +
-        '<line x1="44" y1="62" x2="44" y2="80" stroke="#10b981" stroke-width="2" stroke-dasharray="2,2"/>' : '') +
-      (pattern === 'circuit' ?
-        '<path d="M30 42 L42 42 L48 50 L48 76" stroke="#00f0ff" stroke-width="1.8" fill="none" filter="url(#glow_' + uid + ')"/>' +
-        '<circle cx="48" cy="76" r="2.5" fill="#10b981"/>' +
-        '<path d="M70 42 L58 42 L52 50 L52 76" stroke="#00f0ff" stroke-width="1.8" fill="none" filter="url(#glow_' + uid + ')"/>' +
-        '<circle cx="52" cy="76" r="2.5" fill="#10b981"/>' : '') +
-      (pattern === 'stealth' ?
-        '<polygon points="28,42 66,84 72,84 34,42" fill="' + secondary + '" opacity="0.75" filter="url(#glow_' + uid + ')"/>' : '') +
-      (pattern === 'flame' ?
-        '<path d="M34 84 Q42 68 46 74 Q50 60 54 74 Q58 68 66 84 Z" fill="' + secondary + '" opacity="0.8"/>' : '') +
-      (pattern === 'bay_arc' ?
-        '<ellipse cx="50" cy="52" rx="16" ry="16" stroke="' + secondary + '" stroke-width="2.5" fill="none"/>' +
-        '<path d="M38 58 Q50 44 62 58" stroke="' + accent + '" stroke-width="2.5" fill="none"/>' : '') +
-      (pattern === 'street' ?
-        '<polygon points="28,48 44,40 46,44 30,52" fill="' + secondary + '"/>' +
-        '<polygon points="54,74 72,66 70,62 52,70" fill="' + secondary + '"/>' : '') +
-      (pattern === 'cyber_dunk' ?
-        '<line x1="32" y1="52" x2="68" y2="52" stroke="#06b6d4" stroke-width="2" opacity="0.8" filter="url(#glow_' + uid + ')"/>' +
-        '<line x1="30" y1="58" x2="70" y2="58" stroke="#a855f7" stroke-width="2" opacity="0.8"/>' : '') +
-      (pattern === 'phantom_black' ?
-        '<line x1="36" y1="36" x2="36" y2="84" stroke="#eab308" stroke-width="1" opacity="0.75"/>' +
-        '<line x1="64" y1="36" x2="64" y2="84" stroke="#eab308" stroke-width="1" opacity="0.75"/>' : '') +
-      (pattern === 'split' ?
-        '<polygon points="50,26 76,46 72,84 50,84" fill="' + secondary + '" opacity="0.9"/>' : '') +
-      (pattern === 'sunset' ?
-        '<rect x="28" y="50" width="44" height="4" fill="#fbbf24" opacity="0.85"/>' +
-        '<rect x="30" y="56" width="40" height="2.5" fill="#f97316" opacity="0.85"/>' : '') +
-      (pattern === 'mars' ?
-        '<ellipse cx="50" cy="42" rx="7" ry="7" fill="' + secondary + '"/>' +
-        '<ellipse cx="50" cy="42" rx="12" ry="3" stroke="' + accent + '" stroke-width="1.2" fill="none" transform="rotate(-20,50,42)"/>' : '') +
-      (pattern === 'space' ?
-        '<circle cx="50" cy="40" r="5" fill="#38bdf8" filter="url(#glow_' + uid + ')"/>' +
-        '<polygon points="36,44 42,44 40,48" fill="#facc15"/>' : '') +
-      (pattern === 'royal' ?
-        '<polygon points="28,42 66,84 72,84 34,42" fill="' + accent + '" opacity="0.85"/>' +
-        '<circle cx="50" cy="40" r="4" fill="' + accent + '" filter="url(#glow_' + uid + ')"/>' : '') +
-      (pattern === 'glitch' ?
-        '<line x1="30" y1="46" x2="70" y2="46" stroke="#00f0ff" stroke-width="2" opacity="0.8"/>' +
-        '<line x1="32" y1="50" x2="68" y2="50" stroke="#f43f5e" stroke-width="2" opacity="0.8"/>' : '') +
-      // Crest / Emblem
-      '<circle cx="38" cy="38" r="4" fill="' + accent + '" stroke="' + primary + '" stroke-width="1"/>' +
-      '<text x="38" y="41" font-size="5" text-anchor="middle" fill="' + primary + '" font-weight="900">★</text>' +
-      // Athletic Number (Drop Shadow + Fill)
-      '<text x="51" y="67" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="#000000" opacity="0.45" text-anchor="middle">' + number + '</text>' +
-      '<text x="50" y="66" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" text-anchor="middle">' + number + '</text>' +
-      '<rect x="32" y="78" width="6" height="4" rx="0.5" fill="' + accent + '" opacity="0.85"/>' +
-      '<line x1="33" y1="80" x2="37" y2="80" stroke="' + primary + '" stroke-width="0.8"/>' +
-      '</svg>';
+      '<filter id="glow_' + uid + '" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' +
+      '<filter id="drop_' + uid + '" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000" flood-opacity="0.55"/></filter>' +
+      '</defs>';
+
+    var shadow = '<ellipse cx="50" cy="91" rx="28" ry="6" fill="#000000" opacity="0.45" filter="url(#drop_' + uid + ')"/>';
+
+    if (isBasketball) {
+      // High-End Pro Basketball Tank Top
+      var tankBody =
+        // Inner collar back lining
+        '<path d="M43 24 C45 28 55 28 57 24 C54 29 46 29 43 24 Z" fill="rgba(0,0,0,0.45)"/>' +
+        // Main Tank Contour
+        '<path d="M33 22 C31 30 25 36 23 46 L27 84 L73 84 L77 46 C75 36 69 30 67 22 L57 26 C54 36 46 36 43 26 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.2" filter="url(#drop_' + uid + ')"/>' +
+        // Torso 3D Cylinder Lighting overlay
+        '<path d="M33 22 C31 30 25 36 23 46 L27 84 L73 84 L77 46 C75 36 69 30 67 22 L57 26 C54 36 46 36 43 26 Z" fill="url(#torso_' + uid + ')"/>' +
+        // Contrast Side Panels (flanks)
+        '<path d="M23 46 L27 46 L27 84 L23 84 Z" fill="' + trim + '" opacity="0.9"/>' +
+        '<path d="M77 46 L73 46 L73 84 L77 84 Z" fill="' + trim + '" opacity="0.9"/>' +
+        // Striped Ribbed Neckline Binding
+        '<path d="M43 26 C46 36 54 36 57 26" stroke="' + trim + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M43 26 C46 36 54 36 57 26" stroke="' + accent + '" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+        // Striped Ribbed Armholes
+        '<path d="M33 22 C31 30 25 36 23 46" stroke="' + trim + '" stroke-width="3.0" fill="none" stroke-linecap="round"/>' +
+        '<path d="M33 22 C31 30 25 36 23 46" stroke="' + accent + '" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
+        '<path d="M67 22 C69 30 75 36 77 46" stroke="' + trim + '" stroke-width="3.0" fill="none" stroke-linecap="round"/>' +
+        '<path d="M67 22 C69 30 75 36 77 46" stroke="' + accent + '" stroke-width="1.1" fill="none" stroke-linecap="round"/>';
+
+      // Arched Team Wordmark across chest
+      var wordmark = teamName ?
+        '<text x="50" y="44" font-family="Impact, Arial Black, sans-serif" font-size="7" font-weight="900" fill="' + accent + '" stroke="rgba(0,0,0,0.5)" stroke-width="0.5" letter-spacing="1.2" text-anchor="middle" opacity="0.95">' + teamName + '</text>' : '';
+
+      // Pattern Overlays for Basketball
+      var bPattern = '';
+      if (pattern === 'flame') {
+        bPattern = '<path d="M30 84 Q38 64 43 72 Q48 56 53 72 Q58 64 68 84 Z" fill="' + secondary + '" opacity="0.85" filter="url(#glow_' + uid + ')"/>' +
+          '<path d="M34 84 Q42 68 46 75 Q50 62 54 75 Q58 68 64 84 Z" fill="' + accent + '" opacity="0.7"/>';
+      } else if (pattern === 'bay_arc') {
+        bPattern = '<circle cx="50" cy="58" r="14" stroke="' + secondary + '" stroke-width="2.5" fill="none" opacity="0.85"/>' +
+          '<path d="M38 65 Q50 51 62 65" stroke="' + accent + '" stroke-width="2.2" fill="none"/>';
+      } else if (pattern === 'cyber_dunk') {
+        bPattern = '<line x1="28" y1="52" x2="72" y2="52" stroke="#06b6d4" stroke-width="2" opacity="0.8" filter="url(#glow_' + uid + ')"/>' +
+          '<line x1="26" y1="58" x2="74" y2="58" stroke="#a855f7" stroke-width="2" opacity="0.8"/>';
+      } else if (pattern === 'phantom_black') {
+        bPattern = '<line x1="36" y1="36" x2="36" y2="84" stroke="#eab308" stroke-width="1.5" opacity="0.85"/>' +
+          '<line x1="64" y1="36" x2="64" y2="84" stroke="#eab308" stroke-width="1.5" opacity="0.85"/>';
+      } else if (pattern === 'split') {
+        bPattern = '<polygon points="50,26 77,46 73,84 50,84" fill="' + secondary + '" opacity="0.9"/>';
+      } else if (pattern === 'sunset') {
+        bPattern = '<rect x="27" y="52" width="46" height="4" fill="#fbbf24" opacity="0.9"/>' +
+          '<rect x="27" y="58" width="46" height="3" fill="#f97316" opacity="0.9"/>';
+      } else if (pattern === 'mars') {
+        bPattern = '<circle cx="50" cy="48" r="7" fill="' + secondary + '"/>' +
+          '<ellipse cx="50" cy="48" rx="13" ry="3.5" stroke="' + accent + '" stroke-width="1.5" fill="none" transform="rotate(-18,50,48)"/>';
+      }
+
+      // Jock tag on bottom hem
+      var jockTag = '<rect x="30" y="78" width="8" height="5" rx="0.5" fill="#1e293b" stroke="#64748b" stroke-width="0.5"/>' +
+        '<line x1="31" y1="80" x2="37" y2="80" stroke="' + trim + '" stroke-width="0.8"/>';
+
+      // Large Athletic Number
+      var numSvg =
+        '<text x="51" y="67" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="#000000" opacity="0.55" text-anchor="middle">' + number + '</text>' +
+        '<text x="50" y="66" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" text-anchor="middle">' + number + '</text>';
+
+      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+        defs + shadow + tankBody + wordmark + bPattern + numSvg + jockTag + '</svg>';
+    }
+
+    // High-End Pro Football Kit (Sleeves, Ribbed V-Neck Collar, Club Crest, Athletic Badge)
+    var footyBody =
+      // Inner collar back lining
+      '<path d="M44 26 C47 31 53 31 56 26 C53 31 47 31 44 26 Z" fill="rgba(0,0,0,0.5)"/>' +
+      // Main Jersey Contour with Raglan Sleeves
+      '<path d="M28 24 L10 38 L22 49 L28 42 L28 84 L72 84 L72 42 L78 49 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.2" filter="url(#drop_' + uid + ')"/>' +
+      // Torso 3D Cylinder Lighting overlay
+      '<path d="M28 24 L10 38 L22 49 L28 42 L28 84 L72 84 L72 42 L78 49 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#torso_' + uid + ')"/>' +
+      // Raglan Sleeve Seam Piping
+      '<path d="M44 30 L28 42" stroke="' + trim + '" stroke-width="1.5" stroke-dasharray="2,1" opacity="0.7"/>' +
+      '<path d="M56 30 L72 42" stroke="' + trim + '" stroke-width="1.5" stroke-dasharray="2,1" opacity="0.7"/>' +
+      // Sleeve Cuff Trims
+      '<polygon points="10,38 13,41 23,33 20,30" fill="url(#trim_' + uid + ')"/>' +
+      '<polygon points="90,38 87,41 77,33 80,30" fill="url(#trim_' + uid + ')"/>' +
+      // Collar Lapel / V-Neck Rib Trim
+      '<polygon points="44,24 50,32 56,24 53,24 50,29 47,24" fill="url(#trim_' + uid + ')"/>' +
+      '<path d="M44 24 L50 31 L56 24" stroke="' + trim + '" stroke-width="1.5" fill="none"/>';
+
+    // Unique Football Patterns
+    var fPattern = '';
+    if (pattern === 'stripes') {
+      fPattern = '<line x1="38" y1="36" x2="38" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>' +
+        '<line x1="62" y1="36" x2="62" y2="84" stroke="' + secondary + '" stroke-width="4.5"/>';
+    } else if (pattern === 'sash') {
+      fPattern = '<polygon points="28,24 38,24 72,74 72,84 62,84 28,34" fill="' + secondary + '" opacity="0.85"/>' +
+        '<line x1="38" y1="24" x2="72" y2="74" stroke="' + accent + '" stroke-width="1.5" opacity="0.9"/>';
+    } else if (pattern === 'chevron') {
+      fPattern = '<path d="M30 43 L50 54 L70 43" stroke="' + accent + '" stroke-width="3" fill="none" opacity="0.9" filter="url(#glow_' + uid + ')"/>' +
+        '<path d="M32 51 L50 61 L68 51" stroke="' + secondary + '" stroke-width="2.2" fill="none" opacity="0.8"/>';
+    } else if (pattern === 'cyber_strike') {
+      fPattern = '<polygon points="28,36 44,36 34,84 28,84" fill="' + secondary + '" opacity="0.8" filter="url(#glow_' + uid + ')"/>' +
+        '<polygon points="56,36 72,36 66,84 50,84" fill="' + secondary + '" opacity="0.8" filter="url(#glow_' + uid + ')"/>';
+    } else if (pattern === 'golden_legend' || pattern === 'royal') {
+      fPattern = '<polygon points="28,42 66,84 72,84 34,42" fill="' + accent + '" opacity="0.85"/>' +
+        '<circle cx="50" cy="40" r="4.5" fill="' + accent + '" filter="url(#glow_' + uid + ')"/>' +
+        '<path d="M42 40 Q50 34 58 40" stroke="#ca8a04" stroke-width="1.2" fill="none"/>';
+    } else if (pattern === 'matrix' || pattern === 'circuit') {
+      fPattern = '<path d="M30 42 L42 42 L48 50 L48 76" stroke="#00f0ff" stroke-width="2" fill="none" filter="url(#glow_' + uid + ')"/>' +
+        '<circle cx="48" cy="76" r="2.8" fill="#10b981"/>' +
+        '<path d="M70 42 L58 42 L52 50 L52 76" stroke="#00f0ff" stroke-width="2" fill="none" filter="url(#glow_' + uid + ')"/>' +
+        '<circle cx="52" cy="76" r="2.8" fill="#10b981"/>';
+    } else if (pattern === 'frost') {
+      fPattern = '<polygon points="50,36 58,48 50,60 42,48" fill="' + accent + '" opacity="0.85" filter="url(#glow_' + uid + ')"/>' +
+        '<polygon points="34,50 42,60 34,70 28,60" fill="' + secondary + '" opacity="0.75"/>' +
+        '<polygon points="66,50 72,60 66,70 58,60" fill="' + secondary + '" opacity="0.75"/>';
+    } else if (pattern === 'stealth') {
+      fPattern = '<polygon points="28,42 66,84 72,84 34,42" fill="' + secondary + '" opacity="0.8" filter="url(#glow_' + uid + ')"/>';
+    } else if (pattern === 'glitch') {
+      fPattern = '<line x1="30" y1="46" x2="70" y2="46" stroke="#00f0ff" stroke-width="2.5" opacity="0.85" filter="url(#glow_' + uid + ')"/>' +
+        '<line x1="32" y1="50" x2="68" y2="50" stroke="#f43f5e" stroke-width="2.5" opacity="0.85"/>';
+    } else if (pattern === 'aquatic') {
+      fPattern = '<path d="M28 62 Q50 50 72 62" stroke="' + accent + '" stroke-width="2.5" fill="none" filter="url(#glow_' + uid + ')"/>' +
+        '<path d="M28 68 Q50 56 72 68" stroke="' + secondary + '" stroke-width="2" fill="none"/>';
+    } else if (pattern === 'space') {
+      fPattern = '<circle cx="50" cy="40" r="5.5" fill="#38bdf8" filter="url(#glow_' + uid + ')"/>' +
+        '<polygon points="36,44 42,44 40,49" fill="#facc15"/>';
+    }
+
+    // Official Club Crest Shield on Chest
+    var crest =
+      '<g transform="translate(35, 36)">' +
+      '<path d="M0 0 L8 0 L8 7 C8 11 4 13 4 13 C4 13 0 11 0 7 Z" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" filter="url(#drop_' + uid + ')"/>' +
+      '<polygon points="4,2 5,4.5 7.5,4.5 5.5,6 6.3,8.5 4,7 1.7,8.5 2.5,6 0.5,4.5 3,4.5" fill="' + (primary.includes('ca8a') || primary.includes('854d') ? '#d97706' : '#f59e0b') + '"/>' +
+      '</g>';
+
+    // Athletic Number
+    var fNum =
+      '<text x="51" y="67" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="#000000" opacity="0.55" text-anchor="middle">' + number + '</text>' +
+      '<text x="50" y="66" font-family="Impact, Arial Black, sans-serif" font-size="' + (isLg ? '24' : '22') + '" font-weight="900" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" text-anchor="middle">' + number + '</text>';
+
+    // Authentics Tag on Hem
+    var fTag =
+      '<rect x="32" y="78" width="8" height="4.5" rx="0.5" fill="#1e293b" stroke="' + trim + '" stroke-width="0.6"/>' +
+      '<line x1="33" y1="80" x2="39" y2="80" stroke="' + accent + '" stroke-width="0.8"/>';
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      defs + shadow + footyBody + fPattern + crest + fNum + fTag + '</svg>';
   }
 
   // Detailed 3D Ball SVG
@@ -2507,115 +2559,188 @@
     if (isHoops) {
       var bStart = '#ea580c';
       var bMid = '#c2410c';
-      var bEnd = '#451a03';
+      var bEnd = '#381203';
       var seam = '#180802';
+      var seamHighlight = '#78350f';
       var hasRing = false;
       var hasStar = false;
       var hasCrest = false;
-      var hasPebbles = false;
+      var hasPebbles = true;
       var glow = '';
+      var textBadge = 'PRO';
 
       if (id === 'ball_hoops_street') {
-        bStart = '#ea580c'; bMid = '#c2410c'; bEnd = '#451a03'; seam = '#180802'; hasPebbles = true;
+        bStart = '#f97316'; bMid = '#c2410c'; bEnd = '#431407'; seam = '#180802'; seamHighlight = '#7c2d12'; textBadge = 'STREET';
       } else if (id === 'ball_hoops_classic_pro') {
-        bStart = '#f59e0b'; bMid = '#d97706'; bEnd = '#78350f'; seam = '#09090b'; hasCrest = true;
+        bStart = '#f59e0b'; bMid = '#d97706'; bEnd = '#5c2b09'; seam = '#0f172a'; seamHighlight = '#fde047'; hasCrest = true; textBadge = 'OFFICIAL';
       } else if (id === 'ball_hoops_neon_energy') {
-        bStart = '#00f0ff'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#10b981'; glow = 'filter="drop-shadow(0 0 7px #00f0ff)"';
+        bStart = '#00f0ff'; bMid = '#0284c7'; bEnd = '#051937'; seam = '#10b981'; seamHighlight = '#67e8f9'; glow = 'filter="drop-shadow(0 0 8px #00f0ff)"'; textBadge = 'NEON';
       } else if (id === 'ball_hoops_molten_fire') {
-        bStart = '#ef4444'; bMid = '#b91c1c'; bEnd = '#450a0a'; seam = '#f1f5f9'; glow = 'filter="drop-shadow(0 0 8px #f97316)"';
+        bStart = '#ef4444'; bMid = '#b91c1c'; bEnd = '#3f0707'; seam = '#fef08a'; seamHighlight = '#f97316'; glow = 'filter="drop-shadow(0 0 9px #ea580c)"'; textBadge = 'FIRE';
       } else if (id === 'ball_hoops_golden_elite') {
-        bStart = '#fef08a'; bMid = '#eab308'; bEnd = '#713f12'; seam = '#0f172a'; hasStar = true; glow = 'filter="drop-shadow(0 0 8px #facc15)"';
+        bStart = '#fef08a'; bMid = '#eab308'; bEnd = '#583008'; seam = '#0f172a'; seamHighlight = '#fef08a'; hasStar = true; glow = 'filter="drop-shadow(0 0 9px #facc15)"'; textBadge = 'MVP 24K';
       } else if (id === 'ball_hoops_cosmic') {
-        bStart = '#818cf8'; bMid = '#312e81'; bEnd = '#0f0524'; seam = '#d946ef'; hasRing = true; glow = 'filter="drop-shadow(0 0 8px #c084fc)"';
+        bStart = '#a78bfa'; bMid = '#4c1d95'; bEnd = '#12042b'; seam = '#d946ef'; seamHighlight = '#38bdf8'; hasRing = true; glow = 'filter="drop-shadow(0 0 9px #a855f7)"'; textBadge = 'COSMIC';
       } else if (id === 'ball_hoops_midnight') {
-        bStart = '#27272a'; bMid = '#18181b'; bEnd = '#09090b'; seam = '#38bdf8'; glow = 'filter="drop-shadow(0 0 5px #0284c7)"';
+        bStart = '#3f3f46'; bMid = '#18181b'; bEnd = '#050507'; seam = '#00f0ff'; seamHighlight = '#38bdf8'; glow = 'filter="drop-shadow(0 0 6px #0284c7)"'; textBadge = 'STEALTH';
       } else if (id === 'ball_hoops_blaze') {
-        bStart = '#fde047'; bMid = '#ea580c'; bEnd = '#7c2d12'; seam = '#1c1917'; glow = 'filter="drop-shadow(0 0 7px #ea580c)"';
+        bStart = '#fde047'; bMid = '#ea580c'; bEnd = '#541c09'; seam = '#1c1917'; seamHighlight = '#fbbf24'; glow = 'filter="drop-shadow(0 0 8px #ea580c)"'; textBadge = 'BLAZE';
       } else if (id === 'ball_hoops_chrome') {
-        bStart = '#ffffff'; bMid = '#94a3b8'; bEnd = '#334155'; seam = '#0284c7';
+        bStart = '#ffffff'; bMid = '#94a3b8'; bEnd = '#1e293b'; seam = '#0284c7'; seamHighlight = '#38bdf8'; textBadge = 'CHROME';
       } else if (id === 'ball_tidal') {
-        bStart = '#38bdf8'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#cffafe';
+        bStart = '#38bdf8'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#cffafe'; seamHighlight = '#67e8f9'; textBadge = 'TIDAL';
       }
 
-      return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<defs>' +
-        '<radialGradient id="bb_' + uid + '" cx="34%" cy="30%" r="68%">' +
-        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>' +
-        '<stop offset="30%" stop-color="' + bStart + '"/>' +
-        '<stop offset="75%" stop-color="' + bMid + '"/>' +
+      var defs = '<defs>' +
+        '<radialGradient id="bb_' + uid + '" cx="32%" cy="28%" r="72%">' +
+        '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>' +
+        '<stop offset="18%" stop-color="' + bStart + '"/>' +
+        '<stop offset="68%" stop-color="' + bMid + '"/>' +
         '<stop offset="100%" stop-color="' + bEnd + '"/>' +
         '</radialGradient>' +
-        '</defs>' +
-        '<ellipse cx="50" cy="92" rx="28" ry="6" fill="#000000" opacity="0.38"/>' +
-        (hasRing ? '<ellipse cx="50" cy="50" rx="46" ry="14" stroke="#00f0ff" stroke-width="2.6" fill="none" transform="rotate(-24, 50, 50)" opacity="0.9"/>' : '') +
-        '<circle cx="50" cy="50" r="38" fill="url(#bb_' + uid + ')" ' + glow + '/>' +
-        '<circle cx="50" cy="50" r="38" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
-        '<line x1="12" y1="50" x2="88" y2="50" stroke="' + seam + '" stroke-width="2.2"/>' +
-        '<line x1="50" y1="12" x2="50" y2="88" stroke="' + seam + '" stroke-width="2.2"/>' +
-        '<path d="M22 24 C38 36 38 64 22 76" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
-        '<path d="M78 24 C62 36 62 64 78 76" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
-        (hasPebbles ?
-          '<circle cx="34" cy="40" r="1.2" fill="rgba(0,0,0,0.4)"/><circle cx="64" cy="42" r="1.2" fill="rgba(0,0,0,0.4)"/><circle cx="42" cy="62" r="1.2" fill="rgba(0,0,0,0.4)"/><circle cx="58" cy="60" r="1.2" fill="rgba(0,0,0,0.4)"/>' : '') +
-        (hasStar ?
-          '<polygon points="50,42 52,48 58,50 52,52 50,58 48,52 42,50 48,48" fill="#fef08a" stroke="#713f12" stroke-width="0.8"/>' : '') +
-        (hasCrest ?
-          '<circle cx="50" cy="50" r="5" fill="#f59e0b" stroke="#000" stroke-width="0.8"/><text x="50" y="52" font-size="4" text-anchor="middle" fill="#000" font-weight="900">PRO</text>' : '') +
-        '<ellipse cx="36" cy="32" rx="9" ry="4.5" fill="#ffffff" opacity="0.45" transform="rotate(-28, 36, 32)"/>' +
-        '<circle cx="33" cy="29" r="2.5" fill="#ffffff" opacity="0.75"/>' +
-        '</svg>';
-    } else {
-      var fStart = '#ffffff';
-      var fMid = '#e2e8f0';
-      var fEnd = '#0f172a';
-      var patch = '#1e293b';
-      var seamColor = '#475569';
-      var hasAura = false;
-      var auraColor = '#00f0ff';
+        '<linearGradient id="rim_' + uid + '" x1="0%" y1="100%" x2="100%" y2="0%">' +
+        '<stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>' +
+        '<stop offset="100%" stop-color="rgba(255,255,255,0)"/>' +
+        '</linearGradient>' +
+        '<filter id="ball_drop_' + uid + '"><feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity="0.6"/></filter>' +
+        '</defs>';
 
-      if (id === 'ball_footy_classic') {
-        fStart = '#ffffff'; fMid = '#e2e8f0'; fEnd = '#334155'; patch = '#0f172a'; seamColor = '#475569';
-      } else if (id === 'ball_footy_classic_pro') {
-        fStart = '#ffffff'; fMid = '#cbd5e1'; fEnd = '#1e3a8a'; patch = '#1d4ed8'; seamColor = '#f59e0b';
-      } else if (id === 'ball_footy_inferno') {
-        fStart = '#fb923c'; fMid = '#ea580c'; fEnd = '#1c0505'; patch = '#ef4444'; seamColor = '#f97316'; hasAura = true; auraColor = '#f97316';
-      } else if (id === 'ball_footy_cyber_neon') {
-        fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#020617'; patch = '#10b981'; seamColor = '#00f0ff'; hasAura = true; auraColor = '#00f0ff';
-      } else if (id === 'ball_footy_golden_elite') {
-        fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#713f12'; patch = '#854d0e'; seamColor = '#fde047'; hasAura = true; auraColor = '#facc15';
-      } else if (id === 'ball_footy_neon') {
-        fStart = '#d9f99d'; fMid = '#84cc16'; fEnd = '#14532d'; patch = '#09090b'; seamColor = '#06b6d4';
-      } else if (id === 'ball_footy_plasma') {
-        fStart = '#c084fc'; fMid = '#7c3aed'; fEnd = '#1e1b4b'; patch = '#ec4899'; seamColor = '#00f0ff'; hasAura = true; auraColor = '#a855f7';
-      } else if (id === 'ball_footy_gold') {
-        fStart = '#fef08a'; fMid = '#ca8a04'; fEnd = '#451a03'; patch = '#a16207'; seamColor = '#facc15'; hasAura = true; auraColor = '#facc15';
-      } else if (id === 'ball_earthrise' || id === 'ball_footy_galactic') {
-        fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#082f49'; patch = '#15803d'; seamColor = '#ffffff'; hasAura = true; auraColor = '#38bdf8';
-      }
+      var shadow = '<ellipse cx="50" cy="91" rx="28" ry="6" fill="#000000" opacity="0.45" filter="url(#ball_drop_' + uid + ')"/>';
+
+      // Authentic Basketball 8-panel seams
+      var seams =
+        // Equatorial channel
+        '<line x1="12" y1="50" x2="88" y2="50" stroke="' + seam + '" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<line x1="12" y1="50.6" x2="88" y2="50.6" stroke="' + seamHighlight + '" stroke-width="0.8" opacity="0.4"/>' +
+        // Meridian channel
+        '<line x1="50" y1="12" x2="50" y2="88" stroke="' + seam + '" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<line x1="50.6" y1="12" x2="50.6" y2="88" stroke="' + seamHighlight + '" stroke-width="0.8" opacity="0.4"/>' +
+        // Dual curved arc channels
+        '<path d="M22 24 C38 36 38 64 22 76" stroke="' + seam + '" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M22.5 24 C38.5 36 38.5 64 22.5 76" stroke="' + seamHighlight + '" stroke-width="0.8" fill="none" opacity="0.4"/>' +
+        '<path d="M78 24 C62 36 62 64 78 76" stroke="' + seam + '" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M77.5 24 C61.5 36 61.5 64 77.5 76" stroke="' + seamHighlight + '" stroke-width="0.8" fill="none" opacity="0.4"/>';
+
+      // Realistic Micro-pebbled grip texture
+      var pebbles = hasPebbles ?
+        '<g opacity="0.18" fill="#000">' +
+        '<circle cx="30" cy="38" r="1"/><circle cx="34" cy="42" r="1"/><circle cx="28" cy="46" r="1"/><circle cx="36" cy="48" r="1"/>' +
+        '<circle cx="64" cy="38" r="1"/><circle cx="68" cy="42" r="1"/><circle cx="62" cy="46" r="1"/><circle cx="70" cy="48" r="1"/>' +
+        '<circle cx="42" cy="62" r="1"/><circle cx="46" cy="66" r="1"/><circle cx="54" cy="62" r="1"/><circle cx="58" cy="66" r="1"/>' +
+        '</g>' : '';
+
+      // Center Gold Foil Trophy / Brand Stamp
+      var stamp =
+        '<g transform="translate(50, 50)">' +
+        '<ellipse cx="0" cy="0" rx="9" ry="5.5" fill="rgba(0,0,0,0.6)" stroke="' + seamHighlight + '" stroke-width="0.6"/>' +
+        '<text x="0" y="2" font-family="Arial, sans-serif" font-size="3.2" font-weight="900" fill="' + seamHighlight + '" letter-spacing="0.5" text-anchor="middle">' + textBadge + '</text>' +
+        '</g>';
+
+      // Specular Glint & Highlights
+      var highlights =
+        '<ellipse cx="35" cy="30" rx="13" ry="6.5" fill="#ffffff" opacity="0.42" transform="rotate(-30, 35, 30)"/>' +
+        '<circle cx="31" cy="26" r="2.8" fill="#ffffff" opacity="0.75"/>' +
+        '<path d="M72 65 C82 52 82 40 76 30" stroke="url(#rim_' + uid + ')" stroke-width="2.5" fill="none" opacity="0.4"/>';
+
+      var ring = hasRing ?
+        '<ellipse cx="50" cy="50" rx="46" ry="14" stroke="#00f0ff" stroke-width="2.6" fill="none" transform="rotate(-24, 50, 50)" opacity="0.9" filter="url(#ball_drop_' + uid + ')"/>' +
+        '<ellipse cx="50" cy="50" rx="46" ry="14" stroke="#ffffff" stroke-width="1.0" fill="none" transform="rotate(-24, 50, 50)" opacity="0.7"/>' : '';
 
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<defs>' +
-        '<radialGradient id="fb_' + uid + '" cx="34%" cy="30%" r="68%">' +
-        '<stop offset="0%" stop-color="' + fStart + '"/>' +
-        '<stop offset="50%" stop-color="' + fMid + '"/>' +
-        '<stop offset="100%" stop-color="' + fEnd + '"/>' +
-        '</radialGradient>' +
-        '</defs>' +
-        '<ellipse cx="50" cy="92" rx="28" ry="6" fill="#000000" opacity="0.38"/>' +
-        (hasAura ? '<circle cx="50" cy="50" r="42" fill="' + auraColor + '" opacity="0.25"/>' : '') +
-        '<circle cx="50" cy="50" r="38" fill="url(#fb_' + uid + ')" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<polygon points="50,34 63,43 58,58 42,58 37,43" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<line x1="50" y1="34" x2="50" y2="14" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<line x1="63" y1="43" x2="82" y2="36" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<line x1="58" y1="58" x2="72" y2="76" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<line x1="42" y1="58" x2="28" y2="76" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<line x1="37" y1="43" x2="18" y2="36" stroke="' + seamColor + '" stroke-width="2"/>' +
-        '<polygon points="44,14 56,14 62,20 38,20" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<polygon points="82,36 88,48 84,60 78,54" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<polygon points="18,36 12,48 16,60 22,54" fill="' + patch + '" stroke="' + seamColor + '" stroke-width="1.8"/>' +
-        '<ellipse cx="36" cy="32" rx="8" ry="4" fill="#ffffff" opacity="0.5" transform="rotate(-25, 36, 32)"/>' +
-        '<circle cx="33" cy="29" r="2.2" fill="#ffffff" opacity="0.8"/>' +
-        '</svg>';
+        defs + shadow + ring +
+        '<circle cx="50" cy="50" r="38" fill="url(#bb_' + uid + ')" ' + glow + '/>' +
+        '<circle cx="50" cy="50" r="38" stroke="' + seam + '" stroke-width="2.2" fill="none"/>' +
+        pebbles + seams + stamp + highlights + '</svg>';
     }
+
+    // === FOOTBALLS (Soccer - 32 Geodesic Panels, 3D Double Stitches, Luxury Foil) ===
+    var fStart = '#ffffff';
+    var fMid = '#e2e8f0';
+    var fEnd = '#1e293b';
+    var patch = '#0f172a';
+    var seamColor = '#475569';
+    var seamStitch = '#94a3b8';
+    var hasAura = false;
+    var auraColor = '#00f0ff';
+    var isGold = false;
+
+    if (id === 'ball_footy_classic') {
+      fStart = '#ffffff'; fMid = '#e2e8f0'; fEnd = '#334155'; patch = '#0f172a'; seamColor = '#334155'; seamStitch = '#ffffff';
+    } else if (id === 'ball_footy_classic_pro') {
+      fStart = '#ffffff'; fMid = '#cbd5e1'; fEnd = '#1e3a8a'; patch = '#1d4ed8'; seamColor = '#f59e0b'; seamStitch = '#fde047';
+    } else if (id === 'ball_footy_inferno') {
+      fStart = '#fb923c'; fMid = '#ea580c'; fEnd = '#3a0707'; patch = '#ef4444'; seamColor = '#facc15'; seamStitch = '#f97316'; hasAura = true; auraColor = '#ea580c';
+    } else if (id === 'ball_footy_cyber_neon') {
+      fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#020617'; patch = '#10b981'; seamColor = '#00f0ff'; seamStitch = '#67e8f9'; hasAura = true; auraColor = '#00f0ff';
+    } else if (id === 'ball_footy_golden_elite') {
+      fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#583008'; patch = '#a16207'; seamColor = '#facc15'; seamStitch = '#fef08a'; hasAura = true; auraColor = '#facc15'; isGold = true;
+    } else if (id === 'ball_footy_neon') {
+      fStart = '#d9f99d'; fMid = '#84cc16'; fEnd = '#14532d'; patch = '#09090b'; seamColor = '#06b6d4'; seamStitch = '#a7f3d0';
+    } else if (id === 'ball_footy_plasma') {
+      fStart = '#e879f9'; fMid = '#7c3aed'; fEnd = '#18042b'; patch = '#ec4899'; seamColor = '#00f0ff'; seamStitch = '#f472b6'; hasAura = true; auraColor = '#a855f7';
+    } else if (id === 'ball_footy_gold') {
+      fStart = '#fef08a'; fMid = '#ca8a04'; fEnd = '#451a03'; patch = '#78350f'; seamColor = '#facc15'; seamStitch = '#fef08a'; hasAura = true; auraColor = '#facc15'; isGold = true;
+    } else if (id === 'ball_earthrise' || id === 'ball_footy_galactic') {
+      fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#061a35'; patch = '#15803d'; seamColor = '#ffffff'; seamStitch = '#7dd3fc'; hasAura = true; auraColor = '#38bdf8';
+    }
+
+    var defs = '<defs>' +
+      '<radialGradient id="fb_' + uid + '" cx="32%" cy="28%" r="72%">' +
+      '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.65"/>' +
+      '<stop offset="18%" stop-color="' + fStart + '"/>' +
+      '<stop offset="68%" stop-color="' + fMid + '"/>' +
+      '<stop offset="100%" stop-color="' + fEnd + '"/>' +
+      '</radialGradient>' +
+      '<radialGradient id="patchGrad_' + uid + '" cx="40%" cy="35%" r="65%">' +
+      '<stop offset="0%" stop-color="' + (isGold ? '#ca8a04' : patch) + '"/>' +
+      '<stop offset="100%" stop-color="' + (isGold ? '#78350f' : '#050a14') + '"/>' +
+      '</radialGradient>' +
+      '<filter id="ball_drop_' + uid + '"><feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity="0.6"/></filter>' +
+      (hasAura ? '<filter id="aura_' + uid + '"><feGaussianBlur stdDeviation="6" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>' : '') +
+      '</defs>';
+
+    var shadow = '<ellipse cx="50" cy="91" rx="28" ry="6" fill="#000000" opacity="0.45" filter="url(#ball_drop_' + uid + ')"/>';
+
+    var aura = hasAura ?
+      '<circle cx="50" cy="50" r="42" fill="' + auraColor + '" opacity="0.3" filter="url(#aura_' + uid + ')"/>' : '';
+
+    // 32-Panel Geodesic Pattern
+    var panels =
+      // Central Pentagon
+      '<polygon points="50,33 64,43 59,58 41,58 36,43" fill="url(#patchGrad_' + uid + ')" stroke="' + seamColor + '" stroke-width="2.4"/>' +
+      '<polygon points="50,33 64,43 59,58 41,58 36,43" stroke="' + seamStitch + '" stroke-width="0.7" fill="none" opacity="0.5"/>' +
+      // Seam spokes connecting to outer panels
+      '<line x1="50" y1="33" x2="50" y2="13" stroke="' + seamColor + '" stroke-width="2.4"/>' +
+      '<line x1="50.5" y1="33" x2="50.5" y2="13" stroke="' + seamStitch + '" stroke-width="0.7" opacity="0.45"/>' +
+      '<line x1="64" y1="43" x2="83" y2="36" stroke="' + seamColor + '" stroke-width="2.4"/>' +
+      '<line x1="64.3" y1="43" x2="83.3" y2="36" stroke="' + seamStitch + '" stroke-width="0.7" opacity="0.45"/>' +
+      '<line x1="59" y1="58" x2="73" y2="76" stroke="' + seamColor + '" stroke-width="2.4"/>' +
+      '<line x1="59.3" y1="58" x2="73.3" y2="76" stroke="' + seamStitch + '" stroke-width="0.7" opacity="0.45"/>' +
+      '<line x1="41" y1="58" x2="27" y2="76" stroke="' + seamColor + '" stroke-width="2.4"/>' +
+      '<line x1="40.7" y1="58" x2="26.7" y2="76" stroke="' + seamStitch + '" stroke-width="0.7" opacity="0.45"/>' +
+      '<line x1="36" y1="43" x2="17" y2="36" stroke="' + seamColor + '" stroke-width="2.4"/>' +
+      '<line x1="35.7" y1="43" x2="16.7" y2="36" stroke="' + seamStitch + '" stroke-width="0.7" opacity="0.45"/>' +
+      // Outer surrounding pentagons at perimeter
+      '<polygon points="44,13 56,13 62,20 38,20" fill="url(#patchGrad_' + uid + ')" stroke="' + seamColor + '" stroke-width="2.0"/>' +
+      '<polygon points="83,36 88,48 84,60 78,54" fill="url(#patchGrad_' + uid + ')" stroke="' + seamColor + '" stroke-width="2.0"/>' +
+      '<polygon points="17,36 12,48 16,60 22,54" fill="url(#patchGrad_' + uid + ')" stroke="' + seamColor + '" stroke-width="2.0"/>' +
+      '<polygon points="73,76 66,85 54,88 64,80" fill="url(#patchGrad_' + uid + ')" stroke="' + seamColor + '" stroke-width="1.8"/>' +
+      '<polygon points="27,76 34,85 46,88 36,80" fill="url(#patchGrad_' + uid + ')" stroke="' + seamColor + '" stroke-width="1.8"/>';
+
+    // FIFA Quality / Star Gold Crest on Central Pentagon
+    var starCrest =
+      '<circle cx="50" cy="48" r="3.8" fill="' + (isGold ? '#ffffff' : '#f59e0b') + '" opacity="0.9"/>' +
+      '<polygon points="50,45.2 51,47.2 53.2,47.2 51.5,48.5 52.2,50.6 50,49.3 47.8,50.6 48.5,48.5 46.8,47.2 49,47.2" fill="' + patch + '"/>';
+
+    // Specular Highlights
+    var highlights =
+      '<ellipse cx="35" cy="29" rx="12" ry="6" fill="#ffffff" opacity="0.5" transform="rotate(-28, 35, 29)"/>' +
+      '<circle cx="31" cy="25" r="2.8" fill="#ffffff" opacity="0.85"/>';
+
+    return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      defs + shadow + aura +
+      '<circle cx="50" cy="50" r="38" fill="url(#fb_' + uid + ')" stroke="' + seamColor + '" stroke-width="2.2"/>' +
+      panels + starCrest + highlights + '</svg>';
   }
 
   // Detailed Scenic Stadium & Court Artwork (10 Unique Environments)
@@ -9800,6 +9925,7 @@
 
   // Complete Redesigned Main Menu
   function renderRedesignedMenu(app) {
+    window.renderRedesignedMenu = renderRedesignedMenu;
     var d = app.store.data;
     if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
       app.showTeamSelection();

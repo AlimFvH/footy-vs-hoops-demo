@@ -6412,26 +6412,49 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.closePath();
             g.fill();
 
-            // Brilliant corner floodlight glare halos (radiating intense white-gold stadium light into sky)
-            const floodLights = [
-                { x: 380, y: 190 }, // North-West floodlight bank
-                { x: 644, y: 190 }, // North-East floodlight bank
-                { x: 160, y: 220 }, // Far-West
-                { x: 864, y: 220 }  // Far-East
-            ];
-            for (const fl of floodLights) {
-                const flare = g.createRadialGradient(fl.x, fl.y, 6, fl.x, fl.y, 140);
-                flare.addColorStop(0, '#ffffff');
-                flare.addColorStop(0.2, 'rgba(254,240,138,0.7)');
-                flare.addColorStop(0.5, 'rgba(56,189,248,0.28)');
-                flare.addColorStop(1, 'rgba(0,0,0,0)');
-                g.fillStyle = flare;
-                g.beginPath();
-                g.arc(fl.x, fl.y, 140, 0, Math.PI * 2);
-                g.fill();
-                // Floodlight head bank
-                g.fillStyle = '#ffffff';
-                g.fillRect(fl.x - 18, fl.y - 7, 36, 14);
+            // Floodlights & Arena Illumination
+            if (isFooty) {
+                // Multi-tiered outdoor football stadium floodlight glare halos
+                const floodLights = [
+                    { x: 380, y: 190 }, // North-West floodlight bank
+                    { x: 644, y: 190 }, // North-East floodlight bank
+                    { x: 160, y: 220 }, // Far-West
+                    { x: 864, y: 220 }  // Far-East
+                ];
+                for (const fl of floodLights) {
+                    const flare = g.createRadialGradient(fl.x, fl.y, 6, fl.x, fl.y, 140);
+                    flare.addColorStop(0, '#ffffff');
+                    flare.addColorStop(0.2, 'rgba(254,240,138,0.7)');
+                    flare.addColorStop(0.5, 'rgba(56,189,248,0.28)');
+                    flare.addColorStop(1, 'rgba(0,0,0,0)');
+                    g.fillStyle = flare;
+                    g.beginPath();
+                    g.arc(fl.x, fl.y, 140, 0, Math.PI * 2);
+                    g.fill();
+                    // Floodlight head bank
+                    g.fillStyle = '#ffffff';
+                    g.fillRect(fl.x - 18, fl.y - 7, 36, 14);
+                }
+            } else {
+                // INDOOR BASKETBALL ARENA LIGHTING:
+                // Perimeter overhead banks angled away to the sidelines (x: 160 and x: 864)
+                // Leaves the direct line of sight behind opponent's hoop (X: 380-644) crystal-clear and glare-free!
+                const sideFloods = [
+                    { x: 160, y: 160 },
+                    { x: 864, y: 160 }
+                ];
+                for (const fl of sideFloods) {
+                    const flare = g.createRadialGradient(fl.x, fl.y, 4, fl.x, fl.y, 90);
+                    flare.addColorStop(0, 'rgba(255,255,255,0.85)');
+                    flare.addColorStop(0.3, 'rgba(254,240,138,0.35)');
+                    flare.addColorStop(1, 'rgba(0,0,0,0)');
+                    g.fillStyle = flare;
+                    g.beginPath();
+                    g.arc(fl.x, fl.y, 90, 0, Math.PI * 2);
+                    g.fill();
+                    g.fillStyle = '#f8fafc';
+                    g.fillRect(fl.x - 14, fl.y - 5, 28, 10);
+                }
             }
 
             // Spectator tier lights (sparkling crowd camera flashes & stadium lights)
@@ -7457,8 +7480,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const rimRgb = (0, math_js_6.rgb)(rimColorVal);
         const rimMat = (0, scene_js_1.material)({
             color: rimRgb,
-            emissive: [0.25, 0.08, 0],
-            spec: 0.96,
+            emissive: [0.65, 0.22, 0.04], // Vibrant glowing tournament orange rim with clear visibility
+            spec: 0.98,
             shininess: 95,
             castShadow: true
         });
@@ -7528,7 +7551,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                     uvScale: [6, 3],
                     receiveShadow: false,
                     castShadow: false,
-                    color: (0, math_js_6.rgb)(0xffffff)
+                    color: (0, math_js_6.rgb)(0xffffff),
+                    emissive: [0.22, 0.22, 0.22]
                 })
             );
             net.rotation = [0, 0, 0];
@@ -7614,7 +7638,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                     [1, -1],
                     [-1, 1],
                     [1, 1],
-                ].map(([sx, sz], i) => ({ pos: [sx * 7.5, 9.5, sz * 8], radius: 24, color: (0, math_js_6.rgb)(t.lights[i % t.lights.length]).map((v) => v * t.lightIntensity) }));
+                ].map(([sx, sz], i) => ({ pos: [sx * (W + 2.5), 12.0, sz * (L * 0.45)], radius: 32, color: (0, math_js_6.rgb)(t.lights[i % t.lights.length]).map((v) => v * (t.lightIntensity * 0.85)) }));
             },
             update(dt, sim, _excite) {
                 var _a;
@@ -16429,13 +16453,12 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             this.closePause();
             if (this.game.running)
                 this.game.stop();
-            const d = this.store.data;
-            const lv = (0, save_js_3.levelFor)(d.xp);
-            const pct = (lv.into / lv.need) * 100;
-            const click = (fn) => () => { this.audio.play('click'); telegram_js_4.telegram.haptic('select'); fn(); };
-            const pickMode = (m) => { this.selMode = m; this.showModeSelect(); };
-            const half = (m, icon, name, sub) => (0, dom_js_6.h)('button', { class: `hero-half ${m}`, type: 'button', 'aria-label': name, on: { click: click(() => pickMode(m)) } }, (0, dom_js_6.h)('span', { class: 'hh-ball' }, icon), (0, dom_js_6.h)('span', { class: 'hh-name' }, name), (0, dom_js_6.h)('span', { class: 'hh-sub' }, sub));
-            const el = (0, dom_js_6.h)('div', { class: 'screen menu-bg' }, (0, dom_js_6.h)('div', { class: 'home' }, (0, dom_js_6.h)('header', { class: 'home-top' }, (0, dom_js_6.h)('button', { class: 'player-card', type: 'button', on: { click: click(() => this.go('profile')) } }, (0, kit_js_4.ring)(pct, 52, (0, dom_js_6.h)('b', null, String(lv.level)), 'lvl-ring'), (0, dom_js_6.h)('span', { class: 'pc-txt' }, (0, dom_js_6.h)('b', { class: 'pc-name' }, d.name), (0, dom_js_6.h)('span', { class: 'pc-sub' }, (0, index_js_7.t)('common.level', { n: lv.level }), ' · ', (0, index_js_7.t)('profile.xp', { a: lv.into, b: lv.need })))), (0, dom_js_6.h)('button', { class: 'wallet', type: 'button', on: { click: click(() => this.go('shop')) } }, (0, dom_js_6.h)('span', { class: 'w-ico' }, '🪙'), (0, dom_js_6.h)('span', { class: 'w-num' }, (0, dom_js_6.fmt)(d.coins)), (0, dom_js_6.h)('small', null, (0, index_js_7.t)('common.demo')))), (0, dom_js_6.h)('section', { class: 'hero' }, half('footy', '⚽', (0, index_js_7.t)('mode.footy'), (0, index_js_7.t)('mode.footy.sub')), half('hoops', '🏀', (0, index_js_7.t)('mode.hoops'), (0, index_js_7.t)('mode.hoops.sub')), (0, dom_js_6.h)('div', { class: 'hero-mid' }, (0, dom_js_6.h)('div', { class: 'brand' }, (0, kit_js_4.emblem)()), (0, dom_js_6.h)('span', { class: 'vs' }, 'VS'))), (0, dom_js_6.h)('button', { class: 'btn primary play', type: 'button', on: { click: click(() => this.showModeSelect()) } }, (0, dom_js_6.h)('span', { class: 'ico' }, '▶'), (0, index_js_7.t)('menu.play')), (0, dom_js_6.h)('div', { class: 'home-links' }, (0, dom_js_6.h)('button', { class: 'btn small ghost daily-link', type: 'button', on: { click: click(() => this.go('quests')) } }, '🎁 ', (0, index_js_7.t)('daily.title'), (0, progress_js_2.dailyStatus)(d).canClaim ? (0, dom_js_6.h)('i', { class: 'dot', 'aria-hidden': 'true' }) : null), (0, dom_js_6.h)('button', { class: 'btn small ghost', type: 'button', on: { click: click(() => this.go('withdraw')) } }, '💸 ', (0, index_js_7.t)('menu.withdraw')), (0, dom_js_6.h)('button', { class: 'btn small ghost', type: 'button', on: { click: click(() => this.tutorial(false)) } }, '❓ ', (0, index_js_7.t)('menu.howto'))), (0, dom_js_6.h)('div', { class: 'demo-banner' }, (0, index_js_7.t)('demo.banner'), (0, dom_js_6.h)('span', { class: 'ver' }, (0, index_js_7.t)('settings.version', { v: config_js_4.CONFIG.VERSION }))), (0, kit_js_4.bottomNav)('menu', (n) => this.go(n))));
+            // Direct delegation to redesigned main menu if available (avoids FOUC/flashing legacy characters)
+            if (typeof window !== 'undefined' && typeof window.renderRedesignedMenu === 'function') {
+                window.renderRedesignedMenu(this);
+                return;
+            }
+            const el = (0, dom_js_6.h)('div', { class: 'screen menu-bg fvh-boot-splash' });
             this.show(el, 'menu');
         }
         showModeSelect() {
