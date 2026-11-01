@@ -137,7 +137,23 @@
   const modelCache = new Map(); // url -> Promise<GLBModel>
   const bufferCache = new Map(); // model -> PrimitiveBuffer[]
   const activeMatches = new Set();
-  const skinTextureCache = new Map(); // key -> WebGLTexture
+  const skinTextureCache = new Map();
+  // Preload GLB Character Models immediately into memory to eliminate match start lag
+  function preloadGLBModels() {
+    const loader = getLoader();
+    if (!loader || !loader.loadGLB) return;
+    const urls = ['assets/characters/footy10.glb', 'assets/characters/hoops23.glb', 'assets/characters/keeper1.glb'];
+    urls.forEach(url => {
+      if (!modelCache.has(url)) {
+        modelCache.set(url, loader.loadGLB(url).catch(e => {
+          console.warn('[CharactersGLB] Preload warning for', url, e);
+          return null;
+        }));
+      }
+    });
+  }
+  if (typeof setTimeout === 'function') setTimeout(preloadGLBModels, 50);
+ // key -> WebGLTexture
 
   function hexToRgb(h) {
     if (typeof h !== 'number') return null;
@@ -441,15 +457,31 @@
     return primitiveBuffers;
   }
 
-  // Model Matrix Generator
-  function makeTransformMatrix(out, x, y, z, yaw, scale) {
-    const cosY = Math.cos(yaw) * scale;
-    const sinY = Math.sin(yaw) * scale;
+  // 3D Model Matrix Generator with Yaw, Pitch, Roll & Scaling
+  function makeTransformMatrix(out, x, y, z, yaw, scale, pitch = 0, roll = 0) {
+    const cy = Math.cos(yaw), sy = Math.sin(yaw);
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const cr = Math.cos(roll), sr = Math.sin(roll);
 
-    out[0] = cosY;  out[4] = 0;      out[8] = sinY;   out[12] = x;
-    out[1] = 0;     out[5] = scale;  out[9] = 0;      out[13] = y;
-    out[2] = -sinY; out[6] = 0;      out[10] = cosY;  out[14] = z;
-    out[3] = 0;     out[7] = 0;      out[11] = 0;     out[15] = 1;
+    out[0] = (cy * cr + sy * sp * sr) * scale;
+    out[1] = (cp * sr) * scale;
+    out[2] = (-sy * cr + cy * sp * sr) * scale;
+    out[3] = 0;
+
+    out[4] = (-cy * sr + sy * sp * cr) * scale;
+    out[5] = (cp * cr) * scale;
+    out[6] = (sy * sr + cy * sp * cr) * scale;
+    out[7] = 0;
+
+    out[8] = (sy * cp) * scale;
+    out[9] = (-sp) * scale;
+    out[10] = (cy * cp) * scale;
+    out[11] = 0;
+
+    out[12] = x;
+    out[13] = y;
+    out[14] = z;
+    out[15] = 1;
     return out;
   }
 
@@ -458,6 +490,7 @@
       this.charRef = charRef;
       this.agent = charRef.agent;
       this.modelUrl = modelUrl;
+      this.matchView = options.matchView || null;
       this.model = null;
       this.loaded = false;
       this.failed = false;
@@ -466,10 +499,18 @@
       this.isKeeper = !!options.isKeeper;
       this.customTexture = null;
 
+      // Immediately conceal procedural mesh so old characters never flash on kickoff
+      if (this.charRef && this.charRef.pivot) {
+        this.charRef.pivot.visible = false;
+      }
+
       // Visual Placement & Orientation
       this.yaw = 0;
       this.targetYaw = 0;
-      this.scale = options.scale || 1.38; // Matches procedural character stature (top of head ≈ 2.48m)
+      this.pitch = 0;
+      this.roll = 0;
+      this.elevationLift = 0;
+      this.scale = options.scale || 2.28;
       this.currentAnim = 'idle';
       this.modelMatrix = new Float32Array(16);
 
@@ -551,37 +592,112 @@
       while (dy < -Math.PI) dy += Math.PI * 2;
       this.yaw += dy * Math.min(1, dt * 14);
 
-      // 2. Realistic Dynamic Animation Track Mapping
-      if (a.kickT > 0 || a.shotT > 0) {
-        // High-impact soccer strike / basketball jump release
-        this.setAnimation('Kick_Right', 1.45);
-      } else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-        // Acrobatic sliding tackle / aggressive interception dive
-        this.setAnimation('Roll', 1.5);
-      } else if (a.celebrateT > 0) {
-        // Crowd celebration wave
-        this.setAnimation('Wave', 1.15);
-      } else if (speed > 1.8) {
-        // High-velocity athletic sprint: cadence smoothly syncs with ground speed
-        const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
-        this.setAnimation('Run', sprintCadence);
-      } else if (speed > 0.25) {
-        // Controlled athletic jog / tactical positioning stride
-        const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
-        this.setAnimation('Walk', walkCadence);
-      } else {
-        // Athletic ready stance
-        this.setAnimation('Idle', 1.0);
+      // 2. Realistic Dynamic Animation Track Mapping & Kinematics
+      this.pitch = 0;
+      this.roll = 0;
+      this.elevationLift = 0;
+
+      const isBallCarrier = Boolean(
+        this.matchView &&
+        this.matchView.sim &&
+        this.matchView.sim.ball &&
+        this.matchView.sim.ball.owner === a
+      );
+
+      // A. BASKETBALL SPECIFIC MOTIONS
+      if (!this.isFooty && !this.isKeeper) {
+        // 1. Explosive Slam Dunk Sequence (Airborne rim slam)
+        if (a.dunk && a.dunk.active) {
+          const dk = a.dunk;
+          const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
+          // High parabolic jump arc reaching rim level (3.05m)
+          this.elevationLift = Math.sin(dunkProgress * Math.PI) * 2.85;
+          this.pitch = 0.38 * (1 - dunkProgress * 0.7); // Aggressive forward airborne attack lean
+          this.roll = (dk.hoop && dk.hoop.dir ? dk.hoop.dir : 1) * -0.08;
+          // Overhead one-handed slam down into rim
+          this.setAnimation('Punch_Right', 2.0);
+        }
+        // 2. Jump Shot Elevation & Release (Vertical hang-time & high flick)
+        else if (a.shotT > 0) {
+          const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
+          this.elevationLift = Math.sin(shotProgress * Math.PI) * 1.35;
+          this.pitch = -0.12; // Slight fadeaway / high release arch
+          this.setAnimation('Punch_Right', 1.8);
+        }
+        // 3. Interception Lunge / Steal
+        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
+          this.pitch = 0.30;
+          this.setAnimation('Punch_Left', 1.75);
+        }
+        // 4. Celebration Wave
+        else if (a.celebrateT > 0) {
+          this.setAnimation('Wave', 1.25);
+        }
+        // 5. Basketball Dribbling & Running
+        else if (isBallCarrier) {
+          if (speed > 0.3) {
+            const sprintCadence = Math.max(1.1, Math.min(2.3, speed / 3.0));
+            this.setAnimation('Run', sprintCadence);
+            this.pitch = 0.20; // Athletic forward crouch protecting the ball
+            const dribblePhase = (this.matchView && this.matchView.sim && this.matchView.sim.ball && this.matchView.sim.ball.dribblePhase) || 0;
+            this.roll = Math.sin(dribblePhase * 7.5) * 0.14; // Dynamic rhythmic crossover sway
+          } else {
+            this.setAnimation('Idle', 1.0);
+            this.pitch = 0.16; // Low-center triple-threat stance
+          }
+        }
+        // 6. Outfield running / walking / idle
+        else if (speed > 1.8) {
+          const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
+          this.setAnimation('Run', sprintCadence);
+        } else if (speed > 0.25) {
+          const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
+          this.setAnimation('Walk', walkCadence);
+        } else {
+          this.setAnimation('Idle', 1.0);
+        }
+      }
+      // B. FOOTBALL (SOCCER) SPECIFIC MOTIONS
+      else {
+        // 1. High-Impact Dynamic Soccer Strike / Shot
+        if (a.kickT > 0 || a.shotT > 0) {
+          const timer = a.kickT || a.shotT || 0;
+          this.pitch = 0.32 * Math.sin(timer * 14); // Torso drive into strike
+          this.roll = -0.18; // Plant foot dynamic lean
+          this.setAnimation('Kick_Right', 1.9);
+        }
+        // 2. Sliding Tackle / Interception Dive
+        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
+          this.setAnimation('Roll', 1.6);
+        }
+        // 3. Celebration Wave
+        else if (a.celebrateT > 0) {
+          this.setAnimation('Wave', 1.2);
+        }
+        // 4. Sprinting
+        else if (speed > 1.8) {
+          const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
+          this.setAnimation('Run', sprintCadence);
+        }
+        // 5. Tactical jog / walking
+        else if (speed > 0.25) {
+          const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
+          this.setAnimation('Walk', walkCadence);
+        }
+        // 6. Idle
+        else {
+          this.setAnimation('Idle', 1.0);
+        }
       }
 
       // 3. Step skeletal bones
       this.model.update(dt);
 
-      // 4. Update world transform matrix
+      // 4. Update world transform matrix with 3D lean & jump elevation
       const px = a.x || 0;
-      const py = a.y || 0;
+      const py = (a.y || 0) + this.elevationLift;
       const pz = a.z || 0;
-      makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, this.scale);
+      makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, this.scale, this.pitch, this.roll);
     }
   }
 
@@ -606,6 +722,9 @@
 
       matchView.chars.forEach(c => {
         if (!c.agent) return;
+        // Instantly hide legacy procedural body mesh so old characters never flash
+        if (c.pivot) c.pivot.visible = false;
+
         const role = c.agent.role;
         const isKeeper = (role === 'keeper');
         const isTeam0 = (c.agent.team === 0);
@@ -616,30 +735,33 @@
         // 1. Goalkeeper in goal (Goalkeeper #1)
         if (isKeeper) {
           const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 1.90, // Substantial athletic stature
+            scale: 2.32, // Substantial athletic keeper stature
             skin: c.skin,
             isFooty: true,
-            isKeeper: true
+            isKeeper: true,
+            matchView
           });
           list.push(inst);
         }
         // 2. Football Athlete (Striker #10)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 1.88, // Bold, prominent field presence
+            scale: 2.28, // Heroic prominent field presence (Striker #10)
             skin: c.skin,
             isFooty: true,
-            isKeeper: false
+            isKeeper: false,
+            matchView
           });
           list.push(inst);
         }
         // 3. Basketball Athlete (All-Star #23)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 1.92, // Tall, athletic basketball forward stature
+            scale: 2.36, // Tall athletic forward stature (All-Star #23)
             skin: c.skin,
             isFooty: false,
-            isKeeper: false
+            isKeeper: false,
+            matchView
           });
           list.push(inst);
         }

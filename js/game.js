@@ -4418,7 +4418,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         hemiSky: 0x8896c4,
         hemiGround: 0x3a2a1a,
         lights: [0xffe2b0, 0xffe2b0, 0xffe2b0, 0xffe2b0],
-        lightIntensity: 0.9,
+        lightIntensity: 0.35,
         stand: 0x1a1f2e,
         crowd: [0xe84a5f, 0xf6c445, 0x4fb3ff, 0xffffff, 0xff8c42, 0x9b6bff],
         board: 0x0d1424,
@@ -6436,25 +6436,11 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                     g.fillRect(fl.x - 18, fl.y - 7, 36, 14);
                 }
             } else {
-                // INDOOR BASKETBALL ARENA LIGHTING:
-                // Perimeter overhead banks angled away to the sidelines (x: 160 and x: 864)
-                // Leaves the direct line of sight behind opponent's hoop (X: 380-644) crystal-clear and glare-free!
-                const sideFloods = [
-                    { x: 160, y: 160 },
-                    { x: 864, y: 160 }
-                ];
-                for (const fl of sideFloods) {
-                    const flare = g.createRadialGradient(fl.x, fl.y, 4, fl.x, fl.y, 90);
-                    flare.addColorStop(0, 'rgba(255,255,255,0.85)');
-                    flare.addColorStop(0.3, 'rgba(254,240,138,0.35)');
-                    flare.addColorStop(1, 'rgba(0,0,0,0)');
-                    g.fillStyle = flare;
-                    g.beginPath();
-                    g.arc(fl.x, fl.y, 90, 0, Math.PI * 2);
-                    g.fill();
-                    g.fillStyle = '#f8fafc';
-                    g.fillRect(fl.x - 14, fl.y - 5, 28, 10);
-                }
+                // INDOOR BASKETBALL ARENA:
+                // Completely spotlight-free, glare-free dark sleek dome with uniform ambient roof illumination
+                // Clean architectural ceiling profile without blinding projectors or flares
+                g.fillStyle = 'rgba(15, 23, 42, 0.6)';
+                g.fillRect(0, 140, 1024, 80);
             }
 
             // Spectator tier lights (sparkling crowd camera flashes & stadium lights)
@@ -7469,20 +7455,20 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         buildArenaSkyAndHorizon(root, t, W, L, true, quality);
 
         const [pw, pd] = (0, textures_js_1.courtPlaneSize)();
-        // High-gloss polyurethane parquet reflection finish
-        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.88, shininess: 85, receiveShadow: true }));
+        // Satin non-glare tournament parquet finish
+        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.28, shininess: 25, receiveShadow: true }));
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
-        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.85, spec: 0.96, shininess: 90, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
-        const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.7, shininess: 75, castShadow: true });
+        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.85, spec: 0.25, shininess: 25, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
+        const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.4, shininess: 35, castShadow: true });
         const rimColorVal = t.rim || 0xff5500;
         const rimRgb = (0, math_js_6.rgb)(rimColorVal);
         const rimMat = (0, scene_js_1.material)({
             color: rimRgb,
-            emissive: [0.65, 0.22, 0.04], // Vibrant glowing tournament orange rim with clear visibility
-            spec: 0.98,
-            shininess: 95,
+            emissive: [0.95, 0.35, 0.05], // High-contrast crisp tournament orange rim with clear visibility
+            spec: 0.35,
+            shininess: 35,
             castShadow: true
         });
         const poleMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x334155), spec: 0.5, castShadow: true });
@@ -7633,12 +7619,13 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 scene.fogColor = (0, math_js_6.rgb)(t.fog);
                 scene.fogNear = 65;
                 scene.fogFar = 180;
+                // Diffuse ambient fill lights: positioned high (16m) and wide without shining directly into camera sightlines
                 scene.pointLights = [
                     [-1, -1],
                     [1, -1],
                     [-1, 1],
                     [1, 1],
-                ].map(([sx, sz], i) => ({ pos: [sx * (W + 2.5), 12.0, sz * (L * 0.45)], radius: 32, color: (0, math_js_6.rgb)(t.lights[i % t.lights.length]).map((v) => v * (t.lightIntensity * 0.85)) }));
+                ].map(([sx, sz], i) => ({ pos: [sx * (W + 4.0), 16.0, sz * (L * 0.65)], radius: 45, color: (0, math_js_6.rgb)(t.lights[i % t.lights.length]).map((v) => v * (t.lightIntensity * 0.28)) }));
             },
             update(dt, sim, _excite) {
                 var _a;
@@ -7917,6 +7904,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const trim = (_a = skin.accent) !== null && _a !== void 0 ? _a : white;
             this.root.add(this.pivot);
             this.pivot.setScale(S);
+            this.pivot.visible = false; // Conceal legacy procedural mesh immediately to guarantee zero flicker on kickoff!
             const sockCol = skin.style === 'hoops' ? skin.secondary : skin.primary;
 
             // 1. Muscular Legs, Dynamic Pro Shorts, Compression Socks & Authentic Footwear
@@ -8812,6 +8800,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 const c = new characters_js_1.Character(a, s, charSport, 1.0, opts.quality);
                 c.sport = charSport;
                 c.team = a.team;
+                if (c.pivot) c.pivot.visible = false; // Conceal procedural mesh immediately to guarantee zero flicker on kickoff!
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
@@ -8823,10 +8812,11 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.ballVisual.mode = mode;
             }
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            const r = (sim && sim.ball && typeof sim.ball.r === 'number' && sim.ball.r > 0) ? sim.ball.r : (mode === 'footy' ? 0.28 : 0.34);
+            // Balanced, authentic ball size (r = 0.20m for soccer, 0.22m for basketball) matching heroic player stature
+            const r = (mode === 'footy') ? 0.20 : 0.22;
             this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: 0.75, shininess: 55, castShadow: true, rim: 0.25, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.4) : [0, 0, 0] }));
-            this.ballShadow = new scene_js_5.Node(G.plane(r * 3.4, r * 3.4), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
-            this.ballGlow = new scene_js_5.Node(G.ring(r * 1.5, r * 2.3, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            this.ballShadow = new scene_js_5.Node(G.plane(r * 3.0, r * 3.0), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            this.ballGlow = new scene_js_5.Node(G.ring(r * 1.25, r * 1.8, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.scene.root.add(this.ball, this.ballShadow, this.ballGlow);
             this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), null);
             // Boosts completely removed

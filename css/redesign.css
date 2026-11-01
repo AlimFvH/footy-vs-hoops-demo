@@ -7150,3 +7150,286 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 }
 
 
+
+
+/* ==========================================================================
+   CONSOLE-GRADE VISUAL POLISH: MAIN MENU, SHOP, WARDROBE & PROFILE
+   ========================================================================== */
+
+/* 1. Main Menu Stage & Hero Card */
+.fvh-hero-card.solo-hero-compact {
+  background: linear-gradient(165deg, rgba(20, 32, 60, 0.82) 0%, rgba(9, 14, 28, 0.96) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 26px !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.65), 0 0 32px var(--glow-color, rgba(0, 240, 255, 0.16)) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  padding: 16px 14px !important;
+}
+
+.fvh-hero-card.solo-hero-compact.footy {
+  --glow-color: rgba(0, 240, 255, 0.22);
+  border-color: rgba(0, 240, 255, 0.35) !important;
+}
+
+.fvh-hero-card.solo-hero-compact.hoops {
+  --glow-color: rgba(249, 115, 22, 0.22);
+  border-color: rgba(249, 115, 22, 0.35) !important;
+}
+
+.solo-avatar-box {
+  background: radial-gradient(ellipse at 50% 80%, var(--glow-color, rgba(0, 240, 255, 0.18)) 0%, transparent 68%) !important;
+}
+
+.fvh-equipped-preview-bar {
+  background: rgba(10, 16, 32, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  padding: 8px 14px !important;
+}
+
+.fvh-solo-gear-pill {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 14px !important;
+  transition: all 0.18s ease !important;
+}
+
+.fvh-solo-gear-pill:hover {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+/* 2. Primary Call To Action (PLAY / БЫСТРЫЙ МАТЧ) */
+.fvh-btn-play-hero {
+  min-height: 66px !important;
+  border-radius: 22px !important;
+  font-family: inherit !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease !important;
+}
+
+.fvh-btn-play-hero.footy {
+  background: linear-gradient(135deg, #00f0ff 0%, #0284c7 50%, #10b981 100%) !important;
+  box-shadow: 0 10px 28px rgba(0, 240, 255, 0.42), inset 0 1.5px 0 rgba(255, 255, 255, 0.65) !important;
+  color: #030a16 !important;
+}
+
+.fvh-btn-play-hero.hoops {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #e11d48 100%) !important;
+  box-shadow: 0 10px 28px rgba(249, 115, 22, 0.45), inset 0 1.5px 0 rgba(255, 255, 255, 0.55) !important;
+  color: #ffffff !important;
+}
+
+.fvh-btn-play-hero:hover {
+  transform: translateY(-2px) scale(1.01) !important;
+}
+
+.fvh-btn-play-hero:active {
+  transform: scale(0.97) !important;
+}
+
+.fvh-btn-play-hero .play-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.fvh-btn-play-hero .play-icon {
+  font-size: 18px !important;
+  animation: fvhPulsePlay 1.8s infinite ease-in-out !important;
+}
+
+@keyframes fvhPulsePlay {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.25); opacity: 1; }
+}
+
+.fvh-btn-play-hero .play-text {
+  font-size: 21px !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.fvh-btn-play-hero .play-sub {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  opacity: 0.9 !important;
+}
+
+/* 3. Secondary Console Dock */
+.fvh-secondary-hub {
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+}
+
+.fvh-hub-tile {
+  background: linear-gradient(160deg, rgba(22, 34, 62, 0.85) 0%, rgba(11, 16, 32, 0.95) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 18px !important;
+  padding: 11px 6px !important;
+  min-height: 72px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+}
+
+.fvh-hub-tile:hover {
+  transform: translateY(-2.5px) !important;
+  border-color: rgba(255, 255, 255, 0.38) !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6) !important;
+}
+
+.fvh-hub-tile-icon {
+  font-size: 22px !important;
+  line-height: 1 !important;
+}
+
+.fvh-hub-tile-label {
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+  color: #f1f5f9 !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* 4. Shop Merchandise Cards */
+.fvh-catalogue-grid {
+  gap: 12px !important;
+  padding-bottom: 24px !important;
+}
+
+.fvh-catalogue-card {
+  background: linear-gradient(165deg, rgba(18, 26, 50, 0.92) 0%, rgba(9, 13, 26, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 20px !important;
+  padding: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.fvh-catalogue-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 90px;
+  background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.fvh-catalogue-card.r-legendary {
+  border-color: rgba(250, 204, 21, 0.45) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(250, 204, 21, 0.18) !important;
+}
+
+.fvh-catalogue-card.r-epic {
+  border-color: rgba(168, 85, 247, 0.45) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(168, 85, 247, 0.18) !important;
+}
+
+.fvh-catalogue-card.r-rare {
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(56, 189, 248, 0.18) !important;
+}
+
+.fvh-catalogue-card .fvh-card-thumb-wrap {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 70%) !important;
+  border-radius: 14px !important;
+  height: 84px !important;
+  margin: 4px 0 8px !important;
+}
+
+.fvh-catalogue-card .btn.small {
+  border-radius: 12px !important;
+  font-weight: 900 !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+}
+
+/* 5. Wardrobe / Locker Polish */
+.card.shopc {
+  background: linear-gradient(160deg, rgba(16, 24, 46, 0.9) 0%, rgba(9, 13, 26, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+  padding: 10px !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45) !important;
+  transition: all 0.18s ease !important;
+}
+
+.card.shopc:hover {
+  transform: translateY(-2.5px) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.card.shopc.is-eq {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.35), inset 0 0 12px rgba(34, 197, 94, 0.1) !important;
+}
+
+.card.shopc .st-eq {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  font-size: 10px !important;
+  border-radius: 12px !important;
+  padding: 3px 8px !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4) !important;
+}
+
+/* 6. Profile Clean Stats & ID Card */
+.fvh-profile-id-card {
+  border-radius: 22px !important;
+  background: linear-gradient(150deg, rgba(20, 32, 60, 0.92) 0%, rgba(10, 15, 32, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6) !important;
+  padding: 18px !important;
+}
+
+.fvh-stats-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+}
+
+.fvh-kpi-item {
+  background: linear-gradient(145deg, rgba(16, 24, 46, 0.85) 0%, rgba(9, 13, 26, 0.95) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  padding: 14px 12px !important;
+  text-align: center !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+.fvh-kpi-item small {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+}
+
+.fvh-kpi-item b {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+}
+
+.fvh-kpi-item.win b {
+  color: #22c55e !important;
+}
+
+.fvh-kpi-item.rate b {
+  color: #38bdf8 !important;
+}
