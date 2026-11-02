@@ -64,15 +64,11 @@ FOOTY vs HOOPS includes a full-featured arcade sports game built around football
 Key features implemented in the current production product:
 * **Two distinct sports modes:** ⚽ Football and 🏀 Basketball.
 * **Playable characters and customization:** Footy (#10 Striker) and Hoops (#23 Forward).
-* **10 Detailed Scenic Arenas:** Stadiums spanning from Coastal Sunset Court and Redwood Forest Arena to Orbital Space Colosseum and Neo Tokyo Megacity.
-* **Extensive Wardrobe:** 68 cosmetic items across jerseys, match balls, celebration effects, trails, and frames.
-* **Tactical Boosts:** 8 gameplay boosts (Super Shot, Overdrive, Magnet Shield, Coin Doubler, etc.).
-* **In-Game Shop & Bundles:** 7 thematic collections with item breakdowns and multi-currency pricing.
-* **Seasonal Battle Pass:** 30 tiers with parallel Free and VIP tracks.
-* **Practice against AI:** 3 difficulty levels (Easy, Normal, Hard) with dynamic AI opponent logic.
-* **Real-Time Online 1v1 Multiplayer:** WebRTC P2P netcode with native RFC6455 WebSocket relay signaling and multi-region STUN servers.
-* **Private Match Rooms:** 6-digit room code system to challenge friends in real-time.
-* **Mobile-Friendly Controls:** Dual touch virtual joystick, action buttons (Shoot, Turbo, Boost), full Telegram WebApp haptic and back-button integration.
+* **2 Standard Arenas:** Classic Grass Pitch (Football) and Street Court (Basketball).
+* **Locker Room & Wardrobe:** Curated catalog of authentic team kits, jerseys, and distinctive match balls with rarity filtering.
+* **1v1 Arcade vs AI:** 3 difficulty levels (Easy, Normal, Hard) with dynamic AI opponent logic.
+* **In-Game Shop:** Curated coin packages with Telegram Stars (XTR) purchasing and server-side validation.
+* **Mobile-Friendly Controls:** Virtual joystick, action buttons (Shoot, Turbo), Telegram WebApp haptic and back-button integration.
 * **Bilingual Localization:** Complete key parity between Russian and English.
 
 ---

@@ -4586,6 +4586,7 @@
             if (res.equipped) storeData.equipped = res.equipped;
             if (res.battlePass) storeData.battlePass = res.battlePass;
             if (res.packs) storeData.packs = res.packs;
+            if (Array.isArray(res.claimedQuests)) storeData.claimedQuests = res.claimedQuests;
             // Synchronize permanent team choice from authoritative server
             if (res.teamChosen && res.selectedTeam) {
               storeData.teamChosen = true;
@@ -5922,7 +5923,7 @@
             var tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
             var tgUserId = tgUser ? tgUser.id : (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id);
 
-            if (!tgUserId && task.isTelegramChannel) {
+            if (!tgUserId) {
               btn.disabled = false;
               btn.textContent = tr('verifyTaskBtn');
               alertBox.style.display = 'block';
@@ -5943,7 +5944,7 @@
                 telegramUserId: tgUserId,
                 target: task.isTelegramChat ? 'chat' : 'channel',
                 questId: task.id,
-                claim: false
+                claim: true
               })
             })
             .then(function (r) { return r.json(); })
@@ -5952,16 +5953,35 @@
                 st.verified = true;
                 window.__fvhSocialTaskStates[task.id] = st;
                 if (task.id === 'q_sub_tg') window.__fvhTgVerified = true;
+                if (res.claimed) {
+                  app.store.update(function (d) {
+                    if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
+                    if (d.claimedQuests.indexOf(task.id) === -1) d.claimedQuests.push(task.id);
+                    if (res.coins !== undefined) d.coins = res.coins;
+                    else d.coins = (d.coins || 0) + 50;
+                    if (!d.transactions) d.transactions = [];
+                    d.transactions.unshift({
+                      id: 'tx_quest_' + task.id + '_' + Date.now(),
+                      type: 'quest_reward',
+                      amount: 50,
+                      description: task.name + ' (' + task.handle + ')',
+                      timestamp: Date.now()
+                    });
+                  });
+                  app.audio.play('claim');
+                  showToast((lang === 'ru') ? '⭐ +50 FvH Coin получено!' : '⭐ +50 FvH Coin claimed!');
+                  renderSocialTab();
+                  return;
+                }
                 app.audio.play('claim');
                 showToast((lang === 'ru') ? '✓ Подписка подтверждена! Заберите награду.' : '✓ Subscription verified! Claim your reward.');
                 renderCardActions();
-              } else if (task.isTelegramChat) {
-                // Private joinchat link: user has visited and joined community chat
-                st.verified = true;
-                window.__fvhSocialTaskStates[task.id] = st;
-                app.audio.play('claim');
-                showToast((lang === 'ru') ? '✓ Вступление в чат подтверждено! Заберите награду.' : '✓ Community chat joined! Claim your reward.');
-                renderCardActions();
+              } else if (res && res.error === 'quest_already_claimed') {
+                app.store.update(function (d) {
+                  if (!Array.isArray(d.claimedQuests)) d.claimedQuests = [];
+                  if (d.claimedQuests.indexOf(task.id) === -1) d.claimedQuests.push(task.id);
+                });
+                renderSocialTab();
               } else {
                 btn.disabled = false;
                 btn.textContent = (lang === 'ru') ? '🔄 Проверить снова' : '🔄 Verify Again';
@@ -5969,27 +5989,27 @@
                 alertBox.style.background = 'rgba(239,68,68,0.12)';
                 alertBox.style.border = '1px solid rgba(239,68,68,0.3)';
                 alertBox.style.color = '#fca5a5';
-                alertBox.innerHTML = (lang === 'ru')
-                  ? '❌ Подписка не обнаружена. Пожалуйста, подпишитесь на канал <b>@FootyHoops</b> и нажмите «Проверить снова».'
-                  : '❌ Subscription not found. Please subscribe to <b>@FootyHoops</b> and tap Verify Again.';
+                if (task.isTelegramChat) {
+                  alertBox.innerHTML = (lang === 'ru')
+                    ? '❌ Вступление в чат не обнаружено. Перейдите по ссылке, вступите в <b>Telegram Chat</b> и нажмите «Проверить снова».'
+                    : '❌ Community chat membership not found. Please join the <b>Telegram Chat</b> and tap Verify Again.';
+                } else {
+                  alertBox.innerHTML = (lang === 'ru')
+                    ? '❌ Подписка не обнаружена. Пожалуйста, подпишитесь на канал <b>@FootyHoops</b> и нажмите «Проверить снова».'
+                    : '❌ Subscription not found. Please subscribe to <b>@FootyHoops</b> and tap Verify Again.';
+                }
               }
             })
             .catch(function () {
-              if (task.isTelegramChat) {
-                st.verified = true;
-                window.__fvhSocialTaskStates[task.id] = st;
-                renderCardActions();
-              } else {
-                btn.disabled = false;
-                btn.textContent = (lang === 'ru') ? '🔄 Повторить попытку' : '🔄 Retry';
-                alertBox.style.display = 'block';
-                alertBox.style.background = 'rgba(239,68,68,0.12)';
-                alertBox.style.border = '1px solid rgba(239,68,68,0.3)';
-                alertBox.style.color = '#fca5a5';
-                alertBox.textContent = (lang === 'ru')
-                  ? '⚠️ Ошибка связи с сервером. Попробуйте снова.'
-                  : '⚠️ Server connection error. Please retry.';
-              }
+              btn.disabled = false;
+              btn.textContent = (lang === 'ru') ? '🔄 Повторить попытку' : '🔄 Retry';
+              alertBox.style.display = 'block';
+              alertBox.style.background = 'rgba(239,68,68,0.12)';
+              alertBox.style.border = '1px solid rgba(239,68,68,0.3)';
+              alertBox.style.color = '#fca5a5';
+              alertBox.textContent = (lang === 'ru')
+                ? '⚠️ Ошибка связи с сервером. Попробуйте снова.'
+                : '⚠️ Server connection error. Please retry.';
             });
           }
 
@@ -6005,6 +6025,8 @@
             btn.disabled = true;
             btn.textContent = '...';
             var pid = getPlayerId();
+            var tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) || null;
+            var tgUserId = tgUser ? tgUser.id : (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id);
 
             fetch(getApiUrl('/api/tasks/claim-social'), {
               method: 'POST',
@@ -6012,6 +6034,7 @@
               body: JSON.stringify({
                 playerId: pid,
                 questId: task.id,
+                telegramUserId: tgUserId,
                 claim: true
               })
             })
@@ -8187,6 +8210,20 @@
           console.warn('Failed to switch language', e);
         }
       }
+      if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+        try {
+          fetch(getApiUrl('/api/telegram/validate-init-data'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              initData: window.Telegram.WebApp.initData,
+              platform: window.Telegram.WebApp.platform || 'unknown',
+              playerId: (app && app.store && app.store.data && app.store.data.playerId) || null,
+              preferredLanguage: newLang
+            })
+          }).catch(function () {});
+        } catch (e) {}
+      }
       app.audio.play('click');
       showToast('Language: ' + newLang.toUpperCase());
       app.go('settings');
@@ -8383,6 +8420,7 @@
             if (self.closed) { ws.close(); return; }
             self.wsOpen = true;
             self.lastMsgAt = Date.now();
+            self.sendCtl({ k: 'ping', t: Date.now() });
             if (self.h && self.h.onStatusChange) self.h.onStatusChange('connected');
             if (self.pollInterval) {
               clearInterval(self.pollInterval);
@@ -10476,11 +10514,37 @@
               languageCode: u.language_code || '',
               photoUrl: u.photo_url || ''
             };
-            if (u.language_code && (!d.settings || !d.settings.lang || d.settings.lang === 'auto')) {
+            if (typeof u.language_code === 'string' && u.language_code && (!d.settings || !d.settings.lang || d.settings.lang === 'auto')) {
               if (!d.settings) d.settings = {};
               d.settings.lang = u.language_code.startsWith('ru') ? 'ru' : 'en';
             }
           });
+        }
+
+        // Authoritative backend initData validation & activity registration
+        if (tg.initData) {
+          try {
+            fetch(getApiUrl('/api/telegram/validate-init-data'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                initData: tg.initData,
+                platform: tg.platform || 'unknown',
+                playerId: (app && app.store && app.store.data && app.store.data.playerId) || null,
+                preferredLanguage: (app && app.store && app.store.data && app.store.data.settings && app.store.data.settings.lang) || null
+              })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.validated && res.user) {
+                app.store.update(function (d) {
+                  if (!d.telegramUser) d.telegramUser = {};
+                  d.telegramUser.validated = true;
+                  d.telegramUser.id = res.user.id;
+                  if (res.user.username) d.telegramUser.username = res.user.username;
+                  if (res.user.first_name) d.telegramUser.firstName = res.user.first_name;
+                });
+              }
+            }).catch(function () {});
+          } catch (e) {}
         }
 
         // Native Telegram BackButton
@@ -10698,7 +10762,7 @@
     }
 
     // Auto-register referral code from Telegram start_param
-    if (startParam && startParam.startsWith('ref_')) {
+    if (startParam && typeof startParam === 'string' && startParam.startsWith('ref_')) {
       var refCodeFromParam = startParam.slice(4).trim();
       var pid = getAppPlayerId(app);
       var tgId = (app.store && app.store.data && app.store.data.telegramUser && app.store.data.telegramUser.id)
@@ -10727,7 +10791,7 @@
       (startParam === 'launch_footy' || startParam === 'footy' ? 'footy' : null) ||
       (startParam === 'launch_hoops' || startParam === 'hoops' ? 'hoops' : null);
 
-    if (startParam && startParam.startsWith('room_')) {
+    if (startParam && typeof startParam === 'string' && startParam.startsWith('room_')) {
       privateroom = startParam.slice(5).trim();
     }
 

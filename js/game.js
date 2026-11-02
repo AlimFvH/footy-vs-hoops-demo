@@ -3478,7 +3478,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
 define("sim/football", ["require", "exports", "sim/base", "sim/math"], function (require, exports, base_js_2, math_js_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.FootballSim = exports.FB = void 0;
+    exports.FootballSim = exports.FB = exports.FOOTBALL_DIFFICULTY = void 0;
     exports.footballGoalCenters = footballGoalCenters;
     exports.FB = {
         W: 17,
@@ -3537,12 +3537,18 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         restartCountdown: 1.6,
         celebrate: 1.6,
     };
-    const KEEPER_REACH = { easy: 1.05, normal: 1.55, hard: 1.8 };
-    const KEEPER_MISJUDGE = { easy: 2.4, normal: 1.1, hard: 0.7 };
+    exports.FOOTBALL_DIFFICULTY = {
+        easy: { speed: 0.70, think: 0.48, shotErr: 0.65, tackleProb: 0.08, keeperSpeed: 2.0, canSprint: false, pressLead: 0.05, sprintDist: 9.0, tackleCooldownMin: 1.5, tackleRange: 2.2 },
+        normal: { speed: 0.88, think: 0.24, shotErr: 0.22, tackleProb: 0.22, keeperSpeed: 3.2, canSprint: true, pressLead: 0.12, sprintDist: 6.5, tackleCooldownMin: 1.2, tackleRange: 2.4 },
+        hard: { speed: 0.98, think: 0.14, shotErr: 0.09, tackleProb: 0.45, keeperSpeed: 4.2, canSprint: true, pressLead: 0.18, sprintDist: 4.5, tackleCooldownMin: 0.9, tackleRange: 2.6 }
+    };
+    const KEEPER_REACH = { easy: 1.05, normal: 1.35, hard: 1.65 };
+    const KEEPER_MISJUDGE = { easy: 2.4, normal: 1.4, hard: 0.85 };
     class FootballSim extends base_js_2.BaseSim {
         constructor(opts) {
             super(opts);
             this.mode = 'footy';
+            this.ai = exports.FOOTBALL_DIFFICULTY[this.difficulty] || exports.FOOTBALL_DIFFICULTY.normal;
             this.P = PARAMS;
             this.lastGoalTeam = null;
             this.goalLocked = false;
@@ -4193,19 +4199,23 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             if (owner) {
                 const presser = this.closestTo(mates, owner.x, owner.z);
                 if (presser === a) {
-                    const tx = owner.x + owner.vx * 0.22;
-                    const tz = owner.z + owner.vz * 0.22;
+                    const lead = (this.ai && typeof this.ai.pressLead === 'number') ? this.ai.pressLead : 0.22;
+                    const tx = owner.x + owner.vx * lead;
+                    const tz = owner.z + owner.vz * lead;
                     a.aiTargetX = tx;
                     a.aiTargetZ = tz;
                     const d = (0, math_js_5.dist2)(a.x, a.z, owner.x, owner.z);
-                    a.sprint = a.stamina > 25 && d > 4;
+                    const sprintDist = (this.ai && typeof this.ai.sprintDist === 'number') ? this.ai.sprintDist : 4.0;
+                    a.sprint = a.stamina > 25 && d > sprintDist;
                     const t = a.tackle;
-                    if (d < 2.7 && t.phase === 'idle' && t.cooldown <= 0 && a.aiTimer <= 0 && a.stamina > 22 && a.stun <= 0) {
+                    const tackleReach = (this.ai && typeof this.ai.tackleRange === 'number') ? this.ai.tackleRange : 2.7;
+                    if (d < tackleReach && t.phase === 'idle' && t.cooldown <= 0 && a.aiTimer <= 0 && a.stamina > 22 && a.stun <= 0) {
                         if (this.rng.chance(this.ai.tackleProb)) {
                             const power = this.rng.chance(0.28) ? this.rng.range(0.3, 0.8) : 0;
                             this.beginLunge(a, power, { x: owner.x - a.x, z: owner.z - a.z });
                         }
-                        a.aiTimer = 0.8 + this.rng.range(0, 0.5);
+                        const cdMin = (this.ai && typeof this.ai.tackleCooldownMin === 'number') ? this.ai.tackleCooldownMin : 0.8;
+                        a.aiTimer = cdMin + this.rng.range(0, 0.5);
                     }
                 }
                 else {
@@ -4219,9 +4229,11 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             const human = this.human;
             const humanCloser = a.team === 0 && (0, math_js_5.dist2)(human.x, human.z, b.x, b.z) + 1.5 < (0, math_js_5.dist2)(a.x, a.z, b.x, b.z);
             if (chaser === a && !humanCloser) {
-                a.aiTargetX = b.x + b.vx * 0.3;
-                a.aiTargetZ = b.z + b.vz * 0.3;
-                a.sprint = a.stamina > 20 && (0, math_js_5.dist2)(a.x, a.z, b.x, b.z) > 4;
+                const lead = (this.ai && typeof this.ai.pressLead === 'number') ? this.ai.pressLead : 0.3;
+                a.aiTargetX = b.x + b.vx * lead;
+                a.aiTargetZ = b.z + b.vz * lead;
+                const sprintDist = (this.ai && typeof this.ai.sprintDist === 'number') ? this.ai.sprintDist : 4.0;
+                a.sprint = a.stamina > 20 && (0, math_js_5.dist2)(a.x, a.z, b.x, b.z) > sprintDist;
                 const d = (0, math_js_5.dist2)(a.x, a.z, b.x, b.z);
                 if (d < 1.7 && a.aiTimer <= 0 && Math.abs(oppGoalZ - a.z) < 15 && this.rng.chance(0.5)) {
                     this.aiShoot(a);
@@ -13117,11 +13129,22 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 this.lastFpsT += dtReal;
                 if (this.lastFpsT >= 0.5) {
                     const fpsVal = Math.round(this.frames / this.lastFpsT);
-                    const rtt = (this.cfg && this.cfg.online && this.cfg.online.rtt) || 0;
-                    if (rtt > 0) {
-                        this.fps.textContent = `${fpsVal} fps · ${rtt}ms`;
+                    const frameMs = Math.max(0.1, (this.lastFpsT / this.frames) * 1000).toFixed(1);
+                    const on = (this.cfg && this.cfg.online) || null;
+                    if (on) {
+                        const rtt = typeof on.rtt === 'number' ? on.rtt : 0;
+                        const roleStr = on.role === 'host' ? 'Host' : 'Guest';
+                        const bufLen = (on.buf && on.buf.length) || 0;
+                        const jitterVal = on.jitter ? Math.round(on.jitter) : 0;
+                        let text = `${fpsVal} FPS (${frameMs}ms) · ${roleStr}`;
+                        if (rtt > 0) text += ` · Ping: ${rtt}ms`;
+                        if (on.role === 'guest') {
+                            text += ` · Buf: ${bufLen}`;
+                            if (jitterVal > 0) text += ` · ±${jitterVal}ms`;
+                        }
+                        this.fps.textContent = text;
                     } else if (showFps) {
-                        this.fps.textContent = `${fpsVal} fps`;
+                        this.fps.textContent = `${fpsVal} FPS (${frameMs}ms)`;
                     }
                     this.frames = 0;
                     this.lastFpsT = 0;
@@ -13374,7 +13397,10 @@ define("core/telegram", ["require", "exports"], function (require, exports) {
             s.src = src;
             s.async = true;
             s.onload = () => finish(true);
-            s.onerror = () => finish(false);
+            s.onerror = (e) => {
+                try { if (e && typeof e.preventDefault === 'function') e.preventDefault(); } catch (_) {}
+                finish(false);
+            };
             setTimeout(() => finish(false), timeoutMs);
             document.head.appendChild(s);
         });
@@ -13396,8 +13422,12 @@ define("core/telegram", ["require", "exports"], function (require, exports) {
             try {
                 if (!((_a = window.Telegram) === null || _a === void 0 ? void 0 : _a.WebApp)) {
                     const embedded = window.parent !== window || /tgWebApp/i.test(location.hash) || /tgWebApp/i.test(location.search);
-                    if (embedded)
-                        await loadScript('https://telegram.org/js/telegram-web-app.js', 1500);
+                    if (embedded) {
+                        const existingScript = typeof document !== 'undefined' && document.querySelector('script[src*="telegram-web-app.js"]');
+                        if (!existingScript) {
+                            await loadScript('https://telegram.org/js/telegram-web-app.js', 1500);
+                        }
+                    }
                 }
                 wa = (_c = (_b = window.Telegram) === null || _b === void 0 ? void 0 : _b.WebApp) !== null && _c !== void 0 ? _c : null;
                 if (!wa || (!wa.initData && wa.platform === 'unknown')) {
@@ -13777,6 +13807,7 @@ define("net/protocol", ["require", "exports"], function (require, exports) {
     exports.blend = blend;
     exports.mirrorEvent = mirrorEvent;
     exports.mirrorInput = mirrorInput;
+    exports.extrapolateSnapshot = extrapolateSnapshot;
     exports.PHASES = ['countdown', 'playing', 'celebrate', 'ended'];
     const TACKLE_PHASES = ['idle', 'charging', 'lunge', 'recover'];
     const AGENT_FIELDS = [
@@ -13864,21 +13895,64 @@ define("net/protocol", ["require", "exports"], function (require, exports) {
                     return row;
                 const o = row.slice();
                 const jump = Math.hypot(row[0] - ra[0], row[1] - ra[1]) > 4;
-                if (!jump)
+                if (!jump) {
                     for (let k = 0; k < 6; k++)
                         o[k] = lerp(ra[k], row[k]);
+                    o[6] = lerp(ra[6], row[6]);
+                    if (o.length > 12 && ra.length > 12) o[12] = lerp(ra[12], row[12]);
+                    if (o.length > 16 && ra.length > 16) o[16] = lerp(ra[16], row[16]);
+                    if (o.length > 18 && ra.length > 18) o[18] = lerp(ra[18], row[18]);
+                }
                 const fl = Math.hypot(o[4], o[5]);
                 if (fl > 1e-6) {
                     o[4] /= fl;
                     o[5] /= fl;
                 }
-                o[6] = lerp(ra[6], row[6]);
                 return o;
             }), b: b.b.slice() });
         const jumpB = Math.hypot(b.b[0] - a.b[0], b.b[2] - a.b[2]) > 4;
-        if (!jumpB)
-            for (let k = 0; k < 6; k++)
-                out.b[k] = lerp(a.b[k], b.b[k]);
+        if (!jumpB) {
+            const bLen = Math.min(a.b.length, b.b.length);
+            for (let k = 0; k < bLen; k++) {
+                if (k < 9) {
+                    out.b[k] = lerp(a.b[k], b.b[k]);
+                }
+            }
+        }
+        if (a.hn && b.hn) {
+            out.hn = [lerp(a.hn[0], b.hn[0]), lerp(a.hn[1], b.hn[1])];
+        }
+        return out;
+    }
+    function extrapolateSnapshot(s, dt) {
+        if (!s || dt <= 0) return s;
+        const dtSafe = Math.min(dt, 0.12);
+        const out = Object.assign(Object.assign({}, s), {
+            t: s.t + dtSafe,
+            a: s.a.map((row) => {
+                const o = row.slice();
+                o[0] += o[2] * dtSafe;
+                o[1] += o[3] * dtSafe;
+                if (o.length > 12) {
+                    const sp = Math.hypot(o[2], o[3]);
+                    o[12] += sp * dtSafe * 1.15;
+                }
+                if (o.length > 16 && o[16] > 0) {
+                    o[16] = Math.max(0, o[16] - dtSafe);
+                }
+                return o;
+            }),
+            b: s.b.slice()
+        });
+        const hasOwner = s.b.length > 9 ? s.b[9] >= 0 : false;
+        if (!hasOwner) {
+            out.b[0] += out.b[3] * dtSafe;
+            out.b[1] = Math.max(0.22, out.b[1] + out.b[4] * dtSafe - 9.8 * 0.5 * dtSafe * dtSafe);
+            out.b[2] += out.b[5] * dtSafe;
+        } else if (out.b.length > 8) {
+            out.b[8] += 6.0 * dtSafe;
+            out.b[1] = 0.30 + 0.95 * Math.abs(Math.sin(out.b[8]));
+        }
         return out;
     }
     function mirrorEvent(e, n) {
@@ -13911,7 +13985,7 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
     exports.OnlineSession = void 0;
     exports.sanitize = sanitize;
     const SNAP_INTERVAL = 1 / 30;
-    const INTERP_DELAY = 0.1;
+    const DEFAULT_INTERP_DELAY = 0.10;
     class OnlineSession {
         constructor(link, info) {
             this.link = link;
@@ -13929,6 +14003,9 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
             this.snapshotsRecv = 0;
             this.inputsRecv = 0;
             this.sim = null;
+            this.interpDelay = DEFAULT_INTERP_DELAY;
+            this.jitter = 15;
+            this.lastSnapRecvAt = 0;
             link.h.onClose = (reason) => this.lost(reason === 'local' ? null : 'lost');
             link.h.onMessage = (m, ch) => this.receive(m, ch);
         }
@@ -13985,21 +14062,36 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
             const n = this.buf.length;
             if (!n)
                 return;
+            // Adaptive jitter buffer: dynamically adapt target interpolation delay to network RTT & jitter
+            const rttSec = this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0 ? (this.link.rtt / 1000) : 0.04;
+            const jitterSec = this.jitter ? Math.min(0.06, this.jitter / 1000) : 0.015;
+            const targetDelay = Math.max(0.10, Math.min(0.18, 0.06 + rttSec * 0.45 + jitterSec * 1.5));
+            this.interpDelay += (targetDelay - this.interpDelay) * 0.04;
+
             const last = this.buf[n - 1];
-            const disp = Math.min(last.s.t + 0.05, last.s.t - INTERP_DELAY + (nowMs - last.at) / 1000);
-            let a = this.buf[0].s;
-            let b = this.buf[0].s;
-            for (let i = 0; i < n; i++) {
-                if (this.buf[i].s.t <= disp) {
-                    a = this.buf[i].s;
-                    b = this.buf[Math.min(n - 1, i + 1)].s;
+            const timeSinceRx = Math.max(0, (nowMs - last.at) / 1000);
+            const disp = last.s.t - this.interpDelay + timeSinceRx;
+
+            if (disp <= last.s.t) {
+                let a = this.buf[0].s;
+                let b = this.buf[0].s;
+                for (let i = 0; i < n; i++) {
+                    if (this.buf[i].s.t <= disp) {
+                        a = this.buf[i].s;
+                        b = this.buf[Math.min(n - 1, i + 1)].s;
+                    }
                 }
+                const f = b.t > a.t ? Math.max(0, Math.min(1, (disp - a.t) / (b.t - a.t))) : 1;
+                (0, protocol_js_1.applySnapshot)(sim, a === b ? a : (0, protocol_js_1.blend)(a, b, f), true);
+            } else {
+                // Buffer starvation / underrun: smoothly extrapolate forward along velocity vectors rather than freezing
+                const dtExtrap = disp - last.s.t;
+                const extrapolated = (0, protocol_js_1.extrapolateSnapshot)(last.s, dtExtrap);
+                (0, protocol_js_1.applySnapshot)(sim, extrapolated, true);
             }
-            const f = b.t > a.t ? Math.max(0, Math.min(1, (disp - a.t) / (b.t - a.t))) : 1;
-            (0, protocol_js_1.applySnapshot)(sim, a === b ? a : (0, protocol_js_1.blend)(a, b, f), true);
             while (this.evq.length && this.evq[0].t <= disp + 0.02)
                 sim.emit((0, protocol_js_1.mirrorEvent)(this.evq.shift().e, sim.agents.length));
-            while (this.buf.length > 14)
+            while (this.buf.length > 30)
                 this.buf.shift();
         }
         receive(m, _ch) {
@@ -14026,7 +14118,14 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                     if (!s || !Array.isArray(s.a) || (last && s.t <= last.s.t))
                         break;
                     this.snapshotsRecv++;
-                    this.buf.push({ s, at: performance.now() });
+                    const now = performance.now();
+                    if (this.lastSnapRecvAt) {
+                        const interval = now - this.lastSnapRecvAt;
+                        const diff = Math.abs(interval - 33.33);
+                        this.jitter = this.jitter ? (this.jitter * 0.92 + diff * 0.08) : diff;
+                    }
+                    this.lastSnapRecvAt = now;
+                    this.buf.push({ s, at: now });
                     break;
                 }
                 case 'ev': {

@@ -124,3 +124,23 @@ CREATE TABLE IF NOT EXISTS payments_ledger (
     currency VARCHAR(16) NOT NULL,
     timestamp BIGINT NOT NULL
 );
+
+-- 10. Telegram User Analytics & Activity Tracking
+CREATE TABLE IF NOT EXISTS telegram_users (
+    telegram_id BIGINT PRIMARY KEY,
+    username VARCHAR(128),
+    first_name VARCHAR(128),
+    language_code VARCHAR(16),
+    preferred_language VARCHAR(16),
+    player_id VARCHAR(64),
+    first_seen_at BIGINT NOT NULL,
+    last_seen_at BIGINT NOT NULL,
+    has_bot_started BOOLEAN NOT NULL DEFAULT FALSE,
+    bot_started_at BIGINT,
+    has_miniapp_opened BOOLEAN NOT NULL DEFAULT FALSE,
+    miniapp_opened_at BIGINT,
+    miniapp_launch_count INTEGER NOT NULL DEFAULT 0,
+    last_platform VARCHAR(32)
+);
+CREATE INDEX IF NOT EXISTS idx_tg_users_last_seen ON telegram_users(last_seen_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tg_users_first_seen ON telegram_users(first_seen_at DESC);

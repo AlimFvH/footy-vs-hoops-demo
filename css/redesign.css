@@ -572,7 +572,7 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar .fvh-hero-real-img {
-  max-height: clamp(140px, 20vh, 180px) !important;
+  max-height: clamp(170px, 24vh, 215px) !important;
   width: auto !important;
   object-fit: contain !important;
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.85)) !important;
@@ -1402,8 +1402,8 @@ html.is-telegram {
 
 .fvh-wardrobe-avatar {
   width: 100% !important;
-  max-width: 260px !important;
-  height: clamp(170px, 24vh, 210px) !important;
+  max-width: 280px !important;
+  height: clamp(205px, 28vh, 250px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1412,7 +1412,7 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar svg {
-  max-height: clamp(140px, 20vh, 180px) !important;
+  max-height: clamp(170px, 24vh, 215px) !important;
   width: auto !important;
   filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.7));
 }
@@ -3310,16 +3310,16 @@ canvas {
     min-width: 0 !important;
   }
   .fvh-wardrobe-avatar {
-    height: clamp(150px, 20vh, 185px) !important;
-    max-width: 220px !important;
+    height: clamp(175px, 24vh, 215px) !important;
+    max-width: 250px !important;
     width: 100% !important;
     margin: 0 auto !important;
   }
   .fvh-wardrobe-avatar svg {
-    max-height: clamp(130px, 17vh, 160px) !important;
+    max-height: clamp(150px, 21vh, 185px) !important;
   }
   .fvh-wardrobe-avatar .fvh-hero-real-img {
-    max-height: clamp(120px, 16vh, 150px) !important;
+    max-height: clamp(145px, 20vh, 180px) !important;
   }
   .fvh-equipped-list {
     margin: 6px 0 2px !important;
@@ -3966,7 +3966,7 @@ html, body {
     gap: 12px !important;
   }
   .fvh-wardrobe-preview {
-    min-height: 220px !important;
+    min-height: 240px !important;
   }
 }
 

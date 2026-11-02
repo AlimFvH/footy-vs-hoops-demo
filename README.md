@@ -16,7 +16,7 @@
 * ⚽ **$FOOTY (Team Football)** — Led by Striker #10
 * 🏀 **$HOOPS (Team Basketball)** — Led by Forward #23
 
-Unlike conventional sports games focused on single teams or athletes, **FOOTY vs HOOPS puts two entire sporting cultures against each other**. Players choose their allegiance permanently, compete in fast-paced 1v1 arcade matches, customize their athlete with 68 collectible items across 10 detailed 3D arenas, and participate in community rivalry metrics.
+Unlike conventional sports games focused on single teams or athletes, **FOOTY vs HOOPS puts two entire sporting cultures against each other**. Players choose their allegiance permanently, compete in fast-paced 1v1 arcade matches against AI across 2 standard arenas, customize their athlete with authentic kits and balls, and participate in community rivalry metrics.
 
 For complete project documentation, tokenomics vision, and fundraising roadmap, see **[PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md)**.
 
@@ -28,11 +28,9 @@ For complete project documentation, tokenomics vision, and fundraising roadmap, 
 | :--- | :--- |
 | **⚽ Football Mode** | Realistic 3D arcade soccer with dynamic shooting, turbo sprint, stamina physics, and sudden death overtimes. |
 | **🏀 Basketball Mode** | High-energy hardwood court action with jump shots, dunks, backboard rebound physics, and clutch overtime play. |
-| **⚡ 1v1 Online Multiplayer** | Real-time WebRTC P2P netcode backed by RFC6455 WebSockets and global STUN signaling for low-latency matches. |
-| **🔑 Private Rooms** | 6-digit room code system allowing players to instantly challenge friends worldwide. |
-| **🏟️ 10 Scenic Arenas** | Handcrafted world venues (Coastal Sunset Court, Redwood Forest, Orbital Space Colosseum, Neo Tokyo Megacity, etc.). |
-| **👕 Wardrobe & Items** | 68 items: official jerseys, balls, stadium courts, celebrations, visual particle trails, and avatar frames. |
-| **🎟️ Dual-Track Battle Pass** | 30-level seasonal progression with parallel Free and VIP reward tracks. |
+| **🤖 1v1 Arcade vs AI** | Fast-paced 1v1 matches with responsive AI bots across football and basketball. |
+| **🏟️ 2 Standard Arenas** | Handcrafted venues: Classic Grass Pitch (Football) & Street Court (Basketball). |
+| **👕 Locker Room & Wardrobe** | Curated catalog of authentic kits, jerseys, and distinctive match balls. |
 | **⭐ Telegram Stars Integration** | Native digital purchasing with XTR Stars via official Telegram Bot API webhooks. |
 | **💎 Web3 / TON Vision** | Non-custodial TON wallet linking for future ecosystem airdrop qualification. |
 

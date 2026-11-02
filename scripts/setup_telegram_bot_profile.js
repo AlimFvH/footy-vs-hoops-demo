@@ -1,24 +1,139 @@
 const https = require('https');
 
-const rawToken = process.env.TELEGRAM_BOT_TOKEN;
-const BOT_TOKEN = typeof rawToken === 'string' ? rawToken.trim() : '';
-if (!BOT_TOKEN) {
-  console.error('Error: TELEGRAM_BOT_TOKEN environment variable is required.');
-  process.exit(1);
-}
-if (!/^[0-9]+:[A-Za-z0-9_-]+$/.test(BOT_TOKEN)) {
-  console.error('Error: TELEGRAM_BOT_TOKEN has an invalid format. Expected format: <id>:<secret_hash>');
-  process.exit(1);
-}
-const MINI_APP_URL = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
+const PROFILE_TEXTS = {
+  name: {
+    default: 'FOOTY vs HOOPS ⚽🏀',
+    en: 'FOOTY vs HOOPS ⚽🏀',
+    ru: 'FOOTY vs HOOPS ⚽🏀'
+  },
+  shortDescription: {
+    default: 'A fast-paced 1v1 arcade sports game on Telegram! Play Football & Basketball against AI in 2 arenas. ⚽🏀',
+    en: 'A fast-paced 1v1 arcade sports game on Telegram! Play Football & Basketball against AI in 2 arenas. ⚽🏀',
+    ru: 'Быстрая 1v1 спортивная аркада в Telegram! Футбол и баскетбол против ИИ на 2 стандартных аренах. ⚽🏀'
+  },
+  description: {
+    default:
+`⚽🏀 Welcome to FOOTY vs HOOPS!
 
-function callApi(method, body = {}) {
+A fast-paced 1v1 arcade sports game right inside Telegram!
+
+⚡ Game Features:
+• ⚽ Football mode
+• 🏀 Basketball mode
+• 🤖 1v1 arcade gameplay against AI
+• 🏟️ 2 standard arenas (Classic Pitch & Street Court)
+• 👕 Locker Room: Authentic kits & balls
+
+Choose your sport and jump into the game!
+
+Tap "Play" below to kick off!`,
+    en:
+`⚽🏀 Welcome to FOOTY vs HOOPS!
+
+A fast-paced 1v1 arcade sports game right inside Telegram!
+
+⚡ Game Features:
+• ⚽ Football mode
+• 🏀 Basketball mode
+• 🤖 1v1 arcade gameplay against AI
+• 🏟️ 2 standard arenas (Classic Pitch & Street Court)
+• 👕 Locker Room: Authentic kits & balls
+
+Choose your sport and jump into the game!
+
+Tap "Play" below to kick off!`,
+    ru:
+`⚽🏀 Добро пожаловать в FOOTY vs HOOPS!
+
+Быстрая 1v1 спортивная аркада прямо в Telegram!
+
+⚡ Текущие возможности игры:
+• ⚽ Режим футбола
+• 🏀 Режим баскетбола
+• 🤖 1v1 аркадные матчи против ИИ
+• 🏟️ 2 стандартные арены
+• 👕 Гардероб с формой и мячами
+
+Выбирайте спорт и выходите на поле!
+
+Нажмите «Играть» ниже, чтобы начать!`
+  },
+  commands: {
+    default: [
+      { command: 'play', description: '⚽ Play FOOTY vs HOOPS' },
+      { command: 'start', description: '🚀 Main menu & launch game' },
+      { command: 'help', description: 'ℹ️ Game rules & how to play' }
+    ],
+    en: [
+      { command: 'play', description: '⚽ Play FOOTY vs HOOPS' },
+      { command: 'start', description: '🚀 Main menu & launch game' },
+      { command: 'help', description: 'ℹ️ Game rules & how to play' }
+    ],
+    ru: [
+      { command: 'play', description: '⚽ Играть в FOOTY vs HOOPS' },
+      { command: 'start', description: '🚀 Главное меню и запуск игры' },
+      { command: 'help', description: 'ℹ️ Как играть и возможности игры' }
+    ]
+  }
+};
+
+function sanitizeSecrets(text) {
+  if (typeof text !== 'string') text = String(text || '');
+  return text.replace(/[0-9]+:[A-Za-z0-9_-]+/g, '[REDACTED_TOKEN]');
+}
+
+function validateBotToken(token) {
+  if (typeof token !== 'string' || !token.trim()) {
+    throw new Error('TELEGRAM_BOT_TOKEN environment variable is required.');
+  }
+  const clean = token.trim();
+  if (!/^[0-9]+:[A-Za-z0-9_-]+$/.test(clean)) {
+    throw new Error('TELEGRAM_BOT_TOKEN has an invalid format. Expected format: <id>:<secret_hash>');
+  }
+  return clean;
+}
+
+function buildApiPlan(miniAppUrl = 'https://footy-vs-hoops.onrender.com/') {
+  return [
+    { step: 1, method: 'getMe', params: {}, description: 'Bot identity check' },
+    { step: 2, method: 'setMyName', params: { name: PROFILE_TEXTS.name.default }, description: 'Set bot name (default)' },
+    { step: 2, method: 'setMyName', params: { name: PROFILE_TEXTS.name.en, language_code: 'en' }, description: 'Set bot name (en)' },
+    { step: 2, method: 'setMyName', params: { name: PROFILE_TEXTS.name.ru, language_code: 'ru' }, description: 'Set bot name (ru)' },
+    { step: 3, method: 'setMyShortDescription', params: { short_description: PROFILE_TEXTS.shortDescription.default }, description: 'Set short description (default)' },
+    { step: 3, method: 'setMyShortDescription', params: { short_description: PROFILE_TEXTS.shortDescription.en, language_code: 'en' }, description: 'Set short description (en)' },
+    { step: 3, method: 'setMyShortDescription', params: { short_description: PROFILE_TEXTS.shortDescription.ru, language_code: 'ru' }, description: 'Set short description (ru)' },
+    { step: 4, method: 'setMyDescription', params: { description: PROFILE_TEXTS.description.default }, description: 'Set description (default)' },
+    { step: 4, method: 'setMyDescription', params: { description: PROFILE_TEXTS.description.en, language_code: 'en' }, description: 'Set description (en)' },
+    { step: 4, method: 'setMyDescription', params: { description: PROFILE_TEXTS.description.ru, language_code: 'ru' }, description: 'Set description (ru)' },
+    {
+      step: 5,
+      method: 'setChatMenuButton',
+      params: {
+        menu_button: {
+          type: 'web_app',
+          text: 'Play ⚽🏀',
+          web_app: { url: miniAppUrl }
+        }
+      },
+      description: 'Configure Mini App launch menu button'
+    },
+    { step: 6, method: 'setMyCommands', params: { commands: PROFILE_TEXTS.commands.default }, description: 'Set commands (default)' },
+    { step: 6, method: 'setMyCommands', params: { commands: PROFILE_TEXTS.commands.en, language_code: 'en' }, description: 'Set commands (en)' },
+    { step: 6, method: 'setMyCommands', params: { commands: PROFILE_TEXTS.commands.ru, language_code: 'ru' }, description: 'Set commands (ru)' },
+    { step: 7, method: 'getMyName', params: {}, description: 'Verify configured name' },
+    { step: 7, method: 'getMyShortDescription', params: {}, description: 'Verify configured short description' },
+    { step: 7, method: 'getMyDescription', params: {}, description: 'Verify configured description' },
+    { step: 7, method: 'getChatMenuButton', params: {}, description: 'Verify configured menu button' }
+  ];
+}
+
+function callApi(method, body = {}, botToken = '') {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify(body);
     const req = https.request({
       hostname: 'api.telegram.org',
       port: 443,
-      path: `/bot${BOT_TOKEN}/${method}`,
+      path: `/bot${botToken}/${method}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,113 +161,202 @@ function callApi(method, body = {}) {
   });
 }
 
-async function run() {
+async function run(options = {}) {
+  const isDryRun = Boolean(options.dryRun || process.env.FVH_DRY_RUN === '1');
+  const miniAppUrl = options.miniAppUrl || process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
+  const throwOnError = options.throwOnError !== false;
+  
+  let botToken = '';
+  if (!isDryRun) {
+    const rawToken = options.botToken || process.env.TELEGRAM_BOT_TOKEN;
+    botToken = validateBotToken(rawToken);
+  } else {
+    botToken = options.botToken || process.env.TELEGRAM_BOT_TOKEN || '000000000:DRY_RUN_MOCK_TOKEN';
+  }
+
+  const dryRunLog = [];
+  const executeApi = async (method, params = {}) => {
+    if (isDryRun) {
+      dryRunLog.push({ method, params });
+      if (options.mockThrowMethod === method) {
+        throw new Error(`Simulated network failure on ${method}`);
+      }
+      if (options.mockFailureMethod === method) {
+        return { ok: false, error_code: 400, description: `Bad Request: simulated failure on ${method}` };
+      }
+      if (method === 'getMe') {
+        return { ok: true, result: { id: 123456789, is_bot: true, first_name: 'FOOTY vs HOOPS', username: 'footy_vs_hoops_bot' } };
+      }
+      if (method === 'getMyName') {
+        return { ok: true, result: { name: PROFILE_TEXTS.name.default } };
+      }
+      if (method === 'getMyShortDescription') {
+        return { ok: true, result: { short_description: PROFILE_TEXTS.shortDescription.default } };
+      }
+      if (method === 'getMyDescription') {
+        return { ok: true, result: { description: PROFILE_TEXTS.description.default } };
+      }
+      if (method === 'getChatMenuButton') {
+        return { ok: true, result: { type: 'web_app', text: 'Play ⚽🏀', web_app: { url: miniAppUrl } } };
+      }
+      return { ok: true, result: true };
+    }
+    return callApi(method, params, botToken);
+  };
+
+  const maskedToken = botToken.length > 15 ? (botToken.slice(0, 10) + '...' + botToken.slice(-5)) : '***';
   console.log('=== Configuring Telegram Bot Profile for FOOTY vs HOOPS ===');
-  console.log('Bot Token:', BOT_TOKEN.slice(0, 10) + '...' + BOT_TOKEN.slice(-5));
-  console.log('Mini App URL:', MINI_APP_URL);
+  console.log('Mode:', isDryRun ? 'DRY-RUN (No Telegram Bot API network requests)' : 'LIVE EXECUTION');
+  console.log('Bot Token:', maskedToken);
+  console.log('Mini App URL:', miniAppUrl);
 
-  // 1. Verify Bot Token and info
-  const me = await callApi('getMe');
-  console.log('\n[1/7] Bot Identity (@' + (me.result ? me.result.username : 'unknown') + '):', me.ok ? 'OK' : me);
+  const plan = buildApiPlan(miniAppUrl);
+  const results = {
+    name: {},
+    shortDescription: {},
+    description: {},
+    menuButton: null,
+    commands: {},
+    verification: {}
+  };
 
-  // 2. Set Bot Name (Default, RU, EN)
-  const nameDefault = await callApi('setMyName', { name: 'FOOTY vs HOOPS ⚽🏀' });
-  const nameRu = await callApi('setMyName', { name: 'FOOTY vs HOOPS ⚽🏀', language_code: 'ru' });
-  const nameEn = await callApi('setMyName', { name: 'FOOTY vs HOOPS ⚽🏀', language_code: 'en' });
-  console.log('[2/7] setMyName:', { default: nameDefault.ok, ru: nameRu.ok, en: nameEn.ok });
+  let resShortRu = null;
+  let resShortEn = null;
+  let resShortDefault = null;
 
-  // 3. Set Short Description (Preview card & sharing, max 120 chars)
-  const shortRu = 'Футбольно-баскетбольная 1v1 аркада в Telegram с бустами, гардеробом и онлайн-матчами с друзьями! ⚽🏀';
-  const shortEn = '1v1 Football vs Basketball arcade game in Telegram with boosts, custom gear & online multiplayer! ⚽🏀';
+  for (let i = 0; i < plan.length; i++) {
+    const item = plan[i];
+    let res;
+    try {
+      res = await executeApi(item.method, item.params);
+    } catch (err) {
+      const sanitizedErrMsg = sanitizeSecrets(err && err.message ? err.message : String(err));
+      console.error(`\n❌ Step [${item.step}/7] ${item.method} THREW ERROR: ${sanitizedErrMsg}`);
+      if (throwOnError) {
+        const failureErr = new Error(`Telegram API call ${item.method} failed at step [${item.step}/7]: ${sanitizedErrMsg}`);
+        failureErr.method = item.method;
+        failureErr.step = item.step;
+        failureErr.details = sanitizedErrMsg;
+        throw failureErr;
+      }
+      return {
+        ok: false,
+        failedMethod: item.method,
+        failedStep: item.step,
+        error: sanitizedErrMsg,
+        dryRun: isDryRun,
+        recordedCalls: dryRunLog,
+        results
+      };
+    }
 
-  const resShortDefault = await callApi('setMyShortDescription', { short_description: shortRu });
-  const resShortRu = await callApi('setMyShortDescription', { short_description: shortRu, language_code: 'ru' });
-  const resShortEn = await callApi('setMyShortDescription', { short_description: shortEn, language_code: 'en' });
-  console.log('[3/7] setMyShortDescription:', { default: resShortDefault.ok, ru: resShortRu.ok, en: resShortEn.ok });
+    if (!res || res.ok !== true) {
+      const safeReason = sanitizeSecrets(res && (res.description || res.error) ? (res.description || res.error) : 'API returned ok=false');
+      console.error(`\n❌ Step [${item.step}/7] ${item.method} FAILED: ${safeReason}`);
+      if (throwOnError) {
+        const failureErr = new Error(`Telegram API call ${item.method} failed at step [${item.step}/7]: ${safeReason}`);
+        failureErr.method = item.method;
+        failureErr.step = item.step;
+        failureErr.details = safeReason;
+        throw failureErr;
+      }
+      return {
+        ok: false,
+        failedMethod: item.method,
+        failedStep: item.step,
+        error: safeReason,
+        dryRun: isDryRun,
+        recordedCalls: dryRunLog,
+        results
+      };
+    }
 
-  // 4. Set Description (Full introduction screen before clicking Start, max 512 chars)
-  const descRu = 
-`⚽🏀 Добро пожаловать в FOOTY vs HOOPS!
-
-FOOTY vs HOOPS — захватывающая спортивная 1v1 аркада прямо в Telegram!
-
-⚡ Особенности игры:
-• ⚽ Footy & 🏀 Hoops — два соревновательных режима
-• 🎮 Реальный онлайн 1v1 мультиплеер — матчи с друзьями
-• 🚀 8 тактических бустов (Супер-удар, Овердрайв, Магнит, Щит)
-• 👕 Гардероб: 68 предметов формы, скинов и кастомизации
-• 🏆 10 уникальных 3D стадионов и интерактивных арен
-• 🎟 Battle Pass, квесты и награды
-
-Нажмите «Играть» или кнопку меню ниже, чтобы начать матч!`;
-
-  const descEn = 
-`⚽🏀 Welcome to FOOTY vs HOOPS!
-
-FOOTY vs HOOPS is a fast-paced 1v1 sports arcade game right inside Telegram!
-
-⚡ Game Features:
-• ⚽ Footy & 🏀 Hoops — two action-packed sport modes
-• 🎮 Real-time 1v1 online multiplayer — challenge friends
-• 🚀 8 tactical boosts (Super Strike, Overdrive, Magnet, Shield)
-• 👕 Locker Room: 68 cosmetic uniforms, skins, and gear
-• 🏆 10 detailed 3D stadiums & interactive arena worlds
-• 🎟 Battle Pass, daily quests, and rewards
-
-Tap "Play" or use the menu button below to kick off!`;
-
-  const resDescDefault = await callApi('setMyDescription', { description: descRu });
-  const resDescRu = await callApi('setMyDescription', { description: descRu, language_code: 'ru' });
-  const resDescEn = await callApi('setMyDescription', { description: descEn, language_code: 'en' });
-  console.log('[4/7] setMyDescription:', { default: resDescDefault.ok, ru: resDescRu.ok, en: resDescEn.ok });
-
-  // 5. Set Menu Button (Bottom left button next to text input)
-  const menuRes = await callApi('setChatMenuButton', {
-    menu_button: {
-      type: 'web_app',
-      text: 'Играть ⚽🏀',
-      web_app: {
-        url: MINI_APP_URL
+    // Populate structured result mapping
+    const langKey = item.params.language_code || 'default';
+    if (item.method === 'getMe') {
+      const botUsername = (res.result && res.result.username) ? res.result.username : 'unknown';
+      console.log('\n[1/7] Bot Identity (@' + botUsername + '): OK');
+      results.me = res;
+    } else if (item.method === 'setMyName') {
+      results.name[langKey] = res;
+      if (langKey === 'ru') {
+        console.log('[2/7] setMyName:', {
+          default: Boolean(results.name.default && results.name.default.ok),
+          en: Boolean(results.name.en && results.name.en.ok),
+          ru: Boolean(results.name.ru && results.name.ru.ok)
+        });
+      }
+    } else if (item.method === 'setMyShortDescription') {
+      results.shortDescription[langKey] = res;
+      if (langKey === 'default') resShortDefault = res;
+      if (langKey === 'en') resShortEn = res;
+      if (langKey === 'ru') {
+        resShortRu = res;
+        console.log('[3/7] setMyShortDescription:', {
+          default: Boolean(resShortDefault && resShortDefault.ok),
+          en: Boolean(resShortEn && resShortEn.ok),
+          ru: Boolean(resShortRu && resShortRu.ok)
+        });
+      }
+    } else if (item.method === 'setMyDescription') {
+      results.description[langKey] = res;
+      if (langKey === 'ru') {
+        console.log('[4/7] setMyDescription:', {
+          default: Boolean(results.description.default && results.description.default.ok),
+          en: Boolean(results.description.en && results.description.en.ok),
+          ru: Boolean(results.description.ru && results.description.ru.ok)
+        });
+      }
+    } else if (item.method === 'setChatMenuButton') {
+      results.menuButton = res;
+      console.log('[5/7] setChatMenuButton: OK');
+    } else if (item.method === 'setMyCommands') {
+      results.commands[langKey] = res;
+      if (langKey === 'ru') {
+        console.log('[6/7] setMyCommands:', {
+          default: Boolean(results.commands.default && results.commands.default.ok),
+          en: Boolean(results.commands.en && results.commands.en.ok),
+          ru: Boolean(results.commands.ru && results.commands.ru.ok)
+        });
+      }
+    } else if (item.method.startsWith('get')) {
+      const propKey = item.method.replace(/^get(Chat)?/, '').toLowerCase();
+      results.verification[propKey] = res;
+      if (item.method === 'getChatMenuButton') {
+        console.log('\n[7/7] === Configured Profile Verification ===');
+        console.log('Configured Name:', results.verification.myname ? results.verification.myname.result : undefined);
+        console.log('Configured Short Description:', results.verification.myshortdescription ? results.verification.myshortdescription.result : undefined);
+        const descLen = (results.verification.mydescription && results.verification.mydescription.result && typeof results.verification.mydescription.result.description === 'string')
+          ? results.verification.mydescription.result.description.length
+          : 0;
+        console.log('Configured Description length:', descLen);
+        console.log('Configured Menu Button:', results.verification.menubutton ? results.verification.menubutton.result : undefined);
       }
     }
-  });
-  console.log('[5/7] setChatMenuButton:', menuRes.ok ? 'OK' : menuRes);
-
-  // 6. Set Commands
-  const commandsRu = [
-    { command: 'play', description: '⚽ Играть в FOOTY vs HOOPS' },
-    { command: 'start', description: '🚀 Главное меню и запуск игры' },
-    { command: 'help', description: 'ℹ️ Как играть и возможности игры' }
-  ];
-  const commandsEn = [
-    { command: 'play', description: '⚽ Play FOOTY vs HOOPS' },
-    { command: 'start', description: '🚀 Main menu & launch game' },
-    { command: 'help', description: 'ℹ️ Game rules & how to play' }
-  ];
-
-  const resCmdDefault = await callApi('setMyCommands', { commands: commandsRu });
-  const resCmdRu = await callApi('setMyCommands', { commands: commandsRu, language_code: 'ru' });
-  const resCmdEn = await callApi('setMyCommands', { commands: commandsEn, language_code: 'en' });
-  console.log('[6/7] setMyCommands:', { default: resCmdDefault.ok, ru: resCmdRu.ok, en: resCmdEn.ok });
-
-  // 7. Verification of all profile components
-  console.log('\n[7/7] === Fetching configured profile ===');
-  const finalName = await callApi('getMyName', { language_code: 'ru' });
-  const finalShort = await callApi('getMyShortDescription', { language_code: 'ru' });
-  const finalDesc = await callApi('getMyDescription', { language_code: 'ru' });
-  const finalMenu = await callApi('getChatMenuButton');
-  const finalCmds = await callApi('getMyCommands', { language_code: 'ru' });
-
-  console.log('Configured Name:', finalName.result);
-  console.log('Configured Short Description:', finalShort.result);
-  console.log('Configured Description length:', finalDesc.result ? finalDesc.result.description.length : 0);
-  console.log('Configured Menu Button:', finalMenu.result);
-  console.log('Configured Commands:', finalCmds.result);
+  }
 
   console.log('\n✅ Profile setup completed successfully!');
+
+  return {
+    ok: true,
+    dryRun: isDryRun,
+    recordedCalls: dryRunLog,
+    results
+  };
 }
 
-run().catch(err => {
-  console.error('Failed to configure bot profile:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  run().catch(err => {
+    console.error('Failed to configure bot profile:', sanitizeSecrets(err.message || err));
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  PROFILE_TEXTS,
+  validateBotToken,
+  buildApiPlan,
+  callApi,
+  sanitizeSecrets,
+  run
+};

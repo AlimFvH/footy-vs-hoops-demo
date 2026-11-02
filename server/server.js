@@ -24,7 +24,8 @@ let state = {
   paymentsLedger: [], // array of { id, type: 'stars'|'ton', invoiceId, productId, playerId, amount, currency, timestamp }
   players: {}, // playerId -> authoritative player profile and balance
   economyLedger: [], // array of { id, txId, playerId, type, deltaCoins, deltaXp, balanceAfter, reason, itemId, meta, timestamp }
-  idempotencyKeys: {} // key -> { result, timestamp }
+  idempotencyKeys: {}, // key -> { result, timestamp }
+  telegramUsers: {} // telegramId -> { telegramId, username, firstName, languageCode, preferredLanguage, playerId, firstSeenAt, lastSeenAt, hasBotStarted, botStartedAt, hasMiniAppOpened, miniappOpenedAt, miniappLaunchCount, lastPlatform }
 };
 
 const TON_RECIPIENT_ADDRESS = process.env.TON_RECIPIENT_ADDRESS || 'EQBvW8Z5huBkMJYdn30BlgG3mM2N05hpVNeSlfG2L89xAOn3';
@@ -501,6 +502,7 @@ if (fs.existsSync(DATA_FILE)) {
     if (parsed.economyLedger) state.economyLedger = parsed.economyLedger;
     if (parsed.idempotencyKeys) state.idempotencyKeys = parsed.idempotencyKeys;
     if (parsed.completedMatches) state.completedMatches = parsed.completedMatches;
+    if (parsed.telegramUsers) state.telegramUsers = parsed.telegramUsers;
   } catch (e) {
     console.warn('Failed to load server/data.json', e);
   }
@@ -517,7 +519,8 @@ function getSerializableState() {
     players: state.players,
     economyLedger: state.economyLedger,
     idempotencyKeys: state.idempotencyKeys,
-    completedMatches: state.completedMatches
+    completedMatches: state.completedMatches,
+    telegramUsers: state.telegramUsers || {}
   };
 }
 
@@ -581,6 +584,10 @@ storage.init().then(async () => {
         }
         if (Array.isArray(dbState.paymentsLedger) && dbState.paymentsLedger.length > 0) {
           state.paymentsLedger = dbState.paymentsLedger;
+        }
+        if (dbState.telegramUsers && Object.keys(dbState.telegramUsers).length > 0) {
+          if (!state.telegramUsers) state.telegramUsers = {};
+          Object.assign(state.telegramUsers, dbState.telegramUsers);
         }
         console.log(`[STORAGE] Authoritative state hydrated from PostgreSQL: ${Object.keys(state.players).length} athletes loaded.`);
       } else if (Object.keys(state.players).length > 0) {
@@ -649,6 +656,601 @@ setInterval(() => {
   });
 }, 30000);
 
+// ==========================================
+// Telegram User Statistics & Tracking
+// ==========================================
+function isRealUserIdentifier(id, username = null) {
+  if (!id) return false;
+  const strId = String(id).trim();
+  const strName = username ? String(username).trim() : '';
+
+  // Exclude AI bot, automated test, mock, or service profiles
+  if (/^(bot|test|mock|service|system|ai|benchmark|fake|anon|dummy)[_-]/i.test(strId)) return false;
+  if (/^(bot|test|mock|service|system|ai|benchmark|fake|dummy)[_-]/i.test(strName)) return false;
+  if (['test', 'bot', 'undefined', 'null', 'unknown', 'service', 'admin', 'anonymous'].includes(strId.toLowerCase())) return false;
+  if (strName && ['bot', 'test', 'service', 'system'].includes(strName.toLowerCase())) return false;
+
+  return true;
+}
+
+function isVerifiedTelegramUser(u) {
+  if (!u) return false;
+  const id = Number(u.telegramId);
+  if (!Number.isInteger(id) || id <= 0 || id >= 1e15) return false;
+  if (!u.hasBotStarted && !u.hasMiniAppOpened) return false;
+  if (u.accountType && ['test', 'bot', 'service', 'mock', 'ai'].includes(String(u.accountType).toLowerCase())) return false;
+  return isRealUserIdentifier(id, u.username);
+}
+
+function isTrustedRealPlayer(p, pId) {
+  if (!p) return false;
+  if (p.isBot === true) return false;
+  if (p.accountType && ['bot', 'test', 'service', 'mock', 'ai'].includes(String(p.accountType).toLowerCase())) return false;
+
+  // Explicit trusted account type or verified Telegram identity
+  if (p.accountType === 'telegram' || p.verifiedTelegram === true) {
+    return isRealUserIdentifier(pId, p.playerName);
+  }
+  if (p.telegramId) {
+    const tgNum = Number(p.telegramId);
+    if (Number.isInteger(tgNum) && tgNum > 0 && tgNum < 1e15) {
+      return isRealUserIdentifier(pId, p.playerName);
+    }
+  }
+  // Standalone canonical client format (fvh_...) with non-bot attributes
+  if (String(pId).startsWith('fvh_') && isRealUserIdentifier(pId, p.playerName)) {
+    return true;
+  }
+  return false;
+}
+
+function getUniqueRealPlayersCount() {
+  const uniqueRealAthletes = new Set();
+
+  // Source 1: Verified Telegram identities (HMAC validated or Bot API webhook verified)
+  if (state.telegramUsers && typeof state.telegramUsers === 'object') {
+    for (const u of Object.values(state.telegramUsers)) {
+      if (isVerifiedTelegramUser(u)) {
+        uniqueRealAthletes.add(`tg_${u.telegramId}`);
+      }
+    }
+  }
+
+  // Source 2: Authoritative players with trusted account type or verified Telegram identity
+  if (state.players && typeof state.players === 'object') {
+    for (const [pId, p] of Object.entries(state.players)) {
+      if (!isTrustedRealPlayer(p, pId)) continue;
+      // Deduplicate: if linked to a telegramId, key by `tg_<id>`, else canonical `pId`
+      const linkedTg = p.telegramId || p.telegramUserId;
+      if (linkedTg && Number(linkedTg) > 0) {
+        uniqueRealAthletes.add(`tg_${linkedTg}`);
+      } else {
+        uniqueRealAthletes.add(String(pId));
+      }
+    }
+  }
+
+  return uniqueRealAthletes.size;
+}
+
+function trackBotUser(fromUser) {
+  if (!fromUser || !fromUser.id) return;
+  const tgId = String(fromUser.id);
+  const now = Date.now();
+  if (!state.telegramUsers) state.telegramUsers = {};
+  const existing = state.telegramUsers[tgId];
+  if (existing) {
+    existing.lastSeenAt = now;
+    existing.hasBotStarted = true;
+    if (!existing.botStartedAt) existing.botStartedAt = now;
+    if (fromUser.username) existing.username = fromUser.username;
+    if (fromUser.first_name) existing.firstName = fromUser.first_name;
+    if (fromUser.language_code) existing.languageCode = String(fromUser.language_code).slice(0, 16);
+    existing.accountType = 'telegram';
+  } else {
+    state.telegramUsers[tgId] = {
+      telegramId: Number(fromUser.id),
+      username: fromUser.username || null,
+      firstName: fromUser.first_name || null,
+      languageCode: fromUser.language_code ? String(fromUser.language_code).slice(0, 16) : null,
+      preferredLanguage: null,
+      playerId: null,
+      accountType: 'telegram',
+      firstSeenAt: now,
+      lastSeenAt: now,
+      hasBotStarted: true,
+      botStartedAt: now,
+      hasMiniAppOpened: false,
+      miniappOpenedAt: null,
+      miniappLaunchCount: 0,
+      lastPlatform: null
+    };
+  }
+  persistState();
+}
+
+function trackMiniAppUser(user, platform, clientPreferredLang = null, clientPlayerId = null) {
+  if (!user || typeof user.id !== 'number' || user.id <= 0) return;
+  const tgId = String(user.id);
+  const now = Date.now();
+  if (!state.telegramUsers) state.telegramUsers = {};
+  const existing = state.telegramUsers[tgId];
+  if (existing) {
+    existing.lastSeenAt = now;
+    existing.hasMiniAppOpened = true;
+    if (!existing.miniappOpenedAt) existing.miniappOpenedAt = now;
+    existing.miniappLaunchCount = (existing.miniappLaunchCount || 0) + 1;
+    if (platform) existing.lastPlatform = String(platform).slice(0, 32);
+    if (user.username) existing.username = user.username;
+    if (user.first_name) existing.firstName = user.first_name;
+    if (user.language_code) existing.languageCode = String(user.language_code).slice(0, 16);
+    if (clientPreferredLang) existing.preferredLanguage = String(clientPreferredLang).slice(0, 16);
+    if (clientPlayerId) existing.playerId = String(clientPlayerId).slice(0, 64);
+    existing.accountType = 'telegram';
+  } else {
+    state.telegramUsers[tgId] = {
+      telegramId: Number(user.id),
+      username: user.username || null,
+      firstName: user.first_name || null,
+      languageCode: user.language_code ? String(user.language_code).slice(0, 16) : null,
+      preferredLanguage: clientPreferredLang ? String(clientPreferredLang).slice(0, 16) : null,
+      playerId: clientPlayerId ? String(clientPlayerId).slice(0, 64) : null,
+      accountType: 'telegram',
+      firstSeenAt: now,
+      lastSeenAt: now,
+      hasBotStarted: false,
+      botStartedAt: null,
+      hasMiniAppOpened: true,
+      miniappOpenedAt: now,
+      miniappLaunchCount: 1,
+      lastPlatform: platform ? String(platform).slice(0, 32) : null
+    };
+  }
+
+  // Authoritatively link player profile if known
+  if (clientPlayerId && state.players && state.players[clientPlayerId]) {
+    const p = state.players[clientPlayerId];
+    p.telegramId = Number(user.id);
+    p.accountType = 'telegram';
+    p.verifiedTelegram = true;
+    if (clientPreferredLang) {
+      p.language = String(clientPreferredLang).slice(0, 16);
+    }
+  }
+
+  persistState();
+}
+
+function computeUserAnalytics() {
+  const allUsers = Object.values(state.telegramUsers || {});
+  const users = allUsers.filter(isVerifiedTelegramUser);
+  const now = Date.now();
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const ONE_WEEK_MS = 7 * ONE_DAY_MS;
+
+  let totalUniqueUsers = users.length;
+  let totalBotStarts = 0;
+  let totalMiniAppUsers = 0;
+  let dau = 0;
+  let wau = 0;
+  let newUsersToday = 0;
+  let botOnly = 0;
+  let miniAppOnly = 0;
+  let both = 0;
+
+  const daysMap = {};
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(now - i * ONE_DAY_MS);
+    const dateStr = d.toISOString().split('T')[0];
+    daysMap[dateStr] = 0;
+  }
+
+  for (const u of users) {
+    if (u.hasBotStarted) totalBotStarts++;
+    if (u.hasMiniAppOpened) totalMiniAppUsers++;
+
+    if (u.hasBotStarted && u.hasMiniAppOpened) {
+      both++;
+    } else if (u.hasBotStarted) {
+      botOnly++;
+    } else if (u.hasMiniAppOpened) {
+      miniAppOnly++;
+    }
+
+    const lastActivityAge = now - (u.lastSeenAt || 0);
+    if (lastActivityAge <= ONE_DAY_MS) dau++;
+    if (lastActivityAge <= ONE_WEEK_MS) wau++;
+
+    const firstSeenAge = now - (u.firstSeenAt || 0);
+    if (firstSeenAge <= ONE_DAY_MS) newUsersToday++;
+
+    if (u.firstSeenAt) {
+      const dayStr = new Date(u.firstSeenAt).toISOString().split('T')[0];
+      if (daysMap[dayStr] !== undefined) {
+        daysMap[dayStr]++;
+      }
+    }
+  }
+
+  const registeredAthletes = getUniqueRealPlayersCount();
+
+  return {
+    timestamp: now,
+    totalUniqueUsers,
+    registeredAthletes,
+    totalBotStarts,
+    totalMiniAppUsers,
+    breakdown: {
+      botOnly,
+      miniAppOnly,
+      both
+    },
+    dau,
+    wau,
+    newUsersToday,
+    newUsersByDay: daysMap
+  };
+}
+
+// ==========================================
+// Bot Localization Dictionaries & Resolver
+// ==========================================
+const BOT_LOCALIZATION = {
+  en: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `A fast-paced 1v1 arcade sports game on Telegram!\n\n` +
+      `⚽ Football mode\n` +
+      `🏀 Basketball mode\n` +
+      `🤖 Play against AI\n` +
+      `🏟️ 2 standard arenas\n\n` +
+      `Choose your sport and jump into the game!\n\n` +
+      `👇 Tap below to play!`,
+    playBtn: '🎮 Play FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Invite a Friend',
+    shareText: 'Play FOOTY vs HOOPS 1v1 arcade sports! ⚽🏀',
+    helpPlayBtn: '🎮 Play Now ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — How to Play:*\n\n` +
+      `🕹 *Controls:*\n` +
+      `• Left Joystick — Movement & direction\n` +
+      `• SHOOT — Tap or hold to power up shots and baskets\n` +
+      `• TURBO — Sprint burst and pressure defense\n\n` +
+      `🏆 *Game Modes:*\n` +
+      `• ⚽ Football mode — 1v1 arcade football vs AI\n` +
+      `• 🏀 Basketball mode — 1v1 arcade basketball vs AI\n` +
+      `• 🏟️ 2 Standard Arenas — Classic Grass & Street Court\n\n` +
+      `👕 *Locker Room:*\n` +
+      `• Customize team kits and match balls in the Wardrobe!\n\n` +
+      `👇 Tap below to jump into the match!`
+  },
+  ru: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Быстрая 1v1 спортивная аркада в Telegram!\n\n` +
+      `⚽ Режим футбола\n` +
+      `🏀 Режим баскетбола\n` +
+      `🤖 Игра против ИИ\n` +
+      `🏟️ 2 стандартные арены\n\n` +
+      `Выбирай свой спорт и заходи в игру!\n\n` +
+      `👇 Нажми кнопку ниже, чтобы играть!`,
+    playBtn: '🎮 Играть в FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Позвать друга',
+    shareText: 'Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀',
+    helpPlayBtn: '🎮 Выйти на поле ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Как играть:*\n\n` +
+      `🕹 *Управление:*\n` +
+      `• Джойстик слева — передвижение\n` +
+      `• SHOOT — удар/бросок (удерживайте для силы)\n` +
+      `• TURBO — рывок и защита\n\n` +
+      `🏆 *Режимы:*\n` +
+      `• ⚽ Режим футбола — 1v1 аркадный футбол против ИИ\n` +
+      `• 🏀 Режим баскетбола — 1v1 аркадный баскетбол против ИИ\n` +
+      `• 🏟️ 2 стандартные арены — Классический газон и Уличная площадка\n\n` +
+      `👕 *Гардероб:*\n` +
+      `• Выбирайте форму и мячи в гардеробе!\n\n` +
+      `👇 Нажмите кнопку ниже, чтобы выйти на поле!`
+  },
+  es: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `¡Un emocionante juego arcade deportivo 1v1 en Telegram!\n\n` +
+      `⚽ Modo Fútbol\n` +
+      `🏀 Modo Baloncesto\n` +
+      `🤖 Juega contra la IA\n` +
+      `🏟️ 2 arenas estándar\n\n` +
+      `¡Elige tu deporte y entra al partido!\n\n` +
+      `👇 ¡Toca abajo para jugar!`,
+    playBtn: '🎮 Jugar a FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Invitar a un amigo',
+    shareText: '¡Juega a FOOTY vs HOOPS arcade 1v1! ⚽🏀',
+    helpPlayBtn: '🎮 Jugar ahora ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Cómo jugar:*\n\n` +
+      `🕹 *Controles:*\n` +
+      `• Joystick izquierdo — Movimiento y dirección\n` +
+      `• SHOOT — Toca o mantén presionado para disparar o encestar\n` +
+      `• TURBO — Aceleración y defensa\n\n` +
+      `🏆 *Modos de juego:*\n` +
+      `• ⚽ Modo Fútbol — Arcade 1v1 contra la IA\n` +
+      `• 🏀 Modo Baloncesto — Arcade 1v1 contra la IA\n` +
+      `• 🏟️ 2 arenas estándar — Campo Clásico y Pista Callejera\n\n` +
+      `👕 *Vestuario:*\n` +
+      `• ¡Personaliza equipaciones y balones en el Guardarropa!\n\n` +
+      `👇 ¡Toca abajo para entrar al partido!`
+  },
+  de: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Ein rasantes 1v1-Arcade-Sportspiel auf Telegram!\n\n` +
+      `⚽ Fußball-Modus\n` +
+      `🏀 Basketball-Modus\n` +
+      `🤖 Spiele gegen KI\n` +
+      `🏟️ 2 Standard-Arenen\n\n` +
+      `Wähle deine Sportart und starte ins Spiel!\n\n` +
+      `👇 Tippe unten, um zu spielen!`,
+    playBtn: '🎮 FOOTY vs HOOPS spielen ⚽🏀',
+    inviteBtn: '👥 Einen Freund einladen',
+    shareText: 'Komm und spiele FOOTY vs HOOPS 1v1 Arcade! ⚽🏀',
+    helpPlayBtn: '🎮 Jetzt spielen ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Spielanleitung:*\n\n` +
+      `🕹 *Steuerung:*\n` +
+      `• Linker Joystick — Bewegung & Richtung\n` +
+      `• SHOOT — Tippen oder halten für Schusskraft\n` +
+      `• TURBO — Sprint und Druckverteidigung\n\n` +
+      `🏆 *Spielmodi:*\n` +
+      `• ⚽ Fußball — 1v1-Arcade gegen KI\n` +
+      `• 🏀 Basketball — 1v1-Arcade gegen KI\n` +
+      `• 🏟️ 2 Standard-Arenen — Klassischer Rasen & Street Court\n\n` +
+      `👕 *Umkleide:*\n` +
+      `• Trikots und Bälle im Kleiderschrank anpassen!\n\n` +
+      `👇 Tippe unten, um loszulegen!`
+  },
+  fr: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Un jeu d'arcade sportif 1v1 palpitant sur Telegram !\n\n` +
+      `⚽ Mode Football\n` +
+      `🏀 Mode Basketball\n` +
+      `🤖 Joue contre l'IA\n` +
+      `🏟️ 2 arènes standard\n\n` +
+      `Choisis ton sport et rejoins le match !\n\n` +
+      `👇 Appuie ci-dessous pour jouer !`,
+    playBtn: '🎮 Jouer à FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Inviter un ami',
+    shareText: 'Joue à FOOTY vs HOOPS arcade 1v1 ! ⚽🏀',
+    helpPlayBtn: '🎮 Jouer maintenant ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Comment jouer :\n\n` +
+      `🕹 *Commandes :*\n` +
+      `• Joystick gauche — Déplacement & direction\n` +
+      `• SHOOT — Appuyer ou maintenir pour doser les tirs\n` +
+      `• TURBO — Accélération et défense\n\n` +
+      `🏆 *Modes de jeu :*\n` +
+      `• ⚽ Mode Football — Arcade 1v1 contre l'IA\n` +
+      `• 🏀 Mode Basketball — Arcade 1v1 contre l'IA\n` +
+      `• 🏟️ 2 arènes standard — Pelouse classique & Terrain de rue\n\n` +
+      `👕 *Vestiaire :*\n` +
+      `• Personnalise maillots et ballons dans le vestiaire !\n\n` +
+      `👇 Appuie ci-dessous pour lancer le match !`
+  },
+  pt: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Um jogo arcade esportivo 1v1 dinâmico no Telegram!\n\n` +
+      `⚽ Modo Futebol\n` +
+      `🏀 Modo Basquete\n` +
+      `🤖 Jogue contra a IA\n` +
+      `🏟️ 2 arenas padrão\n\n` +
+      `Escolha seu esporte e entre no jogo!\n\n` +
+      `👇 Toque abaixo para jogar!`,
+    playBtn: '🎮 Jogar FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Convidar um amigo',
+    shareText: 'Jogue FOOTY vs HOOPS arcade 1v1! ⚽🏀',
+    helpPlayBtn: '🎮 Jogar agora ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Como jogar:*\n\n` +
+      `🕹 *Controles:*\n` +
+      `• Joystick esquerdo — Movimentação e direção\n` +
+      `• SHOOT — Toque ou segure para arremessar ou chutar\n` +
+      `• TURBO — Arrancada e defesa\n\n` +
+      `🏆 *Modos de jogo:*\n` +
+      `• ⚽ Modo Futebol — Arcade 1v1 contra a IA\n` +
+      `• 🏀 Modo Basquete — Arcade 1v1 contra a IA\n` +
+      `• 🏟️ 2 arenas padrão — Campo Clássico e Quadra de Rua\n\n` +
+      `👕 *Vestiário:*\n` +
+      `• Personalize uniformes e bolas no Vestiário!\n\n` +
+      `👇 Toque abaixo para entrar em campo!`
+  },
+  it: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Un frenetico gioco arcade sportivo 1v1 su Telegram!\n\n` +
+      `⚽ Modalità Calcio\n` +
+      `🏀 Modalità Basket\n` +
+      `🤖 Gioca contro l'IA\n` +
+      `🏟️ 2 arene standard\n\n` +
+      `Scegli il tuo sport ed entra in campo!\n\n` +
+      `👇 Tocca qui sotto per giocare!`,
+    playBtn: '🎮 Gioca a FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Invita un amico',
+    shareText: 'Gioca a FOOTY vs HOOPS arcade 1v1! ⚽🏀',
+    helpPlayBtn: '🎮 Gioca ora ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Come giocare:*\n\n` +
+      `🕹 *Controlli:*\n` +
+      `• Joystick sinistro — Movimento e direzione\n` +
+      `• SHOOT — Tocca o tieni premuto per caricare il tiro\n` +
+      `• TURBO — Scatto sprint e difesa\n\n` +
+      `🏆 *Modalità di gioco:*\n` +
+      `• ⚽ Modalità Calcio — Arcade 1v1 contro l'IA\n` +
+      `• 🏀 Modalità Basket — Arcade 1v1 contro l'IA\n` +
+      `• 🏟️ 2 arene standard — Campo Classico e Street Court\n\n` +
+      `👕 *Spogliatoio:*\n` +
+      `• Personalizza divise e palloni nel Guardaroba!\n\n` +
+      `👇 Tocca sotto per scendere in campo!`
+  },
+  uk: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Швидка 1v1 спортивна аркада в Telegram!\n\n` +
+      `⚽ Режим футболу\n` +
+      `🏀 Режим баскетболу\n` +
+      `🤖 Гра проти ШІ\n` +
+      `🏟️ 2 стандартні арени\n\n` +
+      `Обирай свій спорт та приєднуйся до гри!\n\n` +
+      `👇 Натисни кнопку нижче, щоб грати!`,
+    playBtn: '🎮 Грати у FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Запросити друга',
+    shareText: 'Зіграємо у FOOTY vs HOOPS 1v1? ⚽🏀',
+    helpPlayBtn: '🎮 Вийти на поле ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Як грати:*\n\n` +
+      `🕹 *Керування:*\n` +
+      `• Лівий джойстик — пересування\n` +
+      `• SHOOT — удар/кидок (утримуйте для сили)\n` +
+      `• TURBO — ривок і захист\n\n` +
+      `🏆 *Режими гри:*\n` +
+      `• ⚽ Режим футболу — 1v1 аркада проти ШІ\n` +
+      `• 🏀 Режим баскетболу — 1v1 аркада проти ШІ\n` +
+      `• 🏟️ 2 стандартні арени — Класичний газон і Вуличний майданчик\n\n` +
+      `👕 *Роздягальня:*\n` +
+      `• Обирайте форму та м'ячі в гардеробі!\n\n` +
+      `👇 Натисніть кнопку нижче, щоб вийти на поле!`
+  },
+  pl: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Dynamiczna gra sportowa 1v1 na Telegramie!\n\n` +
+      `⚽ Tryb Piłka Nożna\n` +
+      `🏀 Tryb Koszykówka\n` +
+      `🤖 Graj przeciwko AI\n` +
+      `🏟️ 2 standardowe areny\n\n` +
+      `Wybierz sport i ruszaj do gry!\n\n` +
+      `👇 Dotknij poniżej, aby zagrać!`,
+    playBtn: '🎮 Zagraj w FOOTY vs HOOPS ⚽🏀',
+    inviteBtn: '👥 Zaproś znajomego',
+    shareText: 'Zagraj w FOOTY vs HOOPS arcade 1v1! ⚽🏀',
+    helpPlayBtn: '🎮 Zagraj teraz ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Jak grać:*\n\n` +
+      `🕹 *Sterowanie:*\n` +
+      `• Lewy joystick — ruch i kierunek\n` +
+      `• SHOOT — dotknij lub przytrzymaj, aby uderzyć\n` +
+      `• TURBO — sprint i obrona\n\n` +
+      `🏆 *Tryby gry:*\n` +
+      `• ⚽ Piłka Nożna — 1v1 przeciwko AI\n` +
+      `• 🏀 Koszykówka — 1v1 przeciwko AI\n` +
+      `• 🏟️ 2 standardowe areny — Klasyczna trawa i Boisko uliczne\n\n` +
+      `👕 *Szatnia:*\n` +
+      `• Dostosuj stroje i piłki w garderobie!\n\n` +
+      `👇 Dotknij poniżej, aby wyjść na boisko!`
+  },
+  tr: {
+    startText:
+      `⚽🏀 FOOTY vs HOOPS\n\n` +
+      `Telegram'da hızlı tempolu 1v1 spor arcade oyunu!\n\n` +
+      `⚽ Futbol modu\n` +
+      `🏀 Basketbol modu\n` +
+      `🤖 Yapay zekaya karşı oyna\n` +
+      `🏟️ 2 standart arena\n\n` +
+      `Sporunu seç ve maça katıl!\n\n` +
+      `👇 Oynamak için aşağıya dokun!`,
+    playBtn: '🎮 FOOTY vs HOOPS Oyna ⚽🏀',
+    inviteBtn: '👥 Bir Arkadaşını Davet Et',
+    shareText: 'FOOTY vs HOOPS 1v1 arcade oyna! ⚽🏀',
+    helpPlayBtn: '🎮 Şimdi Oyna ⚽🏀',
+    helpText:
+      `📖 *FOOTY vs HOOPS — Nasıl Oynanır:*\n\n` +
+      `🕹 *Kontroller:*\n` +
+      `• Sol Joystick — Hareket ve yön\n` +
+      `• SHOOT — Şut veya basket gücü için bas veya basılı tut\n` +
+      `• TURBO — Hızlı sprint ve baskılı savunma\n\n` +
+      `🏆 *Oyun Modları:*\n` +
+      `• ⚽ Futbol modu — Yapay zekaya karşı 1v1\n` +
+      `• 🏀 Basketbol modu — Yapay zekaya karşı 1v1\n` +
+      `• 🏟️ 2 Standart Arena — Klasik Çim ve Sokak Sahası\n\n` +
+      `👕 *Soyunma Odası:*\n` +
+      `• Gardıroptan formaları ve maç toplarını seç!\n\n` +
+      `👇 Maça başlamak için aşağıya dokun!`
+  }
+};
+
+function findCanonicalPlayer(tgId, explicitPlayerId = null) {
+  if (!state.players || typeof state.players !== 'object') return null;
+
+  // 1. Direct explicit lookup if provided
+  if (explicitPlayerId && state.players[explicitPlayerId]) {
+    return state.players[explicitPlayerId];
+  }
+
+  if (!tgId) return null;
+  const strId = String(tgId).trim();
+
+  // 2. Direct lookup by tgId
+  if (state.players[strId]) return state.players[strId];
+
+  // 3. Lookup via linked playerId stored in state.telegramUsers
+  if (state.telegramUsers && state.telegramUsers[strId] && state.telegramUsers[strId].playerId) {
+    const linkedPid = state.telegramUsers[strId].playerId;
+    if (state.players[linkedPid]) return state.players[linkedPid];
+  }
+
+  // 4. Canonical prefixes: fvh_<id>, tg_<id>, player_<id>
+  const candidateKeys = [`fvh_${strId}`, `tg_${strId}`, `player_${strId}`];
+  for (const key of candidateKeys) {
+    if (state.players[key]) return state.players[key];
+  }
+
+  // 5. Scan profiles linked via telegramId property
+  for (const p of Object.values(state.players)) {
+    if (p && (String(p.telegramId) === strId || String(p.telegramUserId) === strId)) {
+      return p;
+    }
+  }
+
+  return null;
+}
+
+function resolveUserLanguage(fromUser, playerId = null) {
+  const tgId = fromUser && fromUser.id ? String(fromUser.id) : null;
+
+  // 1. Check authoritative player profile across canonical ID formats & telegram linkage
+  const player = findCanonicalPlayer(tgId, playerId);
+  if (player) {
+    const savedLang = player.language || (player.settings && player.settings.lang);
+    if (savedLang && typeof savedLang === 'string') {
+      const code = savedLang.toLowerCase().split(/[-_]/)[0];
+      if (BOT_LOCALIZATION[code]) return code;
+    }
+  }
+
+  // 2. Check if user has an in-game preferred language recorded in state.telegramUsers
+  if (tgId && state.telegramUsers && state.telegramUsers[tgId]) {
+    const pref = state.telegramUsers[tgId].preferredLanguage;
+    if (pref && typeof pref === 'string') {
+      const code = pref.toLowerCase().split(/[-_]/)[0];
+      if (BOT_LOCALIZATION[code]) return code;
+    }
+  }
+
+  // 3. Use Telegram's language_code from incoming message update
+  if (fromUser && fromUser.language_code) {
+    const code = String(fromUser.language_code).toLowerCase().split(/[-_]/)[0];
+    if (BOT_LOCALIZATION[code]) return code;
+  }
+
+  // 4. Default fallback: English
+  return 'en';
+}
+
+function getBotStrings(fromUser, playerId = null) {
+  const lang = resolveUserLanguage(fromUser, playerId);
+  return BOT_LOCALIZATION[lang] || BOT_LOCALIZATION.en;
+}
+
 // Helper to send JSON response
 function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
@@ -703,7 +1305,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, Authorization'
     });
     return res.end();
   }
@@ -720,6 +1322,45 @@ const server = http.createServer((req, res) => {
       uptime: process.uptime(),
       storageAdapter: storage ? storage.name : 'JsonStorageAdapter',
       timestamp: Date.now()
+    });
+  }
+
+  // Public Aggregate Statistics (No Personal Data, Aggregate Only)
+  if (pathname === '/api/stats/public-summary' && req.method === 'GET') {
+    const stats = computeUserAnalytics();
+    return sendJson(res, 200, {
+      ok: true,
+      totalPlayers: getUniqueRealPlayersCount(),
+      activeToday: stats.dau,
+      activeThisWeek: stats.wau,
+      season: SEASON_CONFIG.seasonNumber
+    });
+  }
+
+  // Admin User Analytics & Cohort Metrics (Protected by Dedicated ADMIN_SECRET Only)
+  if (pathname === '/api/admin/stats' && req.method === 'GET') {
+    const adminKey = req.headers['x-admin-key'] ||
+                     (req.headers['authorization'] && req.headers['authorization'].replace(/^Bearer\s+/i, ''));
+    const expectedKey = process.env.ADMIN_SECRET;
+
+    if (!expectedKey) {
+      return sendJson(res, 503, { ok: false, error: 'admin_auth_not_configured', message: 'ADMIN_SECRET is not configured on this server' });
+    }
+
+    if (!adminKey) {
+      return sendJson(res, 401, { ok: false, error: 'unauthorized', message: 'Missing x-admin-key or Authorization header' });
+    }
+
+    const bufA = Buffer.from(String(adminKey));
+    const bufB = Buffer.from(String(expectedKey));
+    if (bufA.length !== bufB.length || !crypto.timingSafeEqual(bufA, bufB)) {
+      return sendJson(res, 403, { ok: false, error: 'forbidden', message: 'Invalid admin credentials' });
+    }
+
+    const stats = computeUserAnalytics();
+    return sendJson(res, 200, {
+      ok: true,
+      stats
     });
   }
 
@@ -1960,25 +2601,96 @@ const server = http.createServer((req, res) => {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'Invalid JSON' });
       const initData = String(data.initData || '');
+      const platform = data.platform || null;
+      const clientPlayerId = data.playerId ? String(data.playerId).trim() : null;
+      const clientPreferredLang = data.preferredLanguage ? String(data.preferredLanguage).trim() : null;
+
       const tokenResult = resolveTelegramBotToken();
       if (!tokenResult.ok) {
-        return sendJson(res, 200, { ok: true, devMode: true, validated: false });
+        // Fail closed in production; do not accept unverified client-supplied user data or track users
+        if (process.env.NODE_ENV === 'production') {
+          return sendJson(res, 503, {
+            ok: false,
+            validated: false,
+            error: 'telegram_auth_unavailable',
+            message: 'Telegram authentication service is unavailable'
+          });
+        }
+        return sendJson(res, 200, {
+          ok: false,
+          devMode: true,
+          validated: false,
+          user: null,
+          message: 'Bot token unconfigured; authentication disabled in dev mode'
+        });
       }
+
+      if (!initData) {
+        return sendJson(res, 400, { ok: false, validated: false, error: 'missing_init_data', message: 'initData string is required' });
+      }
+
       const botToken = tokenResult.token;
       try {
         const params = new URLSearchParams(initData);
         const hash = params.get('hash');
+        if (!hash || typeof hash !== 'string' || hash.length !== 64) {
+          return sendJson(res, 400, { ok: false, validated: false, error: 'invalid_hash_format', message: 'Invalid or missing hash in initData' });
+        }
         params.delete('hash');
+
+        // Freshness validation of auth_date
+        const authDateStr = params.get('auth_date');
+        if (!authDateStr) {
+          return sendJson(res, 400, { ok: false, validated: false, error: 'missing_auth_date', message: 'Missing auth_date in initData' });
+        }
+        const authDate = parseInt(authDateStr, 10);
+        if (isNaN(authDate) || authDate <= 0) {
+          return sendJson(res, 400, { ok: false, validated: false, error: 'invalid_auth_date', message: 'Invalid auth_date timestamp' });
+        }
+        const nowSec = Math.floor(Date.now() / 1000);
+        // Allow up to 60s future clock skew
+        if (authDate > nowSec + 60) {
+          return sendJson(res, 403, { ok: false, validated: false, error: 'auth_date_in_future', message: 'auth_date cannot be in the future' });
+        }
+        // Enforce 24-hour freshness window
+        const MAX_INIT_DATA_AGE_SEC = Number(process.env.TELEGRAM_INIT_DATA_MAX_AGE_SEC) || 86400;
+        if (nowSec - authDate > MAX_INIT_DATA_AGE_SEC) {
+          return sendJson(res, 403, { ok: false, validated: false, error: 'init_data_expired', message: 'initData has expired' });
+        }
+
+        // Constant-time hash verification
         const sortedKeys = Array.from(params.keys()).sort();
         const checkString = sortedKeys.map(k => `${k}=${params.get(k)}`).join('\n');
         const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
         const calculatedHash = crypto.createHmac('sha256', secretKey).update(checkString).digest('hex');
-        const isValid = calculatedHash === hash;
+
+        let isValid = false;
+        try {
+          const bufA = Buffer.from(hash, 'hex');
+          const bufB = Buffer.from(calculatedHash, 'hex');
+          if (bufA.length === 32 && bufB.length === 32) {
+            isValid = crypto.timingSafeEqual(bufA, bufB);
+          }
+        } catch (e) {
+          isValid = false;
+        }
+
+        if (!isValid) {
+          return sendJson(res, 403, { ok: false, validated: false, error: 'invalid_signature', message: 'Cryptographic signature verification failed' });
+        }
+
         const userJson = params.get('user');
         const user = userJson ? JSON.parse(userJson) : null;
-        return sendJson(res, 200, { ok: isValid, validated: isValid, user });
+        if (!user || typeof user.id !== 'number' || user.id <= 0) {
+          return sendJson(res, 400, { ok: false, validated: false, error: 'invalid_user_payload', message: 'Missing or invalid user object in initData' });
+        }
+
+        // Only track users with authenticated initData
+        trackMiniAppUser(user, platform, clientPreferredLang, clientPlayerId);
+
+        return sendJson(res, 200, { ok: true, validated: true, user });
       } catch (e) {
-        return sendJson(res, 400, { ok: false, error: 'validation_error', message: e.message });
+        return sendJson(res, 400, { ok: false, validated: false, error: 'validation_error', message: e.message });
       }
     });
   }
@@ -2217,21 +2929,20 @@ const server = http.createServer((req, res) => {
         const effectiveToken = botToken;
         const miniAppUrl = process.env.TELEGRAM_MINI_APP_URL || 'https://footy-vs-hoops.onrender.com/';
 
+        // Track user who contacted/started the bot
+        if (fromUser && fromUser.id) {
+          trackBotUser(fromUser);
+        }
+
+        const loc = getBotStrings(fromUser);
+
         if (chatId) {
           if (text.startsWith('/start') || text.startsWith('/play')) {
             const parts = text.split(' ');
             const startParam = parts.length > 1 ? parts[1].trim() : '';
             const appUrl = startParam ? `${miniAppUrl}?tgWebAppStartParam=${encodeURIComponent(startParam)}` : miniAppUrl;
 
-            const welcomeText = 
-              `⚽🏀 *FOOTY vs HOOPS*\n\n` +
-              `Быстрая 1v1 аркада: Футбол и Баскетбол прямо в Telegram!\n\n` +
-              `• ⚽ *Footy* и 🏀 *Hoops* спортивные режимы\n` +
-              `• 👥 *1v1 Онлайн мультиплеер* с друзьями\n` +
-              `• ⚡ *8 тактических бустов* (Супер-удар, Овердрайв, Магнит и др.)\n` +
-              `• 👕 *Гардероб*: 68 предметов формы и кастомизации\n` +
-              `• 🏆 *10 уникальных 3D стадионов*\n\n` +
-              `👇 Нажмите кнопку ниже, чтобы выйти на поле!`;
+            const welcomeText = loc.startText;
 
             if (effectiveToken) {
               try {
@@ -2239,19 +2950,18 @@ const server = http.createServer((req, res) => {
                 const body = JSON.stringify({
                   chat_id: chatId,
                   text: welcomeText,
-                  parse_mode: 'Markdown',
                   reply_markup: {
                     inline_keyboard: [
                       [
                         {
-                          text: '🎮 Играть в FOOTY vs HOOPS ⚽🏀',
+                          text: loc.playBtn,
                           web_app: { url: appUrl }
                         }
                       ],
                       [
                         {
-                          text: '👥 Позвать друга на матч',
-                          url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?startapp=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent('Сыграем в FOOTY vs HOOPS 1v1? ⚽🏀')}`
+                          text: loc.inviteBtn,
+                          url: `https://t.me/share/url?url=${encodeURIComponent(`https://t.me/FootyHoopsGameBot?startapp=ref_${fromUser.id || 'fvh'}`)}&text=${encodeURIComponent(loc.shareText)}`
                         }
                       ]
                     ]
@@ -2273,22 +2983,9 @@ const server = http.createServer((req, res) => {
               } catch (e) {}
             }
 
-            return sendJson(res, 200, { ok: true, handled: 'start_or_play' });
+            return sendJson(res, 200, { ok: true, handled: 'start_or_play', lang: resolveUserLanguage(fromUser) });
           } else if (text.startsWith('/help')) {
-            const helpText = 
-              `📖 *FOOTY vs HOOPS — Как играть:*\n\n` +
-              `🕹 *Управление:*\n` +
-              `• Джойстик слева — передвижение\n` +
-              `• SHOOT — удар/бросок (удерживайте для силы)\n` +
-              `• TURBO — рывок и спринт\n` +
-              `• BOOST — активация тактического буста перед или во время матча\n\n` +
-              `🏆 *Режимы:*\n` +
-              `• ⚽ Footy — футбол 1v1\n` +
-              `• 🏀 Hoops — баскетбол 1v1\n` +
-              `• 🌐 1v1 Онлайн — создайте приватную комнату и отправьте код другу\n\n` +
-              `👕 *Гардероб и Бусты:*\n` +
-              `• Разблокируйте новые скины, мячи и стадионы\n` +
-              `• Выполняйте квесты и прокачивайте Battle Pass!`;
+            const helpText = loc.helpText;
 
             try {
               const https = require('https');
@@ -2300,7 +2997,7 @@ const server = http.createServer((req, res) => {
                   inline_keyboard: [
                     [
                       {
-                        text: '🎮 Выйти на поле ⚽🏀',
+                        text: loc.helpPlayBtn,
                         web_app: { url: miniAppUrl }
                       }
                     ]
@@ -2317,12 +3014,12 @@ const server = http.createServer((req, res) => {
                   'Content-Length': Buffer.byteLength(body)
                 }
               });
-              tgReq.on('error', (e) => console.error('Telegram bot help reply error:', e.message));
+              tgReq.on('error', (e) => console.error('Telegram bot reply error:', e.message));
               tgReq.write(body);
               tgReq.end();
             } catch (e) {}
 
-            return sendJson(res, 200, { ok: true, handled: 'help' });
+            return sendJson(res, 200, { ok: true, handled: 'help', lang: resolveUserLanguage(fromUser) });
           }
         }
       }
@@ -2816,7 +3513,38 @@ const server = http.createServer((req, res) => {
   // ==========================================
 
   // 1. Authoritative Player Economy State
-  
+
+  // Telegram Channel / Chat Subscription Verification Helper
+  async function verifyTelegramMembership(telegramUserId, targetChatId) {
+    const tokenResult = resolveTelegramBotToken();
+    if (!tokenResult.ok) {
+      return { ok: false, error: 'bot_not_configured', verified: false, message: 'Telegram bot service is not configured' };
+    }
+    const token = tokenResult.token;
+    try {
+      const tgRes = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${encodeURIComponent(targetChatId)}&user_id=${encodeURIComponent(telegramUserId)}`, {
+        signal: AbortSignal.timeout ? AbortSignal.timeout(3500) : undefined
+      });
+      const tgData = await tgRes.json();
+      if (tgData && tgData.ok && tgData.result) {
+        const status = tgData.result.status;
+        const isMember = (status === 'creator' || status === 'administrator' || status === 'member' || (status === 'restricted' && tgData.result.is_member === true));
+        return { ok: true, verified: isMember, status: status };
+      }
+      if (tgData && !tgData.ok) {
+        const desc = String(tgData.description || '').toLowerCase();
+        if (desc.includes('user not found') || desc.includes('participant_id_invalid')) {
+          return { ok: true, verified: false, status: 'left', message: 'User not found in channel/chat' };
+        }
+        return { ok: false, error: 'telegram_api_error', verified: false, message: tgData.description || 'Telegram API verification error' };
+      }
+      return { ok: true, verified: false, status: (tgData && tgData.result && tgData.result.status) || 'left' };
+    } catch (fetchErr) {
+      console.warn('Telegram getChatMember check timeout/error:', fetchErr.message);
+      return { ok: false, error: 'telegram_api_error', verified: false, message: 'Telegram API verification failed or timed out' };
+    }
+  }
+
   // Telegram Channel / Chat Subscription Verification Endpoint
   if ((pathname === '/api/social/verify-telegram' || pathname === '/api/tasks/verify-telegram') && req.method === 'POST') {
     return readJsonBody(req, async (err, data) => {
@@ -2824,69 +3552,72 @@ const server = http.createServer((req, res) => {
       const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
       const target = String(data.target || 'channel').trim(); // 'channel' or 'chat'
       const questId = String(data.questId || (target === 'chat' ? 'q_sub_chat' : 'q_sub_tg')).trim();
-      const tokenResult = resolveTelegramBotToken();
-      if (!tokenResult.ok) {
-        return sendJson(res, 500, { ok: false, error: 'bot_not_configured', verified: false, message: 'Telegram bot service is not configured' });
-      }
-      const token = tokenResult.token;
 
       if (!telegramUserId) {
         return sendJson(res, 400, { ok: false, error: 'missing_telegram_user_id', verified: false, message: 'Telegram user ID is required to verify subscription' });
       }
 
-      // Target chat ID: @FootyHoops channel or linked chat
-      const chatId = '@FootyHoops';
+      // Target identifiers: configured channel (@FootyHoops or TELEGRAM_CHANNEL_ID) and community chat (TELEGRAM_CHAT_ID or default)
+      const channelId = process.env.TELEGRAM_CHANNEL_ID || '@FootyHoops';
+      const chatId = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_COMMUNITY_CHAT_ID || '-1004427370833';
+      const targetChatId = (target === 'chat' || questId === 'q_sub_chat') ? chatId : channelId;
 
-      try {
-        const tgRes = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${encodeURIComponent(chatId)}&user_id=${encodeURIComponent(telegramUserId)}`, {
-          signal: AbortSignal.timeout ? AbortSignal.timeout(3500) : undefined
-        });
-        const tgData = await tgRes.json();
-        if (tgData && tgData.ok && tgData.result) {
-          const status = tgData.result.status;
-          const isMember = (status === 'creator' || status === 'administrator' || status === 'member' || (status === 'restricted' && tgData.result.is_member === true));
-          let claimed = false;
-          let coins = undefined;
-          let xp = undefined;
-          if (isMember && data.playerId && (data.claim === true || data.claimReward === true)) {
-            const player = getPlayer(data.playerId);
-            if (player.claimedQuests.includes(questId)) {
-              return sendJson(res, 400, { ok: false, error: 'quest_already_claimed', message: 'Quest already claimed', verified: true });
-            }
-            player.coins += 50;
-            player.xp += 50;
-            player.claimedQuests.push(questId);
-            player.updatedAt = Date.now();
-            addLedgerEntry(player.playerId, 'reward', 50, 50, player.coins, 'Quest reward: ' + questId, questId);
-            persistState();
-            claimed = true;
-            coins = player.coins;
-            xp = player.xp;
-          }
-          return sendJson(res, 200, {
-            ok: true,
-            verified: isMember,
-            status: status,
-            target: target,
-            questId: questId,
-            claimed: claimed,
-            coins: coins,
-            xp: xp
-          });
-        }
-        // If chat member check returns error or user left
-        return sendJson(res, 200, { ok: true, verified: false, status: (tgData && tgData.result && tgData.result.status) || 'left', target, questId });
-      } catch (fetchErr) {
-        // Fallback gracefully if Telegram API is unreachable from local node
-        console.warn('Telegram getChatMember check timeout/error:', fetchErr.message);
-        return sendJson(res, 502, { ok: false, error: 'telegram_api_error', verified: false, message: 'Telegram API verification failed or timed out' });
+      const checkResult = await verifyTelegramMembership(telegramUserId, targetChatId);
+      if (checkResult.error === 'bot_not_configured') {
+        return sendJson(res, 500, { ok: false, error: 'bot_not_configured', verified: false, message: checkResult.message });
       }
+      if (checkResult.error === 'telegram_api_error') {
+        return sendJson(res, 502, { ok: false, error: 'telegram_api_error', verified: false, message: checkResult.message });
+      }
+
+      if (checkResult.ok && checkResult.verified) {
+        let claimed = false;
+        let coins = undefined;
+        let xp = undefined;
+
+        if (data.playerId && (data.claim === true || data.claimReward === true)) {
+          const player = getPlayer(data.playerId);
+          if (player.claimedQuests.includes(questId)) {
+            return sendJson(res, 400, { ok: false, error: 'quest_already_claimed', message: 'Quest already claimed', verified: true });
+          }
+          player.coins += 50;
+          player.xp += 50;
+          player.claimedQuests.push(questId);
+          player.updatedAt = Date.now();
+          addLedgerEntry(player.playerId, 'reward', 50, 50, player.coins, 'Quest reward: ' + questId, questId);
+          persistState();
+          claimed = true;
+          coins = player.coins;
+          xp = player.xp;
+        }
+
+        return sendJson(res, 200, {
+          ok: true,
+          verified: true,
+          status: checkResult.status,
+          target: target,
+          questId: questId,
+          claimed: claimed,
+          coins: coins,
+          xp: xp
+        });
+      }
+
+      // User not a member or left
+      return sendJson(res, 200, {
+        ok: true,
+        verified: false,
+        status: checkResult.status || 'left',
+        target: target,
+        questId: questId,
+        message: checkResult.message || 'Subscription not found'
+      });
     });
   }
 
   // Dedicated Claim Social Tasks Endpoint
   if (pathname === '/api/tasks/claim-social' && req.method === 'POST') {
-    return readJsonBody(req, (err, data) => {
+    return readJsonBody(req, async (err, data) => {
       if (err) return sendJson(res, 400, { ok: false, error: 'invalid_json' });
       const playerId = String(data.playerId || '').trim();
       const questId = String(data.questId || '').trim();
@@ -2902,6 +3633,27 @@ const server = http.createServer((req, res) => {
       const player = getPlayer(playerId);
       if (player.claimedQuests.includes(questId)) {
         return sendJson(res, 400, { ok: false, error: 'quest_already_claimed', message: 'Task already claimed', verified: true });
+      }
+
+      // Authoritative server-side verification for Telegram channel & chat tasks
+      if (questId === 'q_sub_tg' || questId === 'q_sub_chat') {
+        const telegramUserId = data.telegramUserId ? String(data.telegramUserId).trim() : null;
+        if (!telegramUserId) {
+          return sendJson(res, 400, { ok: false, error: 'missing_telegram_user_id', verified: false, message: 'Telegram user ID is required to verify membership' });
+        }
+        const channelId = process.env.TELEGRAM_CHANNEL_ID || '@FootyHoops';
+        const chatId = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_COMMUNITY_CHAT_ID || '-1004427370833';
+        const targetChatId = (questId === 'q_sub_chat') ? chatId : channelId;
+        const checkResult = await verifyTelegramMembership(telegramUserId, targetChatId);
+        if (checkResult.error === 'bot_not_configured') {
+          return sendJson(res, 500, { ok: false, error: 'bot_not_configured', verified: false, message: checkResult.message });
+        }
+        if (checkResult.error === 'telegram_api_error') {
+          return sendJson(res, 502, { ok: false, error: 'telegram_api_error', verified: false, message: checkResult.message });
+        }
+        if (!checkResult.verified) {
+          return sendJson(res, 400, { ok: false, error: 'not_subscribed', verified: false, status: checkResult.status, message: 'User is not subscribed to the official Telegram channel or chat' });
+        }
       }
 
       const coinsAward = 50;
@@ -3130,6 +3882,7 @@ const server = http.createServer((req, res) => {
         armedBoost: player.armedBoost || null,
         battlePass: player.battlePass,
         packs: player.packs,
+        claimedQuests: player.claimedQuests || [],
         transactions: (player.transactions || []).slice(-30)
       });
     });

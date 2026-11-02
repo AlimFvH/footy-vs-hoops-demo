@@ -202,6 +202,46 @@ class PostgresStorageAdapter extends StorageAdapter {
     } catch (migErr) {
       console.warn('[PostgresStorageAdapter] Schema migration note:', migErr.message);
     }
+
+    // Incremental Safe Migration 3: Ensure telegram_users analytics table exists
+    try {
+      await this.withTransaction(async (client) => {
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS telegram_users (
+              telegram_id BIGINT PRIMARY KEY,
+              username VARCHAR(128),
+              first_name VARCHAR(128),
+              language_code VARCHAR(16),
+              preferred_language VARCHAR(16),
+              player_id VARCHAR(64),
+              first_seen_at BIGINT,
+              last_seen_at BIGINT,
+              has_bot_started BOOLEAN,
+              bot_started_at BIGINT,
+              has_miniapp_opened BOOLEAN,
+              miniapp_opened_at BIGINT,
+              miniapp_launch_count INTEGER,
+              last_platform VARCHAR(32)
+          );
+        `);
+        try {
+          await client.query('ALTER TABLE telegram_users ADD COLUMN IF NOT EXISTS language_code VARCHAR(16)');
+          await client.query('ALTER TABLE telegram_users ADD COLUMN IF NOT EXISTS preferred_language VARCHAR(16)');
+          await client.query('ALTER TABLE telegram_users ADD COLUMN IF NOT EXISTS player_id VARCHAR(64)');
+          await client.query('CREATE INDEX IF NOT EXISTS idx_tg_users_last_seen ON telegram_users(last_seen_at DESC)');
+          await client.query('CREATE INDEX IF NOT EXISTS idx_tg_users_first_seen ON telegram_users(first_seen_at DESC)');
+        } catch (e) {}
+        await client.query(`
+          INSERT INTO schema_migrations (version, name, applied_at)
+          VALUES (3, 'add_telegram_users_analytics_table', $1)
+          ON CONFLICT (version) DO NOTHING
+        `, [Date.now()]);
+      });
+    } catch (migErr) {
+      if (!migErr.message.includes('pg-mem')) {
+        console.warn('[PostgresStorageAdapter] Migration 3 note:', migErr.message);
+      }
+    }
   }
 
   createDefaultPlayer(playerId) {
@@ -1001,7 +1041,8 @@ class PostgresStorageAdapter extends StorageAdapter {
       starsInvoices: {},
       tonInvoices: {},
       processedTonHashes: {},
-      paymentsLedger: []
+      paymentsLedger: [],
+      telegramUsers: {}
     };
 
     const pRes = await this.query('SELECT * FROM players');
@@ -1106,6 +1147,30 @@ class PostgresStorageAdapter extends StorageAdapter {
       currency: r.currency,
       timestamp: Number(r.timestamp)
     }));
+
+    try {
+      const tgRes = await this.query('SELECT * FROM telegram_users');
+      tgRes.rows.forEach(r => {
+        state.telegramUsers[String(r.telegram_id)] = {
+          telegramId: Number(r.telegram_id),
+          username: r.username || null,
+          firstName: r.first_name || null,
+          languageCode: r.language_code || null,
+          preferredLanguage: r.preferred_language || null,
+          playerId: r.player_id || null,
+          firstSeenAt: Number(r.first_seen_at) || 0,
+          lastSeenAt: Number(r.last_seen_at) || 0,
+          hasBotStarted: Boolean(r.has_bot_started),
+          botStartedAt: r.bot_started_at ? Number(r.bot_started_at) : null,
+          hasMiniAppOpened: Boolean(r.has_miniapp_opened),
+          miniappOpenedAt: r.miniapp_opened_at ? Number(r.miniapp_opened_at) : null,
+          miniappLaunchCount: Number(r.miniapp_launch_count) || 0,
+          lastPlatform: r.last_platform || null
+        };
+      });
+    } catch (e) {
+      // telegram_users table may not exist yet
+    }
 
     return state;
   }
@@ -1280,6 +1345,48 @@ class PostgresStorageAdapter extends StorageAdapter {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             ON CONFLICT (id) DO NOTHING
           `, [pay.id, pay.type, pay.invoiceId, pay.productId, pay.playerId, Number(pay.amount) || 0, pay.currency, Number(pay.timestamp) || Date.now()]);
+        }
+      }
+
+      // Import telegram users
+      if (stateData.telegramUsers && typeof stateData.telegramUsers === 'object') {
+        for (const u of Object.values(stateData.telegramUsers)) {
+          if (!u || !u.telegramId) continue;
+          await client.query(`
+            INSERT INTO telegram_users (
+              telegram_id, username, first_name, language_code, preferred_language, player_id, first_seen_at, last_seen_at,
+              has_bot_started, bot_started_at, has_miniapp_opened, miniapp_opened_at,
+              miniapp_launch_count, last_platform
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            ON CONFLICT (telegram_id) DO UPDATE SET
+              username = COALESCE(EXCLUDED.username, telegram_users.username),
+              first_name = COALESCE(EXCLUDED.first_name, telegram_users.first_name),
+              language_code = COALESCE(EXCLUDED.language_code, telegram_users.language_code),
+              preferred_language = COALESCE(EXCLUDED.preferred_language, telegram_users.preferred_language),
+              player_id = COALESCE(EXCLUDED.player_id, telegram_users.player_id),
+              last_seen_at = GREATEST(EXCLUDED.last_seen_at, telegram_users.last_seen_at),
+              has_bot_started = telegram_users.has_bot_started OR EXCLUDED.has_bot_started,
+              bot_started_at = COALESCE(telegram_users.bot_started_at, EXCLUDED.bot_started_at),
+              has_miniapp_opened = telegram_users.has_miniapp_opened OR EXCLUDED.has_miniapp_opened,
+              miniapp_opened_at = COALESCE(telegram_users.miniapp_opened_at, EXCLUDED.miniapp_opened_at),
+              miniapp_launch_count = GREATEST(telegram_users.miniapp_launch_count, EXCLUDED.miniapp_launch_count),
+              last_platform = COALESCE(EXCLUDED.last_platform, telegram_users.last_platform)
+          `, [
+            Number(u.telegramId),
+            u.username || null,
+            u.firstName || null,
+            u.languageCode || null,
+            u.preferredLanguage || null,
+            u.playerId || null,
+            Number(u.firstSeenAt) || Date.now(),
+            Number(u.lastSeenAt) || Date.now(),
+            Boolean(u.hasBotStarted),
+            u.botStartedAt ? Number(u.botStartedAt) : null,
+            Boolean(u.hasMiniAppOpened),
+            u.miniappOpenedAt ? Number(u.miniappOpenedAt) : null,
+            Number(u.miniappLaunchCount) || 0,
+            u.lastPlatform ? String(u.lastPlatform).slice(0, 32) : null
+          ]);
         }
       }
     });
