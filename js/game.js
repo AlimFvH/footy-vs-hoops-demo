@@ -7617,7 +7617,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.zoom = 1;
             this.cam.fov = mode === 'footy' ? 44 : 42;
             this.elev = ((mode === 'footy' ? 40 : 42) * Math.PI) / 180;
-            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 13.6 : 12.0);
+            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 16.2 : 12.0);
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
             this.limitZ = halfL;
@@ -7628,7 +7628,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         setAspect(aspect) {
             this.aspect = aspect;
             this.cam.aspect = aspect;
-            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 13.6 : 12.0);
+            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 16.2 : 12.0);
             this.snap = true;
         }
         shake(amount) {
