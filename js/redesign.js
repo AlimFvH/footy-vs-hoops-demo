@@ -5351,19 +5351,18 @@
           if (curRarity !== 'all' && it.rarity !== curRarity) return false;
           if (isFooty) {
             // Footy only sees footy skins and footy balls
-            if (it.category === 'balls_hoops' || (it.slot && it.slot === 'ball.hoops') || it.id.indexOf('hoops') !== -1 || it.id === 'skin_solar' || it.id === 'skin_sunset' || it.id === 'skin_mars') {
+            if (it.category === 'balls_hoops' || (it.slot && it.slot === 'ball.hoops') || it.mode === 'hoops' || it.id.indexOf('hoops') !== -1 || it.id === 'skin_solar' || it.id === 'skin_sunset' || it.id === 'skin_mars') {
               return false;
             }
           } else {
             // Hoops only sees hoops skins and hoops balls
-            if (it.category === 'balls_footy' || (it.slot && it.slot === 'ball.footy') || (it.id.indexOf('footy') !== -1 && it.id !== 'skin_rookie')) {
+            if (it.category === 'balls_footy' || (it.slot && it.slot === 'ball.footy') || it.mode === 'footy' || it.id.indexOf('footy') !== -1 || it.id === 'skin_rookie' || it.id === 'skin_crimson' || it.id === 'skin_frost' || it.id === 'skin_astronaut') {
               return false;
             }
           }
           var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) ||
-            (it.id === 'skin_rookie') || (it.id === 'ball_footy_classic') ||
-            (it.id === 'skin_hoops_street_legend') || (it.id === 'ball_hoops_street') ||
-            (it.id === 'skin_solar') ||
+            (isFooty && (it.id === 'skin_rookie' || it.id === 'ball_footy_classic')) ||
+            (!isFooty && (it.id === 'skin_solar' || it.id === 'skin_hoops_street_legend' || it.id === 'ball_hoops_street')) ||
             (LEGACY_ITEM_ALIASES[it.id] && owned.indexOf(LEGACY_ITEM_ALIASES[it.id]) !== -1);
           return isOwned;
         });
@@ -5406,8 +5405,10 @@
             '</div>' +
             (isEquipped ? '<span class="st st-eq">✓ ' + tr('equippedState') + '</span>' : '') +
             '</div>' +
-            '<div class="nm">' + localizedItemName + '</div>' +
-            '<div class="tags"><span class="rar ' + rarClass + '">' + localizedRarity + '</span></div>';
+            '<div class="fvh-shopc-meta">' +
+            '  <div class="nm">' + localizedItemName + '</div>' +
+            '  <div class="tags"><span class="rar ' + rarClass + '">' + localizedRarity + '</span></div>' +
+            '</div>';
 
           function markItemSeen() {
             var unseen = (app.store && app.store.data && app.store.data.unseenItems) || [];
