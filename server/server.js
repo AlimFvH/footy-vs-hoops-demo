@@ -487,7 +487,93 @@ if (fs.existsSync(DATA_FILE)) {
   }
 }
 
-storage.init().catch(err => {
+function getSerializableState() {
+  return {
+    referrals: state.referrals,
+    starsInvoices: state.starsInvoices,
+    tonInvoices: state.tonInvoices,
+    processedTonHashes: state.processedTonHashes,
+    processedChargeIds: state.processedChargeIds,
+    paymentsLedger: state.paymentsLedger,
+    players: state.players,
+    economyLedger: state.economyLedger,
+    idempotencyKeys: state.idempotencyKeys,
+    completedMatches: state.completedMatches
+  };
+}
+
+let pgSyncInProgress = false;
+let pgSyncQueued = false;
+
+async function syncToPostgresPromise() {
+  if (!storage || storage.name !== 'PostgresStorageAdapter' || !storage._initialized) return;
+  return storage.importState(getSerializableState());
+}
+
+function syncToPostgres() {
+  if (!storage || storage.name !== 'PostgresStorageAdapter' || !storage._initialized) return;
+  if (pgSyncInProgress) {
+    pgSyncQueued = true;
+    return;
+  }
+  pgSyncInProgress = true;
+  syncToPostgresPromise()
+    .then(() => {
+      pgSyncInProgress = false;
+      if (pgSyncQueued) {
+        pgSyncQueued = false;
+        syncToPostgres();
+      }
+    })
+    .catch(err => {
+      pgSyncInProgress = false;
+      console.warn('[STORAGE] Async Postgres sync warning:', err.message);
+    });
+}
+
+storage.init().then(async () => {
+  if (storage && storage.name === 'PostgresStorageAdapter') {
+    console.log(`[STORAGE] Connected to PostgreSQL storage at ${typeof storage.getMaskedUrl === 'function' ? storage.getMaskedUrl() : 'configured database'}`);
+    try {
+      const dbState = await storage.exportState();
+      const hasDbPlayers = dbState && dbState.players && Object.keys(dbState.players).length > 0;
+      if (hasDbPlayers) {
+        Object.assign(state.players, dbState.players);
+        if (Array.isArray(dbState.economyLedger) && dbState.economyLedger.length > 0) {
+          state.economyLedger = dbState.economyLedger;
+        }
+        if (dbState.completedMatches && Object.keys(dbState.completedMatches).length > 0) {
+          Object.assign(state.completedMatches, dbState.completedMatches);
+        }
+        if (dbState.idempotencyKeys && Object.keys(dbState.idempotencyKeys).length > 0) {
+          Object.assign(state.idempotencyKeys, dbState.idempotencyKeys);
+        }
+        if (dbState.referrals && Object.keys(dbState.referrals).length > 0) {
+          Object.assign(state.referrals, dbState.referrals);
+        }
+        if (dbState.starsInvoices && Object.keys(dbState.starsInvoices).length > 0) {
+          Object.assign(state.starsInvoices, dbState.starsInvoices);
+        }
+        if (dbState.tonInvoices && Object.keys(dbState.tonInvoices).length > 0) {
+          Object.assign(state.tonInvoices, dbState.tonInvoices);
+        }
+        if (dbState.processedTonHashes && Object.keys(dbState.processedTonHashes).length > 0) {
+          Object.assign(state.processedTonHashes, dbState.processedTonHashes);
+        }
+        if (Array.isArray(dbState.paymentsLedger) && dbState.paymentsLedger.length > 0) {
+          state.paymentsLedger = dbState.paymentsLedger;
+        }
+        console.log(`[STORAGE] Authoritative state hydrated from PostgreSQL: ${Object.keys(state.players).length} athletes loaded.`);
+      } else if (Object.keys(state.players).length > 0) {
+        console.log(`[STORAGE] Seeding fresh PostgreSQL database with ${Object.keys(state.players).length} athletes from local state...`);
+        await syncToPostgresPromise();
+        console.log('[STORAGE] PostgreSQL initial seed complete.');
+      }
+    } catch (e) {
+      console.warn('[STORAGE] Failed to hydrate initial state from Postgres:', e.message);
+    }
+  }
+}).catch(err => {
   if (storage && storage.name === 'PostgresStorageAdapter') {
     console.error(`[FATAL STORAGE ERROR] Configured PostgreSQL storage failed to initialize: ${err.message}`);
     console.error(`Database target: ${typeof storage.getMaskedUrl === 'function' ? storage.getMaskedUrl() : 'configured'}`);
@@ -498,22 +584,29 @@ storage.init().catch(err => {
   }
 });
 
+process.on('SIGTERM', async () => {
+  console.log('[SHUTDOWN] SIGTERM received. Flushing state...');
+  try {
+    if (storage && storage.name === 'PostgresStorageAdapter' && storage._initialized) {
+      await syncToPostgresPromise();
+      await storage.close();
+      console.log('[SHUTDOWN] PostgreSQL state flushed and connection closed.');
+    }
+  } catch (err) {
+    console.error('[SHUTDOWN] Error during shutdown flush:', err.message);
+  }
+  process.exit(0);
+});
+
 function persistState() {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({
-      referrals: state.referrals,
-      starsInvoices: state.starsInvoices,
-      tonInvoices: state.tonInvoices,
-      processedTonHashes: state.processedTonHashes,
-      processedChargeIds: state.processedChargeIds,
-      paymentsLedger: state.paymentsLedger,
-      players: state.players,
-      economyLedger: state.economyLedger,
-      idempotencyKeys: state.idempotencyKeys,
-      completedMatches: state.completedMatches
-    }, null, 2));
+    fs.writeFileSync(DATA_FILE, JSON.stringify(getSerializableState(), null, 2));
   } catch (e) {
     console.warn('Failed to save server/data.json', e);
+  }
+
+  if (storage && storage.name === 'PostgresStorageAdapter' && storage._initialized) {
+    syncToPostgres();
   }
 }
 
