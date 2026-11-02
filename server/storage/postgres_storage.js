@@ -165,23 +165,43 @@ class PostgresStorageAdapter extends StorageAdapter {
     if (!fs.existsSync(this.schemaPath)) {
       throw new Error(`Schema file not found at ${this.schemaPath}`);
     }
+    let initialApplied = false;
     try {
       const check = await this.query("SELECT 1 FROM information_schema.tables WHERE table_name = 'schema_migrations'");
       if (check.rows.length > 0) {
-        return;
+        initialApplied = true;
       }
     } catch (e) {
       // Table doesn't exist yet, proceed with DDL
     }
-    const ddl = fs.readFileSync(this.schemaPath, 'utf8');
-    await this.withTransaction(async (client) => {
-      await client.query(ddl);
-      await client.query(`
-        INSERT INTO schema_migrations (version, name, applied_at)
-        VALUES (1, 'initial_schema', $1)
-        ON CONFLICT (version) DO NOTHING
-      `, [Date.now()]);
-    });
+
+    if (!initialApplied) {
+      const ddl = fs.readFileSync(this.schemaPath, 'utf8');
+      await this.withTransaction(async (client) => {
+        await client.query(ddl);
+        await client.query(`
+          INSERT INTO schema_migrations (version, name, applied_at)
+          VALUES (1, 'initial_schema', $1)
+          ON CONFLICT (version) DO NOTHING
+        `, [Date.now()]);
+      });
+    }
+
+    // Incremental Safe Migration: Ensure unseen_items column exists in players
+    try {
+      await this.withTransaction(async (client) => {
+        await client.query(`
+          ALTER TABLE players ADD COLUMN IF NOT EXISTS unseen_items JSONB NOT NULL DEFAULT '[]'::jsonb;
+        `);
+        await client.query(`
+          INSERT INTO schema_migrations (version, name, applied_at)
+          VALUES (2, 'add_unseen_items_column', $1)
+          ON CONFLICT (version) DO NOTHING
+        `, [Date.now()]);
+      });
+    } catch (migErr) {
+      console.warn('[PostgresStorageAdapter] Schema migration note:', migErr.message);
+    }
   }
 
   createDefaultPlayer(playerId) {
@@ -195,6 +215,7 @@ class PostgresStorageAdapter extends StorageAdapter {
       coins: 350,
       xp: 0,
       transactions: [],
+      unseenItems: [],
       owned: [
         'skin_rookie',
         'std_footy_classic',
@@ -246,6 +267,7 @@ class PostgresStorageAdapter extends StorageAdapter {
       xp: Number(row.xp) || 0,
       owned: typeof row.owned_items === 'string' ? JSON.parse(row.owned_items) : (row.owned_items || []),
       equipped: typeof row.equipped_items === 'string' ? JSON.parse(row.equipped_items) : (row.equipped_items || {}),
+      unseenItems: typeof row.unseen_items === 'string' ? JSON.parse(row.unseen_items) : (row.unseen_items || []),
       boostCharges: typeof row.boost_charges === 'string' ? JSON.parse(row.boost_charges) : (row.boost_charges || {}),
       armedBoost: row.armed_boost || null,
       packs: typeof row.packs === 'string' ? JSON.parse(row.packs) : (row.packs || { free: {}, paid: {} }),
@@ -280,10 +302,10 @@ class PostgresStorageAdapter extends StorageAdapter {
     const q = `
       INSERT INTO players (
         player_id, player_name, selected_team, selected_character, team_chosen,
-        coins, xp, owned_items, equipped_items, boost_charges, armed_boost,
+        coins, xp, owned_items, equipped_items, unseen_items, boost_charges, armed_boost,
         packs, battle_pass, claimed_quests, rewarded_matches, stats,
         telegram_user, photo_url, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
       ON CONFLICT (player_id) DO UPDATE SET
         player_name = EXCLUDED.player_name,
         selected_team = EXCLUDED.selected_team,
@@ -293,6 +315,7 @@ class PostgresStorageAdapter extends StorageAdapter {
         xp = EXCLUDED.xp,
         owned_items = EXCLUDED.owned_items,
         equipped_items = EXCLUDED.equipped_items,
+        unseen_items = EXCLUDED.unseen_items,
         boost_charges = EXCLUDED.boost_charges,
         armed_boost = EXCLUDED.armed_boost,
         packs = EXCLUDED.packs,
@@ -315,6 +338,7 @@ class PostgresStorageAdapter extends StorageAdapter {
       Number(player.xp) || 0,
       JSON.stringify(player.owned || []),
       JSON.stringify(player.equipped || {}),
+      JSON.stringify(player.unseenItems || []),
       JSON.stringify(player.boostCharges || {}),
       player.armedBoost || null,
       JSON.stringify(player.packs || { free: {}, paid: {} }),
@@ -1096,10 +1120,10 @@ class PostgresStorageAdapter extends StorageAdapter {
           await client.query(`
             INSERT INTO players (
               player_id, player_name, selected_team, selected_character, team_chosen,
-              coins, xp, owned_items, equipped_items, boost_charges, armed_boost,
+              coins, xp, owned_items, equipped_items, unseen_items, boost_charges, armed_boost,
               packs, battle_pass, claimed_quests, rewarded_matches, stats,
               telegram_user, photo_url, created_at, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             ON CONFLICT (player_id) DO UPDATE SET
               player_name = EXCLUDED.player_name,
               selected_team = EXCLUDED.selected_team,
@@ -1109,6 +1133,7 @@ class PostgresStorageAdapter extends StorageAdapter {
               xp = EXCLUDED.xp,
               owned_items = EXCLUDED.owned_items,
               equipped_items = EXCLUDED.equipped_items,
+              unseen_items = EXCLUDED.unseen_items,
               boost_charges = EXCLUDED.boost_charges,
               armed_boost = EXCLUDED.armed_boost,
               packs = EXCLUDED.packs,
@@ -1129,6 +1154,7 @@ class PostgresStorageAdapter extends StorageAdapter {
             Number(p.xp) || 0,
             JSON.stringify(p.owned || []),
             JSON.stringify(p.equipped || {}),
+            JSON.stringify(p.unseenItems || []),
             JSON.stringify(p.boostCharges || {}),
             p.armedBoost || null,
             JSON.stringify(p.packs || { free: {}, paid: {} }),

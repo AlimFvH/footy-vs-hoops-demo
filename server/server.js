@@ -157,42 +157,60 @@ const PRODUCT_CATALOG = {
 };
 
 // Authoritative In-Game Cosmetic Items Catalog
-// Price Tiers per Stage 1 specification:
-// Skins: Common 300, Rare 700, Epic 1500
-// Football Balls: Common 200, Rare 500, Epic 1000
-// Basketball Balls: Common 200, Rare 500, Epic 1000
+// Canonical Equipment Catalog & Legacy Aliases
+// Preserves ownership of deprecated duplicate items while surfacing only distinct canonical items
+const LEGACY_ITEM_ALIASES = {
+  'skin_gold': 'skin_footy_golden_legend',
+  'skin_shadow': 'skin_footy_stealth_shadow',
+  'skin_cyber': 'skin_footy_cyber_strike',
+  'skin_neon': 'skin_footy_neon_matrix',
+  'skin_hydro': 'skin_frost',
+  'ball_footy_classic_pro': 'ball_footy_classic',
+  'ball_footy_neon': 'ball_footy_cyber_neon',
+  'ball_footy_gold': 'ball_footy_golden_elite',
+  'ball_hoops_classic_pro': 'ball_hoops_street',
+  'ball_hoops_blaze': 'ball_hoops_molten_fire'
+};
+
+// Canonical Store Catalog (30 Distinct High-Quality Items across All Rarities)
 const ITEM_CATALOG = {
-  // Kits / Jerseys
-  'skin_rookie': { name: 'Rookie Blue', category: 'skins', slot: 'skin', rarity: 'common', price: 0, isDefault: true },
-  'skin_crimson': { name: 'Crimson Comet', category: 'skins', slot: 'skin', rarity: 'common', price: 300 },
-  'skin_sunset': { name: 'Sunset Gold Jersey', category: 'skins', slot: 'skin', rarity: 'common', price: 300 },
-  'skin_neon': { name: 'Neon Striker', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
-  'skin_frost': { name: 'Frost Giant', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
-  'skin_hydro': { name: 'Hydro Striker Kit', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
-  'skin_mars': { name: 'Mars Rover Kit', category: 'skins', slot: 'skin', rarity: 'rare', price: 700 },
-  'skin_shadow': { name: 'Shadow Ninja', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
-  'skin_solar': { name: 'Solar Flare', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
-  'skin_gold': { name: 'Golden Legend', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
-  'skin_cyber': { name: 'Cyber Blue Jersey', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
-  'skin_astronaut': { name: 'Astronaut Kit', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
-  'skin_neon_elite': { name: 'Cyber Striker #10', category: 'skins', slot: 'skin', rarity: 'epic', price: 1500 },
+  // === FOOTBALL KITS (9 Canonical Items) ===
+  'skin_rookie': { name: 'Rookie Blue', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+  'skin_crimson': { name: 'Crimson Comet', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300 },
+  'skin_footy_royal_striker': { name: 'Royal Striker', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 750 },
+  'skin_frost': { name: 'Frost Giant', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 700 },
+  'skin_footy_cyber_strike': { name: 'Cyber Strike', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1400 },
+  'skin_footy_stealth_shadow': { name: 'Stealth Shadow', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1500 },
+  'skin_astronaut': { name: 'Astronaut Kit', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1600 },
+  'skin_footy_golden_legend': { name: 'Golden Legend', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
+  'skin_footy_neon_matrix': { name: 'Neon Matrix', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2200 },
 
-  // Football Balls
-  'ball_footy_classic': { name: 'Classic Leather', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-  'ball_footy_plasma': { name: 'Plasma Pulse', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
-  'ball_footy_neon': { name: 'Cyan Core Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
-  'ball_footy_solar': { name: 'Solar Blaze Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
-  'ball_footy_inferno': { name: 'Inferno Ball Skin', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
-  'ball_footy_gold': { name: 'Solid Gold', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
+  // === BASKETBALL KITS (8 Canonical Items) ===
+  'skin_solar': { name: 'Solar Street', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+  'skin_hoops_street_legend': { name: 'Street Legend', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750 },
+  'skin_sunset': { name: 'Sunset Gold', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750 },
+  'skin_hoops_neon_splash': { name: 'Neon Splash', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 800 },
+  'skin_hoops_golden_state': { name: 'Golden State', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
+  'skin_mars': { name: 'Mars Rover', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
+  'skin_hoops_cyber_dunk': { name: 'Cyber Dunker', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1500 },
+  'skin_hoops_phantom_black': { name: 'Phantom Black', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
+
+  // === FOOTBALL BALLS (6 Canonical Items) ===
+  'ball_footy_classic': { name: 'Match Classic', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+  'ball_footy_inferno': { name: 'Solar Inferno', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 600 },
+  'ball_footy_plasma': { name: 'Plasma Energy', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
+  'ball_footy_cyber_neon': { name: 'Cyber Matrix', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1200 },
   'ball_earthrise': { name: 'Earthrise Ball', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
+  'ball_footy_golden_elite': { name: 'Championship Gold', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2000 },
 
-  // Basketball Balls
-  'ball_hoops_street': { name: 'Raw Street', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-  'ball_hoops_blaze': { name: 'Neon Blaze Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 200 },
-  'ball_hoops_chrome': { name: 'Chrome Spark', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 500 },
-  'ball_tidal': { name: 'Tidal Wave Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 500 },
-  'ball_hoops_midnight': { name: 'Midnight Matte', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
-  'ball_cyber_neon': { name: 'Cyber Neon Ball', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
+  // === BASKETBALL BALLS (7 Canonical Items) ===
+  'ball_hoops_street': { name: 'Street Classic', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+  'ball_hoops_neon_energy': { name: 'Neon Energy', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 600 },
+  'ball_hoops_molten_fire': { name: 'Molten Fire', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1200 },
+  'ball_hoops_chrome': { name: 'Chrome Edition', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 800 },
+  'ball_hoops_midnight': { name: 'Midnight Shadow', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
+  'ball_hoops_cosmic': { name: 'Cosmic Galaxy', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 1800 },
+  'ball_hoops_golden_elite': { name: 'Golden All-Star', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2000 },
 
   // Standard Starter Stadiums (preserved for match loading)
   'std_footy_classic': { name: 'Classic Grass', category: 'stadiums', slot: 'stadium.footy', mode: 'footy', price: 0, isDefault: true },
@@ -343,6 +361,7 @@ function createDefaultPlayer(playerId) {
     coins: 350,
     xp: 0,
     transactions: [],
+    unseenItems: [],
     owned: [
       'skin_rookie',
       'std_footy_classic',
@@ -2929,6 +2948,7 @@ const server = http.createServer((req, res) => {
       xp: player.xp,
       owned: player.owned,
       equipped: player.equipped,
+      unseenItems: player.unseenItems || [],
       boostCharges: player.boostCharges || {},
       armedBoost: player.armedBoost || null,
       packs: player.packs,
@@ -3029,6 +3049,12 @@ const server = http.createServer((req, res) => {
           if (!player.owned.includes(id)) player.owned.push(id);
         });
       }
+      if (data.unseenItems && Array.isArray(data.unseenItems)) {
+        if (!player.unseenItems) player.unseenItems = [];
+        data.unseenItems.forEach(id => {
+          if (!player.unseenItems.includes(id)) player.unseenItems.push(id);
+        });
+      }
       if (data.equipped && typeof data.equipped === 'object') {
         Object.keys(data.equipped).forEach(slot => {
           const item = data.equipped[slot];
@@ -3099,6 +3125,7 @@ const server = http.createServer((req, res) => {
         xp: player.xp,
         owned: player.owned,
         equipped: player.equipped,
+        unseenItems: player.unseenItems || [],
         boostCharges: player.boostCharges || {},
         armedBoost: player.armedBoost || null,
         battlePass: player.battlePass,
@@ -3149,9 +3176,12 @@ const server = http.createServer((req, res) => {
 
         bundle.items.forEach(it => {
           if (it.type === 'cosmetic') {
-            if (!player.owned.includes(it.id)) {
-              player.owned.push(it.id);
-              itemsGranted.push(it.id);
+            const cId = LEGACY_ITEM_ALIASES[it.id] || it.id;
+            if (!player.owned.includes(cId)) {
+              player.owned.push(cId);
+              itemsGranted.push(cId);
+              if (!player.unseenItems) player.unseenItems = [];
+              if (!player.unseenItems.includes(cId)) player.unseenItems.push(cId);
             }
           } else if (it.type === 'coins') {
             bonusCoins += (it.val || 0);
@@ -3183,6 +3213,7 @@ const server = http.createServer((req, res) => {
           coins: player.coins,
           xp: player.xp,
           owned: player.owned,
+          unseenItems: player.unseenItems || [],
           packs: player.packs,
           itemsGranted
         };
@@ -3196,13 +3227,17 @@ const server = http.createServer((req, res) => {
       }
 
       // B. Check if buying a Single Item, Mystery Pack or Boost
-      const catItem = ITEM_CATALOG[itemId];
+      const canonicalId = LEGACY_ITEM_ALIASES[itemId] || itemId;
+      const catItem = ITEM_CATALOG[canonicalId] || ITEM_CATALOG[itemId];
       if (!catItem) {
         return sendJson(res, 404, { ok: false, error: 'item_not_found', message: 'Item does not exist in store catalog' });
       }
 
       if (catItem.category !== 'packs' && catItem.category !== 'boosts') {
-        if (player.owned.includes(itemId)) {
+        const alreadyOwned = player.owned.includes(itemId) ||
+          player.owned.includes(canonicalId) ||
+          Object.keys(LEGACY_ITEM_ALIASES).some(leg => LEGACY_ITEM_ALIASES[leg] === canonicalId && player.owned.includes(leg));
+        if (alreadyOwned) {
           return sendJson(res, 400, { ok: false, error: 'already_owned', message: 'You already own this cosmetic item' });
         }
       }
@@ -3223,7 +3258,13 @@ const server = http.createServer((req, res) => {
         if (!player.boostCharges) player.boostCharges = {};
         player.boostCharges[itemId] = (player.boostCharges[itemId] || 0) + 1;
       } else {
-        player.owned.push(itemId);
+        if (!player.owned.includes(canonicalId)) {
+          player.owned.push(canonicalId);
+        }
+        if (!player.unseenItems) player.unseenItems = [];
+        if (!player.unseenItems.includes(canonicalId)) {
+          player.unseenItems.push(canonicalId);
+        }
       }
       player.updatedAt = Date.now();
 
@@ -3234,7 +3275,7 @@ const server = http.createServer((req, res) => {
         0,
         player.coins,
         'Purchased item: ' + catItem.name,
-        itemId
+        canonicalId
       );
 
       const resp = {
@@ -3244,10 +3285,11 @@ const server = http.createServer((req, res) => {
         coins: player.coins,
         xp: player.xp,
         owned: player.owned,
+        unseenItems: player.unseenItems || [],
         packs: player.packs,
         boostCharges: player.boostCharges || {},
         armedBoost: player.armedBoost || null,
-        purchasedItem: itemId
+        purchasedItem: canonicalId
       };
 
       if (idempotencyKey) {
@@ -3582,8 +3624,11 @@ const server = http.createServer((req, res) => {
         });
       }
 
-      const isDefault = ITEM_CATALOG[itemId] && ITEM_CATALOG[itemId].isDefault;
-      const isOwned = player.owned.includes(itemId) || isDefault;
+      const canonicalId = LEGACY_ITEM_ALIASES[itemId] || itemId;
+      const isDefault = (ITEM_CATALOG[canonicalId] && ITEM_CATALOG[canonicalId].isDefault) ||
+        (ITEM_CATALOG[itemId] && ITEM_CATALOG[itemId].isDefault);
+      const isOwned = player.owned.includes(itemId) || player.owned.includes(canonicalId) || isDefault ||
+        Object.keys(LEGACY_ITEM_ALIASES).some(leg => LEGACY_ITEM_ALIASES[leg] === canonicalId && player.owned.includes(leg));
 
       if (!isOwned) {
         return sendJson(res, 403, {
@@ -3594,7 +3639,11 @@ const server = http.createServer((req, res) => {
       }
 
       if (!player.equipped) player.equipped = {};
-      player.equipped[slot] = itemId;
+      player.equipped[slot] = canonicalId;
+      // Interaction in wardrobe marks item as seen
+      if (player.unseenItems && (player.unseenItems.includes(canonicalId) || player.unseenItems.includes(itemId))) {
+        player.unseenItems = player.unseenItems.filter(id => id !== canonicalId && id !== itemId);
+      }
       player.updatedAt = Date.now();
       persistState();
 
@@ -3602,9 +3651,35 @@ const server = http.createServer((req, res) => {
         ok: true,
         success: true,
         slot,
-        itemId,
-        equipped: player.equipped
+        itemId: canonicalId,
+        equipped: player.equipped,
+        unseenItems: player.unseenItems || []
       });
+    });
+  }
+
+  // Dedicated Mark New Item as Seen Endpoint (Wardrobe interaction)
+  if (pathname === '/api/economy/mark-seen' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+      const playerId = String(data.playerId || '').trim();
+      const itemId = String(data.itemId || '').trim();
+      const itemIds = Array.isArray(data.itemIds) ? data.itemIds : (itemId ? [itemId] : []);
+
+      if (!playerId || itemIds.length === 0) {
+        return sendJson(res, 400, { ok: false, error: 'missing_parameters' });
+      }
+
+      const player = getPlayer(playerId);
+      if (!player) return sendJson(res, 404, { ok: false, error: 'player_not_found' });
+
+      if (!player.unseenItems) player.unseenItems = [];
+      const targets = itemIds.map(id => LEGACY_ITEM_ALIASES[id] || id);
+      player.unseenItems = player.unseenItems.filter(id => !targets.includes(id) && !itemIds.includes(id));
+      player.updatedAt = Date.now();
+      persistState();
+
+      return sendJson(res, 200, { ok: true, success: true, unseenItems: player.unseenItems });
     });
   }
 

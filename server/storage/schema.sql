@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS players (
     xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
     owned_items JSONB NOT NULL DEFAULT '["skin_rookie","std_footy_classic","std_hoops_street","ball_footy_classic","ball_hoops_street","frame_default","trail_default"]'::jsonb,
     equipped_items JSONB NOT NULL DEFAULT '{"skin":"skin_rookie","ball.footy":"ball_footy_classic","ball.hoops":"ball_hoops_street","stadium.footy":"std_footy_classic","stadium.hoops":"std_hoops_street","trail":"trail_default","frame":"frame_default"}'::jsonb,
+    unseen_items JSONB NOT NULL DEFAULT '[]'::jsonb,
     boost_charges JSONB NOT NULL DEFAULT '{}'::jsonb,
     armed_boost VARCHAR(64),
     packs JSONB NOT NULL DEFAULT '{"free":{},"paid":{}}'::jsonb,

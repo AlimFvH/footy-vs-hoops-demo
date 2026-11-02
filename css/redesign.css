@@ -7576,3 +7576,101 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   padding: 3px 9px !important;
   border-radius: 10px !important;
 }
+
+/* ============================================================
+   Wardrobe Rarity Filter Bar & New Item Indicator
+   ============================================================ */
+.fvh-rarity-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.fvh-rarity-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+.fvh-rarity-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted, #94a3b8);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.fvh-rarity-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.fvh-rarity-btn.active {
+  color: #ffffff;
+  background: rgba(0, 240, 255, 0.16);
+  border-color: #00f0ff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+}
+.fvh-rarity-btn.r-common.active {
+  background: rgba(148, 163, 184, 0.18);
+  border-color: #cbd5e1;
+  box-shadow: 0 0 10px rgba(203, 213, 225, 0.3);
+}
+.fvh-rarity-btn.r-rare.active {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+}
+.fvh-rarity-btn.r-epic.active {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: #a855f7;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
+}
+.fvh-rarity-btn.r-legendary.active {
+  background: rgba(234, 179, 8, 0.22);
+  border-color: #facc15;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.45);
+}
+
+/* Vibrant NEW Item Indicator Badge */
+.card.shopc {
+  position: relative;
+}
+.badge-new-item {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.65), 0 0 12px rgba(249, 115, 22, 0.45);
+  animation: pulseNewBadge 1.8s infinite ease-in-out;
+  pointer-events: none;
+}
+@keyframes pulseNewBadge {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.65), 0 0 12px rgba(249, 115, 22, 0.45);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 3px 12px rgba(239, 68, 68, 0.85), 0 0 18px rgba(249, 115, 22, 0.65);
+  }
+}

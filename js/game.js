@@ -13237,6 +13237,7 @@ define("core/save", ["require", "exports", "core/input", "data/shop"], function 
             xp: 0,
             owned: (0, shop_js_2.defaultOwned)(),
             equipped: (0, shop_js_2.defaultEquipped)(),
+            unseenItems: [],
             armedBoost: null,
             boostCharges: {},
             stats: {
