@@ -6880,11 +6880,25 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 /* Topbar Mobile Responsiveness (<480px, <400px, and <=360px) */
 @media (max-width: 480px) {
   .fvh-topbar-brand .logo-text {
-    display: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    font-style: italic !important;
+    letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
+    color: var(--text-pure, #ffffff) !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;
+    user-select: none !important;
+  }
+  .fvh-topbar-brand .logo-text .dot {
+    color: var(--neon-cyan, #00f0ff) !important;
+    margin: 0 2px !important;
+    font-size: 0.9em !important;
   }
   .fvh-topbar-brand {
     margin-right: 4px !important;
-    gap: 4px !important;
+    gap: 6px !important;
     flex-shrink: 0 !important;
   }
   .fvh-topbar-brand .fvh-official-emblem,
@@ -6939,6 +6953,13 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   .fvh-topbar {
     padding: 4px 6px !important;
     gap: 2px !important;
+  }
+  .fvh-topbar-brand {
+    gap: 4px !important;
+  }
+  .fvh-topbar-brand .logo-text {
+    font-size: 11px !important;
+    letter-spacing: 0.3px !important;
   }
   .fvh-topbar-brand .fvh-official-emblem,
   .fvh-topbar-brand img {
