@@ -8827,14 +8827,27 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 .fvh-airdrop-action-btn {
   padding: 12px 10px !important;
   border-radius: 12px !important;
-  font-size: 12.5px !important;
+  font-size: 12px !important;
   font-weight: 900 !important;
   cursor: pointer;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
+  gap: 4px !important;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+@media (max-width: 360px) {
+  .fvh-airdrop-quick-actions {
+    grid-template-columns: 1fr;
+  }
+  .fvh-airdrop-action-btn {
+    font-size: 13px !important;
+  }
 }
 
 .fvh-airdrop-pillars-grid {
@@ -9328,4 +9341,192 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   margin-bottom: 8px !important;
 }
 
+/* ==========================================================================
+   CONSOLE-GRADE PAUSE MODAL & ARTWORK STYLES
+   ========================================================================== */
+.fvh-pause-overlay {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(6, 10, 18, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  animation: fvhFadeIn 0.22s ease-out forwards;
+}
 
+.fvh-pause-card {
+  width: 100% !important;
+  max-width: 380px !important;
+  background: linear-gradient(180deg, rgba(20, 30, 48, 0.96) 0%, rgba(10, 15, 26, 0.98) 100%) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+  border-radius: 24px !important;
+  padding: 20px 22px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 32px rgba(0, 240, 255, 0.15) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  animation: fvhPopScale 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.fvh-pause-match-status {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.fvh-pause-arena-tag {
+  font-size: 11px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.fvh-pause-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.fvh-pause-team-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.fvh-pause-score-nums {
+  font-size: 20px;
+  font-weight: 950;
+  color: #ffffff;
+  letter-spacing: 2px;
+  font-family: Impact, Arial Black, sans-serif;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.fvh-pause-artwork {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fvh-pause-artwork-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.6));
+}
+
+.fvh-pause-title {
+  font-size: 18px !important;
+  font-weight: 950 !important;
+  letter-spacing: 1.5px !important;
+  color: #ffffff !important;
+  text-transform: uppercase !important;
+  margin: 4px 0 16px !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+}
+
+.fvh-pause-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  border-radius: 14px !important;
+  margin-bottom: 8px !important;
+  transition: transform 0.14s ease, box-shadow 0.14s ease !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+.fvh-pause-btn:active {
+  transform: scale(0.97) !important;
+}
+
+.fvh-pause-resume-btn {
+  background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%) !important;
+  color: #031124 !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(0, 240, 255, 0.35) !important;
+  font-size: 15px !important;
+  font-weight: 950 !important;
+}
+
+.fvh-pause-secondary-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+.fvh-pause-danger-btn {
+  background: rgba(239, 68, 68, 0.14) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ==========================================================================
+   PLAY-TO-AIRDROP HUB POLISHED HERO ARTWORK & CARDS
+   ========================================================================== */
+.fvh-airdrop-hero-art-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.fvh-airdrop-hero-art {
+  width: 120px;
+  height: 120px;
+  display: block;
+}
+
+.fvh-airdrop-calc-box {
+  animation: fvhFadeIn 0.3s ease-out;
+}
+
+
+
+
+/* Fix: Upgrades page header — prevent wallet chip from overflowing */
+.fvh-upgrades-head h1 {
+  font-size: clamp(14px, 4.2vw, 20px) !important;
+}
+.fvh-upgrades-head small {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fvh-upgrades-head .fvh-wallet-chips {
+  flex-shrink: 0 !important;
+}
+
+/* Fix: Locker equip button — prevent text overflow */
+.fvh-locker-equip-btn,
+.btn.primary.block {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

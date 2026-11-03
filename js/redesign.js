@@ -606,7 +606,7 @@
       airdropPillarWalletTitle: '4. Link Public TON Wallet',
       airdropPillarWalletDesc: 'Connect Tonkeeper or Telegram Wallet. Your public address will receive verified tokens upon official TGE launch on TON.',
       airdropBtnPlay: '⚔️ Play Match',
-      airdropBtnInvite: '👥 Invite Friends (+100 FvH)',
+      airdropBtnInvite: '👥 Invite Friends (+100)',
       airdropBtnWallet: '💎 Link TON Wallet',
       airdropBtnWalletChange: '⚙️ Manage TON Wallet',
       airdropDisclaimer: 'ℹ️ Tokens $FOOTY and $HOOPS will be minted on TON blockchain during official TGE. In-game FvH Coins are for shop cosmetics and upgrades.',
@@ -652,7 +652,13 @@
       upgradeSkillKeeperFooty: 'Goalkeeper',
       upgradeSkillKeeperFootyDesc: 'Expands goalkeeper dive radius and reaction to distant strikes',
       upgradeSkillKeeperHoops: 'Rim Defense',
-      upgradeSkillKeeperHoopsDesc: 'Expands shot block height and steal interception chance'
+      upgradeSkillKeeperHoopsDesc: 'Expands shot block height and steal interception chance',
+      pauseTitle: 'MATCH PAUSED',
+      pauseResume: 'Resume Match',
+      pauseRestart: 'Restart',
+      pauseSettings: 'Settings',
+      pauseQuit: 'Quit to Menu',
+      pauseQuitConfirm: 'Quit to main menu? Current match progress will be lost.'
     },
     ru: {
       replay: 'ПОВТОР',
@@ -889,11 +895,11 @@
       cpuTeam: 'Соперник',
       teamSelectTitle: 'ФУТБОЛ ПРОТИВ БАСКЕТБОЛА',
       teamSelectSubtitle: 'Выберите свою сторону в легендарной битве двух видов спорта!',
-      teamFootyTitle: 'КОМАНДА ФУТБОЛА',
+      teamFootyTitle: 'КОМАНДА FOOTY',
       teamFootySub: 'Форвард · Фирменные бутсы и техника',
       teamFootyDesc: 'Сражайтесь за честь футбола! Забивайте голы и докажите превосходство футбола над баскетболом!',
       teamFootyBtn: 'ВЫБРАТЬ ФУТБОЛ',
-      teamHoopsTitle: 'КОМАНДА БАСКЕТБОЛА',
+      teamHoopsTitle: 'КОМАНДА HOOPS',
       teamHoopsSub: 'Ас площадки · Мощные данки и броски',
       teamHoopsDesc: 'Сражайтесь за гордость баскетбола! Бросайте в кольцо и докажите мощь баскетбола над футболом!',
       teamHoopsBtn: 'ВЫБРАТЬ БАСКЕТБОЛ',
@@ -1187,7 +1193,7 @@
       airdropPillarWalletTitle: '4. Привяжи TON-кошелек',
       airdropPillarWalletDesc: 'Подключи Tonkeeper или Telegram Wallet. Публичный адрес кошелька зафиксируется для отправки токенов на TGE в сети TON.',
       airdropBtnPlay: '⚔️ Играть матч',
-      airdropBtnInvite: '👥 Пригласить друзей (+100 FvH)',
+      airdropBtnInvite: '👥 Друзья (+100 FvH)',
       airdropBtnWallet: '💎 Привязать TON-кошелек',
       airdropBtnWalletChange: '⚙️ Управление кошельком',
       airdropDisclaimer: 'ℹ️ Токены $FOOTY и $HOOPS будут выпущены на блокчейне TON в рамках официального TGE. Внутриигровые FvH монеты используются для магазина и прокачки.',
@@ -1233,7 +1239,13 @@
       upgradeSkillKeeperFooty: 'Вратарь',
       upgradeSkillKeeperFootyDesc: 'Увеличивает радиус прыжка вратаря и реакцию на дальние удары',
       upgradeSkillKeeperHoops: 'Защита Кольца',
-      upgradeSkillKeeperHoopsDesc: 'Увеличивает высоту блока под кольцом и шанс перехвата мяча'
+      upgradeSkillKeeperHoopsDesc: 'Увеличивает высоту блока под кольцом и шанс перехвата мяча',
+      pauseTitle: 'МАТЧ НА ПАУЗЕ',
+      pauseResume: 'Продолжить матч',
+      pauseRestart: 'Перезапуск',
+      pauseSettings: 'Настройки',
+      pauseQuit: 'Выйти в меню',
+      pauseQuitConfirm: 'Выйти в главное меню? Текущий прогресс матча будет потерян.'
     }
   };
 
@@ -2114,9 +2126,12 @@
     'ball_hoops_blaze': 'ball_hoops_molten_fire'
   };
 
-  // Rule: Item names must strictly remain in English throughout Store and Wardrobe
+  // Translate item names to active language (fallback to English original)
   function trItem(name) {
-    return name || '';
+    if (!name) return '';
+    var lang = getActiveLang();
+    if (ITEM_I18N && ITEM_I18N[lang] && ITEM_I18N[lang][name]) return ITEM_I18N[lang][name];
+    return name;
   }
 
   function getItemLabelById(id, fallback) {
@@ -2770,22 +2785,22 @@
       // High-End Pro Basketball Tank Top
       var tankBody =
         // Inner collar back lining
-        '<path d="M43 24 C45 28 55 28 57 24 C54 29 46 29 43 24 Z" fill="rgba(0,0,0,0.45)"/>' +
-        // Main Tank Contour
-        '<path d="M33 22 C31 30 25 36 23 46 L27 84 L73 84 L77 46 C75 36 69 30 67 22 L57 26 C54 36 46 36 43 26 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.2" filter="url(#drop_' + uid + ')"/>' +
+        '<path d="M42 22 C45 26 55 26 58 22 C55 27 45 27 42 22 Z" fill="rgba(0,0,0,0.5)"/>' +
+        // Main Tank Contour with deep curved armholes and athletic taper
+        '<path d="M33 21 C31 28 25 35 24 46 L27 83 C27 85 29 86 31 86 L69 86 C71 86 73 85 73 83 L76 46 C75 35 69 28 67 21 L58 23 C54 32 46 32 42 23 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.2" filter="url(#drop_' + uid + ')"/>' +
         // Torso 3D Cylinder Lighting overlay
-        '<path d="M33 22 C31 30 25 36 23 46 L27 84 L73 84 L77 46 C75 36 69 30 67 22 L57 26 C54 36 46 36 43 26 Z" fill="url(#torso_' + uid + ')"/>' +
-        // Contrast Side Panels (flanks)
-        '<path d="M23 46 L27 46 L27 84 L23 84 Z" fill="' + trim + '" opacity="0.9"/>' +
-        '<path d="M77 46 L73 46 L73 84 L77 84 Z" fill="' + trim + '" opacity="0.9"/>' +
-        // Striped Ribbed Neckline Binding
-        '<path d="M43 26 C46 36 54 36 57 26" stroke="' + trim + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
-        '<path d="M43 26 C46 36 54 36 57 26" stroke="' + accent + '" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M33 21 C31 28 25 35 24 46 L27 83 C27 85 29 86 31 86 L69 86 C71 86 73 85 73 83 L76 46 C75 35 69 28 67 21 L58 23 C54 32 46 32 42 23 Z" fill="url(#torso_' + uid + ')"/>' +
+        // Contrast Side Flank Panels
+        '<path d="M24 46 L27 46 L27 83 L24 83 Z" fill="' + trim + '" opacity="0.85"/>' +
+        '<path d="M76 46 L73 46 L73 83 L76 83 Z" fill="' + trim + '" opacity="0.85"/>' +
+        // Striped Ribbed Scoop Neckline Binding
+        '<path d="M42 23 C45 32 55 32 58 23" stroke="' + trim + '" stroke-width="3.4" fill="none" stroke-linecap="round"/>' +
+        '<path d="M42 23 C45 32 55 32 58 23" stroke="' + accent + '" stroke-width="1.3" fill="none" stroke-linecap="round"/>' +
         // Striped Ribbed Armholes
-        '<path d="M33 22 C31 30 25 36 23 46" stroke="' + trim + '" stroke-width="3.0" fill="none" stroke-linecap="round"/>' +
-        '<path d="M33 22 C31 30 25 36 23 46" stroke="' + accent + '" stroke-width="1.1" fill="none" stroke-linecap="round"/>' +
-        '<path d="M67 22 C69 30 75 36 77 46" stroke="' + trim + '" stroke-width="3.0" fill="none" stroke-linecap="round"/>' +
-        '<path d="M67 22 C69 30 75 36 77 46" stroke="' + accent + '" stroke-width="1.1" fill="none" stroke-linecap="round"/>';
+        '<path d="M33 21 C31 28 25 35 24 46" stroke="' + trim + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M33 21 C31 28 25 35 24 46" stroke="' + accent + '" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M67 21 C69 28 75 35 76 46" stroke="' + trim + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M67 21 C69 28 75 35 76 46" stroke="' + accent + '" stroke-width="1.2" fill="none" stroke-linecap="round"/>';
 
       // Arched Team Wordmark across chest
       var wordmark = teamName ?
@@ -2837,21 +2852,25 @@
 
     // High-End Pro Football Kit (Sleeves, Ribbed V-Neck Collar, Club Crest, Athletic Badge)
     var footyBody =
-      // Inner collar back lining
-      '<path d="M44 26 C47 31 53 31 56 26 C53 31 47 31 44 26 Z" fill="rgba(0,0,0,0.5)"/>' +
-      // Main Jersey Contour with Raglan Sleeves
-      '<path d="M28 24 L10 38 L22 49 L28 42 L28 84 L72 84 L72 42 L78 49 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.2" filter="url(#drop_' + uid + ')"/>' +
+      // Inner collar back lining (depth)
+      '<path d="M43 23 C46 27 54 27 57 23 C54 28 46 28 43 23 Z" fill="rgba(0,0,0,0.55)"/>' +
+      // Main Jersey Silhouette with smooth anatomical raglan curves
+      '<path d="M43 23 C34 25 24 28 17 38 C14 42 16 46 22 49 C26 50 28 47 30 44 L30 82 C30 84 32 85 34 85 L66 85 C68 85 70 84 70 82 L70 44 C72 47 74 50 78 49 C84 46 86 42 83 38 C76 28 66 25 57 23 C54 29 46 29 43 23 Z" fill="url(#jg_' + uid + ')" stroke="' + trim + '" stroke-width="1.2" filter="url(#drop_' + uid + ')"/>' +
       // Torso 3D Cylinder Lighting overlay
-      '<path d="M28 24 L10 38 L22 49 L28 42 L28 84 L72 84 L72 42 L78 49 L90 38 L72 24 L56 30 L44 30 Z" fill="url(#torso_' + uid + ')"/>' +
-      // Raglan Sleeve Seam Piping
-      '<path d="M44 30 L28 42" stroke="' + trim + '" stroke-width="1.5" stroke-dasharray="2,1" opacity="0.7"/>' +
-      '<path d="M56 30 L72 42" stroke="' + trim + '" stroke-width="1.5" stroke-dasharray="2,1" opacity="0.7"/>' +
-      // Sleeve Cuff Trims
-      '<polygon points="10,38 13,41 23,33 20,30" fill="url(#trim_' + uid + ')"/>' +
-      '<polygon points="90,38 87,41 77,33 80,30" fill="url(#trim_' + uid + ')"/>' +
-      // Collar Lapel / V-Neck Rib Trim
-      '<polygon points="44,24 50,32 56,24 53,24 50,29 47,24" fill="url(#trim_' + uid + ')"/>' +
-      '<path d="M44 24 L50 31 L56 24" stroke="' + trim + '" stroke-width="1.5" fill="none"/>';
+      '<path d="M43 23 C34 25 24 28 17 38 C14 42 16 46 22 49 C26 50 28 47 30 44 L30 82 C30 84 32 85 34 85 L66 85 C68 85 70 84 70 82 L70 44 C72 47 74 50 78 49 C84 46 86 42 83 38 C76 28 66 25 57 23 C54 29 46 29 43 23 Z" fill="url(#torso_' + uid + ')"/>' +
+      // Raglan sleeve seam stitching (curves elegantly from neck to armpit)
+      '<path d="M43 24 Q35 34 30 44" stroke="' + trim + '" stroke-width="1.3" stroke-dasharray="2.5,1.2" opacity="0.75" fill="none"/>' +
+      '<path d="M57 24 Q65 34 70 44" stroke="' + trim + '" stroke-width="1.3" stroke-dasharray="2.5,1.2" opacity="0.75" fill="none"/>' +
+      // Left & Right sleeve cuffs (ribbed elastic bands with double stripe)
+      '<path d="M17 38 L22 49" stroke="' + trim + '" stroke-width="3.2" stroke-linecap="round"/>' +
+      '<path d="M17 38 L22 49" stroke="' + accent + '" stroke-width="1.2" stroke-linecap="round"/>' +
+      '<path d="M83 38 L78 49" stroke="' + trim + '" stroke-width="3.2" stroke-linecap="round"/>' +
+      '<path d="M83 38 L78 49" stroke="' + accent + '" stroke-width="1.2" stroke-linecap="round"/>' +
+      // Ribbed V-Neck / Athletic Collar
+      '<path d="M43 23 Q50 31 57 23" stroke="' + trim + '" stroke-width="3.4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M43 23 Q50 31 57 23" stroke="' + accent + '" stroke-width="1.4" fill="none" stroke-linecap="round"/>' +
+      // Brand Swoosh / Chevron on right chest (x=63, y=39)
+      '<path d="M61 40 Q65 42 68 37 Q65 39 63 38 Z" fill="' + accent + '" opacity="0.9"/>';
 
     // Unique Football Patterns
     var fPattern = '';
@@ -2968,6 +2987,149 @@
 
     return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
       defs + shadow + footyBody + fPattern + fabricWeave + crest + fNum + fTag + '</svg>';
+  }
+
+  // High-End 3D Stadium Pause Artwork SVG
+  function getPauseArtworkSvg(curChar) {
+    var isFooty = (curChar === 'footy');
+    var uid = 'pause_art_' + (isFooty ? 'footy' : 'hoops');
+    var primary = isFooty ? '#00f0ff' : '#ff6b00';
+    var secondary = isFooty ? '#1d4ed8' : '#ea580c';
+    var accent = isFooty ? '#38bdf8' : '#facc15';
+
+    return '<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" class="fvh-pause-artwork-svg">' +
+      '<defs>' +
+      '  <radialGradient id="pGlow_' + uid + '" cx="50%" cy="50%" r="50%">' +
+      '    <stop offset="0%" stop-color="' + primary + '" stop-opacity="0.45"/>' +
+      '    <stop offset="60%" stop-color="' + secondary + '" stop-opacity="0.18"/>' +
+      '    <stop offset="100%" stop-color="' + primary + '" stop-opacity="0"/>' +
+      '  </radialGradient>' +
+      '  <linearGradient id="pShield_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '    <stop offset="0%" stop-color="#1e293b"/>' +
+      '    <stop offset="50%" stop-color="#0f172a"/>' +
+      '    <stop offset="100%" stop-color="#020617"/>' +
+      '  </linearGradient>' +
+      '  <linearGradient id="pBars_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '    <stop offset="0%" stop-color="#ffffff"/>' +
+      '    <stop offset="30%" stop-color="' + accent + '"/>' +
+      '    <stop offset="70%" stop-color="' + primary + '"/>' +
+      '    <stop offset="100%" stop-color="' + secondary + '"/>' +
+      '  </linearGradient>' +
+      '  <filter id="pDrop_' + uid + '" x="-20%" y="-20%" width="140%" height="140%">' +
+      '    <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.7"/>' +
+      '  </filter>' +
+      '  <filter id="pBloom_' + uid + '" x="-30%" y="-30%" width="160%" height="160%">' +
+      '    <feGaussianBlur stdDeviation="5" result="blur"/>' +
+      '    <feComposite in="SourceGraphic" in2="blur" operator="over"/>' +
+      '  </filter>' +
+      '</defs>' +
+      '<circle cx="90" cy="90" r="82" fill="url(#pGlow_' + uid + ')"/>' +
+      '<path d="M15 15 L70 70 L55 85 L0 30 Z" fill="rgba(255,255,255,0.04)"/>' +
+      '<path d="M165 15 L110 70 L125 85 L180 30 Z" fill="rgba(255,255,255,0.04)"/>' +
+      '<polygon points="90,16 150,42 150,118 90,164 30,118 30,42" fill="url(#pShield_' + uid + ')" stroke="' + primary + '" stroke-width="2.5" filter="url(#pDrop_' + uid + ')"/>' +
+      '<polygon points="90,22 144,46 144,114 90,156 36,114 36,46" fill="none" stroke="' + accent + '" stroke-width="1" stroke-dasharray="6,4" opacity="0.6"/>' +
+      '<g transform="translate(48, 122) scale(0.65)">' +
+      '  <circle cx="16" cy="16" r="16" fill="#f8fafc" stroke="#334155" stroke-width="1.8"/>' +
+      '  <polygon points="16,8 23,13 20,22 12,22 9,13" fill="#0f172a"/>' +
+      '  <line x1="16" y1="8" x2="16" y2="1" stroke="#334155" stroke-width="1.8"/>' +
+      '  <line x1="23" y1="13" x2="30" y2="11" stroke="#334155" stroke-width="1.8"/>' +
+      '  <line x1="20" y1="22" x2="25" y2="29" stroke="#334155" stroke-width="1.8"/>' +
+      '  <line x1="12" y1="22" x2="7" y2="29" stroke="#334155" stroke-width="1.8"/>' +
+      '  <line x1="9" y1="13" x2="2" y2="11" stroke="#334155" stroke-width="1.8"/>' +
+      '</g>' +
+      '<g transform="translate(108, 122) scale(0.65)">' +
+      '  <circle cx="16" cy="16" r="16" fill="#ea580c" stroke="#180802" stroke-width="1.8"/>' +
+      '  <path d="M0 16 H32 M16 0 V32" stroke="#180802" stroke-width="1.6"/>' +
+      '  <path d="M4 6 C12 10 12 22 4 26 M28 6 C20 10 20 22 28 26" stroke="#180802" stroke-width="1.4" fill="none"/>' +
+      '</g>' +
+      '<g filter="url(#pBloom_' + uid + ')">' +
+      '  <rect x="66" y="52" width="18" height="54" rx="5" fill="url(#pBars_' + uid + ')" stroke="#ffffff" stroke-width="1.5" filter="url(#pDrop_' + uid + ')"/>' +
+      '  <rect x="69" y="55" width="4" height="48" rx="2" fill="rgba(255,255,255,0.7)"/>' +
+      '  <rect x="96" y="52" width="18" height="54" rx="5" fill="url(#pBars_' + uid + ')" stroke="#ffffff" stroke-width="1.5" filter="url(#pDrop_' + uid + ')"/>' +
+      '  <rect x="99" y="55" width="4" height="48" rx="2" fill="rgba(255,255,255,0.7)"/>' +
+      '</g>' +
+      '<g transform="translate(36, 142)">' +
+      '  <rect x="0" y="0" width="108" height="20" rx="4" fill="' + secondary + '" stroke="' + accent + '" stroke-width="1" filter="url(#pDrop_' + uid + ')"/>' +
+      '  <text x="54" y="14" font-family="Montserrat, -apple-system, sans-serif" font-size="9" font-weight="900" fill="#ffffff" letter-spacing="1.5" text-anchor="middle">ARENA PAUSED</text>' +
+      '</g>' +
+      '</svg>';
+  }
+
+  // 3D Isometric TON Crystal Coin & Token Graphic SVG for Airdrop Hub
+  function getAirdropHeroGraphicSvg(curChar) {
+    var isFooty = (curChar === 'footy');
+    var uid = 'ad_hero_' + (isFooty ? 'footy' : 'hoops');
+    var tokenSym = isFooty ? '$FOOTY' : '$HOOPS';
+    var primary = isFooty ? '#00f0ff' : '#f97316';
+    var secondary = isFooty ? '#1d4ed8' : '#ea580c';
+    var accent = isFooty ? '#38bdf8' : '#facc15';
+
+    return '<svg width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="fvh-airdrop-hero-art">' +
+      '<defs>' +
+      '  <radialGradient id="adHalo_' + uid + '" cx="50%" cy="50%" r="50%">' +
+      '    <stop offset="0%" stop-color="' + primary + '" stop-opacity="0.55"/>' +
+      '    <stop offset="50%" stop-color="' + secondary + '" stop-opacity="0.22"/>' +
+      '    <stop offset="100%" stop-color="' + primary + '" stop-opacity="0"/>' +
+      '  </radialGradient>' +
+      '  <linearGradient id="tonCoin_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '    <stop offset="0%" stop-color="#0098ea"/>' +
+      '    <stop offset="50%" stop-color="#0077b5"/>' +
+      '    <stop offset="100%" stop-color="#004c75"/>' +
+      '  </linearGradient>' +
+      '  <linearGradient id="goldRim_' + uid + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+      '    <stop offset="0%" stop-color="#fef08a"/>' +
+      '    <stop offset="40%" stop-color="#facc15"/>' +
+      '    <stop offset="80%" stop-color="#ca8a04"/>' +
+      '    <stop offset="100%" stop-color="#854d0e"/>' +
+      '  </linearGradient>' +
+      '  <filter id="adGlow_' + uid + '" x="-25%" y="-25%" width="150%" height="150%">' +
+      '    <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="' + primary + '" flood-opacity="0.6"/>' +
+      '  </filter>' +
+      '  <filter id="coinShadow_' + uid + '" x="-20%" y="-20%" width="140%" height="140%">' +
+      '    <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.75"/>' +
+      '  </filter>' +
+      '</defs>' +
+      '<circle cx="65" cy="65" r="58" fill="url(#adHalo_' + uid + ')"/>' +
+      '<path d="M20 35 L40 35 L50 20" stroke="' + primary + '" stroke-width="1.2" opacity="0.45" stroke-dasharray="3,3"/>' +
+      '<circle cx="20" cy="35" r="2" fill="' + primary + '"/>' +
+      '<circle cx="50" cy="20" r="2.5" fill="' + accent + '"/>' +
+      '<path d="M110 95 L90 95 L80 110" stroke="' + accent + '" stroke-width="1.2" opacity="0.45" stroke-dasharray="3,3"/>' +
+      '<circle cx="110" cy="95" r="2" fill="' + accent + '"/>' +
+      '<circle cx="80" cy="110" r="2.5" fill="' + primary + '"/>' +
+      '<g filter="url(#coinShadow_' + uid + ')">' +
+      '  <circle cx="65" cy="65" r="44" fill="url(#goldRim_' + uid + ')"/>' +
+      '  <circle cx="65" cy="65" r="40" fill="url(#tonCoin_' + uid + ')"/>' +
+      '  <circle cx="65" cy="65" r="38" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>' +
+      '</g>' +
+      (isFooty ?
+        '<g transform="translate(65, 54)">' +
+        '  <circle cx="0" cy="0" r="16" fill="#f8fafc" stroke="#334155" stroke-width="1.5" filter="url(#adGlow_' + uid + ')"/>' +
+        '  <polygon points="0,-8 7,-3 4,6 -4,6 -7,-3" fill="#0f172a"/>' +
+        '  <line x1="0" y1="-8" x2="0" y2="-15" stroke="#334155" stroke-width="1.5"/>' +
+        '  <line x1="7" y1="-3" x2="14" y2="-5" stroke="#334155" stroke-width="1.5"/>' +
+        '  <line x1="4" y1="6" x2="9" y2="13" stroke="#334155" stroke-width="1.5"/>' +
+        '  <line x1="-4" y1="6" x2="-9" y2="13" stroke="#334155" stroke-width="1.5"/>' +
+        '  <line x1="-7" y1="-3" x2="-14" y2="-5" stroke="#334155" stroke-width="1.5"/>' +
+        '</g>' :
+        '<g transform="translate(65, 54)">' +
+        '  <circle cx="0" cy="0" r="16" fill="#ea580c" stroke="#180802" stroke-width="1.5" filter="url(#adGlow_' + uid + ')"/>' +
+        '  <path d="M-16 0 H16 M0 -16 V16" stroke="#180802" stroke-width="1.5"/>' +
+        '  <path d="M-12 -10 C-4 -6 -4 6 -12 10 M12 -10 C4 -6 4 6 12 10" stroke="#180802" stroke-width="1.3" fill="none"/>' +
+        '</g>') +
+      '<g transform="translate(65, 68)">' +
+      '  <path d="M-28 4 Q-34 16 -18 24 Q-2 26 0 26 Q2 26 18 24 Q34 16 28 4" stroke="#facc15" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+      '  <polygon points="-24,10 -28,8 -27,13" fill="#fef08a"/>' +
+      '  <polygon points="-16,19 -20,18 -18,22" fill="#fef08a"/>' +
+      '  <polygon points="24,10 28,8 27,13" fill="#fef08a"/>' +
+      '  <polygon points="16,19 20,18 18,22" fill="#fef08a"/>' +
+      '</g>' +
+      '<g transform="translate(65, 84)">' +
+      '  <rect x="-32" y="0" width="64" height="18" rx="4" fill="' + secondary + '" stroke="#ffffff" stroke-width="1" filter="url(#coinShadow_' + uid + ')"/>' +
+      '  <text x="0" y="13" font-family="Montserrat, Arial Black, sans-serif" font-size="10.5" font-weight="900" fill="#ffffff" letter-spacing="1" text-anchor="middle">' + tokenSym + '</text>' +
+      '</g>' +
+      '<polygon points="34,22 36,17 38,22 43,24 38,26 36,31 34,26 29,24" fill="#ffffff" filter="drop-shadow(0 0 3px #fff)"/>' +
+      '<polygon points="98,32 99.5,28 101,32 105,33.5 101,35 99.5,39 98,35 94,33.5" fill="#facc15" filter="drop-shadow(0 0 3px #facc15)"/>' +
+      '</svg>';
   }
 
   // Detailed 3D Ball SVG
@@ -5597,9 +5759,11 @@
     var titleBox = document.createElement('div');
     titleBox.style.flex = '1 1 auto';
     titleBox.style.padding = '0 6px';
+    titleBox.style.minWidth = '0';
+    titleBox.style.overflow = 'hidden';
     titleBox.innerHTML =
-      '<h1 style="margin:0;font-size:clamp(16px, 4.8vw, 22px);">' + tr('upgradesTitle') + '</h1>' +
-      '<small style="color:var(--text-muted);font-size:10.5px;">' + tr('upgradesSubtitle') + '</small>';
+      '<h1 style="margin:0;font-size:clamp(14px, 4.2vw, 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('upgradesTitle') + '</h1>' +
+      '<small style="color:var(--text-muted);font-size:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('upgradesSubtitle') + '</small>';
 
     var walletBox = document.createElement('div');
     walletBox.className = 'fvh-wallet-chips';
@@ -9670,9 +9834,12 @@
     heroCard.className = 'fvh-airdrop-page-hero';
     heroCard.style.borderColor = isFooty ? 'rgba(0,240,255,0.4)' : 'rgba(249,115,22,0.4)';
     heroCard.innerHTML =
-      '<div class="fvh-airdrop-hero-emblem">' + (isFooty ? '⚽' : '🏀') + '</div>' +
+      '<div class="fvh-airdrop-hero-art-container" style="margin-bottom:8px;">' +
+      getAirdropHeroGraphicSvg(curChar) +
+      '</div>' +
+      '<div class="fvh-airdrop-hero-emblem" style="display:none;">' + (isFooty ? '⚽' : '🏀') + '</div>' +
       '<div style="font-size:13px;font-weight:900;color:' + tokenColor + ';text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">' +
-      (isFooty ? 'Team Football Faction Token' : 'Team Basketball Faction Token') + ' · <b>' + tokenSym + '</b>' +
+      (isFooty ? (lang === 'ru' ? 'Токен Фракции Футбола' : 'Team Football Faction Token') : (lang === 'ru' ? 'Токен Фракции Баскетбола' : 'Team Basketball Faction Token')) + ' · <b>' + tokenSym + '</b>' +
       '</div>' +
       '<div class="fvh-airdrop-pts-value">' + stats.pts.toLocaleString() + ' <span style="font-size:18px;color:#38bdf8;">Drop PTS</span></div>' +
       '<div class="fvh-airdrop-pts-label">' + tr('airdropPtsLabel') + '</div>' +
@@ -9681,6 +9848,32 @@
       '  <span class="fvh-airdrop-tier-chip" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.35);color:#38bdf8;">⚡ ' + tr('airdropMultiplierBadge') + ' (' + stats.multiplier + ')</span>' +
       '</div>';
     body.appendChild(heroCard);
+
+    // 2.1.1 Real-time Token Estimation Box
+    var estimatedTokens = Math.round(stats.pts * parseFloat(stats.multiplier || '1.0') * 10);
+    var calcCard = document.createElement('div');
+    calcCard.className = 'fvh-card-panel fvh-airdrop-calc-box';
+    calcCard.style.padding = '12px 16px';
+    calcCard.style.marginBottom = '12px';
+    calcCard.style.background = 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%)';
+    calcCard.style.border = '1px solid rgba(250, 204, 21, 0.35)';
+    calcCard.style.boxShadow = '0 4px 16px rgba(0,0,0,0.35)';
+    calcCard.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">' +
+      '  <div>' +
+      '    <div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">' + (lang === 'ru' ? '📊 Расчетная аллокация на TGE:' : '📊 Estimated TGE Allocation:') + '</div>' +
+      '    <div style="font-size:22px;font-weight:950;color:#facc15;margin-top:2px;">~' + estimatedTokens.toLocaleString() + ' <span style="font-size:14px;color:' + tokenColor + ';">' + tokenSym + '</span></div>' +
+      '  </div>' +
+      '  <div style="text-align:right;">' +
+      '    <span style="font-size:11px;background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.35);color:#fde047;padding:5px 10px;border-radius:20px;font-weight:800;display:inline-flex;align-items:center;gap:5px;">' +
+      '      💎 ' + (lang === 'ru' ? 'Начисление на TON' : 'TON Network Drop') +
+      '    </span>' +
+      '  </div>' +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#94a3b8;margin-top:6px;line-height:1.4;">' +
+      (lang === 'ru' ? 'ℹ️ Токены распределяются пропорционально вашим Drop PTS и множителю Лидерборда во время TGE.' : 'ℹ️ Tokens will be distributed proportionally based on your Drop PTS and Leaderboard multiplier upon TGE.') +
+      '</div>';
+    body.appendChild(calcCard);
 
     // 2.2 Wallet Connection Status Card
     var walletCard = document.createElement('div');
@@ -9697,21 +9890,19 @@
       : '';
 
     walletCard.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
-      '  <div style="display:flex;align-items:center;gap:8px;">' +
-      '    <span style="font-size:20px;">💎</span>' +
-      '    <div>' +
-      '      <div style="font-size:13px;font-weight:900;color:#fff;">' + tr('profileTgeWalletTitle') + '</div>' +
-      '      <div style="font-size:10.5px;color:var(--text-muted);">' + (stats.hasWallet ? ('✓ ' + escapeHtml(shortWallet)) : (lang === 'ru' ? 'Снимок (Snapshot) для начисления' : 'Snapshot destination')) + '</div>' +
-      '    </div>' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+      '  <span style="font-size:22px;flex-shrink:0;">💎</span>' +
+      '  <div style="min-width:0;">' +
+      '    <div style="font-size:13px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('profileTgeWalletTitle') + '</div>' +
+      '    <div style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (stats.hasWallet ? ('✓ ' + escapeHtml(shortWallet)) : (lang === 'ru' ? 'Снимок (Snapshot) для начисления' : 'Snapshot destination')) + '</div>' +
       '  </div>' +
-      '  <button type="button" class="btn small fvh-btn-airdrop-manage-wallet" style="font-size:11.5px;font-weight:900;padding:6px 12px;background:' + (stats.hasWallet ? 'rgba(255,255,255,0.08)' : '#0098ea') + ';border:' + (stats.hasWallet ? '1px solid rgba(255,255,255,0.2)' : 'none') + ';color:#fff;cursor:pointer;">' +
-      (stats.hasWallet ? tr('airdropBtnWalletChange') : tr('airdropBtnWallet')) +
-      '  </button>' +
       '</div>' +
+      '<button type="button" class="btn small fvh-btn-airdrop-manage-wallet" style="width:100%;font-size:12px;font-weight:900;padding:9px 14px;background:' + (stats.hasWallet ? 'rgba(255,255,255,0.08)' : '#0098ea') + ';border:' + (stats.hasWallet ? '1px solid rgba(255,255,255,0.2)' : 'none') + ';color:#fff;cursor:pointer;border-radius:10px;text-align:center;box-sizing:border-box;">' +
+      (stats.hasWallet ? tr('airdropBtnWalletChange') : tr('airdropBtnWallet')) +
+      '</button>' +
       (stats.hasWallet
-        ? '<div style="font-size:11px;color:#22c55e;font-weight:800;display:flex;align-items:center;gap:4px;"><span>✓</span> <span>' + tr('profileTgeWalletConnected') + ' (+150 Drop PTS)</span></div>'
-        : '<div style="font-size:11px;color:#fbbf24;font-weight:700;">' + (lang === 'ru' ? '💡 Привяжи Tonkeeper или Telegram Wallet и получи бонус +150 Drop PTS!' : '💡 Link Tonkeeper or Telegram Wallet to claim +150 Drop PTS bonus!') + '</div>');
+        ? '<div style="font-size:11px;color:#22c55e;font-weight:800;display:flex;align-items:center;gap:4px;margin-top:8px;"><span>✓</span> <span>' + tr('profileTgeWalletConnected') + ' (+150 Drop PTS)</span></div>'
+        : '<div style="font-size:11px;color:#fbbf24;font-weight:700;margin-top:8px;">' + (lang === 'ru' ? '💡 Привяжи Tonkeeper или Telegram Wallet и получи бонус +150 Drop PTS!' : '💡 Link Tonkeeper or Telegram Wallet to claim +150 Drop PTS bonus!') + '</div>');
 
     walletCard.querySelector('.fvh-btn-airdrop-manage-wallet').onclick = function () {
       if (stats.hasWallet) {
@@ -11998,7 +12189,7 @@
 
     heroCard.innerHTML =
       '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:6px;">' +
-      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
+      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:11px;font-weight:900;padding:5px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
       '  <span class="fvh-solo-ovr-pill" style="cursor:pointer;font-size:12px;font-weight:900;color:#00f0ff;background:rgba(0,240,255,0.12);padding:4px 10px;border-radius:20px;border:1px solid rgba(0,240,255,0.35);display:inline-flex;align-items:center;gap:4px;" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">⚡ ' + ovr + ' OVR</span>' +
       '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
       '</div>' +
@@ -12214,11 +12405,135 @@
     }
   }
 
+  // Console-Grade Redesigned Pause Screen Modal with Live Match Snapshot & Tactile Controls
+  function installRedesignedPause(app) {
+    if (!app || app._pauseRedesignInstalled) return;
+    app._pauseRedesignInstalled = true;
+
+    app.openPause = function () {
+      this.audio.play('click');
+      if (this.hud && this.hud.touch) {
+        this.hud.touch.style.pointerEvents = 'none';
+      }
+
+      var self = this;
+      var d = (self.store && self.store.data) ? self.store.data : {};
+      var curChar = d.selectedCharacter || 'footy';
+      var isFooty = (curChar === 'footy');
+      var isHoopsMode = (self.mode === 'hoops');
+      var lang = getActiveLang();
+
+      // Live match snapshot score
+      var scoreText = '0 : 0';
+      try {
+        if (self.sim && self.sim.score) {
+          scoreText = self.sim.score[0] + '  :  ' + self.sim.score[1];
+        } else if (self.game && self.game.sim && self.game.sim.score) {
+          scoreText = self.game.sim.score[0] + '  :  ' + self.game.sim.score[1];
+        }
+      } catch (e) {}
+
+      var arenaName = isHoopsMode
+        ? (lang === 'ru' ? '🏀 Стрит-Корт Арена' : '🏀 Hardwood Street Court')
+        : (lang === 'ru' ? '⚽ Центральный Стадион' : '⚽ Football Stadium Arena');
+
+      var overlay = document.createElement('div');
+      overlay.className = 'screen dim fvh-pause-overlay';
+      overlay.style.cssText = 'z-index:99999 !important; pointer-events:auto !important; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); background:rgba(6,10,18,0.84);';
+
+      var panel = document.createElement('div');
+      panel.className = 'panel pause-panel fvh-pause-card';
+
+      // 1. Live Match Status Banner
+      var statusBox = document.createElement('div');
+      statusBox.className = 'fvh-pause-match-status';
+      statusBox.innerHTML =
+        '<div class="fvh-pause-arena-tag">' + arenaName + '</div>' +
+        '<div class="fvh-pause-score-row">' +
+        '  <span class="fvh-pause-team-badge">⚽ ' + (isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span>' +
+        '  <span class="fvh-pause-score-nums">' + scoreText + '</span>' +
+        '  <span class="fvh-pause-team-badge">🏀 ' + (!isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span>' +
+        '</div>';
+      panel.appendChild(statusBox);
+
+      // 2. High-Tech 3D Pause Artwork Picture
+      var artBox = document.createElement('div');
+      artBox.className = 'fvh-pause-artwork';
+      artBox.innerHTML = getPauseArtworkSvg(curChar);
+      panel.appendChild(artBox);
+
+      // 3. Pause Title
+      var title = document.createElement('h2');
+      title.className = 'pause-title fvh-pause-title';
+      title.textContent = tr('pauseTitle') || (lang === 'ru' ? 'МАТЧ НА ПАУЗЕ' : 'MATCH PAUSED');
+      panel.appendChild(title);
+
+      // Helper to build touch buttons
+      function createPauseBtn(label, icon, cls, onClick) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn block pause-btn fvh-pause-btn ' + cls;
+        btn.style.cssText = 'touch-action:manipulation; -webkit-tap-highlight-color:transparent; min-height:48px;';
+        btn.innerHTML = '<span class="pi" style="font-size:17px;margin-right:8px;">' + icon + '</span><span class="pl">' + label + '</span>';
+        var triggered = false;
+        function fire(e) {
+          if (triggered) return;
+          triggered = true;
+          if (e && e.preventDefault && e.cancelable) e.preventDefault();
+          if (e && e.stopPropagation) e.stopPropagation();
+          self.audio.play('click');
+          onClick();
+        }
+        btn.onclick = fire;
+        btn.ontouchend = fire;
+        btn.onpointerup = fire;
+        return btn;
+      }
+
+      var resumeLabel = tr('pauseResume') || (lang === 'ru' ? 'Продолжить матч' : 'Resume Match');
+      var restartLabel = tr('pauseRestart') || (lang === 'ru' ? 'Перезапуск' : 'Restart');
+      var settingsLabel = tr('pauseSettings') || (lang === 'ru' ? 'Настройки' : 'Settings');
+      var quitLabel = tr('pauseQuit') || (lang === 'ru' ? 'Выйти в меню' : 'Quit to Menu');
+
+      // 1. Resume (dominant primary glowing)
+      panel.appendChild(createPauseBtn(resumeLabel, '▶', 'primary fvh-pause-resume-btn', function () {
+        self.setPause(false);
+      }));
+
+      // 2. Restart (offline singleplayer)
+      if (!self.game || !self.game.cfg || !self.game.cfg.online) {
+        panel.appendChild(createPauseBtn(restartLabel, '↻', 'fvh-pause-secondary-btn', function () {
+          self.closePause();
+          if (self.game) self.game.setPaused(false);
+          self.launchAgain();
+        }));
+      }
+
+      // 3. Settings
+      panel.appendChild(createPauseBtn(settingsLabel, '⚙', 'fvh-pause-secondary-btn', function () {
+        self.pages.settingsOverlay(function () {});
+      }));
+
+      // 4. Quit to Menu
+      panel.appendChild(createPauseBtn(quitLabel, '🚪', 'danger fvh-pause-danger-btn', function () {
+        var quitConfirmMsg = tr('pauseQuitConfirm') || (lang === 'ru' ? 'Выйти в главное меню? Текущий прогресс матча будет потерян.' : 'Quit to main menu? Current match progress will be lost.');
+        if (confirm(quitConfirmMsg)) {
+          self.quitToMenu();
+        }
+      }));
+
+      overlay.appendChild(panel);
+      self.pauseEl = overlay;
+      self.ui.append(overlay);
+    };
+  }
+
   // Hook into App & Page Router
   onAppReady(function (app) {
     window.App = app;
     window.app = app;
     window.__fvh = app;
+    installRedesignedPause(app);
     // Initial sync with authoritative backend economy
     syncAuthoritativeEconomy(app);
 

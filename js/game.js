@@ -8963,10 +8963,28 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             }
             if (isSkin) {
                 const KNOWN_SKIN_VISUALS = {
+                    // Footy Kits
+                    skin_rookie: { primary: 0x00c8ff, secondary: 0x0a1e3f, shorts: 0x0a1e3f, skin: 0xdfa070, hair: 0x221810, boots: 0x00c8ff, accent: 0xffffff, style: 'plain' },
+                    skin_crimson: { primary: 0xdc2626, secondary: 0x7f1d1d, shorts: 0x18181b, skin: 0xdfa070, hair: 0x221810, boots: 0xef4444, accent: 0xfef08a, style: 'stripes' },
+                    skin_footy_royal_striker: { primary: 0x1e40af, secondary: 0xd97706, shorts: 0x1e3a8a, skin: 0xdfa070, hair: 0x221810, boots: 0xfacc15, accent: 0xfef08a, style: 'sash' },
+                    skin_frost: { primary: 0x0284c7, secondary: 0xe0f2fe, shorts: 0x0369a1, skin: 0xdfa070, hair: 0x221810, boots: 0x7dd3fc, accent: 0x38bdf8, style: 'frost' },
+                    skin_footy_cyber_strike: { primary: 0x00f0ff, secondary: 0x581c87, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x00f0ff, accent: 0x22d3ee, style: 'cyber' },
+                    skin_footy_stealth_shadow: { primary: 0x18181b, secondary: 0x7c3aed, shorts: 0x09090b, skin: 0xdfa070, hair: 0x221810, boots: 0xa855f7, accent: 0xc084fc, style: 'stealth' },
+                    skin_astronaut: { primary: 0xf8fafc, secondary: 0x0284c7, shorts: 0x0f172a, skin: 0xe2e8f0, hair: 0x0f172a, boots: 0xf59e0b, accent: 0xf59e0b, style: 'plain' },
+                    skin_footy_golden_legend: { primary: 0xfacc15, secondary: 0xca8a04, shorts: 0x171717, skin: 0xdfa070, hair: 0x221810, boots: 0xfde047, accent: 0xffffff, style: 'royal' },
+                    skin_footy_neon_matrix: { primary: 0x10b981, secondary: 0x052e16, shorts: 0x050505, skin: 0xdfa070, hair: 0x221810, boots: 0x4ade80, accent: 0x00f0ff, style: 'circuit' },
+                    skin_footy_mythic_titan: { primary: 0x9333ea, secondary: 0x0284c7, shorts: 0x1e1b4b, skin: 0xdfa070, hair: 0x221810, boots: 0xc084fc, accent: 0x00f0ff, style: 'titan' },
+
+                    // Hoops Kits
+                    skin_solar: { primary: 0xff6b00, secondary: 0x14151a, shorts: 0x14151a, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xff6b00, accent: 0xffffff, style: 'hoops' },
+                    skin_hoops_street_legend: { primary: 0xef4444, secondary: 0x1f2937, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xdc2626, accent: 0xffffff, style: 'street' },
                     skin_sunset: { primary: 0xf97316, secondary: 0xd946ef, shorts: 0x4c0519, skin: 0xc68642, hair: 0x18181b, boots: 0xf97316, accent: 0xfde047, style: 'hoops' },
+                    skin_hoops_neon_splash: { primary: 0xdb2777, secondary: 0x06b6d4, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xec4899, accent: 0xfdf4ff, style: 'split' },
+                    skin_hoops_golden_state: { primary: 0x1d4ed8, secondary: 0xfacc15, shorts: 0x1e3a8a, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfbbf24, accent: 0xffffff, style: 'bay' },
                     skin_mars: { primary: 0xb91c1c, secondary: 0x450a0a, shorts: 0x18181b, skin: 0xdfa070, hair: 0x09090b, boots: 0xb91c1c, accent: 0xf97316, style: 'circuit' },
-                    skin_hydro: { primary: 0x06b6d4, secondary: 0x0284c7, shorts: 0x082f49, skin: 0xd2a07c, hair: 0x1e293b, boots: 0x06b6d4, accent: 0x38bdf8, style: 'sash' },
-                    skin_astronaut: { primary: 0xf8fafc, secondary: 0x0284c7, shorts: 0x0f172a, skin: 0xe2e8f0, hair: 0x0f172a, boots: 0xf59e0b, accent: 0xf59e0b, style: 'plain' }
+                    skin_hoops_cyber_dunk: { primary: 0x6b21a8, secondary: 0x06b6d4, shorts: 0x0f172a, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x8b5cf6, accent: 0x22d3ee, style: 'cyber' },
+                    skin_hoops_phantom_black: { primary: 0x09090b, secondary: 0x27272a, shorts: 0x09090b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xeab308, accent: 0xfacc15, style: 'phantom' },
+                    skin_hoops_hyper_beast: { primary: 0xe11d48, secondary: 0x0f766e, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xf97316, accent: 0xfacc15, style: 'beast' }
                 };
                 if (id && KNOWN_SKIN_VISUALS[id]) {
                     return Object.assign({ id }, KNOWN_SKIN_VISUALS[id]);

@@ -156,8 +156,19 @@
  // key -> WebGLTexture
 
   function hexToRgb(h) {
-    if (typeof h !== 'number') return null;
+    if (typeof h === 'string') {
+      if (h.startsWith('#')) h = parseInt(h.slice(1), 16);
+      else if (h.startsWith('0x')) h = parseInt(h, 16);
+      else h = parseInt(h, 16);
+    }
+    if (typeof h !== 'number' || isNaN(h)) return null;
     return [(h >> 16) & 255, (h >> 8) & 255, h & 255];
+  }
+
+  function hexToVec3(h, fallback = [1, 1, 1]) {
+    const rgb = hexToRgb(h);
+    if (!rgb) return fallback;
+    return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255];
   }
 
   function drawGlbJerseyPattern(ctx, W, H, isFooty, skinId, skin) {
@@ -396,9 +407,6 @@
       }
 
       ctx.putImageData(imgData, 0, 0);
-
-      // Draw custom jersey vector patterns on front and back torso UVs
-      drawGlbJerseyPattern(ctx, W, H, isFooty, skin.id, skin);
 
       const skinTex = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, skinTex);
@@ -688,6 +696,12 @@
     update(dt) {
       if (!this.loaded || !this.model || !this.agent) return;
 
+      // Keep skin visuals strictly updated with equipped character loadout
+      if (this.charRef && this.charRef.skin && this.charRef.skin !== this.skin) {
+        this.skin = this.charRef.skin;
+        this.customTexture = null;
+      }
+
       const a = this.agent;
       const vx = a.vx || 0;
       const vz = a.vz || 0;
@@ -964,16 +978,75 @@
         buffers.forEach(pBuf => {
           gl.bindVertexArray(pBuf.vao);
 
-          const texToBind = inst.customTexture || pBuf.texture;
-          const hasTex = !!texToBind;
-          gl.uniform1i(glLocations.uHasTex, hasTex ? 1 : 0);
-          if (hasTex) {
+          const matName = (pBuf.material && pBuf.material.name) ? pBuf.material.name : '';
+          let baseCol = (pBuf.material && pBuf.material.baseColorFactor) ? pBuf.material.baseColorFactor.slice() : [1, 1, 1, 1];
+          let bindTex = inst.customTexture || pBuf.texture;
+          let useTex = !!bindTex;
+
+          // Dynamic 3D PBR Kit Tinting & Texture Assignment based on equipped uniform
+          if (inst.skin && !inst.isKeeper) {
+            const sk = inst.skin;
+            if (matName === 'LightBlue') {
+              // Jersey / Shirt primitive
+              if (sk.primary !== undefined) {
+                const pRgb = hexToVec3(sk.primary);
+                baseCol = [pRgb[0], pRgb[1], pRgb[2], 1.0];
+              }
+              // When custom texture with patterns is present use it, otherwise render pure saturated jersey color
+              if (!inst.customTexture) {
+                useTex = false;
+              }
+            } else if (matName === 'White') {
+              // Shorts & Socks primitive
+              const shColor = (sk.shorts !== undefined) ? sk.shorts : ((sk.secondary !== undefined) ? sk.secondary : (inst.isFooty ? 0x0a1e3f : 0x14151a));
+              const shRgb = hexToVec3(shColor);
+              baseCol = [shRgb[0], shRgb[1], shRgb[2], 1.0];
+              if (!inst.customTexture) {
+                useTex = false;
+              }
+            } else if (matName === 'Red_Dark') {
+              // Cleats / Boots primitive
+              const bColor = (sk.boots !== undefined) ? sk.boots : (sk.primary !== undefined ? sk.primary : (inst.isFooty ? 0x00c8ff : 0xff6b00));
+              const bRgb = hexToVec3(bColor);
+              baseCol = [bRgb[0], bRgb[1], bRgb[2], 1.0];
+              if (!inst.customTexture) {
+                useTex = false;
+              }
+            } else if (matName === 'Skin' || matName === 'Skin_Darker' || matName === 'LightBrown') {
+              // Athlete skin tone
+              if (sk.skin) {
+                const sRgb = hexToVec3(sk.skin);
+                baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
+              }
+            } else if (matName === 'Hair') {
+              // Athlete hair color
+              if (sk.hair) {
+                const hRgb = hexToVec3(sk.hair);
+                baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
+                useTex = false;
+              }
+            }
+          } else if (inst.isKeeper) {
+            // High-visibility Goalkeeper uniform
+            if (matName === 'LightBlue') {
+              baseCol = [0.17, 0.85, 0.42, 1.0]; // Vibrant neon keeper green
+              useTex = false;
+            } else if (matName === 'White') {
+              baseCol = [0.04, 0.23, 0.11, 1.0]; // Dark forest green keeper shorts
+              useTex = false;
+            } else if (matName === 'Red_Dark') {
+              baseCol = [0.10, 0.95, 0.50, 1.0]; // Neon keeper boots
+              useTex = false;
+            }
+          }
+
+          gl.uniform1i(glLocations.uHasTex, useTex ? 1 : 0);
+          if (useTex && bindTex) {
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, texToBind);
+            gl.bindTexture(gl.TEXTURE_2D, bindTex);
             gl.uniform1i(glLocations.uTex, 0);
           }
 
-          const baseCol = (pBuf.material && pBuf.material.baseColorFactor) ? pBuf.material.baseColorFactor : [1, 1, 1, 1];
           gl.uniform4fv(glLocations.uBaseColor, baseCol);
 
           // 3D PBR Material tuning based on equipped skin
