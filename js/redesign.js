@@ -2405,7 +2405,8 @@
   try { initHeroBaseImages(); } catch (e) {}
 
   function drawHeroJerseyPattern(ctx, W, H, isFooty, skinId) {
-    if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_solar') return;
+    // Disabled: patterns cause ugly visual stripes on hero preview
+    return;
     try {
       ctx.save();
       var chestX = isFooty ? W * 0.31 : W * 0.33;
@@ -12162,8 +12163,8 @@
     var heroCard = document.createElement('div');
     heroCard.className = 'fvh-hero-card solo-hero-compact ' + curChar;
 
-    var badgeText = isFooty ? '⚽ ' + tr('teamFootyTitle') : '🏀 ' + tr('teamHoopsTitle');
-    var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': 🏀 HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': ⚽ FOOTY';
+    var badgeText = isFooty ? '⚽ FOOTY' : '🏀 HOOPS';
+    var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': FOOTY';
 
     // Equipped cosmetics labels
     var equippedJersey = isFooty
@@ -12274,7 +12275,7 @@
       '<div class="fvh-airdrop-banner-left">' +
       '  <div class="fvh-airdrop-banner-icon">🪙</div>' +
       '  <div class="fvh-airdrop-banner-text">' +
-      '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'ЗАРАБОТАЙ ТОКЕНЫ ' + airdropTokenTag : 'EARN ' + airdropTokenTag + ' TOKENS') + '</div>' +
+      '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'ЗАРАБОТАЙ ' + airdropTokenTag : 'EARN ' + airdropTokenTag) + '</div>' +
       '    <div class="fvh-airdrop-banner-sub">' +
       (lang === 'ru' ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' Drop PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b>' : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' Drop PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b>') +
       '    </div>' +
