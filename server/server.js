@@ -625,11 +625,25 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
+let persistDiskTimer = null;
 function persistState() {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(getSerializableState(), null, 2));
-  } catch (e) {
-    console.warn('Failed to save server/data.json', e);
+  if (process.env.NODE_ENV === 'test') {
+    try {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(getSerializableState(), null, 2));
+    } catch (e) {
+      console.warn('Failed to save server/data.json', e);
+    }
+  } else if (!persistDiskTimer) {
+    persistDiskTimer = setTimeout(() => {
+      persistDiskTimer = null;
+      try {
+        fs.writeFile(DATA_FILE, JSON.stringify(getSerializableState()), (err) => {
+          if (err) console.warn('Failed to save server/data.json', err.message);
+        });
+      } catch (e) {
+        console.warn('Failed to save server/data.json', e);
+      }
+    }, 1500);
   }
 
   if (storage && storage.name === 'PostgresStorageAdapter' && storage._initialized) {
@@ -4490,11 +4504,24 @@ const server = http.createServer((req, res) => {
       '.ico': 'image/x-icon',
       '.mp3': 'audio/mpeg',
       '.wav': 'audio/wav',
-      '.ogg': 'audio/ogg'
+      '.ogg': 'audio/ogg',
+      '.glb': 'model/gltf-binary',
+      '.gltf': 'model/gltf+json'
     };
 
     const contentType = mimeTypes[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType });
+    const headers = { 'Content-Type': contentType };
+
+    // High-Concurrency Asset Caching Strategy
+    if (ext === '.html') {
+      headers['Cache-Control'] = 'no-cache, must-revalidate';
+    } else if (['.glb', '.gltf', '.png', '.jpg', '.mp3', '.wav', '.ogg', '.svg', '.ico'].includes(ext)) {
+      headers['Cache-Control'] = 'public, max-age=604800, immutable';
+    } else if (['.js', '.css'].includes(ext)) {
+      headers['Cache-Control'] = 'public, max-age=86400';
+    }
+
+    res.writeHead(200, headers);
     fs.createReadStream(fullPath).pipe(res);
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
