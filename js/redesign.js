@@ -590,7 +590,34 @@
       diffEasyReward: '🟢 Easy AI: +15 Leaderboard pts on victory (0.5x rewards)',
       diffNormalReward: '🟡 Normal AI: +30 Leaderboard pts on victory (1.0x standard)',
       diffHardReward: '🔴 Hard AI: +60 Leaderboard pts on victory (2.0x MAX rewards!)',
-      warDiffBreakdown: 'AI Victory Points: Easy +15 · Normal +30 · Hard +60 pts'
+      warDiffBreakdown: 'AI Victory Points: Easy +15 · Normal +30 · Hard +60 pts',
+      airdropHubTitle: 'Play-to-Airdrop Hub',
+      airdropBannerTitle: 'Earn $FOOTY & $HOOPS Tokens',
+      airdropBannerSub: 'Play matches, climb rankings & build squad for TON Airdrop',
+      airdropBannerBtn: '🪙 Earn Tokens ➔',
+      airdropPtsLabel: 'Drop Qualification PTS',
+      airdropMultiplierBadge: 'Leaderboard Boost: up to 3.0x',
+      airdropPillarMatchesTitle: '1. Play Matches & Score',
+      airdropPillarMatchesDesc: 'Each victory grants +25 Drop PTS, match played +10 PTS, goals scored +6 PTS. Active athletes receive the greatest token drop.',
+      airdropPillarLeaderboardTitle: '2. Leaderboard Multipliers',
+      airdropPillarLeaderboardDesc: 'Top 10 athletes receive a 3.0x airdrop multiplier! Top 50 get 2.0x, Top 100 get 1.5x at the end of the Season.',
+      airdropPillarSquadTitle: '3. Build Your Squad',
+      airdropPillarSquadDesc: 'Invite friends via your personal link: earn +100 FvH Coins and +50 Drop PTS for every teammate who joins.',
+      airdropPillarWalletTitle: '4. Link Public TON Wallet',
+      airdropPillarWalletDesc: 'Connect Tonkeeper or Telegram Wallet. Your public address will receive verified tokens upon official TGE launch on TON.',
+      airdropBtnPlay: '⚔️ Play Match',
+      airdropBtnInvite: '👥 Invite Friends (+100 FvH)',
+      airdropBtnWallet: '💎 Link TON Wallet',
+      airdropBtnWalletChange: '⚙️ Manage TON Wallet',
+      airdropDisclaimer: 'ℹ️ Tokens $FOOTY and $HOOPS will be minted on TON blockchain during official TGE. In-game FvH Coins are for shop cosmetics and upgrades.',
+      airdropSecurityNote: '🛡️ Telegram & TON Security: Enter ONLY your public TON address. We never ask for seed phrases, passwords, or private keys.',
+      airdropTierRookie: 'Rookie Athlete Tier',
+      airdropTierContender: 'Contender Tier',
+      airdropTierPro: 'Pro Athlete Tier',
+      airdropTierLegend: 'Legendary Champion Tier',
+      airdropHowItWorks: 'How Play-to-Airdrop Works',
+      airdropEstimatedAllocation: 'Estimated Season Drop',
+      airdropHowToEarnTokens: 'How to Earn Tokens in Game ➔'
     },
     ru: {
       replay: 'ПОВТОР',
@@ -1109,7 +1136,34 @@
       diffEasyReward: '🟢 Лёгкий ИИ: +15 очков в Лидерборд за победу (0.5x наград)',
       diffNormalReward: '🟡 Обычный ИИ: +30 очков в Лидерборд за победу (1.0x стандарт)',
       diffHardReward: '🔴 Сложный ИИ: +60 очков в Лидерборд за победу (2.0x МАКСИМУМ наград!)',
-      warDiffBreakdown: 'Очки за победу над ИИ: Лёгкий +15 · Обычный +30 · Сложный +60'
+      warDiffBreakdown: 'Очки за победу над ИИ: Лёгкий +15 · Обычный +30 · Сложный +60',
+      airdropHubTitle: 'Play-to-Airdrop Хаб',
+      airdropBannerTitle: 'Зарабатывай токены $FOOTY и $HOOPS',
+      airdropBannerSub: 'Играй матчи, поднимайся в Топ и зови друзей к дропу на TON',
+      airdropBannerBtn: '🪙 Заработать ➔',
+      airdropPtsLabel: 'Очки квалификации к дропу',
+      airdropMultiplierBadge: 'Буст Лидерборда: до 3.0x',
+      airdropPillarMatchesTitle: '1. Играй матчи и забивай',
+      airdropPillarMatchesDesc: 'Каждая победа дает +25 Drop PTS, матч +10 PTS, гол/данк +6 PTS. Чем больше ты играешь, тем выше твоя доля в пуле токенов.',
+      airdropPillarLeaderboardTitle: '2. Множители Лидерборда',
+      airdropPillarLeaderboardDesc: 'Топ-10 атлетов получают множитель дропа 3.0x! Топ-50 — 2.0x, Топ-100 — 1.5x по итогам игрового сезона.',
+      airdropPillarSquadTitle: '3. Собирай отряд друзей',
+      airdropPillarSquadDesc: 'Приглашай друзей по своей реферальной ссылке: получай +100 FvH монет и +50 Drop PTS за каждого бойца в команде.',
+      airdropPillarWalletTitle: '4. Привяжи TON-кошелек',
+      airdropPillarWalletDesc: 'Подключи Tonkeeper или Telegram Wallet. Публичный адрес кошелька зафиксируется для отправки токенов на TGE в сети TON.',
+      airdropBtnPlay: '⚔️ Играть матч',
+      airdropBtnInvite: '👥 Пригласить друзей (+100 FvH)',
+      airdropBtnWallet: '💎 Привязать TON-кошелек',
+      airdropBtnWalletChange: '⚙️ Управление кошельком',
+      airdropDisclaimer: 'ℹ️ Токены $FOOTY и $HOOPS будут выпущены на блокчейне TON в рамках официального TGE. Внутриигровые FvH монеты используются для магазина и прокачки.',
+      airdropSecurityNote: '🛡️ Безопасность Telegram и TON: вводите ТОЛЬКО публичный адрес кошелька. Мы никогда не запрашиваем seed-фразы или пароли.',
+      airdropTierRookie: 'Ранг Новичка',
+      airdropTierContender: 'Ранг Претендента',
+      airdropTierPro: 'Ранг Pro-Атлета',
+      airdropTierLegend: 'Легендарный Ранг',
+      airdropHowItWorks: 'Как заработать токены в игре',
+      airdropEstimatedAllocation: 'Расчетная доля в дропе',
+      airdropHowToEarnTokens: 'Как заработать токены в игре ➔'
     }
   };
 
@@ -8094,9 +8148,18 @@
     rulesCard.style.gap = '10px';
     rulesCard.innerHTML =
       '<span style="font-size:18px;">ℹ️</span>' +
-      '<div style="font-size:11.5px;color:var(--text-muted);line-height:1.4;">' +
+      '<div style="font-size:11.5px;color:var(--text-muted);line-height:1.4;flex:1;">' +
       (isRu ? '<b style="color:#fff;">Система начисления очков:</b> +20 очков за победу · +10 очков за завершение матча' : '<b style="color:#fff;">Ranking Points:</b> +20 pts for each victory · +10 pts for match completion') +
+      ' <span class="fvh-lb-airdrop-link" style="color:#38bdf8;font-weight:800;cursor:pointer;margin-left:4px;">' + (isRu ? '🪙 Топ-100 дают множитель дропа до 3.0x ➔' : '🪙 Top 100 get up to 3.0x Airdrop Boost ➔') + '</span>' +
       '</div>';
+
+    var lbAirdropLink = rulesCard.querySelector('.fvh-lb-airdrop-link');
+    if (lbAirdropLink) {
+      lbAirdropLink.onclick = function () {
+        app.audio.play('click');
+        app.go('airdrop');
+      };
+    }
     body.appendChild(rulesCard);
 
     // 5. Live Search Filter Bar
@@ -8659,7 +8722,20 @@
       '  <button class="btn small fvh-btn-withdraw-token" style="font-weight:800;padding:8px 16px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:#fff;cursor:pointer;">' +
       tr('tokenWithdrawBtn') +
       '  </button>' +
+      '</div>' +
+      '<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px;">' +
+      '  <button type="button" class="btn block fvh-btn-profile-airdrop-hub" style="background:linear-gradient(135deg, rgba(0,152,234,0.18) 0%, rgba(0,152,234,0.36) 100%);border:1px solid rgba(56,189,248,0.4);color:#38bdf8;font-weight:900;font-size:12px;padding:9px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+      '    <span>🪙</span> <span>' + tr('airdropHowToEarnTokens') + '</span>' +
+      '  </button>' +
       '</div>';
+
+    var airdropHubBtn = tokenCard.querySelector('.fvh-btn-profile-airdrop-hub');
+    if (airdropHubBtn) {
+      airdropHubBtn.onclick = function () {
+        app.audio.play('click');
+        app.go('airdrop');
+      };
+    }
 
     // Withdraw button modal with EXACT COPY across all 15 languages
     tokenCard.querySelector('.fvh-btn-withdraw-token').onclick = function () {
@@ -8867,6 +8943,334 @@
 
     // Bottom Navigation
     container.appendChild(createSharedBottomNav('profile', app));
+    return container;
+  }
+
+  // Drop PTS Calculation Engine for Play-to-Airdrop
+  function calculateAirdropStats(data) {
+    var d = data || (window.app && window.app.store && window.app.store.data) || {};
+    var st = d.stats || {};
+    var wins = Number(st.wins || d.wins || 0);
+    var matches = Number(st.matches || d.matches || (wins + Number(st.losses || 0)));
+    var goals = Number(st.goals || d.goals || 0);
+    var baskets = Number(st.baskets || d.baskets || 0);
+
+    var refData = d.referrals || [];
+    var refCount = Array.isArray(refData) ? refData.length : (refData.total || 0);
+
+    var up = d.upgrades || { power: 1, stamina: 1, keeper: 1 };
+    var upLevels = Math.max(0, (up.power || 1) + (up.stamina || 1) + (up.keeper || 1) - 3);
+    var lvl = (d.profile && d.profile.level) ? d.profile.level : (d.level || 1);
+
+    var base = 100;
+    var walletAddr = d.tonWalletAddress || (d.profile && d.profile.tonAddress) || '';
+    var hasWallet = Boolean(walletAddr);
+    var walletBonus = hasWallet ? 150 : 0;
+
+    var pts = base + (wins * 25) + (goals * 6) + (baskets * 3) + (matches * 10) + (refCount * 50) + (upLevels * 30) + (lvl * 20) + walletBonus;
+
+    var tierKey = 'airdropTierRookie';
+    var multiplier = '1.0x';
+    if (pts >= 2500) {
+      tierKey = 'airdropTierLegend';
+      multiplier = '3.0x';
+    } else if (pts >= 800) {
+      tierKey = 'airdropTierPro';
+      multiplier = '2.0x';
+    } else if (pts >= 300) {
+      tierKey = 'airdropTierContender';
+      multiplier = '1.5x';
+    }
+
+    return {
+      pts: pts,
+      tierKey: tierKey,
+      multiplier: multiplier,
+      hasWallet: hasWallet,
+      walletAddress: walletAddr,
+      wins: wins,
+      matches: matches,
+      goals: goals + baskets,
+      refCount: refCount,
+      lvl: lvl
+    };
+  }
+
+  // Reusable TON Wallet Modal (Play-to-Airdrop & Profile)
+  function showTonWalletModal(app, onComplete) {
+    app.audio.play('click');
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-back';
+    var modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+      '  <h3 style="margin:0;font-size:16px;font-weight:900;">💎 ' + tr('profileTgeModalTitle') + '</h3>' +
+      '  <button class="modal-close-x" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;">✕</button>' +
+      '</div>' +
+      '<p style="font-size:12.5px;color:var(--text-muted);line-height:1.45;margin:0 0 12px;">' + tr('profileTgeModalDesc') + '</p>' +
+      '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#fca5a5;display:flex;align-items:flex-start;gap:6px;">' +
+      '  <span>⚠️</span>' +
+      '  <span>' + tr('profileTgeSeedWarningAlert') + '</span>' +
+      '</div>' +
+      '<input type="text" class="fvh-ton-modal-input" placeholder="' + tr('profileTgeAddressPlaceholder') + '" style="width:100%;box-sizing:border-box;background:rgba(0,0,0,0.4);border:1px solid rgba(0,152,234,0.4);border-radius:10px;padding:10px 12px;color:#fff;font-family:monospace;font-size:13px;margin-bottom:14px;outline:none;" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" />' +
+      '<div style="display:flex;gap:8px;">' +
+      '  <button class="btn block fvh-btn-cancel-ton" style="flex:1;">' + (getActiveLang() === 'ru' ? 'Отмена' : 'Cancel') + '</button>' +
+      '  <button class="btn primary block fvh-btn-submit-ton" style="flex:1.5;background:#0098ea;border:none;">' + tr('profileTgeConnectBtn') + '</button>' +
+      '</div>';
+
+    modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+    modal.querySelector('.fvh-btn-cancel-ton').onclick = function () { overlay.remove(); };
+
+    var inputEl = modal.querySelector('.fvh-ton-modal-input');
+    modal.querySelector('.fvh-btn-submit-ton').onclick = function () {
+      var raw = (inputEl.value || '').trim();
+      if (!raw) {
+        showToast(tr('profileTgeInvalidAddress'));
+        return;
+      }
+      if (/\s+/.test(raw) || raw.split(' ').length > 1) {
+        alert(tr('profileTgeSeedWarningAlert'));
+        return;
+      }
+      var isDomain = /^[a-zA-Z0-9_-]+\.ton$/i.test(raw);
+      var isBase64 = /^(EQ|UQ|kQ|0:)[a-zA-Z0-9_\-+/]{46,66}$/i.test(raw);
+      if (!isDomain && !isBase64) {
+        showToast(tr('profileTgeInvalidAddress'));
+        return;
+      }
+
+      safeEconomyApi('/api/wallet/link', {
+        playerId: getPlayerId(),
+        address: raw
+      }).then(function (res) {
+        app.store.update(function (st) {
+          st.tonWalletAddress = raw;
+          if (!st.profile) st.profile = {};
+          st.profile.tonAddress = raw;
+        });
+        app.audio.play('claim');
+        showToast(getActiveLang() === 'ru' ? '✓ TON-кошелек успешно привязан!' : '✓ TON wallet linked successfully!');
+        overlay.remove();
+        if (onComplete) onComplete(raw);
+      }).catch(function (e) {
+        app.store.update(function (st) {
+          st.tonWalletAddress = raw;
+          if (!st.profile) st.profile = {};
+          st.profile.tonAddress = raw;
+        });
+        app.audio.play('claim');
+        showToast(getActiveLang() === 'ru' ? '✓ TON-кошелек привязан' : '✓ TON wallet linked');
+        overlay.remove();
+        if (onComplete) onComplete(raw);
+      });
+    };
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    setTimeout(function () { inputEl.focus(); }, 100);
+  }
+
+  // Dedicated Play-to-Airdrop Hub Screen
+  function buildAirdropPage(app) {
+    var d = app.store.data;
+    var lang = getActiveLang();
+    var curChar = d.selectedCharacter || 'footy';
+    var isFooty = (curChar === 'footy');
+    var tokenSym = isFooty ? '$FOOTY' : '$HOOPS';
+    var tokenColor = isFooty ? '#00f0ff' : '#f97316';
+
+    var stats = calculateAirdropStats(d);
+
+    var container = document.createElement('div');
+    container.className = 'screen solid page-screen has-nav fvh-airdrop-page';
+    container.dataset.id = 'airdrop';
+
+    var page = document.createElement('div');
+    page.className = 'page';
+
+    // 1. Head
+    var head = document.createElement('div');
+    head.className = 'page-head';
+    var backBtn = document.createElement('button');
+    backBtn.className = 'btn icon back';
+    backBtn.textContent = '←';
+    backBtn.onclick = function () {
+      app.audio.play('click');
+      app.showMenu();
+    };
+    var title = document.createElement('h1');
+    title.textContent = tr('airdropHubTitle');
+    head.appendChild(backBtn);
+    head.appendChild(title);
+    page.appendChild(head);
+
+    // 2. Body
+    var body = document.createElement('div');
+    body.className = 'page-body fvh-airdrop-container';
+
+    // 2.1 Hero Card
+    var heroCard = document.createElement('div');
+    heroCard.className = 'fvh-airdrop-page-hero';
+    heroCard.style.borderColor = isFooty ? 'rgba(0,240,255,0.4)' : 'rgba(249,115,22,0.4)';
+    heroCard.innerHTML =
+      '<div class="fvh-airdrop-hero-emblem">' + (isFooty ? '⚽' : '🏀') + '</div>' +
+      '<div style="font-size:13px;font-weight:900;color:' + tokenColor + ';text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">' +
+      (isFooty ? 'Team Football Faction Token' : 'Team Basketball Faction Token') + ' · <b>' + tokenSym + '</b>' +
+      '</div>' +
+      '<div class="fvh-airdrop-pts-value">' + stats.pts.toLocaleString() + ' <span style="font-size:18px;color:#38bdf8;">Drop PTS</span></div>' +
+      '<div class="fvh-airdrop-pts-label">' + tr('airdropPtsLabel') + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px;">' +
+      '  <span class="fvh-airdrop-tier-chip">👑 ' + tr(stats.tierKey) + '</span>' +
+      '  <span class="fvh-airdrop-tier-chip" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.35);color:#38bdf8;">⚡ ' + tr('airdropMultiplierBadge') + ' (' + stats.multiplier + ')</span>' +
+      '</div>';
+    body.appendChild(heroCard);
+
+    // 2.2 Wallet Connection Status Card
+    var walletCard = document.createElement('div');
+    walletCard.className = 'fvh-card-panel';
+    walletCard.style.background = stats.hasWallet
+      ? 'linear-gradient(135deg, rgba(0, 152, 234, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)'
+      : 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)';
+    walletCard.style.border = stats.hasWallet ? '1.5px solid rgba(0, 152, 234, 0.45)' : '1.5px solid rgba(245, 158, 11, 0.4)';
+    walletCard.style.padding = '14px 16px';
+    walletCard.style.marginBottom = '14px';
+
+    var shortWallet = stats.hasWallet
+      ? (stats.walletAddress.slice(0, 5) + '...' + stats.walletAddress.slice(-4))
+      : '';
+
+    walletCard.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+      '  <div style="display:flex;align-items:center;gap:8px;">' +
+      '    <span style="font-size:20px;">💎</span>' +
+      '    <div>' +
+      '      <div style="font-size:13px;font-weight:900;color:#fff;">' + tr('profileTgeWalletTitle') + '</div>' +
+      '      <div style="font-size:10.5px;color:var(--text-muted);">' + (stats.hasWallet ? ('✓ ' + escapeHtml(shortWallet)) : (lang === 'ru' ? 'Снимок (Snapshot) для начисления' : 'Snapshot destination')) + '</div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <button type="button" class="btn small fvh-btn-airdrop-manage-wallet" style="font-size:11.5px;font-weight:900;padding:6px 12px;background:' + (stats.hasWallet ? 'rgba(255,255,255,0.08)' : '#0098ea') + ';border:' + (stats.hasWallet ? '1px solid rgba(255,255,255,0.2)' : 'none') + ';color:#fff;cursor:pointer;">' +
+      (stats.hasWallet ? tr('airdropBtnWalletChange') : tr('airdropBtnWallet')) +
+      '  </button>' +
+      '</div>' +
+      (stats.hasWallet
+        ? '<div style="font-size:11px;color:#22c55e;font-weight:800;display:flex;align-items:center;gap:4px;"><span>✓</span> <span>' + tr('profileTgeWalletConnected') + ' (+150 Drop PTS)</span></div>'
+        : '<div style="font-size:11px;color:#fbbf24;font-weight:700;">' + (lang === 'ru' ? '💡 Привяжи Tonkeeper или Telegram Wallet и получи бонус +150 Drop PTS!' : '💡 Link Tonkeeper or Telegram Wallet to claim +150 Drop PTS bonus!') + '</div>');
+
+    walletCard.querySelector('.fvh-btn-airdrop-manage-wallet').onclick = function () {
+      if (stats.hasWallet) {
+        app.go('profile');
+      } else {
+        showTonWalletModal(app, function () {
+          app.show(buildAirdropPage(app), 'airdrop');
+        });
+      }
+    };
+    body.appendChild(walletCard);
+
+    // 2.3 Quick Actions Bar
+    var actionsBar = document.createElement('div');
+    actionsBar.className = 'fvh-airdrop-quick-actions';
+    actionsBar.innerHTML =
+      '<button type="button" class="btn primary fvh-airdrop-action-btn" id="fvh-airdrop-btn-play">' + tr('airdropBtnPlay') + '</button>' +
+      '<button type="button" class="btn fvh-airdrop-action-btn" id="fvh-airdrop-btn-invite" style="background:rgba(250,204,21,0.14);border:1px solid rgba(250,204,21,0.35);color:#facc15;">' + tr('airdropBtnInvite') + '</button>';
+
+    actionsBar.querySelector('#fvh-airdrop-btn-play').onclick = function () {
+      app.audio.play('click');
+      app.showModeSelect();
+    };
+    actionsBar.querySelector('#fvh-airdrop-btn-invite').onclick = function () {
+      app.audio.play('click');
+      app.go('quests', { tab: 'referrals' });
+    };
+    body.appendChild(actionsBar);
+
+    // 2.4 How it Works Header
+    var howTitle = document.createElement('div');
+    howTitle.style.fontSize = '14px';
+    howTitle.style.fontWeight = '900';
+    howTitle.style.color = '#fff';
+    howTitle.style.letterSpacing = '0.3px';
+    howTitle.style.margin = '4px 0 10px';
+    howTitle.innerHTML = '🪙 ' + tr('airdropHowItWorks');
+    body.appendChild(howTitle);
+
+    // 2.5 The 4 Earning Pillars
+    var pillarsGrid = document.createElement('div');
+    pillarsGrid.className = 'fvh-airdrop-pillars-grid';
+
+    var pillars = [
+      {
+        icon: '⚔️',
+        title: tr('airdropPillarMatchesTitle'),
+        desc: tr('airdropPillarMatchesDesc'),
+        meta: (lang === 'ru' ? 'Ваши победы: ' + stats.wins + ' · Голы: ' + stats.goals : 'Your wins: ' + stats.wins + ' · Goals: ' + stats.goals)
+      },
+      {
+        icon: '🏆',
+        title: tr('airdropPillarLeaderboardTitle'),
+        desc: tr('airdropPillarLeaderboardDesc'),
+        meta: (lang === 'ru' ? 'Текущий множитель: ' + stats.multiplier : 'Current Multiplier: ' + stats.multiplier)
+      },
+      {
+        icon: '👥',
+        title: tr('airdropPillarSquadTitle'),
+        desc: tr('airdropPillarSquadDesc'),
+        meta: (lang === 'ru' ? 'В вашем отряде: ' + stats.refCount + ' чел.' : 'Teammates in squad: ' + stats.refCount)
+      },
+      {
+        icon: '💎',
+        title: tr('airdropPillarWalletTitle'),
+        desc: tr('airdropPillarWalletDesc'),
+        meta: (stats.hasWallet ? (lang === 'ru' ? '✓ Кошелек готов к TGE' : '✓ Wallet ready for TGE') : (lang === 'ru' ? '⚠️ Кошелек пока не привязан' : '⚠️ Wallet not linked'))
+      }
+    ];
+
+    pillars.forEach(function (p) {
+      var card = document.createElement('div');
+      card.className = 'fvh-airdrop-pillar-card';
+      card.innerHTML =
+        '<div class="fvh-airdrop-pillar-icon">' + p.icon + '</div>' +
+        '<div class="fvh-airdrop-pillar-info">' +
+        '  <div class="fvh-airdrop-pillar-title">' + p.title + '</div>' +
+        '  <div class="fvh-airdrop-pillar-desc">' + p.desc + '</div>' +
+        '  <div style="font-size:11px;color:#38bdf8;font-weight:800;margin-top:4px;">' + p.meta + '</div>' +
+        '</div>';
+      pillarsGrid.appendChild(card);
+    });
+    body.appendChild(pillarsGrid);
+
+    // 2.6 Security & Economy Disclaimers
+    var secBox = document.createElement('div');
+    secBox.style.background = 'rgba(239, 68, 68, 0.08)';
+    secBox.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+    secBox.style.borderRadius = '12px';
+    secBox.style.padding = '10px 14px';
+    secBox.style.marginBottom = '10px';
+    secBox.style.fontSize = '11px';
+    secBox.style.color = '#fca5a5';
+    secBox.style.lineHeight = '1.45';
+    secBox.innerHTML = tr('airdropSecurityNote');
+    body.appendChild(secBox);
+
+    var infoBox = document.createElement('div');
+    infoBox.style.background = 'rgba(255, 255, 255, 0.04)';
+    infoBox.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+    infoBox.style.borderRadius = '12px';
+    infoBox.style.padding = '10px 14px';
+    infoBox.style.marginBottom = '14px';
+    infoBox.style.fontSize = '11px';
+    infoBox.style.color = '#94a3b8';
+    infoBox.style.lineHeight = '1.45';
+    infoBox.innerHTML = tr('airdropDisclaimer');
+    body.appendChild(infoBox);
+
+    page.appendChild(body);
+    page.appendChild(createScrollBottomSpacer());
+    container.appendChild(page);
+
+    // Shared Bottom Navigation
+    container.appendChild(createSharedBottomNav('airdrop', app));
     return container;
   }
 
@@ -11049,6 +11453,30 @@
     actionDeck.appendChild(playBtn);
     screen.appendChild(actionDeck);
 
+    // 3.5 Play-to-Airdrop Banner: Direct access to $FOOTY / $HOOPS token earning
+    var airdropStats = calculateAirdropStats(d);
+    var airdropBanner = document.createElement('div');
+    airdropBanner.className = 'fvh-airdrop-banner ' + curChar;
+    var airdropTokenTag = isFooty ? '⚽ $FOOTY' : '🏀 $HOOPS';
+
+    airdropBanner.innerHTML =
+      '<div class="fvh-airdrop-banner-left">' +
+      '  <div class="fvh-airdrop-banner-icon">🪙</div>' +
+      '  <div class="fvh-airdrop-banner-text">' +
+      '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'ЗАРАБОТАЙ ТОКЕНЫ ' + airdropTokenTag : 'EARN ' + airdropTokenTag + ' TOKENS') + '</div>' +
+      '    <div class="fvh-airdrop-banner-sub">' +
+      (lang === 'ru' ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' Drop PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b>' : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' Drop PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b>') +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<button type="button" class="fvh-airdrop-banner-badge">' + tr('airdropBannerBtn') + '</button>';
+
+    airdropBanner.onclick = function () {
+      app.audio.play('click');
+      app.go('airdrop');
+    };
+    screen.appendChild(airdropBanner);
+
     // 4. Secondary Console Hub: Quick access to Shop, Quests (with +100 FvH friend invites badge), and Leaderboard
     var secondaryHub = document.createElement('div');
     secondaryHub.className = 'fvh-secondary-hub';
@@ -11526,9 +11954,17 @@
       } else if (page === 'team-select') {
         app.audio.play('click');
         app.show(buildTeamSelectionScreen(app), 'team-select');
+      } else if (page === 'airdrop') {
+        app.audio.play('click');
+        app.show(buildAirdropPage(app), 'airdrop');
       } else {
         originalGo(page);
       }
+    };
+
+    // Dedicated Play-to-Airdrop Hub Screen Opener
+    app.showAirdrop = function () {
+      app.go('airdrop');
     };
 
     // Dedicated Team Selection Screen
