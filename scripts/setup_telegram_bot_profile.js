@@ -7,9 +7,9 @@ const PROFILE_TEXTS = {
     ru: 'FOOTY vs HOOPS ⚽🏀'
   },
   shortDescription: {
-    default: 'A fast-paced 1v1 arcade sports game on Telegram! Play Football & Basketball against AI in 2 arenas. ⚽🏀',
-    en: 'A fast-paced 1v1 arcade sports game on Telegram! Play Football & Basketball against AI in 2 arenas. ⚽🏀',
-    ru: 'Быстрая 1v1 спортивная аркада в Telegram! Футбол и баскетбол против ИИ на 2 стандартных аренах. ⚽🏀'
+    default: '1v1 Football & Basketball in Telegram! Quick matches vs AI & online PvP, locker room kits and seasonal leaderboard! ⚽🏀',
+    en: '1v1 Football & Basketball in Telegram! Quick matches vs AI & online PvP, locker room kits and seasonal leaderboard! ⚽🏀',
+    ru: 'Футбольно-баскетбольная 1v1 аркада в Telegram! Матчи против ИИ и онлайн PvP, раздевалка со скинами и мячами. ⚽🏀'
   },
   description: {
     default:
@@ -18,13 +18,13 @@ const PROFILE_TEXTS = {
 A fast-paced 1v1 arcade sports game right inside Telegram!
 
 ⚡ Game Features:
-• ⚽ Football mode
-• 🏀 Basketball mode
-• 🤖 1v1 arcade gameplay against AI
-• 🏟️ 2 standard arenas (Classic Pitch & Street Court)
-• 👕 Locker Room: Authentic kits & balls
+• ⚽ Football & 🏀 Basketball modes
+• ⚔️ Real-time 1v1 online PvP matches
+• 🤖 Practice matches against smart AI
+• 👕 Locker Room: Authentic kits & ball skins
+• 🏆 Leaderboards, seasons and quest rewards
 
-Choose your sport and jump into the game!
+Choose your team and hit the court!
 
 Tap "Play" below to kick off!`,
     en:
@@ -33,28 +33,28 @@ Tap "Play" below to kick off!`,
 A fast-paced 1v1 arcade sports game right inside Telegram!
 
 ⚡ Game Features:
-• ⚽ Football mode
-• 🏀 Basketball mode
-• 🤖 1v1 arcade gameplay against AI
-• 🏟️ 2 standard arenas (Classic Pitch & Street Court)
-• 👕 Locker Room: Authentic kits & balls
+• ⚽ Football & 🏀 Basketball modes
+• ⚔️ Real-time 1v1 online PvP matches
+• 🤖 Practice matches against smart AI
+• 👕 Locker Room: Authentic kits & ball skins
+• 🏆 Leaderboards, seasons and quest rewards
 
-Choose your sport and jump into the game!
+Choose your team and hit the court!
 
 Tap "Play" below to kick off!`,
     ru:
 `⚽🏀 Добро пожаловать в FOOTY vs HOOPS!
 
-Быстрая 1v1 спортивная аркада прямо в Telegram!
+Быстрая спортивная 1v1 аркада прямо в Telegram!
 
-⚡ Текущие возможности игры:
-• ⚽ Режим футбола
-• 🏀 Режим баскетбола
-• 🤖 1v1 аркадные матчи против ИИ
-• 🏟️ 2 стандартные арены
-• 👕 Гардероб с формой и мячами
+⚡ Что вас ждет:
+• ⚽ Футбол и 🏀 Баскетбол в одном приложении
+• ⚔️ Быстрые онлайн PvP матчи 1v1 в реальном времени
+• 🤖 Тренировочные матчи против умного ИИ
+• 👕 Раздевалка: кастомизация формы и мячей
+• 🏆 Таблица лидеров, сезоны и награды
 
-Выбирайте спорт и выходите на поле!
+Выбирайте свою команду и выходите на площадку!
 
 Нажмите «Играть» ниже, чтобы начать!`
   },

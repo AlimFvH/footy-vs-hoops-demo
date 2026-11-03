@@ -188,6 +188,8 @@
       close: 'Close',
       notEnoughCoins: 'Not enough coins! Win matches to earn more.',
       purchaseSuccess: 'Item purchased successfully!',
+      purchaseFailed: 'Purchase could not be completed. Please try again.',
+      purchaseAlreadyOwned: 'You already own this item!',
       packOpened: 'Pack Opened!',
       packAdded: 'Item added to your collection and ready to use!',
       claimAndContinue: 'CLAIM & CONTINUE',
@@ -703,6 +705,8 @@
       close: 'Закрыть',
       notEnoughCoins: 'Недостаточно монет! Побеждайте в матчах, чтобы заработать ещё.',
       purchaseSuccess: 'Предмет успешно приобретен!',
+      purchaseFailed: 'Не удалось совершить покупку. Попробуйте снова.',
+      purchaseAlreadyOwned: 'Предмет уже куплен!',
       packOpened: 'Набор открыт!',
       packAdded: 'Предмет добавлен в вашу коллекцию и готов к использованию!',
       claimAndContinue: 'ЗАБРАТЬ И ПРОДОЛЖИТЬ',
@@ -4594,6 +4598,9 @@
               storeData.selectedCharacter = res.selectedTeam;
             }
           });
+          if (app.store && typeof app.store.flush === 'function') {
+            app.store.flush();
+          }
         }
       }
       if (callback) callback(res);
@@ -6673,19 +6680,25 @@
                 if (!d.unseenItems) d.unseenItems = [];
                 if (d.unseenItems.indexOf(item.id) === -1) d.unseenItems.push(item.id);
               });
+              if (app.store && typeof app.store.flush === 'function') {
+                app.store.flush();
+              }
+              app.audio.play('claim');
+              showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
+              overlay.remove();
+              renderShop();
             } else {
-              app.store.update(function (d) {
-                d.coins -= item.price;
-                if (!d.owned) d.owned = [];
-                if (d.owned.indexOf(item.id) === -1) d.owned.push(item.id);
-                if (!d.unseenItems) d.unseenItems = [];
-                if (d.unseenItems.indexOf(item.id) === -1) d.unseenItems.push(item.id);
-              });
+              app.audio.play('error');
+              var errMsg = tr('purchaseFailed');
+              if (res && res.error === 'insufficient_funds') {
+                errMsg = tr('notEnoughCoins');
+              } else if (res && res.error === 'already_owned') {
+                errMsg = tr('purchaseAlreadyOwned');
+              } else if (res && res.message) {
+                errMsg = res.message;
+              }
+              showToast(errMsg);
             }
-            app.audio.play('claim');
-            showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
-            overlay.remove();
-            renderShop();
           });
         };
         actionsBox.appendChild(buyItemBtn);
@@ -6884,18 +6897,24 @@
                   if (!d.unseenItems) d.unseenItems = [];
                   if (d.unseenItems.indexOf(it.id) === -1) d.unseenItems.push(it.id);
                 });
+                if (app.store && typeof app.store.flush === 'function') {
+                  app.store.flush();
+                }
+                app.audio.play('claim');
+                showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
+                renderShop();
               } else {
-                app.store.update(function (d) {
-                  d.coins -= it.price;
-                  if (!d.owned) d.owned = [];
-                  if (d.owned.indexOf(it.id) === -1) d.owned.push(it.id);
-                  if (!d.unseenItems) d.unseenItems = [];
-                  if (d.unseenItems.indexOf(it.id) === -1) d.unseenItems.push(it.id);
-                });
+                app.audio.play('error');
+                var errMsg = tr('purchaseFailed');
+                if (res && res.error === 'insufficient_funds') {
+                  errMsg = tr('notEnoughCoins');
+                } else if (res && res.error === 'already_owned') {
+                  errMsg = tr('purchaseAlreadyOwned');
+                } else if (res && res.message) {
+                  errMsg = res.message;
+                }
+                showToast(errMsg);
               }
-              app.audio.play('claim');
-              showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
-              renderShop();
             });
           };
         }

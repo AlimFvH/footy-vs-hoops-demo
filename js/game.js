@@ -13311,6 +13311,10 @@ define("core/save", ["require", "exports", "core/input", "data/shop"], function 
             this.listeners = new Set();
             this.persistent = true;
             this.data = this.load();
+            if (typeof window !== 'undefined') {
+                window.addEventListener('beforeunload', () => this.flush());
+                window.addEventListener('pagehide', () => this.flush());
+            }
         }
         load() {
             try {

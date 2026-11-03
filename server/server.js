@@ -363,6 +363,7 @@ function createDefaultPlayer(playerId) {
     xp: 0,
     transactions: [],
     unseenItems: [],
+    initialSyncDone: false,
     owned: [
       'skin_rookie',
       'std_footy_classic',
@@ -3706,7 +3707,8 @@ const server = http.createServer((req, res) => {
       packs: player.packs,
       battlePass: player.battlePass,
       claimedQuests: player.claimedQuests,
-      stats: player.stats
+      stats: player.stats,
+      transactions: (player.transactions || []).slice(-30)
     });
   }
 
@@ -3795,12 +3797,33 @@ const server = http.createServer((req, res) => {
       if (!playerId) return sendJson(res, 400, { ok: false, error: 'missing_player_id' });
 
       const player = getPlayer(playerId);
-      // Merge client data safely
-      if (data.owned && Array.isArray(data.owned)) {
-        data.owned.forEach(id => {
-          if (!player.owned.includes(id)) player.owned.push(id);
-        });
+      // Authoritative Economy Protection:
+      // Client coins & owned items are only migrated on brand-new profile initial sync.
+      // Once a player has an established account or transactions, server state is strictly authoritative.
+      const isFirstSync = player.initialSyncDone === false &&
+        (!player.transactions || player.transactions.length === 0) &&
+        (!player.updatedAt || player.updatedAt === player.createdAt);
+
+      if (isFirstSync) {
+        if (typeof data.coins === 'number' && Number.isFinite(data.coins) && data.coins > 0) {
+          player.coins = Math.min(1000000, Math.max(player.coins, Math.floor(data.coins)));
+        }
+        if (typeof data.xp === 'number' && Number.isFinite(data.xp) && data.xp > 0) {
+          player.xp = Math.max(player.xp, Math.floor(data.xp));
+        }
+        if (data.owned && Array.isArray(data.owned)) {
+          data.owned.forEach(id => {
+            const canonical = LEGACY_ITEM_ALIASES[id] || id;
+            if (ITEM_CATALOG[canonical] && !player.owned.includes(canonical)) {
+              player.owned.push(canonical);
+            }
+          });
+        }
+        player.initialSyncDone = true;
+      } else {
+        player.initialSyncDone = true;
       }
+
       if (data.unseenItems && Array.isArray(data.unseenItems)) {
         if (!player.unseenItems) player.unseenItems = [];
         data.unseenItems.forEach(id => {
@@ -3827,12 +3850,6 @@ const server = http.createServer((req, res) => {
       // Security: Do NOT trust client-supplied isPremium!
       // Battle Pass Premium is strictly server-authoritative and can only be unlocked via verified payment.
       void data.isPremium;
-      if (data.coins && typeof data.coins === 'number' && data.coins > player.coins) {
-        player.coins = data.coins;
-      }
-      if (data.xp && typeof data.xp === 'number' && data.xp > player.xp) {
-        player.xp = data.xp;
-      }
       if (data.playerName && typeof data.playerName === 'string') {
         player.playerName = data.playerName.trim().slice(0, 32);
       }
@@ -3973,8 +3990,8 @@ const server = http.createServer((req, res) => {
 
         if (idempotencyKey) {
           state.idempotencyKeys[idempotencyKey] = resp;
-          persistState();
         }
+        persistState();
 
         return sendJson(res, 200, resp);
       }
@@ -4207,8 +4224,8 @@ const server = http.createServer((req, res) => {
 
         if (idempotencyKey) {
           state.idempotencyKeys[idempotencyKey] = resp;
-          persistState();
         }
+        persistState();
 
         return sendJson(res, 200, resp);
       }
@@ -4306,8 +4323,8 @@ const server = http.createServer((req, res) => {
 
         if (idempotencyKey) {
           state.idempotencyKeys[idempotencyKey] = resp;
-          persistState();
         }
+        persistState();
 
         return sendJson(res, 200, resp);
       }
