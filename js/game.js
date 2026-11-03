@@ -104,12 +104,25 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             }
         }
         setVolumes(sfx, music) {
-            this.sfxVol = sfx;
-            this.musicVol = music;
+            this.sfxVol = typeof sfx === 'number' ? sfx : (sfx ? 0.8 : 0);
+            this.musicVol = typeof music === 'number' ? music : (music ? 0.35 : 0);
             if (this.sfxGain)
-                this.sfxGain.gain.value = sfx;
+                this.sfxGain.gain.value = this.sfxVol;
             if (this.musicGain)
-                this.musicGain.gain.value = music * 0.5;
+                this.musicGain.gain.value = this.musicVol * 0.5;
+        }
+        setSfxEnabled(enabled) {
+            this.sfxVol = enabled ? 0.8 : 0;
+            if (this.sfxGain) {
+                this.sfxGain.gain.value = this.sfxVol;
+            }
+        }
+        setMusicEnabled(enabled) {
+            this.musicVol = enabled ? 0.35 : 0;
+            if (this.musicGain) {
+                this.musicGain.gain.value = this.musicVol * 0.5;
+            }
+            this.setMusic(Boolean(enabled));
         }
         suspend() {
             var _a;
@@ -164,6 +177,9 @@ define("core/audio", ["require", "exports"], function (require, exports) {
         }
         play(name, v = 1, pitch = 1) {
             var _a;
+            if (!this.ctx || this.ctx.state !== 'running') {
+                this.unlock();
+            }
             const c = this.ctx;
             if (!c || c.state !== 'running')
                 return;
@@ -2935,16 +2951,33 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 this.launchShot(a, 0, 0, true);
                 return;
             }
-            // Auto square shooter towards hoop on shot release
+            // Facing alignment check: if facing away from hoop, ball misses in facing direction
             const toHyp = Math.hypot(dx, dz) || 1;
-            a.fx = dx / toHyp;
-            a.fz = dz / toHyp;
+            const toHoopX = dx / toHyp;
+            const toHoopZ = dz / toHyp;
+            const hasFacing = Math.hypot(a.fx, a.fz) > 0.1;
+            const facingDot = hasFacing ? (a.fx * toHoopX + a.fz * toHoopZ) : 1.0;
+
+            if (facingDot < 0.25) {
+                // Facing away or completely sideways: ball launches where player is looking and misses hoop
+                const throwDist = Math.max(4.0, dist);
+                const aimX = a.x + a.fx * throwDist;
+                const aimZ = a.z + a.fz * throwDist;
+                const missErrX = aimX - 0;
+                const missErrZ = aimZ - hoop.z;
+                this.launchShot(a, missErrX, missErrZ, false);
+                return;
+            }
+
+            // Facing hoop: square shooter towards hoop
+            a.fx = toHoopX;
+            a.fz = toHoopZ;
             a.vx = 0;
             a.vz = 0;
 
             const q = this.shotQuality(Math.max(0.1, charge), a, dist);
-            // Controlled, authentic spread based on timing quality
-            const spread = (1 - q) * 0.42;
+            const anglePenalty = facingDot < 0.7 ? (0.7 - facingDot) * 0.75 : 0;
+            const spread = ((1 - q) * 0.42) + anglePenalty;
             const ang = this.rng.range(0, Math.PI * 2);
             const errDist = spread * this.rng.range(0.2, 1.0);
             const errX = Math.cos(ang) * errDist;
@@ -12971,6 +13004,22 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Hud = void 0;
+    function getHudActionSvg(action, isHoops) {
+        if (action === 'shoot') {
+            if (isHoops) {
+                return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" fill="#ea580c" stroke="#fef08a" stroke-width="1.2"/><line x1="2.5" y1="12" x2="21.5" y2="12" stroke="#1c1917" stroke-width="1.3"/><line x1="12" y1="2.5" x2="12" y2="21.5" stroke="#1c1917" stroke-width="1.3"/><path d="M5.5 6 C10 8.5 10 15.5 5.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/><path d="M18.5 6 C14 8.5 14 15.5 18.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/><circle cx="9" cy="8" r="1.5" fill="#ffffff" opacity="0.6"/></svg>';
+            }
+            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2"/><polygon points="12,5 15.5,7.5 14,12 10,12 8.5,7.5" fill="#ffffff"/><path d="M8.5 7.5 L4.5 9 M15.5 7.5 L19.5 9 M14 12 L17 16 M10 12 L7 16 M12 5 L12 2.5" stroke="#38bdf8" stroke-width="1.2"/><circle cx="8" cy="8" r="1.5" fill="#ffffff" opacity="0.6"/></svg>';
+        }
+        if (action === 'tackle') {
+            if (isHoops) {
+                return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 13 L6 8 C6 6.8 6.8 6 8 6 C9.2 6 10 6.8 10 8 L10 12 M10 9 C10 7.8 10.8 7 12 7 C13.2 7 14 7.8 14 9 L14 12 M14 9.5 C14 8.3 14.8 7.5 16 7.5 C17.2 7.5 18 8.3 18 9.5 L18 14 C18 17.5 15.5 20.5 12 20.5 C8.5 20.5 6 17.5 6 14 Z" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/></svg>';
+            }
+            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3 L19.5 6.5 C19.5 13.5 15.5 18.5 12 20.5 C8.5 18.5 4.5 13.5 4.5 6.5 Z" fill="rgba(56,189,248,0.25)" stroke="#38bdf8" stroke-width="1.6"/><path d="M12 6.5 L16.5 8.5 C16.5 13 14 16.5 12 17.8 C10 16.5 7.5 13 7.5 8.5 Z" fill="#0284c7" opacity="0.6"/><polygon points="12,8.5 13.5,11 16,11 14,12.5 15,15 12,13.5 9,15 10,12.5 8,11 10.5,11" fill="#fef08a"/></svg>';
+        }
+        // sprint
+        return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12 L12 5 L12 9.5 L19 4 L15 12 L20 12 L8 21 L11 13 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1.2" stroke-linejoin="round"/><line x1="2" y1="8" x2="7" y2="8" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="12" x2="5" y2="12" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="16" x2="8" y2="16" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    }
     const STICK_R = 58;
     class Hud {
         constructor(input, onPause) {
@@ -13099,8 +13148,9 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             );
         }
         mkBtn(action, label, cls) {
-            const defIcon = action === 'shoot' ? '⚡' : (action === 'tackle' ? '🛡️' : '💨');
-            const el = (0, dom_js_1.h)('button', { class: `tbtn ${cls}`, type: 'button', 'data-action': action }, (0, dom_js_1.h)('span', { class: 'ico' }, defIcon), (0, dom_js_1.h)('span', { class: 'lbl' }, label), (0, dom_js_1.h)('i', { class: 'ring' }));
+            const icoEl = (0, dom_js_1.h)('span', { class: 'ico' });
+            icoEl.innerHTML = getHudActionSvg(action, false);
+            const el = (0, dom_js_1.h)('button', { class: `tbtn ${cls}`, type: 'button', 'data-action': action }, icoEl, (0, dom_js_1.h)('span', { class: 'lbl' }, label), (0, dom_js_1.h)('i', { class: 'ring' }));
             const down = (e) => {
                 if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
@@ -13288,15 +13338,15 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             const tackleLbl = this.btnTackle.querySelector('.lbl');
             if (tackleLbl) tackleLbl.textContent = steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle');
             const tackleIco = this.btnTackle.querySelector('.ico');
-            if (tackleIco) tackleIco.textContent = steal ? '🖐️' : '🛡️';
+            if (tackleIco) tackleIco.innerHTML = getHudActionSvg('tackle', steal);
             const shootLbl = this.btnShoot.querySelector('.lbl');
             if (shootLbl) shootLbl.textContent = steal ? (0, index_js_1.t)('hud.shootHoops') : (0, index_js_1.t)('hud.shoot');
             const shootIco = this.btnShoot.querySelector('.ico');
-            if (shootIco) shootIco.textContent = steal ? '🏀' : '⚡';
+            if (shootIco) shootIco.innerHTML = getHudActionSvg('shoot', steal);
             const sprintLbl = this.btnSprint.querySelector('.lbl');
             if (sprintLbl) sprintLbl.textContent = (0, index_js_1.t)('hud.sprint');
             const sprintIco = this.btnSprint.querySelector('.ico');
-            if (sprintIco) sprintIco.textContent = '💨';
+            if (sprintIco) sprintIco.innerHTML = getHudActionSvg('sprint', false);
             const stamSpan = this.staminaWrap.querySelector('span');
             if (stamSpan) stamSpan.textContent = (0, index_js_1.t)('hud.stamina');
             this.pauseBtn.setAttribute('aria-label', (0, index_js_1.t)('hud.pause'));
@@ -16701,12 +16751,15 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             (0, dom_js_6.$)('#hud-mount').append(this.hud.root);
             this.hud.setTouchVisible((0, dom_js_6.isTouchDevice)());
             this.hud.setLayout(s.touchSide === 'swapped');
+            const unlockAudio = () => { if (this.audio) this.audio.unlock(); };
             window.addEventListener('pointerdown', (e) => {
-                this.audio.unlock();
+                unlockAudio();
                 if (e.pointerType === 'touch' && !this.hud.touchVisible)
                     this.hud.setTouchVisible(true);
-            });
-            window.addEventListener('keydown', () => this.audio.unlock(), { once: true });
+            }, { passive: true });
+            window.addEventListener('touchstart', unlockAudio, { passive: true });
+            window.addEventListener('click', unlockAudio, { passive: true });
+            window.addEventListener('keydown', unlockAudio, { once: true });
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden && this.state === 'match')
                     this.setPause(true);
