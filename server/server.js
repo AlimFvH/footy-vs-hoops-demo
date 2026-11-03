@@ -4559,11 +4559,13 @@ const server = http.createServer((req, res) => {
 
     // High-Concurrency Asset Caching Strategy
     if (ext === '.html') {
-      headers['Cache-Control'] = 'no-cache, must-revalidate';
+      headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      headers['Pragma'] = 'no-cache';
+      headers['Expires'] = '0';
     } else if (['.glb', '.gltf', '.png', '.jpg', '.mp3', '.wav', '.ogg', '.svg', '.ico'].includes(ext)) {
       headers['Cache-Control'] = 'public, max-age=604800, immutable';
     } else if (['.js', '.css'].includes(ext)) {
-      headers['Cache-Control'] = 'public, max-age=86400';
+      headers['Cache-Control'] = 'no-cache, must-revalidate';
     }
 
     // High-Concurrency Gzip Compression for text and script assets
