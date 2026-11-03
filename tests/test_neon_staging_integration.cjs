@@ -106,6 +106,18 @@ async function runNeonStagingIntegration() {
 
   try {
     // -------------------------------------------------------------
+    // Connection & Schema Initialization
+    // -------------------------------------------------------------
+    console.log('\nInitializing Adapter & Connecting to Neon PostgreSQL...');
+    await adapter.init();
+    const connectDurationMs = Date.now() - startTime;
+    console.log(`  [PASS] Connected and initialized in ${connectDurationMs}ms (SSL verified).`);
+
+    const healthy = await adapter.isHealthy();
+    assert.strictEqual(healthy, true, 'Database must report healthy');
+    console.log('  [PASS] Health check query SELECT 1 returned alive.');
+
+    // -------------------------------------------------------------
     // Preflight: Live Staging Database Identity Verification
     // -------------------------------------------------------------
     console.log('\nPreflight: Verifying Live Database Identity & Isolation...');
@@ -155,17 +167,6 @@ async function runNeonStagingIntegration() {
       }
     }
     console.log('  [PASS] Staging database identity and isolation verified.');
-
-    // -------------------------------------------------------------
-    // Test 1: Connection & SSL Handshake Verification
-    // -------------------------------------------------------------
-    console.log('\nTest 1: Live Connection, SSL Handshake & Schema Initialization...');
-    await adapter.init();
-    const connectDurationMs = Date.now() - startTime;
-    console.log(`  [PASS] Connected and initialized in ${connectDurationMs}ms (SSL verified).`);
-
-    const healthy = await adapter.isHealthy();
-    assert.strictEqual(healthy, true, 'Database must report healthy');
     console.log('  [PASS] Health check query SELECT 1 returned alive.');
 
     // -------------------------------------------------------------
