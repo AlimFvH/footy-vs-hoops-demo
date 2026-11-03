@@ -4530,16 +4530,16 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     exports.CATEGORIES = ['skins', 'balls', 'other'];
     exports.RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
     const FOOTY_BASE = {
-        line: 0xf4f7f2,
+        line: 0xfdfefe,
         skyTop: 0x0a1630,
         skyBottom: 0x213a5c,
         fog: 0x0c1a2e,
-        sunColor: [1.05, 1.0, 0.9],
+        sunColor: [1.18, 1.12, 1.05],
         sunDir: [0.35, 0.85, 0.4],
-        hemiSky: 0x7f9fd8,
-        hemiGround: 0x2b3a2a,
-        lights: [0xfff2d0, 0xfff2d0, 0xfff2d0, 0xfff2d0],
-        lightIntensity: 0.55,
+        hemiSky: 0x8cb4f8,
+        hemiGround: 0x16381a,
+        lights: [0xfff4d6, 0xfff4d6, 0xfff4d6, 0xfff4d6],
+        lightIntensity: 0.65,
         stand: 0x2a3140,
         crowd: [0xe84a5f, 0xf6c445, 0x4fb3ff, 0xffffff, 0x7be08a, 0xff8c42, 0x9b6bff],
         boards: 0x0d1424,
@@ -4621,7 +4621,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             price: 0,
             icon: '🏟️',
             isDefault: true,
-            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x2f8f3e, pitchB: 0x287a35 }),
+            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x1e823b, pitchB: 0x156b2f }),
         },
         {
             id: 'std_footy_night',
@@ -4632,7 +4632,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             rarity: 'rare',
             price: 300,
             icon: '🌙',
-            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x1f7f58, pitchB: 0x196c4a, skyTop: 0x04061a, skyBottom: 0x1a1a52, fog: 0x0a0d2a, sunColor: [0.55, 0.6, 0.95], hemiSky: 0x5a64d8, lights: [0x8fb4ff, 0xc08bff, 0x8fb4ff, 0xc08bff], lightIntensity: 0.8, glow: 0x9db6ff, accent: 0x8f8bff }),
+            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x186b46, pitchB: 0x125437, skyTop: 0x04061a, skyBottom: 0x1a1a52, fog: 0x0a0d2a, sunColor: [0.65, 0.7, 1.0], hemiSky: 0x5a64d8, lights: [0x8fb4ff, 0xc08bff, 0x8fb4ff, 0xc08bff], lightIntensity: 0.85, glow: 0x9db6ff, accent: 0x8f8bff }),
         },
         {
             id: 'std_footy_golden',
@@ -4643,7 +4643,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             rarity: 'epic',
             price: 520,
             icon: '🌇',
-            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x4aa03c, pitchB: 0x3c8a30, skyTop: 0x3a2a5a, skyBottom: 0xff9a52, fog: 0x6a3d3a, sunColor: [1.35, 1.0, 0.62], sunDir: [0.75, 0.42, 0.35], hemiSky: 0xffb98a, hemiGround: 0x3a3320, lights: [0xffc27a, 0xffc27a, 0xffc27a, 0xffc27a], glow: 0xffd29a, accent: 0xffb347 }),
+            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x3d8c2e, pitchB: 0x317325, skyTop: 0x3a2a5a, skyBottom: 0xff9a52, fog: 0x6a3d3a, sunColor: [1.38, 1.05, 0.65], sunDir: [0.75, 0.42, 0.35], hemiSky: 0xffb98a, hemiGround: 0x2e301a, lights: [0xffc27a, 0xffc27a, 0xffc27a, 0xffc27a], glow: 0xffd29a, accent: 0xffb347 }),
         },
         {
             id: 'std_footy_neon',
@@ -5466,7 +5466,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         return [c, c.getContext('2d')];
     }
     exports.PITCH_MARGIN = 3;
-    const PPM_F = 36;
+    const PPM_F = 40;
     function pitchPlaneSize() {
         return [2 * (football_js_1.FB.W + exports.PITCH_MARGIN), 2 * (football_js_1.FB.L + exports.PITCH_MARGIN)];
     }
@@ -5475,43 +5475,57 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const [c, g] = makeCanvas(Math.round(pw * PPM_F), Math.round(pd * PPM_F));
         const X = (x) => (x + pw / 2) * PPM_F;
         const Z = (z) => (z + pd / 2) * PPM_F;
-        const stripes = 18;
+        const { W, L } = football_js_1.FB;
+
+        // 1. High-precision tournament lawn: 16 alternating roller stripes
+        const stripes = 16;
         const sh = c.height / stripes;
-        
-        // 1. Alternating precision stadium mower stripes with soft roller bevels
         for (let i = 0; i < stripes; i++) {
             const col = hex(i % 2 ? t.pitchA : t.pitchB);
             g.fillStyle = col;
             g.fillRect(0, i * sh, c.width, sh + 1);
-            // Precision mower roller transition sheen & shadow
-            g.fillStyle = 'rgba(0,0,0,0.055)';
+            // Roller transition: soft ambient groove and directional sunlight highlight
+            g.fillStyle = 'rgba(0,0,0,0.06)';
             g.fillRect(0, i * sh, c.width, 3);
             g.fillStyle = 'rgba(255,255,255,0.04)';
             g.fillRect(0, (i + 1) * sh - 3, c.width, 3);
-            // Subtle orthogonal mower cross-grain roll
-            if (i % 3 === 0) {
-                g.fillStyle = 'rgba(255,255,255,0.015)';
-                g.fillRect(0, i * sh, c.width, sh);
-            }
         }
 
-        // 2. High-density organic grass blade micro-texture (28,000 strands)
+        // 2. UEFA/Premier League style Cross-Mowing Checkerboard Sheen
+        // Intersecting vertical roller lanes produce the iconic prestigious checkerboard turf
+        const vLanes = 10;
+        const laneW = c.width / vLanes;
+        for (let j = 0; j < vLanes; j++) {
+            g.fillStyle = j % 2 === 0 ? 'rgba(255,255,255,0.028)' : 'rgba(0,0,0,0.028)';
+            g.fillRect(j * laneW, 0, laneW, c.height);
+            g.fillStyle = 'rgba(255,255,255,0.015)';
+            g.fillRect(j * laneW, 0, 2, c.height);
+        }
+
+        // 3. Sideline & Run-Off Apron Turf: distinct deeper border outside touchlines
+        g.fillStyle = 'rgba(0, 0, 0, 0.08)';
+        g.fillRect(0, 0, c.width, Z(-L));
+        g.fillRect(0, Z(L), c.width, c.height - Z(L));
+        g.fillRect(0, Z(-L), X(-W), Z(L) - Z(-L));
+        g.fillRect(X(W), Z(-L), c.width - X(W), Z(L) - Z(-L));
+
+        // 4. High-density organic grass blade micro-texture (32,000 strands)
         const bladeHues = [
-            'rgba(18,52,24,0.08)',
-            'rgba(34,88,40,0.07)',
-            'rgba(255,255,255,0.045)',
-            'rgba(65,140,55,0.06)'
+            'rgba(14, 52, 22, 0.09)',
+            'rgba(32, 92, 38, 0.08)',
+            'rgba(68, 160, 58, 0.065)',
+            'rgba(255, 255, 255, 0.045)'
         ];
-        for (let i = 0; i < 28000; i++) {
+        for (let i = 0; i < 32000; i++) {
             const gx = Math.random() * c.width;
             const gy = Math.random() * c.height;
             g.fillStyle = bladeHues[i % 4];
             g.fillRect(gx, gy, 1.4, Math.random() * 4.5 + 1.5);
         }
 
-        // 3. Natural goalmouth & penalty box organic turf wear
+        // 5. Natural goalmouth & penalty spot organic turf wear
         for (const s of [-1, 1]) {
-            const gz = Z(s * (football_js_1.FB.L - 2.5));
+            const gz = Z(s * (L - 2.5));
             const wearGrad = g.createRadialGradient(X(0), gz, 10, X(0), gz, 110);
             wearGrad.addColorStop(0, 'rgba(92, 74, 42, 0.12)');
             wearGrad.addColorStop(0.5, 'rgba(80, 68, 38, 0.06)');
@@ -5519,8 +5533,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.fillStyle = wearGrad;
             g.fillRect(X(-football_js_1.FB.SIX_W * 1.2), Math.min(gz - 60, gz + 60), football_js_1.FB.SIX_W * 2.4 * PPM_F, 120);
 
-            // Subtle penalty spot turf wear
-            const pz = Z(s * (football_js_1.FB.L - football_js_1.FB.SPOT));
+            const pz = Z(s * (L - football_js_1.FB.SPOT));
             const pGrad = g.createRadialGradient(X(0), pz, 4, X(0), pz, 28);
             pGrad.addColorStop(0, 'rgba(85, 70, 40, 0.10)');
             pGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -5530,32 +5543,42 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.fill();
         }
 
-        // 4. Regulation high-definition chalk markings with soft bevel
-        g.strokeStyle = hex(t.line);
-        g.fillStyle = hex(t.line);
-        g.lineWidth = 0.12 * PPM_F;
+        // 6. Regulation pristine stadium chalk markings with luminous soft edge
+        const chalk = hex(t.line || 0xfdfefe);
+        g.strokeStyle = chalk;
+        g.fillStyle = chalk;
+        g.lineWidth = 0.115 * PPM_F;
         g.lineJoin = 'miter';
-        g.shadowColor = 'rgba(255,255,255,0.35)';
-        g.shadowBlur = 1.2;
+        g.shadowColor = 'rgba(255, 255, 255, 0.45)';
+        g.shadowBlur = 1.8;
 
         const rect = (x0, z0, x1, z1) => g.strokeRect(X(x0), Z(z0), (x1 - x0) * PPM_F, (z1 - z0) * PPM_F);
-        const { W, L } = football_js_1.FB;
-        
+
         // Touchlines & Goal lines
         rect(-W, -L, W, L);
-        
+
         // Halfway line & Center circle
         g.beginPath();
         g.moveTo(X(-W), Z(0));
         g.lineTo(X(W), Z(0));
         g.stroke();
-        
+
+        // Decorative concentric lawn mower ring inside center circle
+        g.save();
+        g.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+        g.lineWidth = 0.5 * PPM_F;
+        g.beginPath();
+        g.arc(X(0), Z(0), (football_js_1.FB.CIRCLE_R - 0.3) * PPM_F, 0, Math.PI * 2);
+        g.stroke();
+        g.restore();
+
+        // Official Center Circle & Center Spot
         g.beginPath();
         g.arc(X(0), Z(0), football_js_1.FB.CIRCLE_R * PPM_F, 0, Math.PI * 2);
         g.stroke();
-        
+
         g.beginPath();
-        g.arc(X(0), Z(0), 0.26 * PPM_F, 0, Math.PI * 2);
+        g.arc(X(0), Z(0), 0.24 * PPM_F, 0, Math.PI * 2);
         g.fill();
 
         // Penalty boxes (18-yard), 6-yard boxes, penalty spots & penalty arcs
@@ -5566,7 +5589,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.beginPath();
             g.arc(X(0), Z(spotZ), 0.22 * PPM_F, 0, Math.PI * 2);
             g.fill();
-            
+
             // Penalty D-Arc
             g.save();
             g.beginPath();
@@ -5581,14 +5604,27 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.restore();
         }
 
-        // Corner Quadrant Arcs
+        // Corner Quadrant Arcs & Corner Spots
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
                 g.beginPath();
                 g.arc(X(sx * W), Z(sz * L), 1.0 * PPM_F, 0, Math.PI * 2);
                 g.stroke();
+
+                g.beginPath();
+                g.arc(X(sx * W), Z(sz * L), 0.12 * PPM_F, 0, Math.PI * 2);
+                g.fill();
             }
         }
+
+        // Technical Area Dugouts (substitute benches sidelines markings)
+        g.save();
+        g.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        g.lineWidth = 0.08 * PPM_F;
+        g.setLineDash([0.35 * PPM_F, 0.25 * PPM_F]);
+        g.strokeRect(X(-W - 1.8), Z(-7), 1.2 * PPM_F, 14 * PPM_F);
+        g.strokeRect(X(W + 0.6), Z(-7), 1.2 * PPM_F, 14 * PPM_F);
+        g.restore();
 
         g.shadowBlur = 0;
         return c;
@@ -7417,15 +7453,15 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const isDefault = Boolean(t && (t.isDefault || t.id === 'std_footy_classic' || t.id === 'std_footy_night' || t.id === 'std_footy_golden'));
         
         // Massive seamless ground plane (500x500) with natural turf tone
-        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : (t && t.hemiGround ? t.hemiGround : 0x1b3820));
-        const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.05, fog: false }));
+        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : (t && t.hemiGround ? t.hemiGround : 0x14351a));
+        const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.04, fog: false }));
         ground.setPos(0, -0.06, 0);
 
         // 360-Degree Panoramic Sky Dome
         buildArenaSkyAndHorizon(root, t, W, L, false, quality);
 
         const [pw, pd] = (0, textures_js_1.pitchPlaneSize)();
-        const pitch = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makePitchTexture)(t), { mipmap: true, srgb: true }), receiveShadow: true, spec: 0.12, shininess: 25 }));
+        const pitch = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makePitchTexture)(t), { mipmap: true, srgb: true }), receiveShadow: true, spec: 0.05, shininess: 8 }));
         root.add(ground, pitch);
 
         const postMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf4f6f8), spec: 0.7, shininess: 70, rim: 0.2, castShadow: true });
@@ -7467,6 +7503,23 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             goal.add(net);
             nets.push(net);
             root.add(goal);
+        }
+
+        // 4 Corner Flags with vibrant red-gold fabric
+        const flagPoleMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xffffff), spec: 0.7, shininess: 50 });
+        const flagClothMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xff2b2b), doubleSided: true, unlit: true });
+        for (const sx of [-1, 1]) {
+            for (const sz of [-1, 1]) {
+                const flagNode = new scene_js_1.Node();
+                flagNode.setPos(sx * W, 0, sz * L);
+                const pole = new scene_js_1.Node(G.cylinder(0.024, 0.024, 1.55, 8), flagPoleMat);
+                pole.setPos(0, 0.775, 0);
+                const cloth = new scene_js_1.Node(G.quad(0.36, 0.26), flagClothMat);
+                cloth.setPos(sx * 0.18, 1.38, 0);
+                cloth.rotation = [0, sx > 0 ? 0.35 : -0.35, 0];
+                flagNode.add(pole, cloth);
+                root.add(flagNode);
+            }
         }
 
         const led = ads_js_1.AD_CONFIG.enabled ? ledMaterials(t.boards, 2 * L + 2, (2 * W + 2 - (2 * GW + 3)) / 2, 'footy') : null;
@@ -8850,7 +8903,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const isFrame = (id && id.startsWith('frame_')) || (fallback && fallback.startsWith('frame_'));
             const isSkin = (id && id.startsWith('skin_')) || (fallback && fallback.startsWith('skin_'));
             if (isStd) {
-                return Object.assign({}, isHoops ? { floor: 0x0b0e16, woodA: 0xd4a373, woodB: 0xbc8a5f, line: 0xf6f3ea, paint: 0x1b4b9b, rim: 0xff6a1a, fog: 0x080b14 } : { pitchA: 0x2f8f3e, pitchB: 0x287a35, line: 0xffffff, fog: 0x070b14 }, { id: fallback || id || (isHoops ? 'std_hoops_street' : 'std_footy_classic') });
+                return Object.assign({}, isHoops ? { floor: 0x0b0e16, woodA: 0xd4a373, woodB: 0xbc8a5f, line: 0xf6f3ea, paint: 0x1b4b9b, rim: 0xff6a1a, fog: 0x080b14 } : { pitchA: 0x1e823b, pitchB: 0x156b2f, line: 0xfdfefe, fog: 0x070b14 }, { id: fallback || id || (isHoops ? 'std_hoops_street' : 'std_footy_classic') });
             }
             if (isTrail) {
                 return { type: 'default', color: 0xffffff, id: 'trail_default' };
@@ -13046,7 +13099,8 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             );
         }
         mkBtn(action, label, cls) {
-            const el = (0, dom_js_1.h)('button', { class: `tbtn ${cls}`, type: 'button', 'data-action': action }, (0, dom_js_1.h)('span', { class: 'lbl' }, label), (0, dom_js_1.h)('i', { class: 'ring' }));
+            const defIcon = action === 'shoot' ? '⚡' : (action === 'tackle' ? '🛡️' : '💨');
+            const el = (0, dom_js_1.h)('button', { class: `tbtn ${cls}`, type: 'button', 'data-action': action }, (0, dom_js_1.h)('span', { class: 'ico' }, defIcon), (0, dom_js_1.h)('span', { class: 'lbl' }, label), (0, dom_js_1.h)('i', { class: 'ring' }));
             const down = (e) => {
                 if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
@@ -13066,6 +13120,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             el.addEventListener('pointerdown', down);
             el.addEventListener('pointerup', up);
             el.addEventListener('pointercancel', up);
+            el.addEventListener('lostpointercapture', up);
             el.addEventListener('touchstart', (e) => {
                 if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
@@ -13232,10 +13287,16 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             const steal = mode === 'hoops';
             const tackleLbl = this.btnTackle.querySelector('.lbl');
             if (tackleLbl) tackleLbl.textContent = steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle');
+            const tackleIco = this.btnTackle.querySelector('.ico');
+            if (tackleIco) tackleIco.textContent = steal ? '🖐️' : '🛡️';
             const shootLbl = this.btnShoot.querySelector('.lbl');
             if (shootLbl) shootLbl.textContent = steal ? (0, index_js_1.t)('hud.shootHoops') : (0, index_js_1.t)('hud.shoot');
+            const shootIco = this.btnShoot.querySelector('.ico');
+            if (shootIco) shootIco.textContent = steal ? '🏀' : '⚡';
             const sprintLbl = this.btnSprint.querySelector('.lbl');
             if (sprintLbl) sprintLbl.textContent = (0, index_js_1.t)('hud.sprint');
+            const sprintIco = this.btnSprint.querySelector('.ico');
+            if (sprintIco) sprintIco.textContent = '💨';
             const stamSpan = this.staminaWrap.querySelector('span');
             if (stamSpan) stamSpan.textContent = (0, index_js_1.t)('hud.stamina');
             this.pauseBtn.setAttribute('aria-label', (0, index_js_1.t)('hud.pause'));
@@ -14438,7 +14499,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const w = Math.max(1, this.stage.clientWidth || window.innerWidth);
                 const hgt = Math.max(1, this.stage.clientHeight || window.innerHeight);
                 const isMob = isMobileDevice();
-                const cap = isMob ? (this.qualityMode === 'high' ? 2.0 : 1.75) : (this.qualityMode === 'high' ? 2.0 : 1.5);
+                const cap = this.qualityMode === 'high' ? 2.5 : 2.0;
                 this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale;
                 this.renderer.resize(w, hgt, this.dpr);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.setAspect(w / hgt);
@@ -14661,8 +14722,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
                 /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
             );
-            const threshold = isMob ? 22 : 25;
-            if (this.ema > threshold)
+            if (this.ema > 28)
                 this.slowFrames++;
             else
                 this.slowFrames = Math.max(0, this.slowFrames - 2);
@@ -14670,7 +14730,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             if (this.slowFrames > maxSlow) {
                 this.slowFrames = 0;
                 if (this.dprScale > 0.70) {
-                    this.dprScale *= 0.85;
+                    this.dprScale *= 0.8;
                     this.resize();
                 }
                 else if (this.renderer.shadowsEnabled) {
