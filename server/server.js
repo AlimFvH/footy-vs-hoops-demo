@@ -3841,7 +3841,10 @@ const server = http.createServer((req, res) => {
       const playerId = String(data.playerId || '').trim();
       if (!playerId) return sendJson(res, 400, { ok: false, error: 'missing_player_id' });
 
-      const player = getPlayer(playerId);
+      const tgUser = (data.telegramUser && typeof data.telegramUser === 'object') ? data.telegramUser : null;
+      const tgUserId = (tgUser && tgUser.id) ? String(tgUser.id) : null;
+      let player = findCanonicalPlayer(tgUserId, playerId);
+      if (!player) player = getPlayer(playerId);
       // Authoritative Economy Protection:
       // Client coins & owned items are only migrated on brand-new profile initial sync.
       // Once a player has an established account or transactions, server state is strictly authoritative.
@@ -3867,6 +3870,17 @@ const server = http.createServer((req, res) => {
         player.initialSyncDone = true;
       } else {
         player.initialSyncDone = true;
+      }
+
+      // Merge and protect claimed quests so player progress is never wiped on sync
+      if (Array.isArray(data.claimedQuests)) {
+        if (!Array.isArray(player.claimedQuests)) player.claimedQuests = [];
+        data.claimedQuests.forEach(qId => {
+          const strId = String(qId).trim();
+          if (strId && !player.claimedQuests.includes(strId)) {
+            player.claimedQuests.push(strId);
+          }
+        });
       }
 
       if (data.unseenItems && Array.isArray(data.unseenItems)) {

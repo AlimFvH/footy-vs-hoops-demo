@@ -4524,8 +4524,16 @@
   }
 
   function getAppPlayerId(app) {
-    if (app && app.store && app.store.data && app.store.data.playerId) {
-      return app.store.data.playerId;
+    if (app && app.store && app.store.data) {
+      if (app.store.data.playerId) {
+        return app.store.data.playerId;
+      }
+      if (app.store.data.telegramUser && app.store.data.telegramUser.id) {
+        var canonicalTgId = 'fvh_tg_' + app.store.data.telegramUser.id;
+        app.store.data.playerId = canonicalTgId;
+        try { localStorage.setItem('fvh_player_id', canonicalTgId); } catch (e) {}
+        return canonicalTgId;
+      }
     }
     var saved = null;
     try { saved = localStorage.getItem('fvh_player_id'); } catch (e) {}
@@ -4565,6 +4573,7 @@
     if (!app || !app.store || !app.store.data) return;
     var pid = getAppPlayerId(app);
     var d = app.store.data;
+    var currentClaimed = Array.isArray(d.claimedQuests) ? d.claimedQuests : [];
     safeEconomyApi('/api/economy/sync', {
       playerId: pid,
       playerName: d.playerName || (d.telegramUser && (d.telegramUser.first_name || d.telegramUser.username)) || 'Athlete',
@@ -4577,6 +4586,7 @@
       xp: d.xp || 0,
       photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl) || null,
       telegramUser: d.telegramUser || null,
+      claimedQuests: currentClaimed,
       isPremium: Boolean(d.battlePass && d.battlePass.isPremium)
     }).then(function (res) {
       if (res && res.ok) {
@@ -4590,7 +4600,17 @@
             if (res.equipped) storeData.equipped = res.equipped;
             if (res.battlePass) storeData.battlePass = res.battlePass;
             if (res.packs) storeData.packs = res.packs;
-            if (Array.isArray(res.claimedQuests)) storeData.claimedQuests = res.claimedQuests;
+            if (Array.isArray(res.claimedQuests)) {
+              if (!Array.isArray(storeData.claimedQuests) || storeData.claimedQuests.length === 0) {
+                storeData.claimedQuests = res.claimedQuests;
+              } else {
+                var mergedQuests = storeData.claimedQuests.slice();
+                res.claimedQuests.forEach(function (q) {
+                  if (mergedQuests.indexOf(q) === -1) mergedQuests.push(q);
+                });
+                storeData.claimedQuests = mergedQuests;
+              }
+            }
             // Synchronize permanent team choice from authoritative server
             if (res.teamChosen && res.selectedTeam) {
               storeData.teamChosen = true;
@@ -5601,8 +5621,17 @@
     container.appendChild(page);
 
     function getPlayerId() {
-      var pid = (app.store && app.store.data && app.store.data.playerId) || 'PLAYER_' + Math.floor(1000 + Math.random() * 9000);
-      if (app.store && app.store.data) app.store.data.playerId = pid;
+      if (app && app.store && app.store.data) {
+        if (app.store.data.playerId) return app.store.data.playerId;
+        if (app.store.data.telegramUser && app.store.data.telegramUser.id) {
+          var canonicalTgId = 'fvh_tg_' + app.store.data.telegramUser.id;
+          app.store.data.playerId = canonicalTgId;
+          try { localStorage.setItem('fvh_player_id', canonicalTgId); } catch (e) {}
+          return canonicalTgId;
+        }
+      }
+      var pid = getAppPlayerId(app);
+      if (app && app.store && app.store.data) app.store.data.playerId = pid;
       return pid;
     }
 
@@ -10556,6 +10585,11 @@
               languageCode: u.language_code || '',
               photoUrl: u.photo_url || ''
             };
+            var tgPlayerId = 'fvh_tg_' + u.id;
+            if (!d.playerId || d.playerId.startsWith('PLAYER_') || d.playerId.startsWith('player_')) {
+              d.playerId = tgPlayerId;
+              try { localStorage.setItem('fvh_player_id', tgPlayerId); } catch (e) {}
+            }
             if (typeof u.language_code === 'string' && u.language_code && (!d.settings || !d.settings.lang || d.settings.lang === 'auto')) {
               if (!d.settings) d.settings = {};
               d.settings.lang = u.language_code.startsWith('ru') ? 'ru' : 'en';
