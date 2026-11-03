@@ -920,6 +920,7 @@ const BOT_LOCALIZATION = {
       `🏀 Basketball mode\n` +
       `🤖 Play against AI\n` +
       `🏟️ 2 standard arenas\n\n` +
+      `🤝 Business & Partnerships: footyvshoops@gmail.com\n\n` +
       `Choose your sport and jump into the game!\n\n` +
       `👇 Tap below to play!`,
     playBtn: '🎮 Play FOOTY vs HOOPS ⚽🏀',
@@ -938,6 +939,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 Standard Arenas — Classic Grass & Street Court\n\n` +
       `👕 *Locker Room:*\n` +
       `• Customize team kits and match balls in the Wardrobe!\n\n` +
+      `🤝 *Business & Partnerships:*\n` +
+      `• Contact: footyvshoops@gmail.com\n\n` +
       `👇 Tap below to jump into the match!`
   },
   ru: {
@@ -948,6 +951,7 @@ const BOT_LOCALIZATION = {
       `🏀 Режим баскетбола\n` +
       `🤖 Игра против ИИ\n` +
       `🏟️ 2 стандартные арены\n\n` +
+      `🤝 По вопросам сотрудничества и рекламы: footyvshoops@gmail.com\n\n` +
       `Выбирай свой спорт и заходи в игру!\n\n` +
       `👇 Нажми кнопку ниже, чтобы играть!`,
     playBtn: '🎮 Играть в FOOTY vs HOOPS ⚽🏀',
@@ -966,6 +970,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 стандартные арены — Классический газон и Уличная площадка\n\n` +
       `👕 *Гардероб:*\n` +
       `• Выбирайте форму и мячи в гардеробе!\n\n` +
+      `🤝 *Сотрудничество и реклама:*\n` +
+      `• Почта: footyvshoops@gmail.com\n\n` +
       `👇 Нажмите кнопку ниже, чтобы выйти на поле!`
   },
   es: {
@@ -976,6 +982,7 @@ const BOT_LOCALIZATION = {
       `🏀 Modo Baloncesto\n` +
       `🤖 Juega contra la IA\n` +
       `🏟️ 2 arenas estándar\n\n` +
+      `🤝 Negocios y colaboraciones: footyvshoops@gmail.com\n\n` +
       `¡Elige tu deporte y entra al partido!\n\n` +
       `👇 ¡Toca abajo para jugar!`,
     playBtn: '🎮 Jugar a FOOTY vs HOOPS ⚽🏀',
@@ -994,6 +1001,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 arenas estándar — Campo Clásico y Pista Callejera\n\n` +
       `👕 *Vestuario:*\n` +
       `• ¡Personaliza equipaciones y balones en el Guardarropa!\n\n` +
+      `🤝 *Negocios y colaboraciones:*\n` +
+      `• Contacto: footyvshoops@gmail.com\n\n` +
       `👇 ¡Toca abajo para entrar al partido!`
   },
   de: {
@@ -1004,6 +1013,7 @@ const BOT_LOCALIZATION = {
       `🏀 Basketball-Modus\n` +
       `🤖 Spiele gegen KI\n` +
       `🏟️ 2 Standard-Arenen\n\n` +
+      `🤝 Business & Partnerschaften: footyvshoops@gmail.com\n\n` +
       `Wähle deine Sportart und starte ins Spiel!\n\n` +
       `👇 Tippe unten, um zu spielen!`,
     playBtn: '🎮 FOOTY vs HOOPS spielen ⚽🏀',
@@ -1022,6 +1032,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 Standard-Arenen — Klassischer Rasen & Street Court\n\n` +
       `👕 *Umkleide:*\n` +
       `• Trikots und Bälle im Kleiderschrank anpassen!\n\n` +
+      `🤝 *Business & Partnerschaften:*\n` +
+      `• Kontakt: footyvshoops@gmail.com\n\n` +
       `👇 Tippe unten, um loszulegen!`
   },
   fr: {
@@ -1032,6 +1044,7 @@ const BOT_LOCALIZATION = {
       `🏀 Mode Basketball\n` +
       `🤖 Joue contre l'IA\n` +
       `🏟️ 2 arènes standard\n\n` +
+      `🤝 Partenariats & Business : footyvshoops@gmail.com\n\n` +
       `Choisis ton sport et rejoins le match !\n\n` +
       `👇 Appuie ci-dessous pour jouer !`,
     playBtn: '🎮 Jouer à FOOTY vs HOOPS ⚽🏀',
@@ -1050,6 +1063,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 arènes standard — Pelouse classique & Terrain de rue\n\n` +
       `👕 *Vestiaire :*\n` +
       `• Personnalise maillots et ballons dans le vestiaire !\n\n` +
+      `🤝 *Partenariats & Business :*\n` +
+      `• Contact : footyvshoops@gmail.com\n\n` +
       `👇 Appuie ci-dessous pour lancer le match !`
   },
   pt: {
@@ -1060,6 +1075,7 @@ const BOT_LOCALIZATION = {
       `🏀 Modo Basquete\n` +
       `🤖 Jogue contra a IA\n` +
       `🏟️ 2 arenas padrão\n\n` +
+      `🤝 Parcerias e Negócios: footyvshoops@gmail.com\n\n` +
       `Escolha seu esporte e entre no jogo!\n\n` +
       `👇 Toque abaixo para jogar!`,
     playBtn: '🎮 Jogar FOOTY vs HOOPS ⚽🏀',
@@ -1078,6 +1094,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 arenas padrão — Campo Clássico e Quadra de Rua\n\n` +
       `👕 *Vestiário:*\n` +
       `• Personalize uniformes e bolas no Vestiário!\n\n` +
+      `🤝 *Parcerias e Negócios:*\n` +
+      `• Contato: footyvshoops@gmail.com\n\n` +
       `👇 Toque abaixo para entrar em campo!`
   },
   it: {
@@ -1088,6 +1106,7 @@ const BOT_LOCALIZATION = {
       `🏀 Modalità Basket\n` +
       `🤖 Gioca contro l'IA\n` +
       `🏟️ 2 arene standard\n\n` +
+      `🤝 Business & Partnership: footyvshoops@gmail.com\n\n` +
       `Scegli il tuo sport ed entra in campo!\n\n` +
       `👇 Tocca qui sotto per giocare!`,
     playBtn: '🎮 Gioca a FOOTY vs HOOPS ⚽🏀',
@@ -1106,6 +1125,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 arene standard — Campo Classico e Street Court\n\n` +
       `👕 *Spogliatoio:*\n` +
       `• Personalizza divise e palloni nel Guardaroba!\n\n` +
+      `🤝 *Business & Partnership:*\n` +
+      `• Contatto: footyvshoops@gmail.com\n\n` +
       `👇 Tocca sotto per scendere in campo!`
   },
   uk: {
@@ -1116,6 +1137,7 @@ const BOT_LOCALIZATION = {
       `🏀 Режим баскетболу\n` +
       `🤖 Гра проти ШІ\n` +
       `🏟️ 2 стандартні арени\n\n` +
+      `🤝 Співпраця та реклама: footyvshoops@gmail.com\n\n` +
       `Обирай свій спорт та приєднуйся до гри!\n\n` +
       `👇 Натисни кнопку нижче, щоб грати!`,
     playBtn: '🎮 Грати у FOOTY vs HOOPS ⚽🏀',
@@ -1134,6 +1156,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 стандартні арени — Класичний газон і Вуличний майданчик\n\n` +
       `👕 *Роздягальня:*\n` +
       `• Обирайте форму та м'ячі в гардеробі!\n\n` +
+      `🤝 *Співпраця та реклама:*\n` +
+      `• Пошта: footyvshoops@gmail.com\n\n` +
       `👇 Натисніть кнопку нижче, щоб вийти на поле!`
   },
   pl: {
@@ -1144,6 +1168,7 @@ const BOT_LOCALIZATION = {
       `🏀 Tryb Koszykówka\n` +
       `🤖 Graj przeciwko AI\n` +
       `🏟️ 2 standardowe areny\n\n` +
+      `🤝 Współpraca i reklama: footyvshoops@gmail.com\n\n` +
       `Wybierz sport i ruszaj do gry!\n\n` +
       `👇 Dotknij poniżej, aby zagrać!`,
     playBtn: '🎮 Zagraj w FOOTY vs HOOPS ⚽🏀',
@@ -1162,6 +1187,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 standardowe areny — Klasyczna trawa i Boisko uliczne\n\n` +
       `👕 *Szatnia:*\n` +
       `• Dostosuj stroje i piłki w garderobie!\n\n` +
+      `🤝 *Współpraca i reklama:*\n` +
+      `• Kontakt: footyvshoops@gmail.com\n\n` +
       `👇 Dotknij poniżej, aby wyjść na boisko!`
   },
   tr: {
@@ -1172,6 +1199,7 @@ const BOT_LOCALIZATION = {
       `🏀 Basketbol modu\n` +
       `🤖 Yapay zekaya karşı oyna\n` +
       `🏟️ 2 standart arena\n\n` +
+      `🤝 İş Birliği ve Ortaklık: footyvshoops@gmail.com\n\n` +
       `Sporunu seç ve maça katıl!\n\n` +
       `👇 Oynamak için aşağıya dokun!`,
     playBtn: '🎮 FOOTY vs HOOPS Oyna ⚽🏀',
@@ -1190,6 +1218,8 @@ const BOT_LOCALIZATION = {
       `• 🏟️ 2 Standart Arena — Klasik Çim ve Sokak Sahası\n\n` +
       `👕 *Soyunma Odası:*\n` +
       `• Gardıroptan formaları ve maç toplarını seç!\n\n` +
+      `🤝 *İş Birliği ve Ortaklık:*\n` +
+      `• İletişim: footyvshoops@gmail.com\n\n` +
       `👇 Maça başlamak için aşağıya dokun!`
   }
 };

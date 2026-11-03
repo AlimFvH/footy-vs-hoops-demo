@@ -8270,7 +8270,21 @@
       '</div>';
     body.appendChild(ctrlPanel);
 
-    // 4. Data Management & Danger Zone
+    // 4. Business & Partnerships Panel
+    var partnerPanel = document.createElement('div');
+    partnerPanel.className = 'fvh-card-panel';
+    var isRu = (st.lang || 'ru') === 'ru';
+    partnerPanel.innerHTML =
+      '<div class="fvh-panel-head">🤝 ' + (isRu ? 'Сотрудничество и партнерство' : 'Business & Partnerships') + '</div>' +
+      '<p style="font-size:12px;color:var(--text-muted);margin:4px 0 10px;line-height:1.4;">' +
+      (isRu ? 'По вопросам рекламы, турниров, спонсорства и предложений:' : 'For sponsorships, tournaments, advertising, and business inquiries:') +
+      '</p>' +
+      '<a href="mailto:footyvshoops@gmail.com" class="btn block" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;background:rgba(0,240,255,0.08);border:1.5px solid rgba(0,240,255,0.3);border-radius:12px;color:#38bdf8;font-weight:800;font-size:13px;text-decoration:none;box-shadow:0 0 14px rgba(0,240,255,0.1);">' +
+      '  <span>📧</span> <span>footyvshoops@gmail.com</span>' +
+      '</a>';
+    body.appendChild(partnerPanel);
+
+    // 5. Data Management & Danger Zone
     var dataPanel = document.createElement('div');
     dataPanel.className = 'fvh-card-panel danger';
     dataPanel.innerHTML =
@@ -10076,6 +10090,17 @@
       grid.appendChild(item);
     });
     card.appendChild(grid);
+
+    var partnerRow = document.createElement('div');
+    partnerRow.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;';
+    var isRu = (app && app.store && app.store.data && app.store.data.settings && app.store.data.settings.lang === 'ru');
+    partnerRow.innerHTML =
+      '<span style="color:#94a3b8;font-weight:600;">🤝 ' + (isRu ? 'Сотрудничество:' : 'Partnership:') + '</span>' +
+      '<a href="mailto:footyvshoops@gmail.com" style="color:#38bdf8;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">' +
+      '  <span>📧</span> <span>footyvshoops@gmail.com</span>' +
+      '</a>';
+    card.appendChild(partnerRow);
+
     return card;
   }
 
