@@ -5670,9 +5670,6 @@
         '  <button class="btn block fvh-btn-share-ref" style="background:linear-gradient(135deg, #229ed9 0%, #0088cc 100%);color:#fff;font-weight:800;border:none;border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(34,158,217,0.35);">' +
         '    <span>✈️</span> <span>' + (lang === 'ru' ? 'Поделиться в Telegram' : 'Share in Telegram') + '</span>' +
         '  </button>' +
-        '  <button class="btn block fvh-btn-fallback-ref" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-weight:700;border-radius:10px;padding:9px 12px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:11.5px;">' +
-        '    <span>🤖</span> <span>' + (lang === 'ru' ? 'Резерв: открыть через чат бота' : 'Fallback: Open via Bot Chat') + '</span>' +
-        '  </button>' +
         '</div>' +
         '<div style="font-size:10.5px;color:#64748b;margin-top:8px;line-height:1.35;text-align:center;">' +
         (lang === 'ru'
@@ -5720,16 +5717,6 @@
           window.Telegram.WebApp.openTelegramLink(shareUrl);
         } else {
           window.open(shareUrl, '_blank');
-        }
-      };
-
-      var fallbackBtn = linkBox.querySelector('.fvh-btn-fallback-ref');
-      fallbackBtn.onclick = function () {
-        app.audio.play('click');
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
-          window.Telegram.WebApp.openTelegramLink(fallbackRefLink);
-        } else {
-          window.open(fallbackRefLink, '_blank');
         }
       };
 

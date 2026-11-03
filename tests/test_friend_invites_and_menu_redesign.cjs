@@ -31,8 +31,8 @@ assert.strictEqual(redesignJs.includes("'?startapp=ref_'"), true, 'Direct starta
 assert.strictEqual(redesignJs.includes("'?start=ref_'"), true, 'Fallback start link must be generated');
 // Ensure Telegram share sheet URL is constructed
 assert.strictEqual(redesignJs.includes("'https://t.me/share/url?url='"), true, 'Telegram share URL must be present');
-// Ensure fallback button exists in referrals tab
-assert.strictEqual(redesignJs.includes('fvh-btn-fallback-ref'), true, 'Fallback button must exist in referrals tab');
+// Ensure redundant fallback button is removed from referrals tab per user request
+assert.strictEqual(redesignJs.includes('fvh-btn-fallback-ref'), false, 'Fallback button must be removed from referrals tab');
 
 console.log('✓ Verified: Valid deep link formats and official bot @FootyHoopsGameBot configured.');
 
