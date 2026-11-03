@@ -61,7 +61,10 @@ const DEFAULT_STARS_PRICES = {
   'pkg_coins_1200': 220,
   'pkg_coins_3000': 500,
   'pkg_coins_starter': 100,
-  'pkg_coins_pro': 220
+  'pkg_coins_pro': 220,
+  'pack_stars_starter': 50,
+  'pack_stars_champion': 150,
+  'pack_stars_legend': 350
 };
 
 let ENV_STARS_PRICES = {};
@@ -155,6 +158,31 @@ const PRODUCT_CATALOG = {
     coinsAmount: 1200,
     starsPrice: resolveStarsPrice('pkg_coins_pro'),
     type: 'currency'
+  },
+  // 3 Telegram Stars Mystery Packs
+  'pack_stars_starter': {
+    id: 'pack_stars_starter',
+    name: 'Star Starter Pack',
+    starsPrice: resolveStarsPrice('pack_stars_starter'),
+    coinsAmount: 500,
+    type: 'pack',
+    packId: 'stars_starter'
+  },
+  'pack_stars_champion': {
+    id: 'pack_stars_champion',
+    name: 'Star Champion Pack',
+    starsPrice: resolveStarsPrice('pack_stars_champion'),
+    coinsAmount: 2000,
+    type: 'pack',
+    packId: 'stars_champion'
+  },
+  'pack_stars_legend': {
+    id: 'pack_stars_legend',
+    name: 'Star Ultimate Legend Pack',
+    starsPrice: resolveStarsPrice('pack_stars_legend'),
+    coinsAmount: 6000,
+    type: 'pack',
+    packId: 'stars_legend'
   }
 };
 
@@ -236,7 +264,10 @@ const ITEM_CATALOG = {
   // Mystery Packs
   'pack_footy': { name: 'Footy Striker Pack', category: 'packs', price: 250, type: 'pack', packId: 'footy' },
   'pack_hoops': { name: 'Hoops All-Star Pack', category: 'packs', price: 250, type: 'pack', packId: 'hoops' },
-  'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' }
+  'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' },
+  'pack_stars_starter': { name: 'Star Starter Pack', category: 'packs', price: 0, starsPrice: 50, type: 'stars_pack', packId: 'stars_starter' },
+  'pack_stars_champion': { name: 'Star Champion Pack', category: 'packs', price: 0, starsPrice: 150, type: 'stars_pack', packId: 'stars_champion' },
+  'pack_stars_legend': { name: 'Star Ultimate Legend Pack', category: 'packs', price: 0, starsPrice: 350, type: 'stars_pack', packId: 'stars_legend' }
 };
 
 // Bundles Definition
@@ -501,6 +532,16 @@ function creditPurchasedProduct(playerId, productId, paymentType = 'stars') {
       player.updatedAt = Date.now();
       addLedgerEntry(player.playerId, 'payment_credit', bonusCoins, 0, player.coins, 'Purchased bundle: ' + prod.name, productId, { paymentType });
     }
+  } else if (prod.type === 'pack') {
+    if (!player.packs) player.packs = { free: {}, paid: {} };
+    if (!player.packs.paid) player.packs.paid = {};
+    player.packs.paid[productId] = (player.packs.paid[productId] || 0) + 1;
+    const bonusCoins = prod.coinsAmount || 0;
+    if (bonusCoins > 0) {
+      player.coins += bonusCoins;
+    }
+    player.updatedAt = Date.now();
+    addLedgerEntry(player.playerId, 'payment_credit', bonusCoins, 0, player.coins, 'Purchased stars pack: ' + prod.name, productId, { paymentType });
   }
   persistState();
   return player;
@@ -4625,13 +4666,23 @@ const server = http.createServer((req, res) => {
       const paidCount = (player.packs.paid && player.packs.paid[packId]) || 0;
       const totalCount = freeCount + paidCount;
 
+      const isStarStarter = packId === 'stars_starter' || packId === 'pack_stars_starter';
+      const isStarChampion = packId === 'stars_champion' || packId === 'pack_stars_champion';
+      const isStarLegend = packId === 'stars_legend' || packId === 'pack_stars_legend';
+      const isStarPack = isStarStarter || isStarChampion || isStarLegend;
+
       if (totalCount <= 0) {
-        const packCost = packId === 'clash' ? 500 : 250;
-        if ((player.coins || 0) < packCost) {
-          return sendJson(res, 400, { ok: false, error: 'no_packs_available', cost: packCost, coins: player.coins });
+        let packCost = packId === 'clash' ? 500 : 250;
+        if (isStarPack) {
+          packCost = 0; // Stars packs are billed through Telegram Stars payment
         }
-        player.coins -= packCost;
-        addLedgerEntry(playerId, 'PACK_PURCHASE', -packCost, 0, player.coins, `Purchased Pack ${packId}`);
+        if (packCost > 0) {
+          if ((player.coins || 0) < packCost) {
+            return sendJson(res, 400, { ok: false, error: 'no_packs_available', cost: packCost, coins: player.coins });
+          }
+          player.coins -= packCost;
+          addLedgerEntry(playerId, 'PACK_PURCHASE', -packCost, 0, player.coins, `Purchased Pack ${packId}`);
+        }
       } else {
         if (paidCount > 0) {
           player.packs.paid[packId] = paidCount - 1;
@@ -4640,15 +4691,17 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      const isFootyPack = packId === 'footy';
-      const isHoopsPack = packId === 'hoops';
+      const playerFaction = player.selectedTeam || player.selectedCharacter || 'footy';
+      const isFootyPack = packId === 'footy' || (isStarPack && playerFaction === 'footy');
+      const isHoopsPack = packId === 'hoops' || (isStarPack && playerFaction === 'hoops');
       const exclusiveItem = isFootyPack ? 'skin_footy_mythic_titan' : (isHoopsPack ? 'skin_hoops_hyper_beast' : (Math.random() < 0.5 ? 'ball_footy_supernova' : 'ball_hoops_vortex'));
 
       const roll = Math.random();
       let chosenItemId = null;
       let isExclusive = false;
 
-      if (roll < 0.05) {
+      var exclChance = isStarLegend ? 0.50 : (isStarChampion ? 0.25 : (isStarStarter ? 0.10 : 0.05));
+      if (roll < exclChance) {
         chosenItemId = exclusiveItem;
         isExclusive = true;
       } else {
@@ -4658,20 +4711,38 @@ const server = http.createServer((req, res) => {
           if (it.packExclusive && id !== exclusiveItem) return false;
           if (isFootyPack && it.mode === 'hoops') return false;
           if (isHoopsPack && it.mode === 'footy') return false;
+          if (isStarLegend && it.rarity !== 'legendary') return false;
+          if (isStarChampion && it.rarity !== 'epic' && it.rarity !== 'legendary') return false;
+          if (isStarStarter && it.rarity !== 'rare' && it.rarity !== 'epic' && it.rarity !== 'legendary') return false;
           return it.category === 'skins' || it.category === 'balls';
         });
 
         const unowned = candidates.filter(id => !player.owned.includes(id));
-        const pool = unowned.length > 0 ? unowned : candidates;
+        const pool = unowned.length > 0 ? unowned : (candidates.length > 0 ? candidates : [exclusiveItem]);
         chosenItemId = pool[Math.floor(Math.random() * pool.length)];
       }
 
       const itemObj = ITEM_CATALOG[chosenItemId] || { name: chosenItemId, rarity: 'rare', category: 'skins' };
       const alreadyOwned = player.owned.includes(chosenItemId);
 
-      let coinReward = Math.floor(Math.random() * 150) + 100;
+      // Duplicate compensation scaled directly by rarity
+      const DUPLICATE_COMPENSATION_BY_RARITY = {
+        'common': 150,
+        'rare': 350,
+        'epic': 750,
+        'legendary': 1500
+      };
+      const itemRarity = (itemObj && itemObj.rarity) || 'rare';
+      let duplicateBonus = 0;
+      let baseCoins = Math.floor(Math.random() * 150) + 100;
+      if (isStarStarter) baseCoins = 500;
+      else if (isStarChampion) baseCoins = 2000;
+      else if (isStarLegend) baseCoins = 6000;
+
+      let coinReward = baseCoins;
       if (alreadyOwned) {
-        coinReward += 350;
+        duplicateBonus = DUPLICATE_COMPENSATION_BY_RARITY[itemRarity] || 350;
+        coinReward = baseCoins + duplicateBonus;
       } else {
         player.owned.push(chosenItemId);
         if (!player.unseenItems) player.unseenItems = [];
@@ -4696,6 +4767,8 @@ const server = http.createServer((req, res) => {
         },
         bonusCoins: coinReward,
         alreadyOwned,
+        duplicateCompensation: alreadyOwned ? duplicateBonus : 0,
+        duplicateRarity: itemRarity,
         isExclusive: Boolean(itemObj.packExclusive || isExclusive),
         coins: player.coins,
         packs: player.packs,

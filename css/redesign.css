@@ -9108,4 +9108,224 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   box-shadow: 0 1.5px 0 #0284c7, 0 4px 8px rgba(0, 240, 255, 0.2) !important;
 }
 
+/* ==========================================================================
+   DEDICATED UPGRADES HUB & SKILL PROGRESSION (ПРОКАЧКА)
+   ========================================================================== */
+.fvh-upgrades-page {
+  padding-bottom: 95px !important;
+}
+
+.fvh-upgrades-body {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fvh-upgrades-hero-banner {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(24, 34, 60, 0.9) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.fvh-upgrades-hero-banner.footy {
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 240, 255, 0.15);
+}
+
+.fvh-upgrades-hero-banner.hoops {
+  border-color: rgba(249, 115, 22, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 20px rgba(249, 115, 22, 0.15);
+}
+
+.fvh-upgrades-skills-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fvh-upgrade-card.fvh-skill-card {
+  background: linear-gradient(145deg, rgba(17, 24, 39, 0.92) 0%, rgba(11, 15, 28, 0.98) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fvh-upgrade-card.fvh-skill-card:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 240, 255, 0.12);
+}
+
+.fvh-upgrade-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.fvh-upgrade-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fvh-upgrade-icon {
+  font-size: 24px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fvh-upgrade-name {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.fvh-upgrade-lvl-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.fvh-upgrade-boost-val {
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #38bdf8;
+}
+
+.fvh-upgrade-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin: 0 0 10px;
+}
+
+.fvh-skill-bar-wrap {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.fvh-skill-bar {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  width: 100%;
+}
+
+.fvh-skill-pip {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.fvh-skill-pip.filled {
+  background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+}
+
+.fvh-skill-pip.next {
+  background: rgba(0, 240, 255, 0.25);
+  border-color: rgba(0, 240, 255, 0.45);
+  animation: fvhPulsePip 1.5s infinite alternate;
+}
+
+@keyframes fvhPulsePip {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.fvh-upgrade-action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fvh-upgrade-max-badge {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(161, 98, 7, 0.2) 100%);
+  border: 1.5px solid rgba(250, 204, 21, 0.5);
+  border-radius: 10px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: #fde047;
+  letter-spacing: 0.5px;
+}
+
+.fvh-upgrade-lock-warn {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.fvh-upgrade-btn {
+  width: 100%;
+  font-size: 12.5px;
+  font-weight: 900;
+  min-height: 44px;
+}
+
+/* ==========================================================================
+   BUNDLES & STAR PACKS CARDS
+   ========================================================================== */
+.fvh-bundle-card {
+  border-radius: 18px !important;
+  background: linear-gradient(145deg, rgba(20, 28, 48, 0.95) 0%, rgba(11, 16, 30, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.fvh-shop-bundles-banner {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ==========================================================================
+   CLEAN MAIN SCREEN RESPONSIVE LAYOUT (ZERO ELEMENT OVERLAP)
+   ========================================================================== */
+.solo-avatar-box {
+  height: clamp(190px, 28vh, 250px) !important;
+  min-height: 180px !important;
+  max-height: 260px !important;
+  overflow: visible !important;
+}
+
+.solo-avatar-box .fvh-hero-figure-container {
+  max-height: 100% !important;
+  height: 100% !important;
+}
+
+.solo-avatar-box .fvh-hero-cutout-img {
+  height: 100% !important;
+  max-height: clamp(170px, 26vh, 230px) !important;
+  object-fit: contain !important;
+}
+
+.fvh-equipped-preview-bar {
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+}
+
 
