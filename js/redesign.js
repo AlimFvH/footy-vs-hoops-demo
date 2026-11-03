@@ -617,7 +617,13 @@
       airdropTierLegend: 'Legendary Champion Tier',
       airdropHowItWorks: 'How Play-to-Airdrop Works',
       airdropEstimatedAllocation: 'Estimated Season Drop',
-      airdropHowToEarnTokens: 'How to Earn Tokens in Game ➔'
+      airdropHowToEarnTokens: 'How to Earn Tokens in Game ➔',
+      victoryTauntFooty: '«Football rules the world! ⚽»',
+      victoryTauntHoops: '«Basketball reigns supreme! 🏀»',
+      victoryTauntFootySub: '+30 PTS added to Team Football in the global War!',
+      victoryTauntHoopsSub: '+30 PTS added to Team Basketball in the global War!',
+      defeatTauntFooty: '«Basketball reigns supreme! 🏀» Take revenge in the rematch!',
+      defeatTauntHoops: '«Football rules the world! ⚽» Take revenge in the rematch!'
     },
     ru: {
       replay: 'ПОВТОР',
@@ -1163,7 +1169,13 @@
       airdropTierLegend: 'Легендарный Ранг',
       airdropHowItWorks: 'Как заработать токены в игре',
       airdropEstimatedAllocation: 'Расчетная доля в дропе',
-      airdropHowToEarnTokens: 'Как заработать токены в игре ➔'
+      airdropHowToEarnTokens: 'Как заработать токены в игре ➔',
+      victoryTauntFooty: '«Футбол правит миром! ⚽»',
+      victoryTauntHoops: '«Баскетбол на высоте! 🏀»',
+      victoryTauntFootySub: '+30 PTS очков в Team War фракции Футбола!',
+      victoryTauntHoopsSub: '+30 PTS очков в Team War фракции Баскетбола!',
+      defeatTauntFooty: '«Баскетбол на высоте! 🏀» Возьми реванш в следующем матче!',
+      defeatTauntHoops: '«Футбол правит миром! ⚽» Возьми реванш в следующем матче!'
     }
   };
 
@@ -7941,7 +7953,7 @@
     var basketballTotal = 0;
     var footyCount = 0;
     var hoopsCount = 0;
-    ranked.forEach(function (a) {
+    athletes.forEach(function (a) {
       if (a.char === 'hoops') {
         basketballTotal += (a.score || 0);
         hoopsCount++;
@@ -7985,6 +7997,9 @@
   }
 
   function renderWarScoreboardAndRankings(body, data, app, onCategoryChange, onTimeframeChange, activeCat, activeTimeframe) {
+    if (typeof updateLiveWarData === 'function') {
+      updateLiveWarData(data);
+    }
     var teamFooty = data.teamFootball || { score: 0, pct: 50 };
     var teamHoops = data.teamBasketball || { score: 0, pct: 50 };
     var winningTeam = data.winningTeam || (teamFooty.score >= teamHoops.score ? 'footy' : 'hoops');
@@ -11007,7 +11022,45 @@
     return container;
   }
 
-  // Token Rivalry Ticker & Expandable Modal ($FOOTY vs $HOOPS 40/40/20)
+  // Live Authoritative Faction War State
+  var currentLiveWar = {
+    footyScore: 12450,
+    hoopsScore: 11480,
+    footyPct: 52,
+    hoopsPct: 48,
+    winningTeam: 'footy',
+    leadDiff: 970
+  };
+
+  function updateLiveWarData(serverData) {
+    if (!serverData) return;
+    if (serverData.teamFootball && serverData.teamBasketball) {
+      currentLiveWar.footyScore = Number(serverData.teamFootball.score) || 0;
+      currentLiveWar.hoopsScore = Number(serverData.teamBasketball.score) || 0;
+      currentLiveWar.footyPct = Number(serverData.teamFootball.pct) || 52;
+      currentLiveWar.hoopsPct = Number(serverData.teamBasketball.pct) || 48;
+      currentLiveWar.winningTeam = serverData.winningTeam || (currentLiveWar.footyScore >= currentLiveWar.hoopsScore ? 'footy' : 'hoops');
+      currentLiveWar.leadDiff = Math.abs(currentLiveWar.footyScore - currentLiveWar.hoopsScore);
+    }
+  }
+
+  function addMatchPointsToLiveWar(winnerChar, points) {
+    var pts = Number(points) || 30;
+    if (winnerChar === 'hoops') {
+      currentLiveWar.hoopsScore += pts;
+    } else {
+      currentLiveWar.footyScore += pts;
+    }
+    var total = currentLiveWar.footyScore + currentLiveWar.hoopsScore;
+    if (total > 0) {
+      currentLiveWar.footyPct = Math.round((currentLiveWar.footyScore / total) * 1000) / 10;
+      currentLiveWar.hoopsPct = Math.round((100 - currentLiveWar.footyPct) * 10) / 10;
+    }
+    currentLiveWar.winningTeam = (currentLiveWar.footyScore >= currentLiveWar.hoopsScore) ? 'footy' : 'hoops';
+    currentLiveWar.leadDiff = Math.abs(currentLiveWar.footyScore - currentLiveWar.hoopsScore);
+  }
+
+  // Token Rivalry Ticker & Expandable Modal ($FOOTY vs $HOOPS Live Real-Time)
   function showRivalryModal() {
     var overlay = document.createElement('div');
     overlay.className = 'modal-back fvh-sheet-back';
@@ -11015,9 +11068,13 @@
     modal.className = 'modal fvh-rivalry-modal';
 
     var lang = getActiveLang();
-    var volLabel = lang === 'ru' ? 'Объём (40%)' : 'Volume (40%)';
-    var capLabel = lang === 'ru' ? 'Капитализация (40%)' : 'Market Cap (40%)';
-    var hldLabel = lang === 'ru' ? 'Холдеры (20%)' : 'Holders (20%)';
+    var volLabel = lang === 'ru' ? 'Баланс сил' : 'Faction Balance';
+    var capLabel = lang === 'ru' ? 'Очки команд (Score)' : 'Team Points';
+    var hldLabel = lang === 'ru' ? 'Лидерство' : 'War Leader';
+
+    var fPct = Math.round(currentLiveWar.footyPct);
+    var hPct = Math.round(100 - fPct);
+    var isFootyLead = (currentLiveWar.winningTeam === 'footy');
 
     modal.innerHTML =
       '<div class="fvh-sheet-handle"></div>' +
@@ -11028,18 +11085,18 @@
       '<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.4;">' + tr('rivalryFormula') + '</div>' +
       '<div class="fvh-rivalry-bar-wrap" style="margin-bottom:16px;">' +
       '  <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;margin-bottom:6px;">' +
-      '    <span style="color:#00f0ff;">⚽ $FOOTY <b style="font-size:14px;margin-left:2px;">52%</b></span>' +
-      '    <span style="color:#f97316;"><b style="font-size:14px;margin-right:2px;">48%</b> $HOOPS 🏀</span>' +
+      '    <span style="color:#00f0ff;">⚽ $FOOTY <b style="font-size:14px;margin-left:2px;">' + fPct + '%</b></span>' +
+      '    <span style="color:#f97316;"><b style="font-size:14px;margin-right:2px;">' + hPct + '%</b> $HOOPS 🏀</span>' +
       '  </div>' +
       '  <div class="fvh-rivalry-bar" style="height:10px;border-radius:6px;overflow:hidden;margin-bottom:0;">' +
-      '    <div class="fvh-rivalry-fill-footy" style="width:52%;"></div>' +
-      '    <div class="fvh-rivalry-fill-hoops" style="width:48%;"></div>' +
+      '    <div class="fvh-rivalry-fill-footy" style="width:' + fPct + '%;"></div>' +
+      '    <div class="fvh-rivalry-fill-hoops" style="width:' + hPct + '%;"></div>' +
       '  </div>' +
       '</div>' +
       '<div class="fvh-rivalry-grid">' +
-      '<div class="fvh-rivalry-stat"><small>' + volLabel + '</small><b>52% : 48%</b></div>' +
-      '<div class="fvh-rivalry-stat"><small>' + capLabel + '</small><b>51% : 49%</b></div>' +
-      '<div class="fvh-rivalry-stat"><small>' + hldLabel + '</small><b>54% : 46%</b></div>' +
+      '<div class="fvh-rivalry-stat"><small>' + volLabel + '</small><b>' + fPct + '% : ' + hPct + '%</b></div>' +
+      '<div class="fvh-rivalry-stat"><small>' + capLabel + '</small><b>' + currentLiveWar.footyScore.toLocaleString() + ' : ' + currentLiveWar.hoopsScore.toLocaleString() + '</b></div>' +
+      '<div class="fvh-rivalry-stat"><small>' + hldLabel + '</small><b>' + (isFootyLead ? '⚽ FOOTY' : '🏀 HOOPS') + '</b></div>' +
       '</div>' +
       '<div class="note" style="margin-top:14px;font-size:11px;opacity:0.85;">' + tr('rivalryDemoNote') + '</div>';
 
@@ -11051,18 +11108,40 @@
     document.body.appendChild(overlay);
   }
 
-  function createRivalryTicker() {
+  function createRivalryTicker(app) {
     var ticker = document.createElement('div');
     ticker.className = 'fvh-rivalry-ticker';
-    ticker.innerHTML =
-      '<div class="fvh-ticker-left">' +
-      '<span class="footy-dot">●</span> <b>$FOOTY</b> 52%' +
-      '<span class="vs-text">vs</span>' +
-      '48% <b>$HOOPS</b> <span class="hoops-dot">●</span>' +
-      '</div>' +
-      '<div class="fvh-ticker-right">' +
-      '<span>' + tr('rivalryTickerSub') + '</span> ➔' +
-      '</div>';
+
+    function renderTickerHtml() {
+      var fPct = Math.round(currentLiveWar.footyPct);
+      var hPct = Math.round(100 - fPct);
+      var isFootyLead = (currentLiveWar.winningTeam === 'footy');
+      var leadText = isFootyLead ? '⚽ FOOTY ведёт!' : '🏀 HOOPS ведут!';
+      if (getActiveLang() !== 'ru') {
+        leadText = isFootyLead ? '⚽ FOOTY leads!' : '🏀 HOOPS leads!';
+      }
+      ticker.innerHTML =
+        '<div class="fvh-ticker-left">' +
+        '<span class="footy-dot">●</span> <b>$FOOTY</b> ' + fPct + '%' +
+        '<span class="vs-text">vs</span>' +
+        hPct + '% <b>$HOOPS</b> <span class="hoops-dot">●</span>' +
+        '</div>' +
+        '<div class="fvh-ticker-right">' +
+        '<span>' + leadText + '</span> ➔' +
+        '</div>';
+    }
+
+    renderTickerHtml();
+
+    if (app) {
+      fetchLeaderboardData('season', 'season', app, function (res) {
+        if (res && res.teamFootball && res.teamBasketball) {
+          updateLiveWarData(res);
+          renderTickerHtml();
+        }
+      });
+    }
+
     ticker.onclick = function () {
       showRivalryModal();
     };
@@ -11521,7 +11600,7 @@
     screen.appendChild(secondaryHub);
 
     // 5. Token Rivalry Compact Ticker
-    screen.appendChild(createRivalryTicker());
+    screen.appendChild(createRivalryTicker(app));
 
     // Bottom Spacer for iOS WebKit Telegram Mini App safe scrolling
     screen.appendChild(createScrollBottomSpacer());
@@ -11540,6 +11619,60 @@
     }
   }
 
+  // Victory / Defeat Faction Taunt Banner Injection
+  function decorateResultPanelWithTaunt(app, sum) {
+    if (!app || !app.ui) return;
+    var resultPanel = app.ui.querySelector('.result-panel');
+    if (!resultPanel) return;
+    if (resultPanel.querySelector('.fvh-victory-taunt-card')) return;
+
+    var curChar = (app.store && app.store.data && app.store.data.selectedCharacter) || ((sum && sum.mode === 'hoops') ? 'hoops' : 'footy');
+    var isHumanWin = (sum && sum.winner === 0);
+    var isHumanLoss = (sum && sum.winner === 1);
+
+    var winningFaction = null;
+    if (isHumanWin) {
+      winningFaction = curChar;
+    } else if (isHumanLoss) {
+      winningFaction = (curChar === 'footy') ? 'hoops' : 'footy';
+    }
+
+    if (winningFaction && typeof addMatchPointsToLiveWar === 'function') {
+      addMatchPointsToLiveWar(winningFaction, 30);
+    }
+
+    var tauntCard = document.createElement('div');
+    tauntCard.className = 'fvh-victory-taunt-card ' + (winningFaction || curChar);
+
+    if (isHumanWin) {
+      var isFootyWin = (curChar === 'footy');
+      var tauntTitle = isFootyWin ? tr('victoryTauntFooty') : tr('victoryTauntHoops');
+      var tauntSub = isFootyWin ? tr('victoryTauntFootySub') : tr('victoryTauntHoopsSub');
+
+      tauntCard.innerHTML =
+        '<div class="fvh-taunt-badge-tag">' + (isFootyWin ? '⚽ FOOTY VICTORY' : '🏀 HOOPS VICTORY') + '</div>' +
+        '<div class="fvh-taunt-headline">' + tauntTitle + '</div>' +
+        '<div class="fvh-taunt-subtext">' + tauntSub + '</div>';
+    } else if (isHumanLoss) {
+      var oppIsFooty = (curChar !== 'footy');
+      var oppTitle = oppIsFooty ? tr('defeatTauntHoops') : tr('defeatTauntFooty');
+      tauntCard.innerHTML =
+        '<div class="fvh-taunt-badge-tag opponent">' + (oppIsFooty ? '⚽ FOOTY VICTORY' : '🏀 HOOPS VICTORY') + '</div>' +
+        '<div class="fvh-taunt-headline opp">' + oppTitle + '</div>';
+    } else {
+      tauntCard.innerHTML =
+        '<div class="fvh-taunt-badge-tag draw">⚔️ CLASH TIED</div>' +
+        '<div class="fvh-taunt-headline" style="color:#facc15;font-size:16px;">' + (getActiveLang() === 'ru' ? 'Боевая ничья фракций!' : 'Clash Tied!') + '</div>';
+    }
+
+    var titleEl = resultPanel.querySelector('.result-title');
+    if (titleEl && titleEl.nextSibling) {
+      resultPanel.insertBefore(tauntCard, titleEl.nextSibling);
+    } else {
+      resultPanel.appendChild(tauntCard);
+    }
+  }
+
   // Hook into App & Page Router
   onAppReady(function (app) {
     window.App = app;
@@ -11553,6 +11686,7 @@
     if (origMatchEnd) {
       app.onMatchEnd = function (sum) {
         origMatchEnd(sum);
+        decorateResultPanelWithTaunt(app, sum);
         var pid = getAppPlayerId(app);
         var mOutcome = (sum.winner === 0 ? 'win' : sum.winner === null ? 'draw' : 'loss');
         var curDiff = (app.lastCfg && app.lastCfg.difficulty) || 'normal';
@@ -11687,6 +11821,14 @@
         var myName = onlineInfo.myName || (app.store && app.store.data && app.store.data.name) || 'You';
         var oppName = onlineInfo.oppName || (lang === 'ru' ? 'Соперник' : 'Opponent');
 
+        var curChar = (app.store && app.store.data && app.store.data.selectedCharacter) || 'footy';
+        var isFootyWin = (curChar === 'footy');
+        var tauntTitle = isFootyWin ? tr('victoryTauntFooty') : tr('victoryTauntHoops');
+        var tauntSub = isFootyWin ? tr('victoryTauntFootySub') : tr('victoryTauntHoopsSub');
+        if (typeof addMatchPointsToLiveWar === 'function') {
+          addMatchPointsToLiveWar(curChar, 30);
+        }
+
         var overlay = document.createElement('div');
         overlay.className = 'screen dim fvh-forfeit-victory-screen';
         overlay.style.zIndex = '99999';
@@ -11698,9 +11840,14 @@
         panel.style.textAlign = 'center';
         panel.innerHTML =
           '<div class="note">' + (lang === 'ru' ? 'ОНЛАЙН-МАТЧ' : 'ONLINE MATCH') + '</div>' +
-          '<h2 class="result-title win" style="margin:8px 0 12px;font-size:clamp(20px, 5.5vw, 26px);color:#4ade80;">' +
+          '<h2 class="result-title win" style="margin:8px 0 10px;font-size:clamp(20px, 5.5vw, 26px);color:#4ade80;">' +
             '🏆 ' + (lang === 'ru' ? 'Победа — соперник отключился' : 'Victory — Opponent Disconnected') +
           '</h2>' +
+          '<div class="fvh-victory-taunt-card ' + curChar + '" style="margin-bottom:12px;">' +
+          '  <div class="fvh-taunt-badge-tag">' + (isFootyWin ? '⚽ FOOTY VICTORY' : '🏀 HOOPS VICTORY') + '</div>' +
+          '  <div class="fvh-taunt-headline">' + tauntTitle + '</div>' +
+          '  <div class="fvh-taunt-subtext">' + tauntSub + '</div>' +
+          '</div>' +
           '<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;margin-bottom:14px;">' +
           '  <div style="font-size:14px;font-weight:800;color:#fff;">' + escapeHtml(myName) + ' vs ' + escapeHtml(oppName) + '</div>' +
           '  <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">' + (lang === 'ru' ? 'Соперник покинул игру или потерял связь' : 'Opponent left the match or disconnected') + '</div>' +

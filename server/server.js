@@ -3517,12 +3517,13 @@ const server = http.createServer((req, res) => {
     let basketballTotal = 0;
     let footballAthletes = 0;
     let basketballAthletes = 0;
-    ranked.forEach(a => {
+    athletes.forEach(a => {
+      const s = computeScore(a, 'season', 'season');
       if (a.char === 'hoops') {
-        basketballTotal += (a.score || 0);
+        basketballTotal += s;
         basketballAthletes++;
       } else {
-        footballTotal += (a.score || 0);
+        footballTotal += s;
         footballAthletes++;
       }
     });
