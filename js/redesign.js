@@ -2028,6 +2028,8 @@
       'skin_mars': 'Mars Rover',
       'skin_hoops_cyber_dunk': 'Cyber Dunker',
       'skin_hoops_phantom_black': 'Phantom Black',
+      'skin_footy_mythic_titan': 'Mythic Titan',
+      'skin_hoops_hyper_beast': 'Hyper Beast',
       // 6 Football Balls
       'ball_footy_classic': 'Match Classic',
       'ball_footy_inferno': 'Solar Inferno',
@@ -2035,6 +2037,7 @@
       'ball_footy_cyber_neon': 'Cyber Matrix',
       'ball_earthrise': 'Earthrise Ball',
       'ball_footy_golden_elite': 'Championship Gold',
+      'ball_footy_supernova': 'Supernova Burst',
       // 7 Basketball Balls
       'ball_hoops_street': 'Street Classic',
       'ball_hoops_neon_energy': 'Neon Energy',
@@ -2043,6 +2046,7 @@
       'ball_hoops_midnight': 'Midnight Shadow',
       'ball_hoops_cosmic': 'Cosmic Galaxy',
       'ball_hoops_golden_elite': 'Golden All-Star',
+      'ball_hoops_vortex': 'Quantum Vortex',
       // Stadiums
       'std_footy_classic': 'Classic Grass',
       'std_footy_night': 'Night Arena',
@@ -2195,7 +2199,10 @@
     skin_hoops_golden_state: { h: 215, s: 0.9, lMult: 1.05, darkShorts: false, name: 'Golden State', ru: 'Голден Стейт' },
     skin_hoops_cyber_dunk: { h: 260, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Cyber Dunker', ru: 'Кибер Данкер' },
     skin_hoops_phantom_black: { h: 45, s: 0.9, lMult: 0.75, darkShorts: true, name: 'Phantom Black', ru: 'Призрачный Чёрный' },
-    skin_hoops_neon_splash: { h: 320, s: 0.9, lMult: 1.1, darkShorts: true, name: 'Neon Splash', ru: 'Неон Сплэш' }
+    skin_hoops_neon_splash: { h: 320, s: 0.9, lMult: 1.1, darkShorts: true, name: 'Neon Splash', ru: 'Неон Сплэш' },
+    // Pack-Exclusive Mythics
+    skin_footy_mythic_titan: { h: 195, s: 0.95, lMult: 1.1, darkShorts: true, name: 'Mythic Titan', ru: 'Титан Мифический' },
+    skin_hoops_hyper_beast: { h: 25, s: 0.98, lMult: 1.05, darkShorts: true, name: 'Hyper Beast', ru: 'Гипер-Зверь' }
   };
 
   var HERO_SKIN_CACHE = {};
@@ -2257,6 +2264,143 @@
     }
   }
   try { initHeroBaseImages(); } catch (e) {}
+
+  function drawHeroJerseyPattern(ctx, W, H, isFooty, skinId) {
+    if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_solar') return;
+    try {
+      ctx.save();
+      var chestX = isFooty ? W * 0.31 : W * 0.33;
+      var chestY = isFooty ? H * 0.22 : H * 0.22;
+      var chestW = isFooty ? W * 0.38 : W * 0.34;
+      var chestH = isFooty ? H * 0.25 : H * 0.23;
+
+      ctx.beginPath();
+      ctx.rect(chestX, chestY, chestW, chestH);
+      ctx.clip();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.88;
+
+      if (skinId === 'skin_crimson' || skinId === 'skin_crimson_elite') {
+        ctx.fillStyle = '#fef08a';
+        var sw = W * 0.032;
+        ctx.fillRect(W * 0.40, chestY, sw, chestH);
+        ctx.fillRect(W * 0.485, chestY, sw, chestH);
+        ctx.fillRect(W * 0.57, chestY, sw, chestH);
+      } else if (skinId === 'skin_footy_royal_striker') {
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.9)';
+        ctx.lineWidth = W * 0.065;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.34, H * 0.22);
+        ctx.lineTo(W * 0.64, H * 0.46);
+        ctx.stroke();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.34, H * 0.22);
+        ctx.lineTo(W * 0.64, H * 0.46);
+        ctx.stroke();
+      } else if (skinId === 'skin_frost') {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+        ctx.lineWidth = W * 0.055;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.65, H * 0.22);
+        ctx.lineTo(W * 0.35, H * 0.46);
+        ctx.stroke();
+      } else if (skinId === 'skin_footy_cyber_strike' || skinId === 'skin_neon' || skinId === 'skin_neon_elite' || skinId === 'skin_neon_cyber') {
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = W * 0.025;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.36, H * 0.25);
+        ctx.lineTo(W * 0.50, H * 0.33);
+        ctx.lineTo(W * 0.64, H * 0.25);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(W * 0.37, H * 0.31);
+        ctx.lineTo(W * 0.50, H * 0.39);
+        ctx.lineTo(W * 0.63, H * 0.31);
+        ctx.stroke();
+      } else if (skinId === 'skin_footy_golden_legend' || skinId === 'skin_gold' || skinId === 'skin_championship') {
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = W * 0.04;
+        ctx.beginPath();
+        ctx.arc(W * 0.50, H * 0.34, W * 0.09, Math.PI * 0.8, Math.PI * 0.2, true);
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(W * 0.50, H * 0.30, W * 0.02, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (skinId === 'skin_footy_mythic_titan') {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(W * 0.50, H * 0.33, W * 0.055, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#00f0ff';
+        ctx.beginPath();
+        ctx.arc(W * 0.50, H * 0.33, W * 0.028, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.35, H * 0.33); ctx.lineTo(W * 0.44, H * 0.33);
+        ctx.moveTo(W * 0.56, H * 0.33); ctx.lineTo(W * 0.65, H * 0.33);
+        ctx.stroke();
+      } else if (skinId === 'skin_premium_black_gold') {
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.8)';
+        for (var i = -2; i <= 2; i++) {
+          ctx.fillRect(W * (0.50 + i * 0.04), chestY, 2.5, chestH);
+        }
+      } else if (skinId === 'skin_electric_blue') {
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.52, H * 0.23);
+        ctx.lineTo(W * 0.47, H * 0.31);
+        ctx.lineTo(W * 0.53, H * 0.32);
+        ctx.lineTo(W * 0.48, H * 0.44);
+        ctx.stroke();
+      } else if (skinId === 'skin_hoops_street_legend') {
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.fillRect(W * 0.33, chestY, W * 0.035, chestH);
+        ctx.fillRect(W * 0.635, chestY, W * 0.035, chestH);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.42, H * 0.24);
+        ctx.lineTo(W * 0.58, H * 0.42);
+        ctx.stroke();
+      } else if (skinId === 'skin_hoops_golden_state') {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 4.5;
+        ctx.beginPath();
+        ctx.arc(W * 0.50, H * 0.35, W * 0.08, Math.PI, 0, false);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(W * 0.50, H * 0.35, W * 0.045, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (skinId === 'skin_hoops_hyper_beast') {
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.38, H * 0.27); ctx.lineTo(W * 0.58, H * 0.35);
+        ctx.moveTo(W * 0.40, H * 0.33); ctx.lineTo(W * 0.60, H * 0.41);
+        ctx.moveTo(W * 0.36, H * 0.22); ctx.lineTo(W * 0.54, H * 0.29);
+        ctx.stroke();
+      } else if (skinId === 'skin_hoops_neon_splash') {
+        ctx.fillStyle = 'rgba(219, 39, 119, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(W * 0.33, chestY);
+        ctx.lineTo(W * 0.53, chestY);
+        ctx.lineTo(W * 0.47, chestY + chestH);
+        ctx.lineTo(W * 0.33, chestY + chestH);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    } catch (e) {
+      console.warn('drawHeroJerseyPattern error', e);
+    }
+  }
 
   function getRecoloredHeroUrl(charId, skinId) {
     var isFooty = (charId === 'footy');
@@ -2330,6 +2474,7 @@
           }
         }
         ctx.putImageData(imgData, 0, 0);
+        drawHeroJerseyPattern(ctx, cvs.width, cvs.height, isFooty, skinId);
         var resUrl = cvs.toDataURL('image/png');
         HERO_SKIN_CACHE[cacheKey] = resUrl;
         return resUrl;
@@ -2449,6 +2594,8 @@
       primary = '#991b1b'; secondary = '#b91c1c'; accent = '#fef08a'; trim = '#f59e0b'; number = '7'; pattern = 'flame_stripes';
     } else if (id === 'skin_championship') {
       primary = '#0f172a'; secondary = '#eab308'; accent = '#facc15'; trim = '#eab308'; number = '1'; pattern = 'championship_stars';
+    } else if (id === 'skin_footy_mythic_titan') {
+      primary = '#0f172a'; secondary = '#0284c7'; accent = '#00f0ff'; trim = '#38bdf8'; number = '99'; pattern = 'mythic_titan';
 
     // === BASKETBALL JERSEYS (Hoops - Authentically Sleeveless Pro Cut Tanks) ===
     } else if (id === 'skin_solar') {
@@ -2467,6 +2614,8 @@
       isBasketball = true; primary = '#581c87'; secondary = '#ea580c'; accent = '#ffffff'; trim = '#fb923c'; number = '8'; pattern = 'sunset'; teamName = 'SUNSET';
     } else if (id === 'skin_mars') {
       isBasketball = true; primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'mars'; teamName = 'ARES';
+    } else if (id === 'skin_hoops_hyper_beast') {
+      isBasketball = true; primary = '#450a0a'; secondary = '#ea580c'; accent = '#facc15'; trim = '#f97316'; number = '99'; pattern = 'hyper_beast'; teamName = 'BEAST';
     } else if (id.indexOf('hoops') !== -1) {
       isBasketball = true; primary = '#ea580c'; secondary = '#f59e0b'; accent = '#ffffff'; trim = '#fb923c'; number = '23'; pattern = 'plain'; teamName = 'HOOPS';
     }
@@ -2544,6 +2693,9 @@
       } else if (pattern === 'mars') {
         bPattern = '<circle cx="50" cy="48" r="7" fill="' + secondary + '"/>' +
           '<ellipse cx="50" cy="48" rx="13" ry="3.5" stroke="' + accent + '" stroke-width="1.5" fill="none" transform="rotate(-18,50,48)"/>';
+      } else if (pattern === 'hyper_beast') {
+        bPattern = '<path d="M30 42 Q40 50 48 40 Q44 60 56 50 Q52 70 68 58" stroke="' + accent + '" stroke-width="3" fill="none" filter="url(#glow_' + uid + ')"/>' +
+          '<path d="M32 54 Q44 62 52 52 Q48 72 60 62" stroke="' + secondary + '" stroke-width="2.5" fill="none" opacity="0.85"/>';
       }
 
       // Jock tag on bottom hem
@@ -2638,6 +2790,11 @@
     } else if (pattern === 'space') {
       fPattern = '<circle cx="50" cy="40" r="5.5" fill="#38bdf8" filter="url(#glow_' + uid + ')"/>' +
         '<polygon points="36,44 42,44 40,49" fill="#facc15"/>';
+    } else if (pattern === 'mythic_titan') {
+      fPattern = '<polygon points="50,32 64,48 50,64 36,48" stroke="' + accent + '" stroke-width="2.5" fill="none" filter="url(#glow_' + uid + ')"/>' +
+        '<circle cx="50" cy="48" r="5" fill="' + accent + '" filter="url(#glow_' + uid + ')"/>' +
+        '<path d="M28 42 L36 48 L28 64 L28 84" stroke="' + trim + '" stroke-width="2" fill="none" opacity="0.85"/>' +
+        '<path d="M72 42 L64 48 L72 64 L72 84" stroke="' + trim + '" stroke-width="2" fill="none" opacity="0.85"/>';
     }
 
     // Determine equipment rarity for realistic visual presentation
@@ -2732,6 +2889,8 @@
         bStart = '#ffffff'; bMid = '#94a3b8'; bEnd = '#1e293b'; seam = '#0284c7'; seamHighlight = '#38bdf8'; textBadge = 'CHROME';
       } else if (id === 'ball_tidal') {
         bStart = '#38bdf8'; bMid = '#0284c7'; bEnd = '#082f49'; seam = '#cffafe'; seamHighlight = '#67e8f9'; textBadge = 'TIDAL';
+      } else if (id === 'ball_hoops_vortex') {
+        bStart = '#c084fc'; bMid = '#7c3aed'; bEnd = '#1e1b4b'; seam = '#00f0ff'; seamHighlight = '#22d3ee'; hasRing = true; glow = 'filter="drop-shadow(0 0 10px #00f0ff)"'; textBadge = 'VORTEX';
       }
 
       var defs = '<defs>' +
@@ -2825,6 +2984,8 @@
       fStart = '#fef08a'; fMid = '#ca8a04'; fEnd = '#451a03'; patch = '#78350f'; seamColor = '#facc15'; seamStitch = '#fef08a'; hasAura = true; auraColor = '#facc15'; isGold = true;
     } else if (id === 'ball_earthrise' || id === 'ball_footy_galactic') {
       fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#061a35'; patch = '#15803d'; seamColor = '#ffffff'; seamStitch = '#7dd3fc'; hasAura = true; auraColor = '#38bdf8';
+    } else if (id === 'ball_footy_supernova') {
+      fStart = '#facc15'; fMid = '#0284c7'; fEnd = '#080f24'; patch = '#00f0ff'; seamColor = '#facc15'; seamStitch = '#ffffff'; hasAura = true; auraColor = '#00f0ff'; isGold = true;
     }
 
     var defs = '<defs>' +
@@ -5320,13 +5481,16 @@
     var isFooty = (curChar === 'footy');
     var ballSlotId = isFooty ? 'balls_footy' : 'balls_hoops';
     var ballSlotLabel = isFooty ? tr('catFootballBalls') : tr('catBasketballBalls');
-    if (curSlot !== ballSlotId && curSlot !== 'skins') curSlot = 'skins';
+    var validSlots = ['skins', ballSlotId, 'upgrades', 'packs'];
+    if (validSlots.indexOf(curSlot) === -1) curSlot = 'skins';
     var slotSeg = document.createElement('div');
-    slotSeg.className = 'seg';
+    slotSeg.className = 'seg fvh-wardrobe-seg';
     slotSeg.style.marginBottom = '8px';
     var slots = [
-      { id: 'skins', label: tr('catSkins') },
-      { id: ballSlotId, label: ballSlotLabel }
+      { id: 'skins', label: '👕 ' + (tr('catSkins') || (lang === 'ru' ? 'Форма' : 'Kits')) },
+      { id: ballSlotId, label: (isFooty ? '⚽ ' : '🏀 ') + ballSlotLabel },
+      { id: 'upgrades', label: '⚡ ' + (lang === 'ru' ? 'Прокачка' : 'Skills') },
+      { id: 'packs', label: '🎁 ' + (lang === 'ru' ? 'Наборы' : 'Packs') }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
@@ -5386,6 +5550,41 @@
       charRole.textContent = curChar === 'footy' ? tr('footyRole') : tr('hoopsRole');
 
       selectBtn.style.display = 'none';
+
+      var up = (app.store && app.store.data && app.store.data.upgrades) || { power: 1, stamina: 1, keeper: 1 };
+      var pLvl = Math.max(1, Math.min(10, up.power || 1));
+      var sLvl = Math.max(1, Math.min(10, up.stamina || 1));
+      var kLvl = Math.max(1, Math.min(10, up.keeper || 1));
+      var avgLvl = (pLvl + sLvl + kLvl) / 3;
+      var ovr = Math.round(70 + ((avgLvl - 1) / 9) * 29);
+
+      if (curSlot === 'upgrades') {
+        raritySeg.style.display = 'none';
+        avatarBox.innerHTML = getCharacterDisplayHtml(curChar, null);
+        equipSlotList.innerHTML =
+          '<div class="fvh-equipped-slot"><span>⚡ Рейтинг (OVR):</span><b style="color:#00f0ff;font-size:14px;">' + ovr + ' OVR</b></div>' +
+          '<div class="fvh-equipped-slot"><span>💥 ' + (lang === 'ru' ? 'Сила удара / броска:' : 'Power:') + '</span><b>Lvl ' + pLvl + ' / 10</b></div>' +
+          '<div class="fvh-equipped-slot"><span>💨 ' + (lang === 'ru' ? 'Выносливость:' : 'Stamina:') + '</span><b>Lvl ' + sLvl + ' / 10</b></div>' +
+          '<div class="fvh-equipped-slot"><span>🧤 ' + (lang === 'ru' ? 'Вратарь:' : 'Goalkeeper:') + '</span><b>Lvl ' + kLvl + ' / 10</b></div>';
+        renderUpgradesView();
+        return;
+      }
+
+      if (curSlot === 'packs') {
+        raritySeg.style.display = 'none';
+        avatarBox.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:12px;box-sizing:border-box;">' +
+          '<div style="font-size:52px;filter:drop-shadow(0 0 16px rgba(250,204,21,0.6));">🎁</div>' +
+          '<div style="font-size:12px;font-weight:900;color:#facc15;margin-top:8px;text-align:center;">MYSTERY PACKS</div>' +
+          '</div>';
+        equipSlotList.innerHTML =
+          '<div class="fvh-equipped-slot"><span>🎁 ' + (lang === 'ru' ? 'Шанс на эксклюзив:' : 'Exclusive Chance:') + '</span><b style="color:#facc15;">4.0%</b></div>' +
+          '<div class="fvh-equipped-slot"><span>🪙 ' + (lang === 'ru' ? 'Бонус монет:' : 'Bonus Coins:') + '</span><b>+100-250 FvH</b></div>' +
+          '<div class="fvh-equipped-slot"><span>🛡️ ' + (lang === 'ru' ? 'Защита от дублей:' : 'Dup Protection:') + '</span><b style="color:#22c55e;">+350 🪙</b></div>';
+        renderPacksView();
+        return;
+      }
+
+      raritySeg.style.display = 'flex';
 
       // Equipped summary
       var eq = app.store.data.equipped || {};
@@ -5621,6 +5820,234 @@
         });
       }
 
+      function renderUpgradesView() {
+        itemsGrid.innerHTML = '';
+        var playerXp = (app.store && app.store.data && app.store.data.xp) || 0;
+        var playerLvl = Math.min(30, 1 + Math.floor(playerXp / 250));
+        var playerCoins = (app.store && app.store.data && app.store.data.coins) || 0;
+
+        var UP_CFG = {
+          power: {
+            name: lang === 'ru' ? 'Сила удара / Броска' : 'Shot & Throw Power',
+            desc: lang === 'ru' ? 'Увеличивает начальную скорость и пробивную силу удара в футболе и дальность броска в баскетболе.' : 'Increases initial ball velocity, shot penetration in footy, and shooting range in hoops.',
+            icon: '💥',
+            costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
+            reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27],
+            stepPct: 3.5
+          },
+          stamina: {
+            name: lang === 'ru' ? 'Выносливость атлета' : 'Stamina & Recovery',
+            desc: lang === 'ru' ? 'Ускоряет регенерацию шкалы сил, снижает утомляемость при спринтах, борьбе и подкатах.' : 'Accelerates stamina regeneration, reducing exhaustion during sprints, pressuring, and slide tackles.',
+            icon: '💨',
+            costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
+            reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27],
+            stepPct: 4.0
+          },
+          keeper: {
+            name: lang === 'ru' ? 'Мастерство вратаря' : 'Goalkeeper Agility',
+            desc: lang === 'ru' ? 'Повышает скорость перемещения на ленточке ворот, реакцию на рикошеты и дальность сейва в прыжке.' : 'Boosts goal-line repositioning speed, dive reach on aerial shots, and deflection reactions.',
+            icon: '🧤',
+            costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
+            reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27],
+            stepPct: 3.5
+          }
+        };
+
+        var skills = ['power', 'stamina', 'keeper'];
+        skills.forEach(function (sk) {
+          var cfg = UP_CFG[sk];
+          var curL = up[sk] || 1;
+          var isMax = curL >= 10;
+          var nextCost = isMax ? 0 : cfg.costs[curL];
+          var reqL = isMax ? 0 : cfg.reqLevels[curL];
+          var hasLvl = playerLvl >= reqL;
+          var hasCoins = playerCoins >= nextCost;
+
+          var card = document.createElement('div');
+          card.className = 'fvh-upgrade-card';
+
+          var pipsHtml = '';
+          for (var p = 1; p <= 10; p++) {
+            var isFilled = p <= curL;
+            var isNext = p === curL + 1;
+            pipsHtml += '<span class="fvh-skill-pip' + (isFilled ? ' filled' : (isNext ? ' next' : '')) + '"></span>';
+          }
+
+          var curBoostText = '+' + ((curL - 1) * cfg.stepPct).toFixed(1) + '%';
+          var nextBoostText = '+' + (curL * cfg.stepPct).toFixed(1) + '%';
+
+          var actionHtml = '';
+          if (isMax) {
+            actionHtml = '<div class="fvh-upgrade-max-badge">👑 ' + (lang === 'ru' ? 'МАКСИМАЛЬНЫЙ УРОВЕНЬ' : 'MAX LEVEL') + '</div>';
+          } else {
+            var lockWarn = !hasLvl
+              ? '<div class="fvh-upgrade-lock-warn">🔒 ' + (lang === 'ru' ? ('Требуется Уровень игрока ' + reqL + ' (у вас Lvl ' + playerLvl + ')') : ('Requires Player Lvl ' + reqL + ' (you have Lvl ' + playerLvl + ')')) + '</div>'
+              : '';
+            actionHtml =
+              lockWarn +
+              '<button type="button" class="btn primary fvh-upgrade-btn"' + ((!hasLvl || !hasCoins) ? ' disabled' : '') + '>' +
+              '⚡ ' + (lang === 'ru' ? 'Улучшить до Lvl ' + (curL + 1) : 'Upgrade to Lvl ' + (curL + 1)) +
+              ' (' + getFvhCoinSvg('inline') + ' ' + nextCost.toLocaleString() + ')' +
+              '</button>';
+          }
+
+          card.innerHTML =
+            '<div class="fvh-upgrade-head">' +
+            '  <div class="fvh-upgrade-title-box">' +
+            '    <span class="fvh-upgrade-icon">' + cfg.icon + '</span>' +
+            '    <div>' +
+            '      <h3 class="fvh-upgrade-name">' + cfg.name + '</h3>' +
+            '      <div class="fvh-upgrade-lvl-badge">' + (lang === 'ru' ? 'Уровень ' : 'Level ') + curL + ' / 10</div>' +
+            '    </div>' +
+            '  </div>' +
+            '  <div class="fvh-upgrade-boost-val">' + curBoostText + (isMax ? '' : (' ➔ <span style="color:#00f0ff;">' + nextBoostText + '</span>')) + '</div>' +
+            '</div>' +
+            '<p class="fvh-upgrade-desc">' + cfg.desc + '</p>' +
+            '<div class="fvh-skill-bar-wrap">' +
+            '  <div class="fvh-skill-bar">' + pipsHtml + '</div>' +
+            '</div>' +
+            '<div class="fvh-upgrade-action-row">' + actionHtml + '</div>';
+
+          if (!isMax) {
+            var upBtn = card.querySelector('.fvh-upgrade-btn');
+            if (upBtn) {
+              upBtn.onclick = function () {
+                if (!hasLvl) {
+                  app.audio.play('error');
+                  showToast(lang === 'ru' ? ('Повышайте уровень игрока в матчах до Lvl ' + reqL) : ('Reach Player Level ' + reqL));
+                  return;
+                }
+                if (!hasCoins) {
+                  app.audio.play('error');
+                  showToast(tr('notEnoughCoins'));
+                  return;
+                }
+                upBtn.disabled = true;
+                var pid = getAppPlayerId(app);
+                safeEconomyApi('/api/economy/upgrade', { playerId: pid, skill: sk }).then(function (res) {
+                  if (res && res.ok) {
+                    app.store.update(function (d) {
+                      d.coins = res.coins;
+                      if (!d.upgrades) d.upgrades = {};
+                      d.upgrades[sk] = res.level;
+                    });
+                    app.audio.play('claim');
+                    if (navigator.vibrate) try { navigator.vibrate([60, 40, 100]); } catch (e) {}
+                    showToast('⚡ ' + cfg.name + ' ' + (lang === 'ru' ? 'прокачан до Lvl ' : 'upgraded to Lvl ') + res.level + '!');
+                    updateView();
+                  } else {
+                    upBtn.disabled = false;
+                    app.audio.play('error');
+                    showToast((res && res.message) || tr('purchaseFailed'));
+                  }
+                }).catch(function () {
+                  upBtn.disabled = false;
+                  app.audio.play('error');
+                  showToast('Ошибка связи с сервером');
+                });
+              };
+            }
+          }
+
+          itemsGrid.appendChild(card);
+        });
+      }
+
+      function renderPacksView() {
+        itemsGrid.innerHTML = '';
+
+        var showcase = document.createElement('div');
+        showcase.className = 'fvh-pack-exclusive-banner';
+        showcase.innerHTML =
+          '<div class="fvh-pack-excl-head">' +
+          '  <span class="fvh-pack-excl-sparkle">✨</span>' +
+          '  <div>' +
+          '    <div class="fvh-pack-excl-title">' + (lang === 'ru' ? 'ЭКСКЛЮЗИВЫ ИЗ НАБОРОВ' : 'PACK-EXCLUSIVE MYTHICS') + '</div>' +
+          '    <div class="fvh-pack-excl-sub">' + (lang === 'ru' ? 'Не продаются в обычном магазине · Шанс получить только из Наборов' : 'Unavailable in shop · Only obtainable via Mystery Packs') + '</div>' +
+          '  </div>' +
+          '</div>' +
+          '<div class="fvh-pack-excl-grid">' +
+          '  <div class="fvh-pack-excl-item"><span class="fvh-pack-excl-ico">🛡️</span><b>' + (lang === 'ru' ? 'Титан Мифический' : 'Mythic Titan') + '</b><small>' + (lang === 'ru' ? 'Форма FOOTY' : 'FOOTY Kit') + '</small></div>' +
+          '  <div class="fvh-pack-excl-item"><span class="fvh-pack-excl-ico">🐯</span><b>' + (lang === 'ru' ? 'Гипер-Зверь' : 'Hyper Beast') + '</b><small>' + (lang === 'ru' ? 'Джерси HOOPS' : 'HOOPS Jersey') + '</small></div>' +
+          '  <div class="fvh-pack-excl-item"><span class="fvh-pack-excl-ico">🌟</span><b>' + (lang === 'ru' ? 'Сверхновая' : 'Supernova Burst') + '</b><small>' + (lang === 'ru' ? 'Мяч Футбол' : 'Soccer Ball') + '</small></div>' +
+          '  <div class="fvh-pack-excl-item"><span class="fvh-pack-excl-ico">🌌</span><b>' + (lang === 'ru' ? 'Квантовый Вихрь' : 'Quantum Vortex') + '</b><small>' + (lang === 'ru' ? 'Мяч Баскетбол' : 'Hoops Ball') + '</small></div>' +
+          '</div>';
+        itemsGrid.appendChild(showcase);
+
+        var pData = (app.store && app.store.data && app.store.data.packs) || { free: {}, paid: {} };
+        var freeFooty = (pData.free && pData.free.footy) || 0;
+        var paidFooty = (pData.paid && pData.paid.footy) || 0;
+        var totalFooty = freeFooty + paidFooty;
+
+        var freeHoops = (pData.free && pData.free.hoops) || 0;
+        var paidHoops = (pData.paid && pData.paid.hoops) || 0;
+        var totalHoops = freeHoops + paidHoops;
+
+        var packs = [
+          {
+            id: 'footy',
+            name: lang === 'ru' ? 'Набор Нападающего' : 'Footy Striker Pack',
+            sport: 'footy',
+            icon: '⚽🎁',
+            color: '#00f0ff',
+            cost: 250,
+            hasTokens: totalFooty,
+            desc: lang === 'ru' ? 'Футбольные формы, мячи, 100-250 монет + 4% шанс на эксклюзивного Титана!' : 'Football kits, match balls, 100-250 coins + 4% Mythic Titan drop chance!'
+          },
+          {
+            id: 'hoops',
+            name: lang === 'ru' ? 'Набор Всех Звёзд' : 'Hoops All-Star Pack',
+            sport: 'hoops',
+            icon: '🏀🎁',
+            color: '#f97316',
+            cost: 250,
+            hasTokens: totalHoops,
+            desc: lang === 'ru' ? 'Баскетбольные джерси, мячи, 100-250 монет + 4% шанс на эксклюзивного Гипер-Зверя!' : 'Basketball jerseys, street balls, 100-250 coins + 4% Hyper Beast drop chance!'
+          },
+          {
+            id: 'clash',
+            name: lang === 'ru' ? 'Мега-Набор Чемпионов' : 'Clash Champions Pack',
+            sport: 'all',
+            icon: '👑🎁',
+            color: '#facc15',
+            cost: 500,
+            hasTokens: 0,
+            desc: lang === 'ru' ? 'Космические эксклюзивные мячи (Сверхновая & Квантовый Вихрь) + 250-500 монет!' : 'Cosmic mythic balls (Supernova & Quantum Vortex) + 250-500 coins!'
+          }
+        ];
+
+        packs.forEach(function (pk) {
+          var card = document.createElement('div');
+          card.className = 'fvh-pack-card pack-' + pk.id;
+          var btnLabel = pk.hasTokens > 0
+            ? ('🎁 ' + (lang === 'ru' ? 'Открыть (В наличии: ' + pk.hasTokens + ')' : 'Open (Owned: ' + pk.hasTokens + ')'))
+            : ('🎁 ' + (lang === 'ru' ? 'Открыть за ' : 'Open for ') + getFvhCoinSvg('inline') + ' ' + pk.cost);
+
+          card.innerHTML =
+            '<div class="fvh-pack-card-head">' +
+            '  <span class="fvh-pack-card-icon">' + pk.icon + '</span>' +
+            '  <div>' +
+            '    <h3 class="fvh-pack-card-name" style="color:' + pk.color + ';">' + pk.name + '</h3>' +
+            '    <div class="fvh-pack-card-cost">' + (pk.hasTokens > 0 ? ('<span style="color:#22c55e;">✓ ' + (lang === 'ru' ? 'Жетон в инвентаре' : 'Token Available') + '</span>') : (getFvhCoinSvg('inline') + ' ' + pk.cost + ' FvH')) + '</div>' +
+            '  </div>' +
+            '</div>' +
+            '<p class="fvh-pack-card-desc">' + pk.desc + '</p>' +
+            '<div class="fvh-pack-drop-chips">' +
+            '  <span class="fvh-pack-drop-chip excl">✨ 4% ' + (lang === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' +
+            '  <span class="fvh-pack-drop-chip leg">🌟 ' + (lang === 'ru' ? 'ЛЕГЕНДА / ЭПИК' : 'LEGEND / EPIC') + '</span>' +
+            '  <span class="fvh-pack-drop-chip coins">🪙 +' + (lang === 'ru' ? 'МОНЕТЫ' : 'COINS') + '</span>' +
+            '</div>' +
+            '<button type="button" class="btn primary block fvh-pack-open-btn" style="margin-top:12px;">' + btnLabel + '</button>';
+
+          card.querySelector('.fvh-pack-open-btn').onclick = function () {
+            app.audio.play('click');
+            openPackWithCinematicAnimation(app, pk.id, updateView);
+          };
+
+          itemsGrid.appendChild(card);
+        });
+      }
+
       renderMatchingItems();
     }
 
@@ -5635,7 +6062,138 @@
     return container;
   }
 
+  // Cinematic Pack Opening Modal with Particle Light Burst & 3D Flip Reveal
+  function openPackWithCinematicAnimation(app, packId, onComplete) {
+    var overlay = document.createElement('div');
+    overlay.className = 'fvh-pack-opening-overlay';
 
+    var modal = document.createElement('div');
+    modal.className = 'fvh-pack-opening-modal';
+
+    var lang = getActiveLang();
+    var isFooty = packId === 'footy';
+    var isHoops = packId === 'hoops';
+    var packTitle = isFooty
+      ? (lang === 'ru' ? 'НАБОР НАПАДАЮЩЕГО' : 'FOOTY STRIKER PACK')
+      : (isHoops ? (lang === 'ru' ? 'НАБОР ВСЕХ ЗВЁЗД' : 'HOOPS ALL-STAR PACK') : (lang === 'ru' ? 'МЕГА-НАБОР ЧЕМПИОНОВ' : 'CLASH CHAMPIONS PACK'));
+    var packColor = isFooty ? '#00f0ff' : (isHoops ? '#f97316' : '#facc15');
+
+    modal.innerHTML =
+      '<div class="fvh-pack-box-wrap">' +
+      '  <div class="fvh-pack-light-beam"></div>' +
+      '  <div class="fvh-pack-3d-box ' + packId + '">' +
+      '    <div class="fvh-pack-3d-front" style="border-color:' + packColor + ';">' +
+      '      <div class="fvh-pack-3d-badge">' + (isFooty ? '⚽ FOOTY' : (isHoops ? '🏀 HOOPS' : '👑 CLASH')) + '</div>' +
+      '      <div class="fvh-pack-3d-emblem">🎁</div>' +
+      '      <div class="fvh-pack-3d-title">' + packTitle + '</div>' +
+      '      <div class="fvh-pack-3d-sub">MYSTERY PACK</div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="fvh-pack-open-prompt">⚡ ' + (lang === 'ru' ? 'ВСКРЫВАЕМ НАБОР...' : 'OPENING PACK...') + '</div>' +
+      '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    app.audio.play('click');
+    if (navigator.vibrate) {
+      try { navigator.vibrate([40, 60, 80, 100]); } catch (e) {}
+    }
+
+    var packBox = modal.querySelector('.fvh-pack-3d-box');
+    if (packBox) packBox.classList.add('shaking');
+
+    var pid = getAppPlayerId(app);
+    safeEconomyApi('/api/packs/open', { playerId: pid, packId: packId })
+      .then(function (res) {
+        if (!res || !res.ok) {
+          overlay.remove();
+          app.audio.play('error');
+          showToast((res && (res.error === 'not_enough_coins' || res.error === 'no_packs_available')) ? tr('notEnoughCoins') : (res && res.message || 'Ошибка открытия'));
+          return;
+        }
+
+        app.store.update(function (d) {
+          d.coins = res.coins;
+          if (res.owned) d.owned = res.owned;
+          if (res.unseenItems) d.unseenItems = res.unseenItems;
+          if (res.packs) d.packs = res.packs;
+        });
+
+        setTimeout(function () {
+          if (packBox) {
+            packBox.classList.remove('shaking');
+            packBox.classList.add('bursting');
+          }
+
+          var flash = document.createElement('div');
+          flash.className = 'fvh-pack-flash';
+          overlay.appendChild(flash);
+          app.audio.play('claim');
+          if (navigator.vibrate) {
+            try { navigator.vibrate([120, 40, 180]); } catch (e) {}
+          }
+
+          setTimeout(function () {
+            flash.remove();
+            var it = res.item;
+            var isExcl = Boolean(res.isExclusive);
+            var rarClass = it.rarity || 'legendary';
+            var localizedItemName = trItem(it.name);
+            var alreadyOwnedNote = res.alreadyOwned
+              ? '<div class="fvh-pack-duplicate-note">🔁 ' + (lang === 'ru' ? ('Уже в коллекции: начислена компенсация +' + res.bonusCoins + ' 🪙!') : ('Already owned: awarded bonus +' + res.bonusCoins + ' 🪙!')) + '</div>'
+              : '';
+
+            modal.innerHTML =
+              '<div class="fvh-pack-reveal-card r-' + rarClass + (isExcl ? ' is-mythic-exclusive' : '') + '">' +
+              (isExcl ? ('  <div class="fvh-pack-exclusive-pill">✨ ' + (lang === 'ru' ? 'МИФИЧЕСКИЙ ЭКСКЛЮЗИВ' : 'MYTHIC EXCLUSIVE') + ' ✨</div>') : ('  <div class="fvh-pack-rarity-pill rar ' + rarClass + '">' + (tr('rarity_' + rarClass) || rarClass.toUpperCase()) + '</div>')) +
+              '  <div class="fvh-pack-item-artwork">' + renderItemArtwork(it, 'large') + '</div>' +
+              '  <h2 class="fvh-pack-item-title">' + localizedItemName + '</h2>' +
+              '  <div class="fvh-pack-bonus-coins">🪙 +' + res.bonusCoins + ' ' + (lang === 'ru' ? 'Монет FvH' : 'FvH Coins') + '</div>' +
+              alreadyOwnedNote +
+              '  <div class="fvh-pack-reveal-actions">' +
+              '    <button type="button" class="btn primary fvh-pack-equip-now-btn">👕 ' + (lang === 'ru' ? 'Надеть сейчас' : 'Equip Now') + '</button>' +
+              '    <button type="button" class="btn fvh-pack-close-btn">✓ ' + (lang === 'ru' ? 'В гардероб' : 'To Wardrobe') + '</button>' +
+              '  </div>' +
+              '</div>';
+
+            modal.querySelector('.fvh-pack-close-btn').onclick = function () {
+              app.audio.play('click');
+              overlay.remove();
+              if (onComplete) onComplete();
+            };
+
+            modal.querySelector('.fvh-pack-equip-now-btn').onclick = function () {
+              app.audio.play('claim');
+              var curChar = (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || 'footy';
+              var sKey = it.category === 'skins' ? ('skin.' + curChar) : (it.category === 'balls_footy' ? 'ball.footy' : 'ball.hoops');
+              safeEconomyApi('/api/economy/equip', { playerId: pid, slot: sKey, itemId: it.id }).then(function () {
+                app.store.update(function (d) {
+                  if (!d.equipped) d.equipped = {};
+                  d.equipped[sKey] = it.id;
+                  if (it.category === 'skins') {
+                    d.equipped.skin = it.id;
+                    d.equipped['skin.' + curChar] = it.id;
+                  } else {
+                    d.equipped.ball = it.id;
+                    d.equipped['ball.' + curChar] = it.id;
+                  }
+                });
+                showToast(tr('equippedState') + ': ' + localizedItemName);
+                overlay.remove();
+                if (onComplete) onComplete();
+              });
+            };
+          }, 450);
+        }, 850);
+      })
+      .catch(function (err) {
+        overlay.remove();
+        app.audio.play('error');
+        showToast(lang === 'ru' ? 'Ошибка связи с сервером при открытии набора' : 'Server error while opening pack');
+      });
+  }
+  window.openPackWithCinematicAnimation = openPackWithCinematicAnimation;
 
   // Polished Vector Social & Referral Brand Artwork
   function getTelegramLogoSvg(size) {
@@ -6548,6 +7106,7 @@
       { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1600 },
       { id: 'skin_footy_golden_legend', name: 'Golden Legend', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
       { id: 'skin_footy_neon_matrix', name: 'Neon Matrix', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2200 },
+      { id: 'skin_footy_mythic_titan', name: 'Mythic Titan', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
 
       // === 8 BASKETBALL KITS (Hoops) ===
       { id: 'skin_solar', name: 'Solar Street', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
@@ -6558,6 +7117,7 @@
       { id: 'skin_mars', name: 'Mars Rover', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
       { id: 'skin_hoops_cyber_dunk', name: 'Cyber Dunker', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1500 },
       { id: 'skin_hoops_phantom_black', name: 'Phantom Black', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
+      { id: 'skin_hoops_hyper_beast', name: 'Hyper Beast', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true },
 
       // === 6 FOOTBALL BALLS (Footy) ===
       { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
@@ -6566,6 +7126,7 @@
       { id: 'ball_footy_cyber_neon', name: 'Cyber Matrix', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1200 },
       { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
       { id: 'ball_footy_golden_elite', name: 'Championship Gold', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2000 },
+      { id: 'ball_footy_supernova', name: 'Supernova Burst', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
 
       // === 7 BASKETBALL BALLS (Hoops) ===
       { id: 'ball_hoops_street', name: 'Street Classic', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
@@ -6574,7 +7135,8 @@
       { id: 'ball_hoops_chrome', name: 'Chrome Edition', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 800 },
       { id: 'ball_hoops_midnight', name: 'Midnight Shadow', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
       { id: 'ball_hoops_cosmic', name: 'Cosmic Galaxy', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 1800 },
-      { id: 'ball_hoops_golden_elite', name: 'Golden All-Star', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2000 }
+      { id: 'ball_hoops_golden_elite', name: 'Golden All-Star', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2000 },
+      { id: 'ball_hoops_vortex', name: 'Quantum Vortex', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true }
     ];
   }
 
@@ -6926,6 +7488,7 @@
       var eq = (app.store && app.store.data && app.store.data.equipped) || {};
 
       var filtered = baseCatalog.filter(function (it) {
+        if (it.packExclusive) return false;
         if (curCategory === 'skins') {
           return it.category === 'skins' && it.mode === shopSport;
         }
@@ -10330,11 +10893,19 @@
       equippedBall = getItemLabelById(equippedBall, equippedBall);
     }
 
+    var up = d.upgrades || { power: 1, stamina: 1, keeper: 1 };
+    var pLvl = Math.max(1, Math.min(10, up.power || 1));
+    var sLvl = Math.max(1, Math.min(10, up.stamina || 1));
+    var kLvl = Math.max(1, Math.min(10, up.keeper || 1));
+    var avgLvl = (pLvl + sLvl + kLvl) / 3;
+    var ovr = Math.round(70 + ((avgLvl - 1) / 9) * 29);
+
     var charPortraitHtml = getCharacterDisplayHtml(curChar, null, { showJerseyTag: false });
 
     heroCard.innerHTML =
       '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:6px;">' +
       '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:12.5px;font-weight:900;padding:5px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
+      '  <span class="fvh-solo-ovr-pill" style="cursor:pointer;font-size:12px;font-weight:900;color:#00f0ff;background:rgba(0,240,255,0.12);padding:4px 10px;border-radius:20px;border:1px solid rgba(0,240,255,0.35);display:inline-flex;align-items:center;gap:4px;" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">⚡ ' + ovr + ' OVR</span>' +
       '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
       '</div>' +
       '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
@@ -10348,12 +10919,29 @@
       '    <span>' + (isFooty ? '⚽' : '🏀') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
       '  </div>' +
       '</div>' +
-      '<div class="fvh-solo-actions-row" style="width:100%;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="width:100%;padding:10px 14px;font-size:12.5px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
+      '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-upgrade-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#00f0ff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span>⚡</span> <span>' + (lang === 'ru' ? 'Прокачка' : 'Skills') + '</span></button>' +
       '</div>';
 
     heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
       e.stopPropagation();
+      app.audio.play('click');
+      app.showCharacters(curChar, 'skins');
+    };
+
+    var openUpgrades = function (e) {
+      if (e) e.stopPropagation();
+      app.audio.play('click');
+      app.showCharacters(curChar, 'upgrades');
+    };
+    var ovrPill = heroCard.querySelector('.fvh-solo-ovr-pill');
+    if (ovrPill) ovrPill.onclick = openUpgrades;
+    var upgBtn = heroCard.querySelector('.fvh-solo-upgrade-pill');
+    if (upgBtn) upgBtn.onclick = openUpgrades;
+
+    heroCard.style.cursor = 'pointer';
+    heroCard.onclick = function () {
       app.audio.play('click');
       if (curChar === 'footy') {
         app.openCharacterLocker('footy');
@@ -10822,6 +11410,12 @@
     // Dedicated Character Locker opener (Tapping FOOTY or HOOPS opens their respective inventory)
     app.openCharacterLocker = function (charId, slotId) {
       app.show(buildCharactersPage(app, charId, slotId), 'characters');
+    };
+
+    app.showCharacters = function (charTarget, slotTarget) {
+      var c = charTarget || (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || 'footy';
+      var s = slotTarget || 'skins';
+      app.show(buildCharactersPage(app, c, s), 'characters');
     };
 
     app.go = function (page, opts) {

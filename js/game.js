@@ -2345,7 +2345,8 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             }
         }
         keeperBaseSpeed(a) {
-            return a.team === 1 ? this.ai.keeperSpeed : Math.max(7.5, this.ai.keeperSpeed);
+            const kMult = (a.team === 0 && this.boosts && this.boosts.keeper) ? this.boosts.keeper : 1.0;
+            return (a.team === 1 ? this.ai.keeperSpeed : Math.max(7.5, this.ai.keeperSpeed)) * kMult;
         }
         agentBounds(_a) {
             const P = this.P;
@@ -2947,41 +2948,45 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const dx = 0 - a.x;
             const dz = hoop.z - a.z;
             const dist = Math.hypot(dx, dz);
-            if (dist < 2.2 && charge > 0.15) {
-                this.launchShot(a, 0, 0, true);
-                return;
-            }
-            // Facing alignment check: if facing away from hoop, ball misses in facing direction
-            const toHyp = Math.hypot(dx, dz) || 1;
-            const toHoopX = dx / toHyp;
-            const toHoopZ = dz / toHyp;
-            const hasFacing = Math.hypot(a.fx, a.fz) > 0.1;
-            const facingDot = hasFacing ? (a.fx * toHoopX + a.fz * toHoopZ) : 1.0;
 
-            if (facingDot < 0.25) {
-                // Facing away or completely sideways: ball launches where player is looking and misses hoop
-                const throwDist = Math.max(4.0, dist);
-                const aimX = a.x + a.fx * throwDist;
-                const aimZ = a.z + a.fz * throwDist;
-                const missErrX = aimX - 0;
-                const missErrZ = aimZ - hoop.z;
-                this.launchShot(a, missErrX, missErrZ, false);
-                return;
+            // Dunk only if close AND facing the rim
+            let fLen = Math.hypot(a.fx, a.fz);
+            if (fLen < 0.05) {
+                a.fx = 0;
+                a.fz = hoop.z > a.z ? 1 : -1;
+                fLen = 1;
+            }
+            const fx = a.fx / fLen;
+            const fz = a.fz / fLen;
+
+            if (dist < 2.0 && charge > 0.15) {
+                const toRimX = dx / (dist || 1);
+                const toRimZ = dz / (dist || 1);
+                const dunkDot = fx * toRimX + fz * toRimZ;
+                if (dunkDot > 0.5) {
+                    this.launchShot(a, 0, 0, true);
+                    return;
+                }
             }
 
-            // Facing hoop: square shooter towards hoop
-            a.fx = toHoopX;
-            a.fz = toHoopZ;
+            // Strictly shoot in the player's facing direction without auto-aim snapping
             a.vx = 0;
             a.vz = 0;
 
+            const throwDist = Math.max(3.2, dist);
+            const aimX = a.x + fx * throwDist;
+            const aimZ = a.z + fz * throwDist;
+
+            // Shot quality timing determines precision spread around facing aim point
             const q = this.shotQuality(Math.max(0.1, charge), a, dist);
-            const anglePenalty = facingDot < 0.7 ? (0.7 - facingDot) * 0.75 : 0;
-            const spread = ((1 - q) * 0.42) + anglePenalty;
+            const spread = (1 - q) * 0.38;
             const ang = this.rng.range(0, Math.PI * 2);
-            const errDist = spread * this.rng.range(0.2, 1.0);
-            const errX = Math.cos(ang) * errDist;
-            const errZ = Math.sin(ang) * errDist * 0.6;
+            const errDist = spread * this.rng.range(0.15, 0.85);
+            const finalAimX = aimX + Math.cos(ang) * errDist;
+            const finalAimZ = aimZ + Math.sin(ang) * errDist * 0.6;
+
+            const errX = finalAimX - 0;
+            const errZ = finalAimZ - hoop.z;
             this.launchShot(a, errX, errZ, false);
         }
         humanPass(a) {
@@ -3780,7 +3785,8 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             return super.agentBounds(a);
         }
         keeperBaseSpeed(a) {
-            return this.ai.keeperSpeed * (a.diveT > 0 ? 1.7 : 1);
+            const kMult = (a.team === 0 && this.boosts && this.boosts.keeper) ? this.boosts.keeper : 1.0;
+            return this.ai.keeperSpeed * (a.diveT > 0 ? 1.7 : 1) * kMult;
         }
         kickBall(a, dx, dz, speed, vy, kind) {
             const b = this.ball;
@@ -13130,8 +13136,10 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                         this.timeEl,
                         (0, dom_js_1.h)('div', { class: 'sb-team cpu' }, this.cpuEl, this.cpuLbl)
                     ),
-                    this.muteBtn,
-                    this.pauseBtn
+                    (0, dom_js_1.h)('div', { class: 'hud-top-ctrls' },
+                        this.pauseBtn,
+                        this.muteBtn
+                    )
                 ),
                 this.replayOverlay,
                 this.boostWidget,
@@ -14633,7 +14641,14 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.stop();
             const save = this.getSave();
             const online = (_a = cfg.online) !== null && _a !== void 0 ? _a : null;
-            const boosts = types_js_3.NO_BOOSTS;
+            const uPower = (save && save.upgrades && save.upgrades.power) || (window.App && window.App.store && window.App.store.data && window.App.store.data.upgrades && window.App.store.data.upgrades.power) || 1;
+            const uStamina = (save && save.upgrades && save.upgrades.stamina) || (window.App && window.App.store && window.App.store.data && window.App.store.data.upgrades && window.App.store.data.upgrades.stamina) || 1;
+            const uKeeper = (save && save.upgrades && save.upgrades.keeper) || (window.App && window.App.store && window.App.store.data && window.App.store.data.upgrades && window.App.store.data.upgrades.keeper) || 1;
+            const boosts = Object.assign({}, types_js_3.NO_BOOSTS, {
+                shotPower: 1 + (uPower - 1) * 0.035,
+                staminaRegen: 1 + (uStamina - 1) * 0.04,
+                keeper: 1 + (uKeeper - 1) * 0.035
+            });
             const opts = {
                 difficulty: cfg.difficulty,
                 matchSeconds: Math.round(cfg.minutes * 60),

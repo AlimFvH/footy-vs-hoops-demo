@@ -227,6 +227,12 @@ const ITEM_CATALOG = {
   'trail_rainbow': { name: 'Rainbow Trail', category: 'trails', slot: 'trail', price: 400 },
   'trail_laser': { name: 'Laser Trail', category: 'trails', slot: 'trail', price: 650 },
 
+  // === PACK-EXCLUSIVE REWARDS (Only obtained from Opening Mystery Packs) ===
+  'skin_footy_mythic_titan': { name: 'Mythic Titan', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
+  'skin_hoops_hyper_beast': { name: 'Hyper Beast', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true },
+  'ball_footy_supernova': { name: 'Supernova Burst', category: 'balls', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
+  'ball_hoops_vortex': { name: 'Quantum Vortex', category: 'balls', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true },
+
   // Mystery Packs
   'pack_footy': { name: 'Footy Striker Pack', category: 'packs', price: 250, type: 'pack', packId: 'footy' },
   'pack_hoops': { name: 'Hoops All-Star Pack', category: 'packs', price: 250, type: 'pack', packId: 'hoops' },
@@ -353,6 +359,28 @@ function currentLevelForXp(totalXp) {
   return Math.min(30, 1 + Math.floor((totalXp || 0) / 250));
 }
 
+// Authoritative Skill Upgrades Configuration (Exponential scaling requiring dedication)
+const UPGRADE_CONFIG = {
+  power: {
+    name: 'Power',
+    maxLevel: 10,
+    costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
+    reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27]
+  },
+  stamina: {
+    name: 'Stamina',
+    maxLevel: 10,
+    costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
+    reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27]
+  },
+  keeper: {
+    name: 'Goalkeeper',
+    maxLevel: 10,
+    costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
+    reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27]
+  }
+};
+
 function createDefaultPlayer(playerId) {
   return {
     playerId: playerId,
@@ -387,6 +415,7 @@ function createDefaultPlayer(playerId) {
     },
     boostCharges: {},
     armedBoost: null,
+    upgrades: { power: 1, stamina: 1, keeper: 1 },
     packs: { free: {}, paid: {} },
     battlePass: {
       claimedFree: [],
@@ -3940,6 +3969,12 @@ const server = http.createServer((req, res) => {
           player.photoUrl = (data.telegramUser.photo_url || data.telegramUser.photoUrl).trim().slice(0, 500);
         }
       }
+      if (!player.upgrades) player.upgrades = { power: 1, stamina: 1, keeper: 1 };
+      if (data.upgrades && typeof data.upgrades === 'object') {
+        player.upgrades.power = Math.max(player.upgrades.power || 1, Number(data.upgrades.power) || 1);
+        player.upgrades.stamina = Math.max(player.upgrades.stamina || 1, Number(data.upgrades.stamina) || 1);
+        player.upgrades.keeper = Math.max(player.upgrades.keeper || 1, Number(data.upgrades.keeper) || 1);
+      }
       player.updatedAt = Date.now();
       persistState();
 
@@ -3951,6 +3986,7 @@ const server = http.createServer((req, res) => {
         teamChosen: Boolean(player.teamChosen),
         coins: player.coins,
         xp: player.xp,
+        upgrades: player.upgrades,
         owned: player.owned,
         equipped: player.equipped,
         unseenItems: player.unseenItems || [],
@@ -4060,6 +4096,10 @@ const server = http.createServer((req, res) => {
       const catItem = ITEM_CATALOG[canonicalId] || ITEM_CATALOG[itemId];
       if (!catItem) {
         return sendJson(res, 404, { ok: false, error: 'item_not_found', message: 'Item does not exist in store catalog' });
+      }
+
+      if (catItem.packExclusive) {
+        return sendJson(res, 400, { ok: false, error: 'pack_exclusive', message: 'This item is exclusive to mystery packs and cannot be purchased directly' });
       }
 
       if (catItem.category !== 'packs' && catItem.category !== 'boosts') {
@@ -4509,6 +4549,151 @@ const server = http.createServer((req, res) => {
       persistState();
 
       return sendJson(res, 200, { ok: true, success: true, unseenItems: player.unseenItems });
+    });
+  }
+
+  // 11. Authoritative Skill Upgrades Endpoint (Power, Stamina, Goalkeeper)
+  if (pathname === '/api/economy/upgrade' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+      const playerId = String(data.playerId || '').trim();
+      const skill = String(data.skill || '').trim(); // 'power' | 'stamina' | 'keeper'
+      if (!playerId || !skill || !UPGRADE_CONFIG[skill]) {
+        return sendJson(res, 400, { ok: false, error: 'invalid_skill' });
+      }
+      const player = getPlayer(playerId);
+      if (!player) return sendJson(res, 404, { ok: false, error: 'player_not_found' });
+      if (!player.upgrades) player.upgrades = { power: 1, stamina: 1, keeper: 1 };
+      const curLvl = player.upgrades[skill] || 1;
+      const cfg = UPGRADE_CONFIG[skill];
+      if (curLvl >= cfg.maxLevel) {
+        return sendJson(res, 400, { ok: false, error: 'already_max_level' });
+      }
+      const nextLvl = curLvl + 1;
+      const cost = cfg.costs[curLvl];
+      const reqLvl = cfg.reqLevels[curLvl];
+      const playerLvl = currentLevelForXp(player.xp || 0);
+
+      if (playerLvl < reqLvl) {
+        return sendJson(res, 403, {
+          ok: false,
+          error: 'level_too_low',
+          message: `Requires Player Level ${reqLvl} to upgrade to level ${nextLvl}. (Current level: ${playerLvl})`
+        });
+      }
+      if ((player.coins || 0) < cost) {
+        return sendJson(res, 400, { ok: false, error: 'not_enough_coins', cost, coins: player.coins });
+      }
+
+      player.coins -= cost;
+      player.upgrades[skill] = nextLvl;
+      player.updatedAt = Date.now();
+      addLedgerEntry(playerId, 'UPGRADE', -cost, 0, player.coins, `Upgraded ${cfg.name} to Level ${nextLvl}`, skill);
+      persistState();
+
+      return sendJson(res, 200, {
+        ok: true,
+        skill,
+        level: nextLvl,
+        coins: player.coins,
+        upgrades: player.upgrades
+      });
+    });
+  }
+
+  // 12. Mystery Pack Opener with Guaranteed Drop, Rarity Weighting, and Pack-Exclusive Items
+  if (pathname === '/api/packs/open' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+      const playerId = String(data.playerId || '').trim();
+      const packId = String(data.packId || 'footy').trim();
+
+      if (!playerId) return sendJson(res, 400, { ok: false, error: 'missing_player_id' });
+      const player = getPlayer(playerId);
+      if (!player) return sendJson(res, 404, { ok: false, error: 'player_not_found' });
+
+      if (!player.packs) player.packs = { free: {}, paid: {} };
+      const freeCount = (player.packs.free && player.packs.free[packId]) || 0;
+      const paidCount = (player.packs.paid && player.packs.paid[packId]) || 0;
+      const totalCount = freeCount + paidCount;
+
+      if (totalCount <= 0) {
+        const packCost = packId === 'clash' ? 500 : 250;
+        if ((player.coins || 0) < packCost) {
+          return sendJson(res, 400, { ok: false, error: 'no_packs_available', cost: packCost, coins: player.coins });
+        }
+        player.coins -= packCost;
+        addLedgerEntry(playerId, 'PACK_PURCHASE', -packCost, 0, player.coins, `Purchased Pack ${packId}`);
+      } else {
+        if (paidCount > 0) {
+          player.packs.paid[packId] = paidCount - 1;
+        } else {
+          player.packs.free[packId] = freeCount - 1;
+        }
+      }
+
+      const isFootyPack = packId === 'footy';
+      const isHoopsPack = packId === 'hoops';
+      const exclusiveItem = isFootyPack ? 'skin_footy_mythic_titan' : (isHoopsPack ? 'skin_hoops_hyper_beast' : (Math.random() < 0.5 ? 'ball_footy_supernova' : 'ball_hoops_vortex'));
+
+      const roll = Math.random();
+      let chosenItemId = null;
+      let isExclusive = false;
+
+      if (roll < 0.05) {
+        chosenItemId = exclusiveItem;
+        isExclusive = true;
+      } else {
+        const candidates = Object.keys(ITEM_CATALOG).filter(id => {
+          const it = ITEM_CATALOG[id];
+          if (it.isDefault) return false;
+          if (it.packExclusive && id !== exclusiveItem) return false;
+          if (isFootyPack && it.mode === 'hoops') return false;
+          if (isHoopsPack && it.mode === 'footy') return false;
+          return it.category === 'skins' || it.category === 'balls';
+        });
+
+        const unowned = candidates.filter(id => !player.owned.includes(id));
+        const pool = unowned.length > 0 ? unowned : candidates;
+        chosenItemId = pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      const itemObj = ITEM_CATALOG[chosenItemId] || { name: chosenItemId, rarity: 'rare', category: 'skins' };
+      const alreadyOwned = player.owned.includes(chosenItemId);
+
+      let coinReward = Math.floor(Math.random() * 150) + 100;
+      if (alreadyOwned) {
+        coinReward += 350;
+      } else {
+        player.owned.push(chosenItemId);
+        if (!player.unseenItems) player.unseenItems = [];
+        if (!player.unseenItems.includes(chosenItemId)) player.unseenItems.push(chosenItemId);
+      }
+
+      player.coins += coinReward;
+      addLedgerEntry(playerId, 'PACK_OPEN', coinReward, 50, player.coins, `Opened ${packId} pack`, chosenItemId);
+      player.updatedAt = Date.now();
+      persistState();
+
+      return sendJson(res, 200, {
+        ok: true,
+        success: true,
+        packId,
+        item: {
+          id: chosenItemId,
+          name: itemObj.name,
+          category: itemObj.category,
+          rarity: itemObj.rarity,
+          packExclusive: Boolean(itemObj.packExclusive || isExclusive)
+        },
+        bonusCoins: coinReward,
+        alreadyOwned,
+        isExclusive: Boolean(itemObj.packExclusive || isExclusive),
+        coins: player.coins,
+        packs: player.packs,
+        owned: player.owned,
+        unseenItems: player.unseenItems
+      });
     });
   }
 

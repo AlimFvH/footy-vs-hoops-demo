@@ -160,6 +160,102 @@
     return [(h >> 16) & 255, (h >> 8) & 255, h & 255];
   }
 
+  function drawGlbJerseyPattern(ctx, W, H, isFooty, skinId, skin) {
+    if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_solar') return;
+    try {
+      ctx.save();
+      const pCol = skin && skin.primary ? skin.primary : (isFooty ? '#00f0ff' : '#f97316');
+      const sCol = skin && skin.secondary ? skin.secondary : '#ffffff';
+      const accCol = skin && skin.accent ? skin.accent : '#facc15';
+
+      const frontCX = W * 0.25;
+      const backCX = W * 0.75;
+      const topY = H * 0.09;
+      const hH = H * 0.34;
+
+      [frontCX, backCX].forEach((cx, idx) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(cx - W * 0.13, topY, W * 0.26, hH);
+        ctx.clip();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 0.85;
+
+        if (skinId.includes('crimson')) {
+          ctx.fillStyle = '#fef08a';
+          const sw = W * 0.022;
+          ctx.fillRect(cx - sw * 2.2, topY, sw, hH);
+          ctx.fillRect(cx - sw * 0.5, topY, sw, hH);
+          ctx.fillRect(cx + sw * 1.2, topY, sw, hH);
+        } else if (skinId.includes('royal') || skinId.includes('frost')) {
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = W * 0.045;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.11, topY);
+          ctx.lineTo(cx + W * 0.11, topY + hH);
+          ctx.stroke();
+        } else if (skinId.includes('cyber') || skinId.includes('neon')) {
+          ctx.strokeStyle = '#00f0ff';
+          ctx.lineWidth = W * 0.02;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.09, topY + hH * 0.2);
+          ctx.lineTo(cx, topY + hH * 0.42);
+          ctx.lineTo(cx + W * 0.09, topY + hH * 0.2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.09, topY + hH * 0.48);
+          ctx.lineTo(cx, topY + hH * 0.70);
+          ctx.lineTo(cx + W * 0.09, topY + hH * 0.48);
+          ctx.stroke();
+        } else if (skinId.includes('gold') || skinId.includes('championship')) {
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = W * 0.035;
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.4, W * 0.065, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.4, W * 0.02, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (skinId.includes('titan')) {
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.38, W * 0.045, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = '#00f0ff';
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.38, W * 0.022, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (skinId.includes('street')) {
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(cx - W * 0.12, topY, W * 0.028, hH);
+          ctx.fillRect(cx + W * 0.092, topY, W * 0.028, hH);
+        } else if (skinId.includes('beast')) {
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.08, topY + hH * 0.25); ctx.lineTo(cx + W * 0.08, topY + hH * 0.45);
+          ctx.moveTo(cx - W * 0.06, topY + hH * 0.42); ctx.lineTo(cx + W * 0.10, topY + hH * 0.62);
+          ctx.stroke();
+        } else if (skinId.includes('splash')) {
+          ctx.fillStyle = '#db2777';
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.12, topY);
+          ctx.lineTo(cx, topY);
+          ctx.lineTo(cx - W * 0.05, topY + hH);
+          ctx.lineTo(cx - W * 0.12, topY + hH);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+      ctx.restore();
+    } catch (e) {
+      console.warn('drawGlbJerseyPattern error', e);
+    }
+  }
+
   function getOrCreateSkinTexture(gl, model, skin, isFooty) {
     if (!gl || !model || !skin || !skin.id) return null;
     const defSkin = isFooty ? 'skin_rookie' : 'skin_solar';
@@ -300,6 +396,9 @@
       }
 
       ctx.putImageData(imgData, 0, 0);
+
+      // Draw custom jersey vector patterns on front and back torso UVs
+      drawGlbJerseyPattern(ctx, W, H, isFooty, skin.id, skin);
 
       const skinTex = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, skinTex);
