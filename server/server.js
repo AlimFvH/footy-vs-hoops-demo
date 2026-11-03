@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const url = require('url');
+const zlib = require('zlib');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8099;
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
@@ -4521,8 +4522,18 @@ const server = http.createServer((req, res) => {
       headers['Cache-Control'] = 'public, max-age=86400';
     }
 
-    res.writeHead(200, headers);
-    fs.createReadStream(fullPath).pipe(res);
+    // High-Concurrency Gzip Compression for text and script assets
+    const acceptEncoding = req.headers['accept-encoding'] || '';
+    const compressible = ['.html', '.css', '.js', '.json', '.svg'].includes(ext);
+
+    if (compressible && acceptEncoding.includes('gzip')) {
+      headers['Content-Encoding'] = 'gzip';
+      res.writeHead(200, headers);
+      fs.createReadStream(fullPath).pipe(zlib.createGzip()).pipe(res);
+    } else {
+      res.writeHead(200, headers);
+      fs.createReadStream(fullPath).pipe(res);
+    }
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('404 Not Found');

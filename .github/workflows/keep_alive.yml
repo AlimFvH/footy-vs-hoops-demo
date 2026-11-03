@@ -1,0 +1,18 @@
+name: 24/7 Keep-Alive & High-Availability Ping
+
+# Pings Render free instance every 10 minutes to prevent sleep (0$ cold-start elimination)
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping FOOTY vs HOOPS Health Check
+        run: |
+          echo "Pinging https://footy-vs-hoops.onrender.com/api/health..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 25 https://footy-vs-hoops.onrender.com/api/health || echo "timeout")
+          echo "Response HTTP status: $STATUS"
