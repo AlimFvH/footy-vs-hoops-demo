@@ -168,7 +168,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             if (!c || c.state !== 'running')
                 return;
             const now = c.currentTime;
-            const gap = { bounce: 0.06, dribble: 0.12, dribble_court: 0.12, dunk: 0.1, kick: 0.04, tackle: 0.08, rim: 0.05, post: 0.05, tick: 0.05, click: 0.03 };
+            const gap = { bounce: 0.06, dribble: 0.12, dribble_court: 0.12, dunk: 0.1, kick: 0.04, tackle: 0.08, rim: 0.05, post: 0.05, step: 0.12, tick: 0.05, click: 0.03 };
             const g = gap[name];
             if (g !== undefined) {
                 if (now - ((_a = this.lastPlay[name]) !== null && _a !== void 0 ? _a : -9) < g)
@@ -177,16 +177,21 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             }
             switch (name) {
                 case 'kick':
-                    this.tone(140 * pitch, 0.14, 'sine', 0.8 * v, 0, 55);
-                    this.noise(0.07, 0.4 * v, 1800, 400, 'bandpass');
+                    // Punchy sub-bass transient + leather boot strike + surface air whoosh
+                    this.tone(135 * pitch, 0.16, 'sine', 0.95 * v, 0, 48);
+                    this.tone(260 * pitch, 0.07, 'triangle', 0.65 * v, 0, 80);
+                    this.noise(0.08, 0.55 * v, 2600, 600, 'bandpass');
+                    this.noise(0.02, 0.45 * v, 4400, 1800, 'highpass');
                     break;
                 case 'pass':
-                    this.tone(180 * pitch, 0.1, 'sine', 0.5 * v, 0, 90);
-                    this.noise(0.05, 0.25 * v, 1500, 500, 'bandpass');
+                    this.tone(175 * pitch, 0.11, 'sine', 0.6 * v, 0, 85);
+                    this.noise(0.06, 0.35 * v, 1800, 600, 'bandpass');
                     break;
                 case 'shot':
-                    this.noise(0.18, 0.28 * v, 600, 2500, 'bandpass');
-                    this.tone(220 * pitch, 0.12, 'triangle', 0.2 * v, 0, 440);
+                    // Rocket shot: heavy sub-bass drive + explosive air shockwave + high snap
+                    this.tone(155 * pitch, 0.22, 'sine', 1.0 * v, 0, 42);
+                    this.tone(310 * pitch, 0.12, 'triangle', 0.55 * v, 0, 640);
+                    this.noise(0.22, 0.5 * v, 900, 3200, 'bandpass');
                     break;
                 case 'bounce':
                     this.tone(95 * pitch, 0.13, 'sine', 0.7 * v, 0, 50);
@@ -199,22 +204,37 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.tone(85 * pitch, 0.09, 'sine', 0.55 * v, 0, 42);
                     this.noise(0.04, 0.22 * v, 800, 250, 'lowpass');
                     break;
+                case 'step':
+                    // Dynamic footstep: turf grass cleat scuff / court floor grip
+                    if (pitch < 1.05) {
+                        this.noise(0.04, 0.28 * v, 1400, 400, 'bandpass');
+                    } else {
+                        this.tone(1350 * pitch, 0.035, 'sine', 0.16 * v, 0, 920);
+                        this.noise(0.04, 0.24 * v, 2400, 1100, 'bandpass');
+                    }
+                    break;
                 case 'dunk':
-                    this.tone(140 * pitch, 0.22, 'sine', 0.95 * v, 0, 45);
-                    this.tone(680, 0.5, 'triangle', 0.45 * v, 0, 620);
-                    this.tone(1240, 0.35, 'sine', 0.3 * v);
-                    this.noise(0.22, 0.6 * v, 2800, 700, 'bandpass');
-                    this.crowdRoar(1.4, 0.85 * v);
+                    // Massive monster slam: heavy 38Hz sub-bass shockwave + steel rim rattle + backboard glass flex + crowd gasp
+                    this.tone(125 * pitch, 0.35, 'sine', 1.0 * v, 0, 36);
+                    this.tone(480, 0.65, 'triangle', 0.7 * v, 0, 420);
+                    this.tone(1140, 0.5, 'sine', 0.45 * v);
+                    this.noise(0.28, 0.75 * v, 3200, 500, 'bandpass');
+                    this.crowdRoar(1.8, 1.0 * v);
                     break;
                 case 'post':
-                    this.tone(980, 0.5, 'sine', 0.35 * v);
-                    this.tone(1480, 0.35, 'sine', 0.2 * v);
-                    this.noise(0.05, 0.3 * v, 3000, 1500, 'highpass');
+                    // Realistic tubular steel crossbar / post CLANG: fundamental bell resonance + inharmonic upper rings + metal strike
+                    this.tone(1180, 0.75, 'sine', 0.65 * v);
+                    this.tone(1740, 0.65, 'sine', 0.48 * v);
+                    this.tone(2820, 0.45, 'sine', 0.32 * v);
+                    this.tone(165, 0.35, 'triangle', 0.6 * v, 0, 75);
+                    this.noise(0.06, 0.6 * v, 4800, 2200, 'highpass');
                     break;
                 case 'rim':
-                    this.tone(640, 0.55, 'triangle', 0.3 * v, 0, 600);
-                    this.tone(1130, 0.4, 'sine', 0.22 * v);
-                    this.tone(1710, 0.25, 'sine', 0.12 * v);
+                    // Basketball steel rim rattle & ring: harmonic overtone + steel spring ping
+                    this.tone(580, 0.6, 'triangle', 0.5 * v, 0, 560);
+                    this.tone(1220, 0.45, 'sine', 0.38 * v);
+                    this.tone(1880, 0.3, 'sine', 0.22 * v);
+                    this.noise(0.12, 0.38 * v, 2200, 900, 'bandpass');
                     break;
                 case 'board':
                     this.tone(160, 0.2, 'triangle', 0.5 * v, 0, 110);
@@ -247,20 +267,25 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     break;
                 }
                 case 'tackle':
-                    this.noise(0.14, 0.5 * v, 700, 200, 'bandpass');
-                    this.tone(110, 0.12, 'sawtooth', 0.15 * v, 0, 60);
+                    // Solid sliding body-check: deep impact thump + turf slide friction crunch + cleat tear
+                    this.tone(95, 0.16, 'triangle', 0.5 * v, 0, 45);
+                    this.noise(0.2, 0.65 * v, 950, 180, 'bandpass');
+                    this.noise(0.08, 0.45 * v, 2400, 600, 'bandpass');
                     break;
                 case 'steal':
-                    this.noise(0.12, 0.4 * v, 1800, 500, 'bandpass');
-                    this.tone(440, 0.1, 'triangle', 0.25 * v, 0, 880);
-                    this.tone(880, 0.12, 'triangle', 0.2 * v, 0.07);
+                    // Precision ball strip / intercept: rapid snap + slap + harmonic pip
+                    this.tone(520, 0.1, 'triangle', 0.4 * v, 0, 980);
+                    this.tone(1040, 0.14, 'sine', 0.35 * v, 0.05);
+                    this.noise(0.1, 0.5 * v, 2400, 700, 'bandpass');
                     break;
                 case 'miss':
                     this.noise(0.2, 0.2 * v, 500, 150, 'lowpass');
                     break;
                 case 'save':
-                    this.noise(0.1, 0.35 * v, 1200, 400, 'bandpass');
-                    this.tone(330, 0.12, 'triangle', 0.2 * v);
+                    // Goalkeeper latex glove block / chest smother: latex grip slap + body impact thump
+                    this.noise(0.12, 0.55 * v, 1600, 350, 'bandpass');
+                    this.tone(160, 0.18, 'sine', 0.55 * v, 0, 70);
+                    this.noise(0.18, 0.35 * v, 800, 200, 'lowpass');
                     break;
                 case 'noStamina':
                     this.tone(130, 0.18, 'sawtooth', 0.22 * v, 0, 100);
@@ -362,57 +387,102 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 return;
             this.nextNote = c.currentTime + 0.1;
             this.step = 0;
+            // Modern stadium sports progression: Am -> F -> C -> G
             const chords = [
-                [220, 261.6, 329.6],
-                [174.6, 220, 261.6],
-                [196, 246.9, 293.7],
-                [164.8, 207.7, 246.9],
+                [220, 261.6, 329.6, 440], // Am
+                [174.6, 220, 261.6, 349.2], // F
+                [130.8, 164.8, 196, 261.6], // C
+                [196, 246.9, 293.7, 392], // G
             ];
-            const tempo = 0.2;
+            // Bass roots with punchy pitch slides
+            const bassNotes = [55, 43.65, 65.4, 49];
+            const tempo = 0.175; // ~171 BPM driving stadium groove
             this.musicTimer = window.setInterval(() => {
                 const cx = this.ctx;
                 if (!cx || !this.musicGain || cx.state !== 'running')
                     return;
                 while (this.nextNote < cx.currentTime + 0.4) {
-                    const bar = Math.floor(this.step / 8) % chords.length;
+                    const bar = Math.floor(this.step / 16) % chords.length;
                     const ch = chords[bar];
-                    const i = this.step % 8;
+                    const i = this.step % 16;
                     const t0 = this.nextNote;
-                    const note = (f, d, vol, type) => {
+
+                    const note = (f, d, vol, type, slide) => {
                         const o = cx.createOscillator();
                         const g = cx.createGain();
                         o.type = type;
-                        o.frequency.value = f;
+                        o.frequency.setValueAtTime(f, t0);
+                        if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, slide), t0 + d);
                         g.gain.setValueAtTime(0.0001, t0);
-                        g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+                        g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
                         g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
                         o.connect(g);
                         g.connect(this.musicGain);
                         o.start(t0);
-                        o.stop(t0 + d + 0.05);
+                        o.stop(t0 + d + 0.04);
                     };
-                    if (i % 4 === 0)
-                        note(ch[0] / 2, tempo * 3.6, 0.5, 'triangle');
-                    note(ch[[0, 1, 2, 1, 2, 1, 0, 1][i]] * 2, tempo * 1.4, 0.16, 'sine');
-                    if (i === 2 || i === 6) {
+
+                    // 1. Punchy 808-Style Sub Bass
+                    if (i === 0 || i === 6 || i === 10) {
+                        const root = bassNotes[bar];
+                        const slideTarget = i === 10 ? root * 1.5 : root * 0.95;
+                        note(root * 1.25, tempo * (i === 0 ? 3.5 : 2.0), 0.58, 'sine', slideTarget);
+                    }
+
+                    // 2. Syncopated Stadium Beats (Kick & Snare)
+                    if (i === 0 || i === 8 || i === 14) {
+                        // Kick drum thump
+                        note(115, 0.08, 0.42, 'triangle', 45);
+                    }
+                    if (i === 4 || i === 12) {
+                        // Snare snap
+                        note(210, 0.09, 0.22, 'triangle', 110);
+                        if (this.noiseBuf) {
+                            const s = cx.createBufferSource();
+                            s.buffer = this.noiseBuf;
+                            const f = cx.createBiquadFilter();
+                            f.type = 'bandpass';
+                            f.frequency.value = 3200;
+                            f.Q.value = 1.2;
+                            const g = cx.createGain();
+                            g.gain.setValueAtTime(0.18, t0);
+                            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+                            s.connect(f);
+                            f.connect(g);
+                            g.connect(this.musicGain);
+                            s.start(t0);
+                            s.stop(t0 + 0.15);
+                        }
+                    }
+
+                    // 3. Rolling Hi-Hats with Velocity Variation
+                    if (this.noiseBuf && (i % 2 === 0 || i === 7 || i === 15)) {
                         const s = cx.createBufferSource();
                         s.buffer = this.noiseBuf;
                         const f = cx.createBiquadFilter();
                         f.type = 'highpass';
-                        f.frequency.value = 6000;
+                        f.frequency.value = (i % 4 === 2) ? 5500 : 7500;
                         const g = cx.createGain();
-                        g.gain.setValueAtTime(0.06, t0);
-                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+                        const hVol = (i % 4 === 2) ? 0.07 : 0.035;
+                        g.gain.setValueAtTime(hVol, t0);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.045);
                         s.connect(f);
                         f.connect(g);
                         g.connect(this.musicGain);
                         s.start(t0);
-                        s.stop(t0 + 0.08);
+                        s.stop(t0 + 0.06);
                     }
+
+                    // 4. Melodic Synth Hook Arpeggio
+                    const melPatt = [0, 2, 1, 3, 2, 0, 1, 2, 3, 1, 2, 0, 2, 3, 1, 0];
+                    const noteIdx = melPatt[i];
+                    const arpFreq = ch[noteIdx % ch.length] * 1.5;
+                    note(arpFreq, tempo * 0.85, 0.13, 'sine');
+
                     this.nextNote += tempo;
                     this.step++;
                 }
-            }, 120);
+            }, 100);
         }
     }
     exports.AudioEngine = AudioEngine;
@@ -2248,7 +2318,15 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             if (a.z > lim.maxZ)
                 (a.z = lim.maxZ), (a.vz = Math.min(0, a.vz));
             const sp = Math.hypot(a.vx, a.vz);
+            const prevPhase = a.runPhase;
             a.runPhase += sp * h * 1.15;
+            if (sp > 2.4 && (a.human || sp > 5.2)) {
+                const p1 = Math.floor(prevPhase / Math.PI);
+                const p2 = Math.floor(a.runPhase / Math.PI);
+                if (p2 > p1) {
+                    this.emit({ type: 'step', id: a.id, speed: sp });
+                }
+            }
         }
         keeperBaseSpeed(a) {
             return a.team === 1 ? this.ai.keeperSpeed : Math.max(7.5, this.ai.keeperSpeed);
@@ -2471,6 +2549,11 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             const t = a.tackle;
             const tp = this.P.tackle;
             const ball = this.ball;
+            if (a.role === 'keeper') {
+                const s = a.team === 0 ? 1 : -1;
+                const inBox = Math.abs(a.x) <= 8.5 && (28 - Math.abs(a.z)) <= 8 && (a.z * s > 0);
+                if (!inBox) return; // Goalkeeper cannot tackle outside the goalkeeper's box!
+            }
             for (const o of this.agents) {
                 if (o.team === a.team || t.rolled.has(o.id))
                     continue;
@@ -3064,7 +3147,10 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const height = 0.95 + (speed > 3 ? 0.15 : 0);
             const hy = Math.abs(Math.sin(b.dribblePhase));
             b.y = b.r + height * hy;
-            const side = 0.42;
+            if (o.dribbleSide === undefined) o.dribbleSide = 1;
+            if (o.mx < -0.18) o.dribbleSide = -1;
+            else if (o.mx > 0.18) o.dribbleSide = 1;
+            const side = 0.42 * (o.dribbleSide || 1);
             const rx = o.fz;
             const rz = -o.fx;
             const fwd = o.radius + b.r + 0.12 + 0.22 * (speed > 1 ? Math.sin(b.dribblePhase) * 0.5 + 0.5 : 0);
@@ -3842,10 +3928,41 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             this.deflectOffAgents();
             if (!b.owner)
                 this.tryPickup();
+            else
+                this.checkKeeperBoxInterception();
             this.checkGoal();
             this.prevBallX = b.x;
             this.prevBallY = b.y;
             this.prevBallZ = b.z;
+        }
+        checkKeeperBoxInterception() {
+            const b = this.ball;
+            const owner = b.owner;
+            if (!owner)
+                return;
+            for (const k of this.agents) {
+                if (k.role !== 'keeper' || k.team === owner.team || k.pickupLock > 0 || k.stun > 0.3)
+                    continue;
+                const s = k.team === 0 ? 1 : -1;
+                // Goalkeeper box bounds check: strictly within keeper's penalty area
+                const inBoxK = Math.abs(k.x) <= exports.FB.BOX_W && (exports.FB.L - Math.abs(k.z)) <= exports.FB.BOX_D && (k.z * s > 0);
+                const inBoxO = Math.abs(owner.x) <= exports.FB.BOX_W && (exports.FB.L - Math.abs(owner.z)) <= exports.FB.BOX_D && (owner.z * s > 0);
+                // Goalkeeper can tackle/strip ONLY within the penalty box!
+                if (!inBoxK || !inBoxO)
+                    continue;
+                const d = Math.hypot(k.x - owner.x, k.z - owner.z);
+                const reach = k.radius + owner.radius + (k.diveT > 0 ? 1.25 : 0.85);
+                if (d <= reach) {
+                    k.diveT = 0.45;
+                    this.setOwner(k);
+                    k.holdTimer = 0;
+                    owner.stun = Math.max(owner.stun, 0.45);
+                    owner.pickupLock = 0.75;
+                    this.stats.tackles[k.team]++;
+                    this.emit({ type: 'save', id: k.id, team: k.team, x: b.x, y: b.y, z: b.z });
+                    this.emit({ type: 'tackleHit', id: k.id, victim: owner.id, stolen: true, power: 1, x: owner.x, z: owner.z });
+                }
+            }
         }
         followOwner(h, o) {
             const b = this.ball;
@@ -4332,6 +4449,20 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 k.aiTargetZ = lineZ - s * 1.2;
                 return;
             }
+            const inBox = Math.abs(b.x) <= (exports.FB.BOX_W - 0.5) && (exports.FB.L - Math.abs(b.z)) <= (exports.FB.BOX_D + 0.5) && (b.z * s > 0);
+            // Goalkeeper Smother / Aggressive Box Tackle Logic:
+            // When an opponent enters the penalty box with the ball, keeper charges and executes a dive tackle!
+            if (b.owner && b.owner.team !== k.team && inBox) {
+                k.sprint = true;
+                const dToCarrier = Math.hypot(b.owner.x - k.x, b.owner.z - k.z);
+                if (dToCarrier < 2.5 && k.diveT <= 0 && k.aiTimer <= 0) {
+                    k.diveT = 0.45;
+                    k.aiTimer = 0.75;
+                }
+                k.aiTargetX = (0, math_js_5.clamp)(b.owner.x, -exports.FB.BOX_W + 1.2, exports.FB.BOX_W - 1.2);
+                k.aiTargetZ = (0, math_js_5.clamp)(b.owner.z, s > 0 ? exports.FB.L - 7.5 : -(exports.FB.L - 0.7), s > 0 ? exports.FB.L - 0.7 : -(exports.FB.L - 7.5));
+                return;
+            }
             const toward = b.vz * s;
             let tx;
             if (toward > 2.5) {
@@ -4349,8 +4480,8 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 tx = (0, math_js_5.clamp)(b.x * 0.4, -exports.FB.GW + 0.5, exports.FB.GW - 0.5);
             }
             let tz = lineZ;
-            const inBox = Math.abs(b.x) < exports.FB.BOX_W - 1 && exports.FB.L - Math.abs(b.z) < exports.FB.BOX_D - 0.5 && b.z * s > 0;
-            if (!b.owner && inBox && Math.hypot(b.vx, b.vz) < 8) {
+            const looseBox = Math.abs(b.x) < exports.FB.BOX_W - 1 && exports.FB.L - Math.abs(b.z) < exports.FB.BOX_D - 0.5 && b.z * s > 0;
+            if (!b.owner && looseBox && Math.hypot(b.vx, b.vz) < 8) {
                 tx = b.x;
                 tz = b.z;
             }
@@ -8277,25 +8408,42 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const yawRate = dt > 0 ? yawStep / dt : 0;
             this.root.rotation[1] = this.yaw;
             let lift = 0;
-            let lean = Math.min(0.48, speed * (foot ? 0.072 : 0.052));
+            const isSprinting = Boolean(a.sprint && speed > 2.2);
+            let lean = Math.min(0.56, speed * (foot ? 0.076 : 0.056) + (isSprinting ? 0.14 * amp : 0));
             let roll = 0;
             let kick = 0;
             let armUp = 0;
             let torsoTwist = 0;
             let crouch = 0;
             let kickP = -1;
+            if (foot && carrying) {
+                lean += 0.08;
+                crouch += 0.05;
+            }
             if (a.kickT > 0) {
                 kickP = Math.min(1, Math.max(0, 1 - a.kickT / 0.28));
                 kick = Math.sin(kickP * Math.PI);
             }
             if (a.shootCharging) {
                 armUp = 0.75 + a.shootCharge * 0.55;
-                lean = -0.08;
-                crouch = 0.14 * a.shootCharge;
+                if (foot) {
+                    lean = 0.16 * a.shootCharge;
+                    crouch = 0.18 * a.shootCharge;
+                    torsoTwist = -0.32 * a.shootCharge;
+                } else {
+                    lean = -0.06;
+                    crouch = 0.22 * a.shootCharge;
+                }
             }
-            if (a.shotT > 0 || a.jumpT > 0) {
+            if (this.mode === 'hoops' && a.dunk && a.dunk.active) {
+                const dk = a.dunk;
+                const norm = Math.min(1, Math.max(0, dk.t / Math.max(0.01, dk.apexT)));
+                lift = Math.sin(norm * Math.PI * 0.72) * 1.55;
+                lean = 0.22 + norm * 0.18;
+                armUp = 2.85;
+            } else if (a.shotT > 0 || a.jumpT > 0) {
                 const jt = a.jumpT > 0 ? 1 - a.jumpT / 0.55 : 0;
-                lift = Math.sin(Math.min(1, jt) * Math.PI) * (this.mode === 'hoops' ? 0.95 : 0);
+                lift = Math.sin(Math.min(1, jt) * Math.PI) * (this.mode === 'hoops' ? 0.98 : 0);
                 armUp = Math.max(armUp, 2.85);
             }
             if (a.celebrateT > 0) {
@@ -8326,9 +8474,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 lean = 0.5 * slide;
             }
             if (a.diveT > 0) {
-                roll = (a.mx >= 0 ? -1 : 1) * (foot ? 1.45 : 1.25);
-                lift = foot ? 0.62 : 0.5;
-                if (foot) armUp = 2.6;
+                const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.45));
+                const diveArc = Math.sin(diveProg * Math.PI);
+                const diveDir = (a.mx !== 0 ? (a.mx > 0 ? 1 : -1) : (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1));
+                roll = -diveDir * (1.35 + 0.28 * diveArc);
+                lift = (foot ? 0.78 : 0.62) * diveArc;
+                lean = 0.28 * diveArc;
+                if (foot) armUp = 2.65;
             }
             if (a.stun > 0) {
                 const k = Math.min(1, a.stun / 0.45);
@@ -8391,18 +8543,20 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 }
             }
             if (foot) {
-                const legAmp = amp * 1.08;
+                const legAmp = amp * (isSprinting ? 1.22 : 1.08);
                 this.legL.rotation[0] = sp * legAmp + idle;
                 this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
-                this.kneeL.rotation[0] = amp * (0.24 + 1.42 * Math.max(0, -cs)) + (kickP >= 0 && kickP < 0.62 ? 0.25 : 0);
-                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.24 + 1.42 * Math.max(0, cs));
+                const kneeLift = isSprinting ? 1.75 : 1.42;
+                this.kneeL.rotation[0] = amp * (0.24 + kneeLift * Math.max(0, -cs)) + (kickP >= 0 && kickP < 0.62 ? 0.25 : 0);
+                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.24 + kneeLift * Math.max(0, cs));
             }
             else {
-                const legAmp = this.mode === 'hoops' ? amp * 0.92 : amp;
+                const legAmp = amp * (isSprinting ? 1.15 : (this.mode === 'hoops' ? 0.92 : 1.0));
                 this.legL.rotation[0] = sp * legAmp + idle;
                 this.legR.rotation[0] = -sp * legAmp + (kickP >= 0 ? kickLeg : 0);
-                this.kneeL.rotation[0] = amp * (0.18 + 1.25 * Math.max(0, -cs));
-                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.18 + 1.25 * Math.max(0, cs));
+                const kneeLift = isSprinting ? 1.55 : 1.25;
+                this.kneeL.rotation[0] = amp * (0.18 + kneeLift * Math.max(0, -cs));
+                this.kneeR.rotation[0] = kickP >= 0 ? kickKnee : amp * (0.18 + kneeLift * Math.max(0, cs));
             }
             this.legL.rotation[2] = 0;
             if (crouch > 0.01) {
@@ -8432,15 +8586,39 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.kneeL.rotation[0] += land * 4.5;
                 this.kneeR.rotation[0] += land * 4.5;
             }
-            const swing = this.mode === 'hoops' && carrying ? 0.25 : amp;
-            this.armL.rotation[0] = -sp * swing * (foot ? 1.15 : 0.95) - armUp;
-            this.armR.rotation[0] = sp * swing * (foot ? 1.15 : 0.95) - armUp;
+            const swing = this.mode === 'hoops' && carrying ? 0.22 : amp * (isSprinting ? 1.25 : 1.0);
+            this.armL.rotation[0] = -sp * swing * (foot ? 1.15 : 0.98) - armUp;
+            this.armR.rotation[0] = sp * swing * (foot ? 1.15 : 0.98) - armUp;
             const raised = Math.min(1, armUp / 2.4);
             const baseBend = this.ease('elbow', a.shootCharging ? 1.42 : 0.5 + amp * 0.95, 14, dt);
-            this.elbowL.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, sp));
-            this.elbowR.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, -sp));
+            const sprintElbow = isSprinting ? 0.32 * amp : 0;
+            this.elbowL.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, sp)) - sprintElbow;
+            this.elbowR.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, -sp)) - sprintElbow;
             if (this.mode === 'hoops') {
-                if (a.shootCharging) {
+                if (a.dunk && a.dunk.active) {
+                    const dk = a.dunk;
+                    const norm = Math.min(1, Math.max(0, dk.t / Math.max(0.01, dk.apexT)));
+                    if (norm < 0.82) {
+                        this.armR.rotation[0] = -2.95 - (1 - norm) * 0.35;
+                        this.elbowR.rotation[0] = -1.65 * (1 - norm * 0.5);
+                        this.armR.rotation[2] = 0.32;
+                        this.armL.rotation[0] = -1.45;
+                        this.armL.rotation[2] = -0.75;
+                    } else {
+                        const slamProg = (norm - 0.82) / 0.18;
+                        this.armR.rotation[0] = -2.95 + slamProg * 0.85;
+                        this.elbowR.rotation[0] = -0.35;
+                        this.armR.rotation[2] = 0.15;
+                        this.armL.rotation[0] = -1.1;
+                    }
+                    this.legL.rotation[0] = 0.55;
+                    this.kneeL.rotation[0] = 1.35;
+                    this.legL.rotation[2] = -0.30;
+                    this.legR.rotation[0] = -0.62;
+                    this.kneeR.rotation[0] = 0.38;
+                    this.legR.rotation[2] = 0.25;
+                }
+                else if (a.shootCharging) {
                     // Cocking ball above forehead: right shooting elbow tucked underneath, left guide hand up
                     this.armR.rotation[0] = -2.1 - a.shootCharge * 0.45;
                     this.elbowR.rotation[0] = -1.65 - a.shootCharge * 0.35;
@@ -8456,17 +8634,67 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     this.elbowL.rotation[0] = -0.6 * (1 - snapW);
                 }
                 else if (carrying && armUp < 0.05) {
-                    // Dynamic rhythmic dribbling: arm pushes downward in cadence with ball bounce
-                    const dribbleCadence = (this.t * 9) % (Math.PI * 2);
-                    this.armR.rotation[0] = -0.55 + Math.sin(dribbleCadence) * 0.42;
-                    this.elbowR.rotation[0] = -0.75 + Math.sin(dribbleCadence) * 0.38;
+                    // Dynamic crossover dribbling with off-hand ball shield
+                    const targetHand = a.dribbleSide !== undefined ? a.dribbleSide : (a.mx < -0.15 ? -1 : (a.mx > 0.15 ? 1 : 1));
+                    const hand = this.ease('dribbleHand', targetHand, 14, dt);
+                    const cadence = (this.t * (speed > 2.5 ? 10.2 : 8.2)) % (Math.PI * 2);
+                    const push = Math.sin(cadence) * 0.42;
+                    const dribbleArm = -0.55 + push;
+                    const dribbleElbow = -0.80 + push * 0.65;
+                    if (hand >= 0) {
+                        this.armR.rotation[0] = dribbleArm;
+                        this.elbowR.rotation[0] = dribbleElbow;
+                        this.armR.rotation[2] = 0.18;
+                        this.armL.rotation[0] = -1.18 - amp * 0.22;
+                        this.elbowL.rotation[0] = -1.35;
+                        this.armL.rotation[2] = -0.42;
+                    } else {
+                        this.armL.rotation[0] = dribbleArm;
+                        this.elbowL.rotation[0] = dribbleElbow;
+                        this.armL.rotation[2] = -0.18;
+                        this.armR.rotation[0] = -1.18 - amp * 0.22;
+                        this.elbowR.rotation[0] = -1.35;
+                        this.armR.rotation[2] = 0.42;
+                    }
                 }
+            }
+            if (a.diveT > 0 && foot) {
+                const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.45));
+                const diveArc = Math.sin(diveProg * Math.PI);
+                const diveDir = (a.mx !== 0 ? (a.mx > 0 ? 1 : -1) : (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1));
+                if (diveDir > 0) {
+                    this.armR.rotation[0] = -2.75;
+                    this.armR.rotation[2] = 1.25 + 0.35 * diveArc;
+                    this.elbowR.rotation[0] = -0.12;
+                    this.armL.rotation[0] = -2.45;
+                    this.armL.rotation[2] = 0.62 + 0.28 * diveArc;
+                    this.elbowL.rotation[0] = -0.22;
+                    this.legL.rotation[0] = 0.48 * diveArc;
+                    this.kneeL.rotation[0] = 1.25 * diveArc;
+                    this.legR.rotation[0] = -0.72 * diveArc;
+                    this.kneeR.rotation[0] = 0.22;
+                } else {
+                    this.armL.rotation[0] = -2.75;
+                    this.armL.rotation[2] = -1.25 - 0.35 * diveArc;
+                    this.elbowL.rotation[0] = -0.12;
+                    this.armR.rotation[0] = -2.45;
+                    this.armR.rotation[2] = -0.62 - 0.28 * diveArc;
+                    this.elbowR.rotation[0] = -0.22;
+                    this.legR.rotation[0] = 0.48 * diveArc;
+                    this.kneeR.rotation[0] = 1.25 * diveArc;
+                    this.legL.rotation[0] = -0.72 * diveArc;
+                    this.kneeL.rotation[0] = 0.22;
+                }
+            }
+            if (a.shootCharging && foot) {
+                this.armL.rotation[2] = -0.65 * a.shootCharge;
+                this.armL.rotation[0] = -0.42 * a.shootCharge;
             }
             if (a.shotT > 0 && foot)
                 this.elbowR.rotation[0] *= 0.15;
-            const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : armUp > 1 ? 0.15 : 0.12, 14, dt);
-            this.armL.rotation[2] = -spread + sp * amp * 0.05 + (foot && kickP >= 0 ? -0.32 * kick : 0);
-            this.armR.rotation[2] = spread - sp * amp * 0.05 + (foot && kickP >= 0 ? 0.32 * kick : 0);
+            const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : (foot && carrying ? 0.28 : (armUp > 1 ? 0.15 : 0.12)), 14, dt);
+            this.armL.rotation[2] = (this.armL.rotation[2] || 0) - spread + sp * amp * 0.05 + (foot && kickP >= 0 ? -0.32 * kick : 0);
+            this.armR.rotation[2] = (this.armR.rotation[2] || 0) + spread - sp * amp * 0.05 + (foot && kickP >= 0 ? 0.32 * kick : 0);
             this.torso.rotation[1] = torsoTwist - sp * amp * (foot ? 0.32 : 0.26) + (kickP >= 0 ? kick * (foot ? 0.44 : 0.35) : 0);
             this.torso.rotation[2] = Math.sin(ph) * amp * (foot ? 0.075 : 0.065) + (kickP >= 0 ? (foot ? -0.28 : -0.22) * kick : 0);
             this.head.position[1] = (foot ? 2.05 : 1.99) + Math.abs(sp) * amp * 0.035;
@@ -9132,6 +9360,7 @@ define("i18n/en", ["require", "exports"], function (require, exports) {
         'pause.quit': 'Quit to menu',
         'pause.quitConfirm': 'Quit the match? Progress in this match will be lost.',
         'result.title': 'Match result',
+        'result.practiceAiNote': '🎯 Practice vs AI: Match rewards and FvH Coins are earned in Online PvP!',
         'result.reward': 'Rewards (demo)',
         'result.coins': '+{n} demo coins',
         'result.xp': '+{n} XP',
@@ -10468,7 +10697,7 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
         'hud.draw': 'Ничья', 'hud.possession': 'Мяч', 'hud.mini.footy': 'Гол {a}:{b}',
         'pause.title': 'Пауза', 'pause.resume': 'Продолжить', 'pause.restart': 'Начать заново', 'pause.settings': 'Настройки', 'pause.quit': 'Выйти в меню',
         'pause.quitConfirm': 'Выйти из матча? Прогресс этого матча будет потерян.',
-        'result.title': 'Итог матча', 'result.reward': 'Награды (демо)', 'result.coins': '+{n} демо-монет', 'result.xp': '+{n} опыта', 'result.rematch': 'Реванш',
+        'result.title': 'Итог матча', 'result.practiceAiNote': '🎯 Тренировка против ИИ: Награды и FvH Coins начисляются только в Онлайн PvP!', 'result.reward': 'Награды (демо)', 'result.coins': '+{n} демо-монет', 'result.xp': '+{n} опыта', 'result.rematch': 'Реванш',
         'result.menu': 'Главное меню', 'result.shots': 'Удары', 'result.tackles': 'Отборы', 'result.steals': 'Перехваты', 'result.passes': 'Пасы', 'result.threes': 'Трёхочковые',
         'result.levelUp': 'Новый уровень! Ты достиг уровня {n}', 'result.boostUsed': 'Использован буст: {name}',
         'tut.title': 'Как играть', 'tut.skip': 'Пропустить обучение', 'tut.next': 'Далее', 'tut.done': 'Играем', 'tut.step': 'Шаг {a} из {b}',
@@ -14506,6 +14735,9 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 case 'dribble':
                     a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', 0.85);
                     break;
+                case 'step':
+                    a.play('step', Math.min(0.55, (e.speed || 5) / 10), mode === 'hoops' ? 1.2 : 0.95);
+                    break;
                 case 'post':
                     a.play('post', Math.min(1.2, e.speed / 12));
                     telegram_js_1.telegram.haptic('medium');
@@ -16704,23 +16936,12 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             telegram_js_4.telegram.leaveMatch();
             const names = (_b = (_a = this.game.cfg) === null || _a === void 0 ? void 0 : _a.online) === null || _b === void 0 ? void 0 : _b.info;
             const outcome = sum.winner === 0 ? 'win' : sum.winner === null ? 'draw' : 'loss';
-            this.game.stop();
-            this.startBackdrop();
-            const title = outcome === 'win' ? (0, index_js_7.t)('hud.win') : outcome === 'draw' ? (0, index_js_7.t)('hud.draw') : (0, index_js_7.t)('hud.lose');
-            const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: `panel result-panel online-result res-${outcome}`, style: 'max-width:480px;text-align:center' }, (0, dom_js_6.h)('div', { class: 'note' }, (0, index_js_7.t)('result.title')), (0, dom_js_6.h)('h2', { class: `result-title ${outcome}` }, title), (0, dom_js_6.h)('div', { class: 'result-score' }, `${sum.score[0]} : ${sum.score[1]}`, (0, dom_js_6.h)('small', null, `${(_c = names === null || names === void 0 ? void 0 : names.myName) !== null && _c !== void 0 ? _c : (0, index_js_7.t)('hud.you')} — ${(_d = names === null || names === void 0 ? void 0 : names.oppName) !== null && _d !== void 0 ? _d : ''}`)), (0, dom_js_6.h)('div', { class: 'note', style: 'margin-bottom:10px' }, (0, index_js_7.t)('online.note')), (0, dom_js_6.h)('div', { class: 'actions-row' }, (0, dom_js_6.h)('button', { class: 'btn primary', type: 'button', on: { click: () => { this.audio.play('click'); this.showMenu(); } } }, (0, index_js_7.t)('result.menu')))));
-            this.show(el, 'results');
-        }
-        onMatchEnd(sum) {
-            if (sum.online) {
-                this.onOnlineEnd(sum);
-                return;
-            }
-            this.state = 'results';
-            telegram_js_4.telegram.leaveMatch();
             const boostMul = (0, shop_js_11.boostEffectsOf)(sum.boostId).coins;
             const rewards = (0, rewards_js_1.computeRewards)(sum, boostMul);
             const lvBefore = (0, save_js_3.levelFor)(this.store.data.xp);
             const before = lvBefore.level;
+
+            // Online PvP Rewards: Authoritative credit for competitive matches
             this.store.update((d) => {
                 d.coins += rewards.coins;
                 d.xp += rewards.xp;
@@ -16747,14 +16968,14 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 d.lastResult = { mode: sum.mode, score: sum.score, at: Date.now() };
                 (0, quests_js_3.applyMatchToQuests)(d, sum);
             });
+            if (this.store.flush) this.store.flush();
+            if (typeof this.syncAuthoritativeEconomy === 'function') this.syncAuthoritativeEconomy();
+
             const lvAfter = (0, save_js_3.levelFor)(this.store.data.xp);
             const after = lvAfter.level;
             this.game.stop();
             this.startBackdrop();
-            const title = rewards.outcome === 'win' ? (0, index_js_7.t)('hud.win') : rewards.outcome === 'draw' ? (0, index_js_7.t)('hud.draw') : (0, index_js_7.t)('hud.lose');
-            const chip = (a, b) => (0, dom_js_6.h)('span', { class: 'chip' }, a, ' ', (0, dom_js_6.h)('b', null, String(b)));
-            const steal = sum.mode === 'hoops';
-            const bi = sum.boostId ? (0, shop_js_11.getItem)(sum.boostId) : null;
+            const title = outcome === 'win' ? (0, index_js_7.t)('hud.win') : outcome === 'draw' ? (0, index_js_7.t)('hud.draw') : (0, index_js_7.t)('hud.lose');
             const pct = (l) => Math.max(0, Math.min(100, (l.into / l.need) * 100));
             const fill = (0, dom_js_6.h)('i', { style: `width:${pct(lvBefore)}%` });
             const xpTxt = (0, dom_js_6.h)('span', null, (0, index_js_7.t)('profile.xp', { a: lvBefore.into, b: lvBefore.need }));
@@ -16778,11 +16999,78 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 else
                     xpTxt.textContent = (0, index_js_7.t)('profile.xp', { a: lvAfter.into, b: lvAfter.need });
             }, 350);
-            const winnerLine = rewards.outcome === 'win' ? (0, index_js_7.t)('hud.you') : rewards.outcome === 'loss' ? (0, index_js_7.t)('hud.cpu') : '';
-            const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: `panel result-panel res-${rewards.outcome}`, style: 'max-width:480px;text-align:center' }, (0, dom_js_6.h)('div', { class: 'note' }, (0, index_js_7.t)('result.title')), (0, dom_js_6.h)('h2', { class: `result-title ${rewards.outcome}` }, title), (0, dom_js_6.h)('div', { class: 'result-score' }, `${sum.score[0]} : ${sum.score[1]}`, (0, dom_js_6.h)('small', null, `${(0, index_js_7.t)('hud.you')} — ${(0, index_js_7.t)('hud.cpu')}`)), winnerLine ? (0, dom_js_6.h)('div', { class: 'res-win' }, `🏆 ${winnerLine}`) : null, (0, dom_js_6.h)('div', { class: 'rew' }, (0, dom_js_6.h)('span', { class: 'chip gold' }, (0, dom_js_6.h)('span', { class: 'w-ico' }), ' ', (0, index_js_7.t)('result.coins', { n: rewards.coins })), (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ ', (0, index_js_7.t)('result.xp', { n: rewards.xp }))), (0, dom_js_6.h)('div', { class: 'res-xp' }, (0, dom_js_6.h)('div', { class: 'row2' }, lvTxt, xpTxt), (0, dom_js_6.h)('div', { class: 'pbar' }, fill)), leveled ? (0, dom_js_6.h)('div', { class: 'lvl-up' }, '⬆ ', (0, index_js_7.t)('result.levelUp', { n: after })) : null, bi ? (0, dom_js_6.h)('div', { class: 'note' }, (0, index_js_7.t)('result.boostUsed', { name: bi.name })) : null, (0, dom_js_6.h)('div', { class: 'rew' }, chip((0, index_js_7.t)('result.shots'), sum.stats.humanShots), chip((0, index_js_7.t)(steal ? 'result.steals' : 'result.tackles'), sum.stats.humanTackles), chip((0, index_js_7.t)('result.passes'), sum.stats.humanPasses), steal ? chip((0, index_js_7.t)('result.threes'), sum.humanThrees) : null), (0, dom_js_6.h)('div', { class: 'note', style: 'margin-bottom:10px' }, `${(0, index_js_7.t)('demo.note')} · ${(0, index_js_7.t)('shop.demoNote')}`), (0, dom_js_6.h)('div', { class: 'actions-row' }, (0, dom_js_6.h)('button', { class: 'btn primary', type: 'button', on: { click: () => { this.audio.play('click'); const c = this.lastCfg; if (c)
-                        this.launch(Object.assign(Object.assign({}, c), { boostId: null }), false); } } }, '↻ ', (0, index_js_7.t)('result.rematch')), (0, dom_js_6.h)('button', { class: 'btn', type: 'button', on: { click: () => { this.audio.play('click'); this.showMenu(); } } }, (0, index_js_7.t)('result.menu')))));
+
+            const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: `panel result-panel online-result res-${outcome}`, style: 'max-width:480px;text-align:center' },
+                (0, dom_js_6.h)('div', { class: 'note' }, '🌐 ONLINE PVP MATCH RESULT'),
+                (0, dom_js_6.h)('h2', { class: `result-title ${outcome}` }, title),
+                (0, dom_js_6.h)('div', { class: 'result-score' }, `${sum.score[0]} : ${sum.score[1]}`, (0, dom_js_6.h)('small', null, `${(_c = names === null || names === void 0 ? void 0 : names.myName) !== null && _c !== void 0 ? _c : (0, index_js_7.t)('hud.you')} — ${(_d = names === null || names === void 0 ? void 0 : names.oppName) !== null && _d !== void 0 ? _d : ''}`)),
+                (0, dom_js_6.h)('div', { class: 'rew' }, (0, dom_js_6.h)('span', { class: 'chip gold' }, (0, dom_js_6.h)('span', { class: 'w-ico' }), ' ', (0, index_js_7.t)('result.coins', { n: rewards.coins })), (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ ', (0, index_js_7.t)('result.xp', { n: rewards.xp }))),
+                (0, dom_js_6.h)('div', { class: 'res-xp' }, (0, dom_js_6.h)('div', { class: 'row2' }, lvTxt, xpTxt), (0, dom_js_6.h)('div', { class: 'pbar' }, fill)),
+                leveled ? (0, dom_js_6.h)('div', { class: 'lvl-up' }, '⬆ ', (0, index_js_7.t)('result.levelUp', { n: after })) : null,
+                (0, dom_js_6.h)('div', { class: 'actions-row' }, (0, dom_js_6.h)('button', { class: 'btn primary', type: 'button', on: { click: () => { this.audio.play('click'); this.showMenu(); } } }, (0, index_js_7.t)('result.menu')))));
             this.show(el, 'results');
-            (0, kit_js_4.toast)(`+${rewards.coins} FvH Coin`, 1400);
+            if (rewards.coins > 0) {
+                (0, kit_js_4.toast)(`+${rewards.coins} FvH Coin (PvP)`, 1600);
+            }
+        }
+        onMatchEnd(sum) {
+            if (sum.online) {
+                this.onOnlineEnd(sum);
+                return;
+            }
+            this.state = 'results';
+            telegram_js_4.telegram.leaveMatch();
+            // Practice vs AI: strictly ZERO coins and ZERO XP (rewards only in online PvP)
+            const rewards = {
+                outcome: sum.winner === 0 ? 'win' : sum.winner === null ? 'draw' : 'loss',
+                coins: 0,
+                xp: 0
+            };
+            this.store.update((d) => {
+                const st = d.stats;
+                st.played++;
+                st.playedByMode[sum.mode]++;
+                if (rewards.outcome === 'win') {
+                    st.wins++;
+                    st.winsByMode[sum.mode]++;
+                }
+                else if (rewards.outcome === 'draw')
+                    st.draws++;
+                else
+                    st.losses++;
+                if (sum.mode === 'footy')
+                    st.goals += sum.stats.humanGoals;
+                else
+                    st.points += sum.stats.humanGoals;
+                st.tackles += sum.stats.humanTackles;
+                st.shots += sum.stats.humanShots;
+                st.passes += sum.stats.humanPasses;
+                st.threes += sum.humanThrees;
+                st.dunks += sum.humanDunks;
+                d.lastResult = { mode: sum.mode, score: sum.score, at: Date.now() };
+                (0, quests_js_3.applyMatchToQuests)(d, sum);
+            });
+            this.game.stop();
+            this.startBackdrop();
+            const title = rewards.outcome === 'win' ? (0, index_js_7.t)('hud.win') : rewards.outcome === 'draw' ? (0, index_js_7.t)('hud.draw') : (0, index_js_7.t)('hud.lose');
+            const chip = (a, b) => (0, dom_js_6.h)('span', { class: 'chip' }, a, ' ', (0, dom_js_6.h)('b', null, String(b)));
+            const steal = sum.mode === 'hoops';
+            const winnerLine = rewards.outcome === 'win' ? (0, index_js_7.t)('hud.you') : rewards.outcome === 'loss' ? (0, index_js_7.t)('hud.cpu') : '';
+            const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: `panel result-panel res-${rewards.outcome}`, style: 'max-width:480px;text-align:center' },
+                (0, dom_js_6.h)('div', { class: 'note' }, (0, index_js_7.t)('result.title')),
+                (0, dom_js_6.h)('h2', { class: `result-title ${rewards.outcome}` }, title),
+                (0, dom_js_6.h)('div', { class: 'result-score' }, `${sum.score[0]} : ${sum.score[1]}`, (0, dom_js_6.h)('small', null, `${(0, index_js_7.t)('hud.you')} — ${(0, index_js_7.t)('hud.cpu')}`)),
+                winnerLine ? (0, dom_js_6.h)('div', { class: 'res-win' }, `🏆 ${winnerLine}`) : null,
+                (0, dom_js_6.h)('div', { class: 'rew', style: 'opacity:0.85;' },
+                    (0, dom_js_6.h)('span', { class: 'chip' }, (0, dom_js_6.h)('span', { class: 'w-ico' }), ' +0 FvH Coin'),
+                    (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ +0 XP')),
+                (0, dom_js_6.h)('div', { class: 'fvh-practice-notice', style: 'margin:8px 0 12px;padding:8px 12px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.25);border-radius:10px;font-size:12px;color:var(--neon-cyan);font-weight:700;' },
+                    (0, index_js_7.t)('result.practiceAiNote') || '🎯 Тренировка против ИИ: Награды и FvH Coins начисляются только в Онлайн PvP!'),
+                (0, dom_js_6.h)('div', { class: 'rew' }, chip((0, index_js_7.t)('result.shots'), sum.stats.humanShots), chip((0, index_js_7.t)(steal ? 'result.steals' : 'result.tackles'), sum.stats.humanTackles), chip((0, index_js_7.t)('result.passes'), sum.stats.humanPasses), steal ? chip((0, index_js_7.t)('result.threes'), sum.humanThrees) : null),
+                (0, dom_js_6.h)('div', { class: 'actions-row' },
+                    (0, dom_js_6.h)('button', { class: 'btn primary', type: 'button', on: { click: () => { this.audio.play('click'); const c = this.lastCfg; if (c) this.launch(Object.assign(Object.assign({}, c), { boostId: null }), false); } } }, '↻ ', (0, index_js_7.t)('result.rematch')),
+                    (0, dom_js_6.h)('button', { class: 'btn', type: 'button', on: { click: () => { this.audio.play('click'); this.showMenu(); } } }, (0, index_js_7.t)('result.menu')))));
+            this.show(el, 'results');
         }
     }
     exports.App = App;

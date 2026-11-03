@@ -7728,6 +7728,17 @@
     title.textContent = tr('profile');
     head.appendChild(backBtn);
     head.appendChild(title);
+
+    var setBtn = document.createElement('button');
+    setBtn.className = 'btn icon';
+    setBtn.innerHTML = '⚙️';
+    setBtn.title = tr('settings');
+    setBtn.style.cssText = 'position:absolute;right:14px;top:10px;font-size:18px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+    setBtn.onclick = function () {
+      app.audio.play('click');
+      app.go('settings');
+    };
+    head.appendChild(setBtn);
     page.appendChild(head);
 
     // Body
@@ -10118,16 +10129,16 @@
       '<div class="fvh-topbar-stats">' +
       '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' <span>' + (d.coins || 0).toLocaleString() + '</span></button>' +
       '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '" style="font-size:16px;">⚙️</button>' +
       '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: curChar, extraClass: 'mini-avatar' }) + '</span><span class="fvh-profile-name">' + escapeHtml(shortName) + '</span><span class="fvh-profile-lvl" style="font-size:10px;opacity:0.75;margin-left:3px;">Lv.' + playerLevel + '</span></button>' +
-      '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">⚙️</button>' +
       '</div>';
     screen.appendChild(topbar);
 
     topbar.querySelector('.fvh-topbar-brand').onclick = function () { app.showMenu(); };
     topbar.querySelector('#fvh-btn-coins').onclick = function () { app.audio.play('click'); app.go('shop'); };
     topbar.querySelector('#fvh-btn-leaderboard').onclick = function () { app.audio.play('click'); app.go('leaderboard'); };
-    topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
     topbar.querySelector('#fvh-btn-settings').onclick = function () { app.audio.play('click'); app.go('settings'); };
+    topbar.querySelector('#fvh-btn-profile').onclick = function () { app.audio.play('click'); app.go('profile'); };
 
     // 2. Faction Hero Card: Shows chosen faction, rival, team switcher, equipped cosmetics, locker & profile
     var stage = document.createElement('section');

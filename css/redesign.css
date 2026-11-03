@@ -6927,26 +6927,27 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   .fvh-topbar-stats button.fvh-pill.icon-only,
   #fvh-btn-settings,
   #fvh-btn-leaderboard {
-    width: 30px !important;
-    min-width: 30px !important;
-    max-width: 30px !important;
-    height: 30px !important;
-    font-size: 14px !important;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0 !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 32px !important;
+    font-size: 15px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
   }
   .fvh-btn-topbar-profile {
-    max-width: 82px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    padding: 0 5px !important;
+    max-width: 36px !important;
+    padding: 0 4px !important;
   }
-  .fvh-btn-topbar-profile .fvh-profile-name {
-    max-width: 38px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
+  .fvh-btn-topbar-profile .fvh-profile-name,
+  .fvh-btn-topbar-profile .fvh-profile-lvl {
+    display: none !important;
   }
 }
 @media (max-width: 360px) {
@@ -6975,13 +6976,19 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
     font-size: 10px !important;
   }
   .fvh-btn-topbar-profile {
-    max-width: 68px !important;
+    max-width: 32px !important;
+    padding: 0 2px !important;
   }
-  .fvh-btn-topbar-profile .fvh-profile-name {
-    max-width: 28px !important;
+  .fvh-btn-topbar-profile .fvh-profile-name,
+  .fvh-btn-topbar-profile .fvh-profile-lvl {
+    display: none !important;
   }
   #fvh-btn-settings,
   #fvh-btn-leaderboard {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0 !important;
     width: 28px !important;
     min-width: 28px !important;
     max-width: 28px !important;
