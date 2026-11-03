@@ -101,13 +101,9 @@ runTest('Req 1.1: BasketballSim shooter squares to hoop and launches shot indepe
   assert.ok(sim.ball.vy > 0, 'Ball must have positive upward vertical velocity');
   assert.ok(human.pickupLock >= 0.8, 'Shooter must have pickupLock >= 0.8s during shot follow-through');
 
-  // Verify shooter squared to hoop
-  const hoop = sim.hoopFor(human.team);
-  const dx = 0 - human.x;
-  const dz = hoop.z - human.z;
-  const hyp = Math.hypot(dx, dz);
-  assert.ok(Math.abs(human.fx - dx / hyp) < 0.01, 'Shooter must face the hoop on shot release');
-  assert.ok(Math.abs(human.fz - dz / hyp) < 0.01, 'Shooter must face the hoop on shot release');
+  // Verify shooter maintains manual aim facing direction (no auto-aim snapping per user specification)
+  assert.strictEqual(human.fx, 1.0, 'Shooter must maintain manual aim direction on shot release');
+  assert.strictEqual(human.fz, 0.0, 'Shooter must maintain manual aim direction on shot release');
 });
 
 runTest('Req 1.2: Shooter cannot re-grab their own shot while in-flight mid-air', () => {

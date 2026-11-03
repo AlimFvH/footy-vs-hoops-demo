@@ -4570,16 +4570,16 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     exports.RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
     const FOOTY_BASE = {
         line: 0xfdfefe,
-        skyTop: 0x0a1630,
-        skyBottom: 0x213a5c,
+        skyTop: 0x091428,
+        skyBottom: 0x1e3656,
         fog: 0x0c1a2e,
-        sunColor: [1.18, 1.12, 1.05],
+        sunColor: [1.25, 1.20, 1.14],
         sunDir: [0.35, 0.85, 0.4],
-        hemiSky: 0x8cb4f8,
-        hemiGround: 0x16381a,
-        lights: [0xfff4d6, 0xfff4d6, 0xfff4d6, 0xfff4d6],
-        lightIntensity: 0.65,
-        stand: 0x2a3140,
+        hemiSky: 0x90bcfc,
+        hemiGround: 0x1e5028,
+        lights: [0xfff7e8, 0xfff7e8, 0xfff7e8, 0xfff7e8],
+        lightIntensity: 0.82,
+        stand: 0x222a3a,
         crowd: [0xe84a5f, 0xf6c445, 0x4fb3ff, 0xffffff, 0x7be08a, 0xff8c42, 0x9b6bff],
         boards: 0x0d1424,
         boardText: 0xffffff,
@@ -4660,7 +4660,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             price: 0,
             icon: '🏟️',
             isDefault: true,
-            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x1e823b, pitchB: 0x156b2f }),
+            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x24a648, pitchB: 0x1a8f3b }),
         },
         {
             id: 'std_footy_night',
@@ -5516,70 +5516,81 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const Z = (z) => (z + pd / 2) * PPM_F;
         const { W, L } = football_js_1.FB;
 
-        // 1. High-precision tournament lawn: 16 alternating roller stripes
+        // 1. High-precision tournament lawn: 16 alternating velvety roller stripes with light direction gradients
         const stripes = 16;
         const sh = c.height / stripes;
         for (let i = 0; i < stripes; i++) {
+            const y0 = i * sh;
             const col = hex(i % 2 ? t.pitchA : t.pitchB);
             g.fillStyle = col;
-            g.fillRect(0, i * sh, c.width, sh + 1);
-            // Roller transition: soft ambient groove and directional sunlight highlight
-            g.fillStyle = 'rgba(0,0,0,0.06)';
-            g.fillRect(0, i * sh, c.width, 3);
-            g.fillStyle = 'rgba(255,255,255,0.04)';
-            g.fillRect(0, (i + 1) * sh - 3, c.width, 3);
+            g.fillRect(0, y0, c.width, sh + 1);
+
+            // Velvety directional mower light gradient (realistic turf texture)
+            const stripeGrad = g.createLinearGradient(0, y0, 0, y0 + sh);
+            if (i % 2 === 0) {
+                stripeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+                stripeGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.03)');
+                stripeGrad.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
+            } else {
+                stripeGrad.addColorStop(0, 'rgba(0, 0, 0, 0.05)');
+                stripeGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0.01)');
+                stripeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.07)');
+            }
+            g.fillStyle = stripeGrad;
+            g.fillRect(0, y0, c.width, sh + 1);
         }
 
         // 2. UEFA/Premier League style Cross-Mowing Checkerboard Sheen
         // Intersecting vertical roller lanes produce the iconic prestigious checkerboard turf
-        const vLanes = 10;
+        const vLanes = 12;
         const laneW = c.width / vLanes;
         for (let j = 0; j < vLanes; j++) {
-            g.fillStyle = j % 2 === 0 ? 'rgba(255,255,255,0.028)' : 'rgba(0,0,0,0.028)';
+            const vGrad = g.createLinearGradient(j * laneW, 0, (j + 1) * laneW, 0);
+            vGrad.addColorStop(0, j % 2 === 0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)');
+            vGrad.addColorStop(1, j % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)');
+            g.fillStyle = vGrad;
             g.fillRect(j * laneW, 0, laneW, c.height);
-            g.fillStyle = 'rgba(255,255,255,0.015)';
-            g.fillRect(j * laneW, 0, 2, c.height);
         }
 
-        // 3. Sideline & Run-Off Apron Turf: distinct deeper border outside touchlines
-        g.fillStyle = 'rgba(0, 0, 0, 0.08)';
+        // 2.5 Midfield & Center Pitch Concentric Mower Sheen
+        for (let cr = 1; cr <= 4; cr++) {
+            g.strokeStyle = (cr % 2 === 0) ? 'rgba(255, 255, 255, 0.035)' : 'rgba(0, 0, 0, 0.035)';
+            g.lineWidth = 1.0 * PPM_F;
+            g.beginPath();
+            g.arc(X(0), Z(0), (football_js_1.FB.CIRCLE_R * (cr / 4.2)) * PPM_F, 0, Math.PI * 2);
+            g.stroke();
+        }
+
+        // 3. Sideline & Run-Off Apron Turf: clean synthetic turf runner outside touchlines
+        g.fillStyle = 'rgba(10, 30, 18, 0.22)';
         g.fillRect(0, 0, c.width, Z(-L));
         g.fillRect(0, Z(L), c.width, c.height - Z(L));
         g.fillRect(0, Z(-L), X(-W), Z(L) - Z(-L));
         g.fillRect(X(W), Z(-L), c.width - X(W), Z(L) - Z(-L));
 
-        // 4. High-density organic grass blade micro-texture (32,000 strands)
+        // 4. Ultra-fine micro-blade organic turf texture
         const bladeHues = [
-            'rgba(14, 52, 22, 0.09)',
-            'rgba(32, 92, 38, 0.08)',
-            'rgba(68, 160, 58, 0.065)',
-            'rgba(255, 255, 255, 0.045)'
+            'rgba(18, 64, 28, 0.08)',
+            'rgba(40, 115, 48, 0.07)',
+            'rgba(82, 185, 70, 0.06)',
+            'rgba(255, 255, 255, 0.04)'
         ];
-        for (let i = 0; i < 32000; i++) {
+        for (let i = 0; i < 28000; i++) {
             const gx = Math.random() * c.width;
             const gy = Math.random() * c.height;
             g.fillStyle = bladeHues[i % 4];
-            g.fillRect(gx, gy, 1.4, Math.random() * 4.5 + 1.5);
+            g.fillRect(gx, gy, 1.3, Math.random() * 3.8 + 1.2);
         }
 
-        // 5. Natural goalmouth & penalty spot organic turf wear
+        // 5. Subtle goalmouth precision depth (clean, lush, not muddy)
         for (const s of [-1, 1]) {
             const gz = Z(s * (L - 2.5));
-            const wearGrad = g.createRadialGradient(X(0), gz, 10, X(0), gz, 110);
-            wearGrad.addColorStop(0, 'rgba(92, 74, 42, 0.12)');
-            wearGrad.addColorStop(0.5, 'rgba(80, 68, 38, 0.06)');
+            const wearGrad = g.createRadialGradient(X(0), gz, 10, X(0), gz, 120);
+            wearGrad.addColorStop(0, 'rgba(15, 45, 22, 0.08)');
+            wearGrad.addColorStop(0.6, 'rgba(20, 60, 30, 0.04)');
             wearGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             g.fillStyle = wearGrad;
             g.fillRect(X(-football_js_1.FB.SIX_W * 1.2), Math.min(gz - 60, gz + 60), football_js_1.FB.SIX_W * 2.4 * PPM_F, 120);
-
-            const pz = Z(s * (L - football_js_1.FB.SPOT));
-            const pGrad = g.createRadialGradient(X(0), pz, 4, X(0), pz, 28);
-            pGrad.addColorStop(0, 'rgba(85, 70, 40, 0.10)');
-            pGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            g.fillStyle = pGrad;
-            g.beginPath();
-            g.arc(X(0), pz, 28, 0, Math.PI * 2);
-            g.fill();
         }
 
         // 6. Regulation pristine stadium chalk markings with luminous soft edge

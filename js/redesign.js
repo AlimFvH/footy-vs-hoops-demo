@@ -3059,27 +3059,37 @@
       return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 160 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px;overflow:hidden;">' +
         '<defs>' +
         '<linearGradient id="stadiumSky" x1="0%" y1="0%" x2="0%" y2="100%">' +
-        '<stop offset="0%" stop-color="#0a1630"/>' +
-        '<stop offset="100%" stop-color="#213a5c"/>' +
+        '<stop offset="0%" stop-color="#091428"/>' +
+        '<stop offset="100%" stop-color="#1e3656"/>' +
         '</linearGradient>' +
         '<linearGradient id="grassTurf" x1="0%" y1="0%" x2="0%" y2="100%">' +
-        '<stop offset="0%" stop-color="#2f8f3e"/>' +
-        '<stop offset="100%" stop-color="#287a35"/>' +
+        '<stop offset="0%" stop-color="#24a648"/>' +
+        '<stop offset="100%" stop-color="#1a8f3b"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="floodlightBeam" x1="0%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="0%" stop-color="rgba(255,255,255,0.3)"/>' +
+        '<stop offset="100%" stop-color="rgba(255,255,255,0)"/>' +
         '</linearGradient>' +
         '</defs>' +
         '<rect width="160" height="52" fill="url(#stadiumSky)"/>' +
-        '<rect y="32" width="160" height="24" fill="#1e293b"/>' +
-        '<circle cx="20" cy="38" r="2" fill="#ef4444"/><circle cx="35" cy="36" r="2" fill="#3b82f6"/><circle cx="50" cy="40" r="2" fill="#facc15"/><circle cx="65" cy="37" r="2" fill="#ffffff"/><circle cx="80" cy="39" r="2" fill="#ef4444"/><circle cx="95" cy="36" r="2" fill="#22c55e"/><circle cx="110" cy="40" r="2" fill="#3b82f6"/><circle cx="125" cy="37" r="2" fill="#facc15"/><circle cx="140" cy="38" r="2" fill="#ffffff"/>' +
-        '<circle cx="25" cy="46" r="2" fill="#3b82f6"/><circle cx="45" cy="44" r="2" fill="#ffffff"/><circle cx="60" cy="48" r="2" fill="#ef4444"/><circle cx="75" cy="45" r="2" fill="#22c55e"/><circle cx="90" cy="47" r="2" fill="#facc15"/><circle cx="105" cy="44" r="2" fill="#ef4444"/><circle cx="120" cy="46" r="2" fill="#3b82f6"/><circle cx="135" cy="45" r="2" fill="#ffffff"/>' +
-        '<polygon points="12,14 16,14 18,34 10,34" fill="#475569"/>' +
-        '<rect x="8" y="10" width="12" height="6" fill="#fef08a"/>' +
-        '<polygon points="144,14 148,14 150,34 142,34" fill="#475569"/>' +
-        '<rect x="140" y="10" width="12" height="6" fill="#fef08a"/>' +
-        '<polygon points="0,52 160,52 160,100 0,100" fill="url(#grassTurf)"/>' +
-        '<polygon points="26,56 134,56 146,96 14,96" fill="none" stroke="#ffffff" stroke-width="1.6" opacity="0.9"/>' +
-        '<line x1="80" y1="56" x2="80" y2="96" stroke="#ffffff" stroke-width="1.6"/>' +
-        '<ellipse cx="80" cy="76" rx="16" ry="7" fill="none" stroke="#ffffff" stroke-width="1.5"/>' +
-        '<rect x="68" y="52" width="24" height="6" fill="none" stroke="#ffffff" stroke-width="1.5"/>' +
+        '<polygon points="8,16 0,60 40,60 14,16" fill="url(#floodlightBeam)"/>' +
+        '<polygon points="152,16 120,60 160,60 146,16" fill="url(#floodlightBeam)"/>' +
+        '<rect y="30" width="160" height="24" fill="#1e293b"/>' +
+        '<circle cx="20" cy="36" r="2" fill="#ef4444"/><circle cx="35" cy="34" r="2" fill="#3b82f6"/><circle cx="50" cy="38" r="2" fill="#facc15"/><circle cx="65" cy="35" r="2" fill="#ffffff"/><circle cx="80" cy="37" r="2" fill="#ef4444"/><circle cx="95" cy="34" r="2" fill="#22c55e"/><circle cx="110" cy="38" r="2" fill="#3b82f6"/><circle cx="125" cy="35" r="2" fill="#facc15"/><circle cx="140" cy="36" r="2" fill="#ffffff"/>' +
+        '<circle cx="25" cy="44" r="2" fill="#3b82f6"/><circle cx="45" cy="42" r="2" fill="#ffffff"/><circle cx="60" cy="46" r="2" fill="#ef4444"/><circle cx="75" cy="43" r="2" fill="#22c55e"/><circle cx="90" cy="45" r="2" fill="#facc15"/><circle cx="105" cy="42" r="2" fill="#ef4444"/><circle cx="120" cy="44" r="2" fill="#3b82f6"/><circle cx="135" cy="43" r="2" fill="#ffffff"/>' +
+        '<polygon points="12,12 16,12 18,32 10,32" fill="#64748b"/>' +
+        '<rect x="7" y="8" width="14" height="6" rx="2" fill="#fef08a"/>' +
+        '<polygon points="144,12 148,12 150,32 142,32" fill="#64748b"/>' +
+        '<rect x="139" y="8" width="14" height="6" rx="2" fill="#fef08a"/>' +
+        '<polygon points="0,50 160,50 160,100 0,100" fill="url(#grassTurf)"/>' +
+        '<rect x="0" y="50" width="160" height="7" fill="rgba(255,255,255,0.06)"/>' +
+        '<rect x="0" y="64" width="160" height="7" fill="rgba(255,255,255,0.06)"/>' +
+        '<rect x="0" y="78" width="160" height="7" fill="rgba(255,255,255,0.06)"/>' +
+        '<rect x="0" y="92" width="160" height="8" fill="rgba(255,255,255,0.06)"/>' +
+        '<polygon points="26,54 134,54 146,96 14,96" fill="none" stroke="#ffffff" stroke-width="1.6" opacity="0.95"/>' +
+        '<line x1="80" y1="54" x2="80" y2="96" stroke="#ffffff" stroke-width="1.6"/>' +
+        '<ellipse cx="80" cy="75" rx="16" ry="7.5" fill="none" stroke="#ffffff" stroke-width="1.5"/>' +
+        '<rect x="66" y="50" width="28" height="6" fill="none" stroke="#ffffff" stroke-width="1.5"/>' +
         '</svg>';
     }
 
@@ -7859,9 +7869,16 @@
     if (myIdx !== -1) {
       var higher = myIdx > 0 ? ranked[myIdx - 1] : null;
       playerRankInfo = {
+        id: 'me',
+        name: ranked[myIdx].name,
+        char: ranked[myIdx].char,
         rank: myIdx + 1,
         score: ranked[myIdx].score,
         tier: ranked[myIdx].tier,
+        wins: ranked[myIdx].wins || 0,
+        losses: ranked[myIdx].losses || 0,
+        winRate: ranked[myIdx].winRate || 0,
+        photoUrl: ranked[myIdx].photoUrl || null,
         pointsToNext: higher ? Math.max(1, higher.score - ranked[myIdx].score) : 0
       };
     }
@@ -7963,8 +7980,108 @@
     });
     body.appendChild(timeBar);
 
-    // 2.5 Rules Explanation Card (Explains what ranking measures)
+    // 2. Personal Standing Card (Always prominent and pinned right under tabs)
     var isRu = (getActiveLang() === 'ru');
+    var pData = data.player || {
+      rank: 1,
+      score: (data.top && data.top[0] && data.top[0].score) || 1200,
+      pointsToNext: 0,
+      wins: (app.store && app.store.data && app.store.data.stats && app.store.data.stats.wins) || 6,
+      losses: (app.store && app.store.data && app.store.data.stats && app.store.data.stats.losses) || 1,
+      winRate: 86,
+      name: (app.store && app.store.data && app.store.data.playerName) || 'Alim'
+    };
+    var pWins = pData.wins || 0;
+    var pLosses = pData.losses || 0;
+    var pTotalM = pWins + pLosses;
+    var pWinRate = pData.winRate !== undefined ? pData.winRate : (pTotalM > 0 ? Math.round((pWins / pTotalM) * 100) : 0);
+    var pScore = (pData.score || 0).toLocaleString();
+    var pChar = pData.char || myChar || 'footy';
+    var isFootyChar = (pChar === 'footy');
+
+    var myCard = document.createElement('div');
+    myCard.className = 'fvh-lb-my-standing-card ' + pChar;
+    myCard.innerHTML =
+      '<div class="fvh-lb-my-head">' +
+      '  <div class="fvh-lb-my-rank-badge">#' + pData.rank + '</div>' +
+      '  <div class="fvh-lb-my-avatar ' + (isFootyChar ? 'footy-halo' : 'hoops-halo') + '">' +
+      getPlayerAvatarHtml({ photoUrl: pData.photoUrl || (app.store && app.store.data && app.store.data.photoUrl), character: pChar, extraClass: 'my-lb-avatar' }) +
+      '  </div>' +
+      '  <div class="fvh-lb-my-meta">' +
+      '    <div class="fvh-lb-my-name-row">' +
+      '      <span class="fvh-lb-my-name">' + escapeHtml(pData.name || (isRu ? 'Вы' : 'You')) + '</span>' +
+      '      <span class="fvh-team-pill ' + (isFootyChar ? 'footy' : 'hoops') + '">' + (isFootyChar ? '⚽ FOOTY' : '🏀 HOOPS') + '</span>' +
+      '    </div>' +
+      '    <div class="fvh-lb-my-record">' +
+      (pTotalM > 0 ? (pWins + 'W - ' + pLosses + 'L · ' + pWinRate + '% ' + (isRu ? 'побед' : 'wins')) : (isRu ? 'Матчей пока нет' : 'No matches yet')) +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="fvh-lb-my-score-box">' +
+      '    <div class="fvh-lb-my-score-val">' + pScore + '</div>' +
+      '    <div class="fvh-lb-my-score-lbl">' + tr('ptsUnit') + '</div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="fvh-lb-my-footer">' +
+      '  <div class="fvh-lb-my-target-text">' +
+      (pData.pointsToNext > 0 ? (isRu ? '🎯 До следующего места: +' + pData.pointsToNext + ' PTS' : '🎯 Points to next rank: +' + pData.pointsToNext + ' PTS') : (isRu ? '👑 Вы удерживаете 1-е место в рейтинге!' : '👑 You lead the seasonal leaderboard!')) +
+      '  </div>' +
+      '  <button type="button" class="btn primary small fvh-lb-play-cta-btn">' + (isRu ? '⚔️ В матч (+PTS)' : '⚔️ Play (+PTS)') + '</button>' +
+      '</div>';
+
+    myCard.querySelector('.fvh-lb-play-cta-btn').onclick = function () {
+      app.audio.play('click');
+      app.go('mode');
+    };
+    body.appendChild(myCard);
+
+    // 3. Team Rivalry Balance Card (Compact Clash Card)
+    var scoreboardCard = document.createElement('div');
+    scoreboardCard.className = 'fvh-war-scoreboard-card';
+    scoreboardCard.innerHTML =
+      '<div class="fvh-war-scoreboard-head">' +
+      '  <span class="fvh-war-live-pill">' + (data.isPrelaunch ? ('⏳ ' + (isRu ? 'ПРЕДСЕЗОН' : 'PRE-LAUNCH')) : ('🔴 ' + (isRu ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH'))) + '</span>' +
+      '  <span class="fvh-war-rule-tag">' + (data.isPrelaunch ? ('⏳ ' + (isRu ? 'Скоро запуск' : 'Season Coming Soon')) : ('⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }))) + '</span>' +
+      '</div>' +
+      '<div class="fvh-war-clash-grid">' +
+      '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
+      '    <div class="fvh-team-tag">⚽ FOOTY</div>' +
+      '    <div class="fvh-team-score-num">' + teamFooty.score.toLocaleString() + '</div>' +
+      '    <div class="fvh-team-meta">' +
+      '      <span class="fvh-team-pct">' + teamFooty.pct + '%</span>' +
+      '      <span class="fvh-team-status ' + (isFootyWinning ? 'lead' : 'behind') + '">' +
+      (isFootyWinning ? ('👑 ' + (isRu ? 'ЛИДИРУЕТ' : 'LEADS')) : (isRu ? 'ОТСТАЕТ' : 'CHASING')) +
+      '      </span>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="fvh-war-vs-divider">' +
+      '    <div class="fvh-war-vs-badge">VS</div>' +
+      '  </div>' +
+      '  <div class="fvh-war-team-panel hoops ' + (!isFootyWinning ? 'is-leading' : '') + '">' +
+      '    <div class="fvh-team-tag">🏀 HOOPS</div>' +
+      '    <div class="fvh-team-score-num">' + teamHoops.score.toLocaleString() + '</div>' +
+      '    <div class="fvh-team-meta">' +
+      '      <span class="fvh-team-pct">' + teamHoops.pct + '%</span>' +
+      '      <span class="fvh-team-status ' + (!isFootyWinning ? 'lead' : 'behind') + '">' +
+      (!isFootyWinning ? ('👑 ' + (isRu ? 'ЛИДИРУЕТ' : 'LEADS')) : (isRu ? 'ОТСТАЕТ' : 'CHASING')) +
+      '      </span>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="fvh-war-tug-wrap">' +
+      '  <div class="fvh-war-tug-track">' +
+      '    <div class="fvh-war-tug-fill footy" style="width:' + teamFooty.pct + '%;"></div>' +
+      '    <div class="fvh-war-tug-spark"></div>' +
+      '    <div class="fvh-war-tug-fill hoops" style="width:' + teamHoops.pct + '%;"></div>' +
+      '  </div>' +
+      '  <div class="fvh-war-tug-labels">' +
+      '    <span style="color:#38bdf8;font-weight:900;">⚽ ' + teamFooty.pct + '%</span>' +
+      '    <span style="color:var(--text-muted);font-size:11px;">' + (isRu ? 'Баланс команд' : 'Team Balance') + '</span>' +
+      '    <span style="color:#fb923c;font-weight:900;">🏀 ' + teamHoops.pct + '%</span>' +
+      '  </div>' +
+      '</div>';
+    body.appendChild(scoreboardCard);
+
+    // 4. Rules Explanation Card (Explains what ranking measures)
     var rulesCard = document.createElement('div');
     rulesCard.className = 'fvh-lb-rules-card';
     rulesCard.style.margin = '0 0 12px';
@@ -7982,7 +8099,7 @@
       '</div>';
     body.appendChild(rulesCard);
 
-    // 3. Live Search Filter Bar
+    // 5. Live Search Filter Bar
     var searchWrap = document.createElement('div');
     searchWrap.className = 'fvh-lb-search-wrap';
     searchWrap.innerHTML =
@@ -8060,53 +8177,6 @@
         resultsMount.appendChild(emptyCard);
         return;
       }
-
-      // 4. Team Rivalry Balance Card (Compact Clash Card)
-      var scoreboardCard = document.createElement('div');
-      scoreboardCard.className = 'fvh-war-scoreboard-card';
-      scoreboardCard.innerHTML =
-        '<div class="fvh-war-scoreboard-head">' +
-        '  <span class="fvh-war-live-pill">' + (data.isPrelaunch ? ('⏳ ' + (isRu ? 'ПРЕДСЕЗОН' : 'PRE-LAUNCH')) : ('🔴 ' + (isRu ? 'ПРЯМОЙ ЭФИР' : 'LIVE CLASH'))) + '</span>' +
-        '  <span class="fvh-war-rule-tag">' + (data.isPrelaunch ? ('⏳ ' + (isRu ? 'Скоро запуск' : 'Season Coming Soon')) : ('⏳ ' + tr('warSeasonTimer', { d: data.seasonDaysLeft || 14 }))) + '</span>' +
-        '</div>' +
-        '<div class="fvh-war-clash-grid">' +
-        '  <div class="fvh-war-team-panel footy ' + (isFootyWinning ? 'is-leading' : '') + '">' +
-        '    <div class="fvh-team-tag">⚽ FOOTY</div>' +
-        '    <div class="fvh-team-score-num">' + teamFooty.score.toLocaleString() + '</div>' +
-        '    <div class="fvh-team-meta">' +
-        '      <span class="fvh-team-pct">' + teamFooty.pct + '%</span>' +
-        '      <span class="fvh-team-status ' + (isFootyWinning ? 'lead' : 'behind') + '">' +
-        (isFootyWinning ? ('👑 ' + (isRu ? 'ЛИДИРУЕТ' : 'LEADS')) : (isRu ? 'ОТСТАЕТ' : 'CHASING')) +
-        '      </span>' +
-        '    </div>' +
-        '  </div>' +
-        '  <div class="fvh-war-vs-divider">' +
-        '    <div class="fvh-war-vs-badge">VS</div>' +
-        '  </div>' +
-        '  <div class="fvh-war-team-panel hoops ' + (!isFootyWinning ? 'is-leading' : '') + '">' +
-        '    <div class="fvh-team-tag">🏀 HOOPS</div>' +
-        '    <div class="fvh-team-score-num">' + teamHoops.score.toLocaleString() + '</div>' +
-        '    <div class="fvh-team-meta">' +
-        '      <span class="fvh-team-pct">' + teamHoops.pct + '%</span>' +
-        '      <span class="fvh-team-status ' + (!isFootyWinning ? 'lead' : 'behind') + '">' +
-        (!isFootyWinning ? ('👑 ' + (isRu ? 'ЛИДИРУЕТ' : 'LEADS')) : (isRu ? 'ОТСТАЕТ' : 'CHASING')) +
-        '      </span>' +
-        '    </div>' +
-        '  </div>' +
-        '</div>' +
-        '<div class="fvh-war-tug-wrap">' +
-        '  <div class="fvh-war-tug-track">' +
-        '    <div class="fvh-war-tug-fill footy" style="width:' + teamFooty.pct + '%;"></div>' +
-        '    <div class="fvh-war-tug-spark"></div>' +
-        '    <div class="fvh-war-tug-fill hoops" style="width:' + teamHoops.pct + '%;"></div>' +
-        '  </div>' +
-        '  <div class="fvh-war-tug-labels">' +
-        '    <span style="color:#38bdf8;font-weight:900;">⚽ ' + teamFooty.pct + '%</span>' +
-        '    <span style="color:var(--text-muted);font-size:11px;">' + (isRu ? 'Баланс команд' : 'Team Balance') + '</span>' +
-        '    <span style="color:#fb923c;font-weight:900;">🏀 ' + teamHoops.pct + '%</span>' +
-        '  </div>' +
-        '</div>';
-      resultsMount.appendChild(scoreboardCard);
 
       // 5. Top 3 Podium (If unfiltered or at least 2 athletes)
       if (!query && filtered.length >= 2) {

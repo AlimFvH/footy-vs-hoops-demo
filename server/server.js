@@ -3539,9 +3539,16 @@ const server = http.createServer((req, res) => {
         const myRank = pIdx + 1;
         const higher = pIdx > 0 ? ranked[pIdx - 1] : null;
         playerRankInfo = {
+          id: qPlayerId,
+          name: ranked[pIdx].name,
+          char: ranked[pIdx].char,
           rank: myRank,
           score: ranked[pIdx].score,
           tier: ranked[pIdx].tier,
+          wins: ranked[pIdx].wins || 0,
+          losses: ranked[pIdx].losses || 0,
+          winRate: ranked[pIdx].winRate || 0,
+          photoUrl: ranked[pIdx].photoUrl || null,
           pointsToNext: higher ? Math.max(1, higher.score - ranked[pIdx].score) : 0
         };
       }

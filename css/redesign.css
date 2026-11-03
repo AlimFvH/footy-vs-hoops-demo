@@ -5075,6 +5075,141 @@ html, body {
   color: #facc15;
 }
 
+/* Prominent Personal Standing Card at Top of Leaderboard */
+.fvh-lb-my-standing-card {
+  background: linear-gradient(135deg, rgba(20, 32, 60, 0.95) 0%, rgba(12, 18, 38, 0.98) 100%);
+  border: 1.5px solid rgba(0, 240, 255, 0.4);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin: 0 0 12px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.16);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fvh-lb-my-standing-card.hoops {
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5), 0 0 20px rgba(249, 115, 22, 0.16);
+}
+
+.fvh-lb-my-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fvh-lb-my-rank-badge {
+  font-size: 16px;
+  font-weight: 900;
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1.5px solid rgba(250, 204, 21, 0.45);
+  border-radius: 12px;
+  padding: 5px 10px;
+  min-width: 44px;
+  text-align: center;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.fvh-lb-my-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #090e1a;
+}
+
+.fvh-lb-my-avatar svg {
+  width: 90%;
+  height: 90%;
+}
+
+.fvh-lb-my-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.fvh-lb-my-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fvh-lb-my-name {
+  font-size: 14.5px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.fvh-lb-my-record {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.fvh-lb-my-score-box {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.fvh-lb-my-score-val {
+  font-size: 18px;
+  font-weight: 900;
+  color: #facc15;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+}
+
+.fvh-lb-my-score-lbl {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.fvh-lb-my-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.fvh-lb-my-target-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fvh-lb-play-cta-btn {
+  font-weight: 900 !important;
+  font-size: 11.5px !important;
+  padding: 6px 14px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4) !important;
+  cursor: pointer !important;
+}
+
 /* Docked Current Player Bar */
 .fvh-leaderboard-sticky-player {
   margin: 16px 0 0;
