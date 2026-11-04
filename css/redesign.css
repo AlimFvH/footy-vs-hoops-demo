@@ -8633,7 +8633,7 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   border: 1.5px solid rgba(56, 189, 248, 0.45);
   box-shadow: 0 4px 18px rgba(0, 152, 234, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   border-radius: 16px;
-  padding: 11px 14px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;

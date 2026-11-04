@@ -6931,9 +6931,9 @@
         '<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;font-weight:700;">' +
         (lang === 'ru' ? 'ВАША ССЫЛКА ДЛЯ ПРИГЛАШЕНИЯ' : 'YOUR INVITATION LINK') +
         '</div>' +
-        '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
-        '  <input type="text" readonly value="' + escapeHtml(directRefLink) + '" class="fvh-ref-input" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#38bdf8;font-size:12px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;">' +
-        '  <button class="btn primary small fvh-btn-copy-ref" style="white-space:nowrap;padding:8px 14px;font-weight:800;">' + tr('refCopyBtn') + '</button>' +
+        '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">' +
+        '  <input type="text" readonly value="' + escapeHtml(directRefLink) + '" class="fvh-ref-input" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#38bdf8;font-size:12px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;">' +
+        '  <button class="btn primary small fvh-btn-copy-ref" style="width:100%;padding:10px 14px;font-weight:800;font-size:13px;border-radius:10px;text-align:center;">' + tr('refCopyBtn') + '</button>' +
         '</div>' +
         '<div style="display:flex;flex-direction:column;gap:8px;">' +
         '  <button class="btn block fvh-btn-share-ref" style="background:linear-gradient(135deg, #229ed9 0%, #0088cc 100%);color:#fff;font-weight:800;border:none;border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(34,158,217,0.35);">' +
