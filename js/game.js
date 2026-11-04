@@ -13519,7 +13519,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                             text += ` · Buf: ${bufLen}`;
                             if (jitterVal > 0) text += ` · ±${jitterVal}ms`;
                         }
-                        this.fps.textContent = text;
+                        this.fps.textContent = text; // this.fps.textContent = `${fpsVal} fps · ${rtt}ms`;
                     } else if (showFps) {
                         this.fps.textContent = `${fpsVal} FPS (${frameMs}ms)`;
                     }
@@ -14206,6 +14206,10 @@ define("net/protocol", ["require", "exports"], function (require, exports) {
             for (const k of TACKLE_FIELDS)
                 row.push(r3(ag.tackle[k]));
             row.push(r3(ag.tackle.dx), r3(ag.tackle.dz));
+            const isDunking = (ag.dunk && ag.dunk.active) ? 1 : 0;
+            const dunkT = (ag.dunk && typeof ag.dunk.t === 'number') ? r3(ag.dunk.t) : 0;
+            const dunkDur = (ag.dunk && typeof ag.dunk.dur === 'number') ? r3(ag.dunk.dur) : 0.65;
+            row.push(isDunking, dunkT, dunkDur);
             return row;
         });
         const bl = sim.ball;
@@ -14243,6 +14247,17 @@ define("net/protocol", ["require", "exports"], function (require, exports) {
             const dz = row[p++];
             ag.tackle.dx = mirrored ? nz(dx) : dx;
             ag.tackle.dz = mirrored ? nz(dz) : dz;
+            if (p <= row.length - 3) {
+                const isDunk = row[p++] === 1;
+                const dkT = row[p++];
+                const dkDur = row[p++];
+                if (isDunk) {
+                    if (!ag.dunk) ag.dunk = { active: true, t: dkT, dur: dkDur };
+                    else { ag.dunk.active = true; ag.dunk.t = dkT; ag.dunk.dur = dkDur; }
+                } else if (ag.dunk) {
+                    ag.dunk.active = false;
+                }
+            }
         }
         const b = sim.ball;
         let p = 0;
@@ -14365,8 +14380,8 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.OnlineSession = void 0;
     exports.sanitize = sanitize;
-    const SNAP_INTERVAL = 1 / 30;
-    const DEFAULT_INTERP_DELAY = 0.10;
+    const SNAP_INTERVAL = 1 / 48;
+    const DEFAULT_INTERP_DELAY = 0.07;
     class OnlineSession {
         constructor(link, info) {
             this.link = link;
@@ -14385,8 +14400,11 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
             this.inputsRecv = 0;
             this.sim = null;
             this.interpDelay = DEFAULT_INTERP_DELAY;
-            this.jitter = 15;
+            this.jitter = 12;
             this.lastSnapRecvAt = 0;
+            this.renderTime = null;
+            this.prevRenderTime = 0;
+            this.lastNowMs = 0;
             link.h.onClose = (reason) => this.lost(reason === 'local' ? null : 'lost');
             link.h.onMessage = (m, ch) => this.receive(m, ch);
         }
@@ -14438,24 +14456,59 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 this.lastSent = sig;
                 this.lastSentAt = nowMs;
                 this.inSeq = (this.inSeq || 0) + 1;
-                this.link.sendCtl({ k: 'in', i: input, seq: this.inSeq });
+                // High-performance unreliable fast channel (zero SCTP Head-of-Line blocking)
+                this.link.sendFast({ k: 'in', i: input, seq: this.inSeq });
+                // Action edges also sent on reliable channel to guarantee zero loss
+                if (edge) {
+                    this.link.sendCtl({ k: 'in', i: input, seq: this.inSeq });
+                }
+            } else if (sig !== this.lastSent && timeSinceLast >= 16) {
+                this.lastSent = sig;
+                this.lastSentAt = nowMs;
+                this.inSeq = (this.inSeq || 0) + 1;
+                this.link.sendFast({ k: 'in', i: input, seq: this.inSeq });
             }
             const n = this.buf.length;
             if (!n)
                 return;
+
+            const dtFrame = this.lastNowMs > 0 ? Math.min(0.066, Math.max(0.001, (nowMs - this.lastNowMs) / 1000)) : 0.016;
+            this.lastNowMs = nowMs;
+
             // Adaptive jitter buffer: dynamically adapt target interpolation delay to network RTT & jitter
-            const rttSec = this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0 ? (this.link.rtt / 1000) : 0.04;
-            const jitterSec = this.jitter ? Math.min(0.06, this.jitter / 1000) : 0.015;
-            const targetDelay = Math.max(0.10, Math.min(0.18, 0.06 + rttSec * 0.45 + jitterSec * 1.5));
-            this.interpDelay += (targetDelay - this.interpDelay) * 0.04;
+            const rttSec = (this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0) ? (this.link.rtt / 1000) : 0.035;
+            const jitterSec = this.jitter ? Math.min(0.05, this.jitter / 1000) : 0.012;
+            const targetDelay = Math.max(0.055, Math.min(0.14, 0.035 + rttSec * 0.35 + jitterSec * 1.2));
+            this.interpDelay += (targetDelay - this.interpDelay) * 0.05;
 
-            const last = this.buf[n - 1];
-            const timeSinceRx = Math.max(0, (nowMs - last.at) / 1000);
-            const disp = last.s.t - this.interpDelay + timeSinceRx;
+            const newestSnap = this.buf[n - 1].s;
+            const oldestSnap = this.buf[0].s;
+            const targetRenderTime = newestSnap.t - this.interpDelay;
 
-            if (disp <= last.s.t) {
-                let a = this.buf[0].s;
-                let b = this.buf[0].s;
+            // Initialize or resync renderTime if uninitialized or after significant network stall
+            if (this.renderTime === null || isNaN(this.renderTime)) {
+                this.renderTime = targetRenderTime;
+            } else {
+                const timeDiff = targetRenderTime - this.renderTime;
+                if (Math.abs(timeDiff) > 0.28) {
+                    this.renderTime = targetRenderTime;
+                } else {
+                    // Smooth continuous clock drift correction (timescale dilation up to +/-15%)
+                    const driftCorrection = Math.max(-0.15, Math.min(0.15, timeDiff * 2.5));
+                    this.renderTime += dtFrame * (1.0 + driftCorrection);
+                }
+            }
+
+            // Strictly monotonic playback clock: renderTime NEVER steps backwards!
+            if (typeof this.prevRenderTime === 'number' && this.renderTime < this.prevRenderTime) {
+                this.renderTime = this.prevRenderTime + 0.0001;
+            }
+            this.prevRenderTime = this.renderTime;
+            const disp = this.renderTime;
+
+            if (disp <= newestSnap.t) {
+                let a = oldestSnap;
+                let b = oldestSnap;
                 for (let i = 0; i < n; i++) {
                     if (this.buf[i].s.t <= disp) {
                         a = this.buf[i].s;
@@ -14465,14 +14518,27 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 const f = b.t > a.t ? Math.max(0, Math.min(1, (disp - a.t) / (b.t - a.t))) : 1;
                 (0, protocol_js_1.applySnapshot)(sim, a === b ? a : (0, protocol_js_1.blend)(a, b, f), true);
             } else {
-                // Buffer starvation / underrun: smoothly extrapolate forward along velocity vectors rather than freezing
-                const dtExtrap = disp - last.s.t;
-                const extrapolated = (0, protocol_js_1.extrapolateSnapshot)(last.s, dtExtrap);
+                // Buffer starvation / underrun: smoothly extrapolate forward along velocity vectors
+                const dtExtrap = disp - newestSnap.t;
+                const extrapolated = (0, protocol_js_1.extrapolateSnapshot)(newestSnap, dtExtrap);
                 (0, protocol_js_1.applySnapshot)(sim, extrapolated, true);
             }
+
+            // Client-side visual responsiveness for guest's own controlled athlete (agent 0)
+            if (sim.agents && sim.agents[0]) {
+                const myAg = sim.agents[0];
+                const mMag = Math.hypot(input.moveX, input.moveZ);
+                if (mMag > 0.18) {
+                    myAg.fx = input.moveX;
+                    myAg.fz = input.moveZ;
+                }
+                if (input.sprint) myAg.sprint = true;
+                if (input.shootHeld) myAg.shootCharging = true;
+            }
+
             while (this.evq.length && this.evq[0].t <= disp + 0.02)
                 sim.emit((0, protocol_js_1.mirrorEvent)(this.evq.shift().e, sim.agents.length));
-            while (this.buf.length > 30)
+            while (this.buf.length > 35)
                 this.buf.shift();
         }
         receive(m, _ch) {
