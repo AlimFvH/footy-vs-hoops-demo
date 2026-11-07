@@ -24,7 +24,7 @@ const redesignJs = fs.readFileSync(path.join(__dirname, '../js/redesign.js'), 'u
 // Find renderRedesignedMenu
 const menuStart = redesignJs.indexOf('function renderRedesignedMenu(');
 assert(menuStart > 0, 'renderRedesignedMenu must exist');
-const menuBody = redesignJs.slice(menuStart, menuStart + 3500);
+const menuBody = redesignJs.slice(menuStart, menuStart + 5000);
 
 // Verify all 5 elements
 assert(menuBody.includes('getOfficialEmblemHtml()'), 'Topbar must include official emblem');

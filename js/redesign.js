@@ -2147,11 +2147,11 @@
     'skin_cyber': 'skin_footy_cyber_strike',
     'skin_neon': 'skin_footy_neon_matrix',
     'skin_hydro': 'skin_frost',
-    'ball_footy_classic_pro': 'ball_footy_classic',
-    'ball_footy_neon': 'ball_footy_cyber_neon',
-    'ball_footy_gold': 'ball_footy_golden_elite',
-    'ball_hoops_classic_pro': 'ball_hoops_street',
-    'ball_hoops_blaze': 'ball_hoops_molten_fire'
+    'ball_footy_classic_pro': 'ball_classic',
+    'ball_footy_neon': 'ball_cyber_hex',
+    'ball_footy_gold': 'ball_gold_stitch',
+    'ball_hoops_classic_pro': 'ball_hoops_classic',
+    'ball_hoops_blaze': 'ball_molten'
   };
 
   // Translate item names to active language (fallback to English original)
@@ -2342,40 +2342,57 @@
   }
 
   // Dynamic Hero Jersey Palette Definitions for in-game and menu character customization
-  var HERO_SKIN_PALETTES = {
-    skin_rookie: { h: 205, s: 0.90, lMult: 1.0, darkShorts: true, name: 'Rookie Blue', ru: 'Стартовая: Синяя' },
-    skin_crimson: { h: 358, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Crimson Comet', ru: 'Багровая Комета' },
-    skin_neon: { h: 155, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Neon Striker', ru: 'Неоновый Страйкер' },
-    skin_neon_elite: { h: 185, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Neon Striker Elite', ru: 'Неон Страйкер' },
-    skin_frost: { h: 200, s: 0.55, lMult: 1.35, darkShorts: false, name: 'Frost Giant', ru: 'Ледяной Титан' },
-    skin_shadow: { h: 275, s: 0.70, lMult: 0.82, darkShorts: true, name: 'Shadow Ninja', ru: 'Теневой Ниндзя' },
-    skin_solar: { h: 22, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Solar Flare', ru: 'Стартовая: Огненная' },
-    skin_gold: { h: 46, s: 0.95, lMult: 1.18, darkShorts: false, name: 'Golden Legend', ru: 'Золотая Легенда' },
-    skin_cyber: { h: 300, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Cyber Blue', ru: 'Кибер-синяя' },
-    skin_sunset: { h: 28, s: 0.95, lMult: 1.1, darkShorts: false, name: 'Sunset Gold', ru: 'Закатное Золото' },
-    skin_hydro: { h: 175, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Hydro Striker', ru: 'Гидро Страйкер' },
-    skin_mars: { h: 10, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Mars Rover', ru: 'Марсианский Ровер' },
-    skin_astronaut: { h: 215, s: 0.15, lMult: 1.3, darkShorts: true, name: 'Astronaut Kit', ru: 'Экипировка Астронавта' },
-    skin_premium_black_gold: { h: 40, s: 0.9, lMult: 0.9, darkShorts: true, name: 'Premium Black & Gold', ru: 'Премиум Чёрно-Золотая' },
-    skin_neon_cyber: { h: 250, s: 0.9, lMult: 1.1, darkShorts: true, name: 'Neon Cyber', ru: 'Неоновый Кибер' },
-    skin_electric_blue: { h: 220, s: 0.9, lMult: 1.0, darkShorts: true, name: 'Electric Blue', ru: 'Электрический Синий' },
-    skin_crimson_elite: { h: 360, s: 0.9, lMult: 0.95, darkShorts: true, name: 'Crimson Elite', ru: 'Багровый Элит' },
-    skin_championship: { h: 50, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Championship Edition', ru: 'Чемпионская' },
-    // 5 New Footy Kits
-    skin_footy_royal_striker: { h: 225, s: 0.95, lMult: 0.9, darkShorts: true, name: 'Royal Striker', ru: 'Королевский Страйкер' },
-    skin_footy_cyber_strike: { h: 190, s: 0.95, lMult: 1.1, darkShorts: true, name: 'Cyber Strike', ru: 'Кибер Удар' },
-    skin_footy_golden_legend: { h: 42, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Golden Legend', ru: 'Золотая Легенда' },
-    skin_footy_stealth_shadow: { h: 270, s: 0.85, lMult: 0.8, darkShorts: true, name: 'Stealth Shadow', ru: 'Скрытная Тень' },
-    skin_footy_neon_matrix: { h: 180, s: 0.95, lMult: 1.0, darkShorts: true, name: 'Neon Matrix', ru: 'Неоновая Матрица' },
-    // 5 New Hoops Kits
-    skin_hoops_street_legend: { h: 360, s: 0.9, lMult: 1.0, darkShorts: true, name: 'Street Legend', ru: 'Уличная Легенда' },
-    skin_hoops_golden_state: { h: 215, s: 0.9, lMult: 1.05, darkShorts: false, name: 'Golden State', ru: 'Голден Стейт' },
-    skin_hoops_cyber_dunk: { h: 260, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Cyber Dunker', ru: 'Кибер Данкер' },
-    skin_hoops_phantom_black: { h: 45, s: 0.9, lMult: 0.75, darkShorts: true, name: 'Phantom Black', ru: 'Призрачный Чёрный' },
-    skin_hoops_neon_splash: { h: 320, s: 0.9, lMult: 1.1, darkShorts: true, name: 'Neon Splash', ru: 'Неон Сплэш' },
-    // Pack-Exclusive Mythics
-    skin_footy_mythic_titan: { h: 195, s: 0.95, lMult: 1.1, darkShorts: true, name: 'Mythic Titan', ru: 'Титан Мифический' },
-    skin_hoops_hyper_beast: { h: 25, s: 0.98, lMult: 1.05, darkShorts: true, name: 'Hyper Beast', ru: 'Гипер-Зверь' }
+      var HERO_SKIN_PALETTES = {
+    skin_rookie: { h: 184, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Classic Stripes', ru: 'Классические полосы' },
+    skin_plain_white: { h: 210, s: 0.90, lMult: 1.25, darkShorts: true, name: 'Pure Home', ru: 'Чистый домашний' },
+    skin_training_bib: { h: 84, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Neon Practice', ru: 'Неоновая тренировка' },
+    skin_casual_tee: { h: 215, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Street Classic', ru: 'Уличная классика' },
+    skin_block_dual: { h: 221, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Modern Dual Block', ru: 'Двойной блок' },
+    skin_contrast_v: { h: 347, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Contrast V-Neck', ru: 'Контрастный V-вырез' },
+    skin_raglan_dual: { h: 160, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Raglan Velocity', ru: 'Скоростной реглан' },
+    skin_solar: { h: 25, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Solar Flare', ru: 'Солнечная вспышка' },
+    skin_velocity: { h: 184, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Neon Velocity', ru: 'Неоновая скорость' },
+    skin_midnight: { h: 217, s: 0.90, lMult: 0.75, darkShorts: true, name: 'Midnight Shadow', ru: 'Полуночная тень' },
+    skin_cyber: { h: 189, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Cyber Strike', ru: 'Кибер-удар' },
+    skin_pixel_camo: { h: 210, s: 0.90, lMult: 1.25, darkShorts: true, name: 'Arctic Camo', ru: 'Арктический камуфляж' },
+    skin_electric: { h: 258, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Electric Wave', ru: 'Электрическая волна' },
+    skin_golden: { h: 45, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Golden Crest', ru: 'Золотой герб' },
+    skin_aurora: { h: 173, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Aurora Borealis', ru: 'Северное сияние' },
+    skin_matrix: { h: 142, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Glitch Matrix', ru: 'Глитч-матрица' },
+    skin_dynasty: { h: 272, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Royal Dynasty', ru: 'Королевская династия' },
+    skin_dragon: { h: 0, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Dragon Flame', ru: 'Пламя дракона' },
+    skin_phoenix: { h: 43, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Phoenix Rebirth', ru: 'Возрождение феникса' },
+    skin_chrono: { h: 244, s: 0.90, lMult: 0.75, darkShorts: true, name: 'Chrono Sovereign', ru: 'Хроно-повелитель' },
+    skin_bb_onyx: { h: 221, s: 0.90, lMult: 0.75, darkShorts: true, name: 'Black Onyx Core', ru: 'Черный оникс' },
+    skin_bb_white: { h: 0, s: 0.90, lMult: 1.25, darkShorts: false, name: 'Crisp White Home', ru: 'Белый домашний' },
+    skin_bb_navy: { h: 224, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Navy City Edition', ru: 'Городской темно-синий' },
+    skin_bb_crimson: { h: 0, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Crimson Classic', ru: 'Багровый классик' },
+    skin_bb_forest: { h: 142, s: 0.90, lMult: 0.75, darkShorts: false, name: 'Forest Green Hoops', ru: 'Лесной хупс' },
+    skin_bb_royal: { h: 224, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Royal Baseline', ru: 'Королевская база' },
+    skin_bb_sunset: { h: 32, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Sunset Amber', ru: 'Янтарный закат' },
+    skin_bb_miami: { h: 330, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Vaporwave Miami', ru: 'Вайпорвейв Майами' },
+    skin_bb_amber: { h: 21, s: 0.90, lMult: 1.05, darkShorts: false, name: 'High-Voltage Amber', ru: 'Вольтовый янтарь' },
+    skin_bb_cyber: { h: 240, s: 0.90, lMult: 0.75, darkShorts: false, name: 'Stealth Cyberpunk', ru: 'Стелс-киберпанк' },
+    skin_bb_mirage: { h: 41, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Desert Mirage', ru: 'Пустынный мираж' },
+    skin_bb_tropical: { h: 175, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Tropical Breeze', ru: 'Тропический бриз' },
+    skin_bb_arctic: { h: 198, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Arctic Frost', ru: 'Арктический мороз' },
+    skin_bb_gold: { h: 45, s: 0.90, lMult: 1.05, darkShorts: false, name: '24K Gold Dynasty', ru: 'Золотая династия 24K' },
+    skin_bb_prism: { h: 214, s: 0.90, lMult: 1.25, darkShorts: false, name: 'Holographic Prism', ru: 'Голографическая призма' },
+    skin_bb_noir: { h: 222, s: 0.90, lMult: 0.75, darkShorts: true, name: 'Dragon Scale Noir', ru: 'Чешуя дракона нуар' },
+    skin_bb_tokyo: { h: 274, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Neon Tokyo Drift', ru: 'Неоновый токийский дрифт' },
+    skin_bb_nebula: { h: 274, s: 0.90, lMult: 0.75, darkShorts: false, name: 'Celestial Nebula', ru: 'Небесная туманность' },
+    skin_bb_void: { h: 224, s: 0.90, lMult: 0.75, darkShorts: true, name: 'Void Walker', ru: 'Странник пустоты' },
+    skin_bb_titan: { h: 215, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Titan Vanguard', ru: 'Авангард титана' },
+    skin_crimson: { h: 358, s: 0.88, lMult: 1.0, darkShorts: true, name: 'Crimson Comet', ru: 'Багровая комета' },
+    skin_neon: { h: 155, s: 0.92, lMult: 1.1, darkShorts: true, name: 'Neon Striker', ru: 'Неоновый страйкер' },
+    skin_frost: { h: 200, s: 0.55, lMult: 1.35, darkShorts: false, name: 'Frost Giant', ru: 'Морозный гигант' },
+    skin_shadow: { h: 275, s: 0.70, lMult: 0.82, darkShorts: true, name: 'Shadow Ninja', ru: 'Теневой ниндзя' },
+    skin_gold: { h: 46, s: 0.95, lMult: 1.18, darkShorts: false, name: 'Golden Legend', ru: 'Золотая легенда' },
+    skin_sunset: { h: 28, s: 0.95, lMult: 1.1, darkShorts: false, name: 'Sunset Gold', ru: 'Золотой закат' },
+    skin_mars: { h: 10, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Mars Rover', ru: 'Марсианский ровер' },
+    skin_astronaut: { h: 215, s: 0.15, lMult: 1.3, darkShorts: true, name: 'Astronaut Kit', ru: 'Скафандр астронавта' },
+    skin_footy_mythic_titan: { h: 195, s: 0.95, lMult: 1.1, darkShorts: true, name: 'Mythic Titan', ru: 'Мифический Титан' },
+    skin_hoops_hyper_beast: { h: 25, s: 0.98, lMult: 1.05, darkShorts: true, name: 'Hyper Beast', ru: 'Гипер Бестия' }
   };
 
   var HERO_SKIN_CACHE = {};
@@ -2448,7 +2465,7 @@
     var isFooty = (charId === 'footy');
     var defaultSkin = isFooty ? 'skin_rookie' : 'skin_solar';
     if (!skinId || skinId === defaultSkin) {
-      return isFooty ? 'assets/characters/footy10_preview.png' : 'assets/characters/hoops23_preview.png';
+      return isFooty ? 'assets/characters/footy10_preview.png?v=2.3.0' : 'assets/characters/hoops23_preview.png?v=2.3.0';
     }
     var cacheKey = charId + '_' + skinId;
     if (HERO_SKIN_CACHE[cacheKey]) {
@@ -3043,7 +3060,9 @@
     var h = isLg ? 220 : (isSm ? 76 : 84);
     var id = (typeof item === 'string') ? item : (item && (item.id || item.itemId)) || '';
     var uid = id.replace(/[^a-zA-Z0-9]/g, '_');
-    var isHoops = id.indexOf('hoops') !== -1 || id === 'ball_tidal';
+    var isHoops = (item && (item.category === 'balls_hoops' || item.mode === 'hoops' || (item.slot && item.slot.indexOf('hoops') !== -1))) ||
+      id.indexOf('hoops') !== -1 || id.indexOf('bb_') !== -1 || id === 'ball_tidal' ||
+      id === 'ball_gold_groove' || id === 'ball_cyber_grid' || id === 'ball_molten' || id === 'ball_glitch' || id === 'ball_supernova' || id === 'ball_sovereign_bb';
 
     if (isHoops) {
       var bStart = '#ea580c';
@@ -7877,49 +7896,87 @@
 
   // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
   // Exactly 30 canonical, unique sports equipment items across Football and Basketball
-  function buildDefaultShopCatalog(curChar) {
+      function buildDefaultShopCatalog(curChar) {
     return [
-      // === 9 FOOTBALL KITS (Footy) ===
-      { id: 'skin_rookie', name: 'Rookie Blue', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'skin_crimson', name: 'Crimson Comet', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300 },
-      { id: 'skin_footy_royal_striker', name: 'Royal Striker', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 750 },
-      { id: 'skin_frost', name: 'Frost Giant', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 700 },
-      { id: 'skin_footy_cyber_strike', name: 'Cyber Strike', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1400 },
-      { id: 'skin_footy_stealth_shadow', name: 'Stealth Shadow', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1500 },
-      { id: 'skin_astronaut', name: 'Astronaut Kit', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1600 },
-      { id: 'skin_footy_golden_legend', name: 'Golden Legend', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
-      { id: 'skin_footy_neon_matrix', name: 'Neon Matrix', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2200 },
-      { id: 'skin_footy_mythic_titan', name: 'Mythic Titan', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
-
-      // === 8 BASKETBALL KITS (Hoops) ===
-      { id: 'skin_solar', name: 'Solar Street', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'skin_hoops_street_legend', name: 'Street Legend', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750 },
-      { id: 'skin_sunset', name: 'Sunset Gold', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750 },
-      { id: 'skin_hoops_neon_splash', name: 'Neon Splash', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 800 },
-      { id: 'skin_hoops_golden_state', name: 'Golden State', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
-      { id: 'skin_mars', name: 'Mars Rover', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1400 },
-      { id: 'skin_hoops_cyber_dunk', name: 'Cyber Dunker', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1500 },
-      { id: 'skin_hoops_phantom_black', name: 'Phantom Black', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
-      { id: 'skin_hoops_hyper_beast', name: 'Hyper Beast', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true },
-
-      // === 6 FOOTBALL BALLS (Footy) ===
-      { id: 'ball_footy_classic', name: 'Match Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_footy_inferno', name: 'Solar Inferno', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 600 },
-      { id: 'ball_footy_plasma', name: 'Plasma Energy', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
-      { id: 'ball_footy_cyber_neon', name: 'Cyber Matrix', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1200 },
-      { id: 'ball_earthrise', name: 'Earthrise Ball', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1000 },
-      { id: 'ball_footy_golden_elite', name: 'Championship Gold', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2000 },
-      { id: 'ball_footy_supernova', name: 'Supernova Burst', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
-
-      // === 7 BASKETBALL BALLS (Hoops) ===
-      { id: 'ball_hoops_street', name: 'Street Classic', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_hoops_neon_energy', name: 'Neon Energy', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 600 },
-      { id: 'ball_hoops_molten_fire', name: 'Molten Fire', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1200 },
-      { id: 'ball_hoops_chrome', name: 'Chrome Edition', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 800 },
-      { id: 'ball_hoops_midnight', name: 'Midnight Shadow', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1000 },
-      { id: 'ball_hoops_cosmic', name: 'Cosmic Galaxy', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 1800 },
-      { id: 'ball_hoops_golden_elite', name: 'Golden All-Star', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2000 },
-      { id: 'ball_hoops_vortex', name: 'Quantum Vortex', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true }
+      { id: 'skin_rookie', name: 'Classic Stripes', name_ru: 'Классические полосы', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+      { id: 'skin_plain_white', name: 'Pure Home', name_ru: 'Чистый домашний', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 150 },
+      { id: 'skin_training_bib', name: 'Neon Practice', name_ru: 'Неоновая тренировка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 180 },
+      { id: 'skin_casual_tee', name: 'Street Classic', name_ru: 'Уличная классика', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200 },
+      { id: 'skin_block_dual', name: 'Modern Dual Block', name_ru: 'Двойной блок', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 220 },
+      { id: 'skin_contrast_v', name: 'Contrast V-Neck', name_ru: 'Контрастный V-вырез', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 240 },
+      { id: 'skin_raglan_dual', name: 'Raglan Velocity', name_ru: 'Скоростной реглан', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 250 },
+      { id: 'skin_solar', name: 'Solar Flare', name_ru: 'Солнечная вспышка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 450 },
+      { id: 'skin_velocity', name: 'Neon Velocity', name_ru: 'Неоновая скорость', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 500 },
+      { id: 'skin_midnight', name: 'Midnight Shadow', name_ru: 'Полуночная тень', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 550 },
+      { id: 'skin_cyber', name: 'Cyber Strike', name_ru: 'Кибер-удар', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 580 },
+      { id: 'skin_pixel_camo', name: 'Arctic Camo', name_ru: 'Арктический камуфляж', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 600 },
+      { id: 'skin_electric', name: 'Electric Wave', name_ru: 'Электрическая волна', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 650 },
+      { id: 'skin_golden', name: 'Golden Crest', name_ru: 'Золотой герб', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1200 },
+      { id: 'skin_aurora', name: 'Aurora Borealis', name_ru: 'Северное сияние', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1350 },
+      { id: 'skin_matrix', name: 'Glitch Matrix', name_ru: 'Глитч-матрица', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1450 },
+      { id: 'skin_dynasty', name: 'Royal Dynasty', name_ru: 'Королевская династия', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1500 },
+      { id: 'skin_dragon', name: 'Dragon Flame', name_ru: 'Пламя дракона', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2600 },
+      { id: 'skin_phoenix', name: 'Phoenix Rebirth', name_ru: 'Возрождение феникса', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800 },
+      { id: 'skin_chrono', name: 'Chrono Sovereign', name_ru: 'Хроно-повелитель', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 3200 },
+      { id: 'skin_bb_onyx', name: 'Black Onyx Core', name_ru: 'Черный оникс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+      { id: 'skin_bb_white', name: 'Crisp White Home', name_ru: 'Белый домашний', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 150 },
+      { id: 'skin_bb_navy', name: 'Navy City Edition', name_ru: 'Городской темно-синий', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 180 },
+      { id: 'skin_bb_crimson', name: 'Crimson Classic', name_ru: 'Багровый классик', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200 },
+      { id: 'skin_bb_forest', name: 'Forest Green Hoops', name_ru: 'Лесной хупс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 220 },
+      { id: 'skin_bb_royal', name: 'Royal Baseline', name_ru: 'Королевская база', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 240 },
+      { id: 'skin_bb_sunset', name: 'Sunset Amber', name_ru: 'Янтарный закат', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 250 },
+      { id: 'skin_bb_miami', name: 'Vaporwave Miami', name_ru: 'Вайпорвейв Майами', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 480 },
+      { id: 'skin_bb_amber', name: 'High-Voltage Amber', name_ru: 'Вольтовый янтарь', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 520 },
+      { id: 'skin_bb_cyber', name: 'Stealth Cyberpunk', name_ru: 'Стелс-киберпанк', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 560 },
+      { id: 'skin_bb_mirage', name: 'Desert Mirage', name_ru: 'Пустынный мираж', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 580 },
+      { id: 'skin_bb_tropical', name: 'Tropical Breeze', name_ru: 'Тропический бриз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 620 },
+      { id: 'skin_bb_arctic', name: 'Arctic Frost', name_ru: 'Арктический мороз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 650 },
+      { id: 'skin_bb_gold', name: '24K Gold Dynasty', name_ru: 'Золотая династия 24K', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1250 },
+      { id: 'skin_bb_prism', name: 'Holographic Prism', name_ru: 'Голографическая призма', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1350 },
+      { id: 'skin_bb_noir', name: 'Dragon Scale Noir', name_ru: 'Чешуя дракона нуар', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1450 },
+      { id: 'skin_bb_tokyo', name: 'Neon Tokyo Drift', name_ru: 'Неоновый токийский дрифт', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1500 },
+      { id: 'skin_bb_nebula', name: 'Celestial Nebula', name_ru: 'Небесная туманность', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2700 },
+      { id: 'skin_bb_void', name: 'Void Walker', name_ru: 'Странник пустоты', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2900 },
+      { id: 'skin_bb_titan', name: 'Titan Vanguard', name_ru: 'Авангард титана', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 3200 },
+      { id: 'ball_classic', name: 'Classic Telstar', name_ru: 'Классический Телстар', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_training', name: 'Training Orange', name_ru: 'Тренировочный оранжевый', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 120 },
+      { id: 'ball_street', name: 'Street Concrete', name_ru: 'Уличный бетон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 150 },
+      { id: 'ball_slate', name: 'Monochrome Slate', name_ru: 'Монохромный сланец', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 180 },
+      { id: 'ball_pitch_white', name: 'Pitch Pro White', name_ru: 'Полевой белый', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
+      { id: 'ball_vortex', name: 'Vortex Neon', name_ru: 'Вихревой неон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 380 },
+      { id: 'ball_solar', name: 'Solar Flare', name_ru: 'Солнечная вспышка', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 420 },
+      { id: 'ball_cyan_vector', name: 'Cyan Vector', name_ru: 'Бирюзовый вектор', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 460 },
+      { id: 'ball_cyber_hex', name: 'Cyber Hex', name_ru: 'Кибер-гексагон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
+      { id: 'ball_gold_stitch', name: 'Golden Stitch', name_ru: 'Золотой шов', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 550 },
+      { id: 'ball_hyperdrive', name: 'Hyperdrive Energy', name_ru: 'Энергия гипердрайва', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 950 },
+      { id: 'ball_chromatic', name: 'Chromatic Prism', name_ru: 'Хроматическая призма', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1050 },
+      { id: 'ball_magma', name: 'Magma Core', name_ru: 'Ядро магмы', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1200 },
+      { id: 'ball_nebula', name: 'Nebula Cosmic Orb', name_ru: 'Космическая сфера туманности', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2100 },
+      { id: 'ball_sovereign', name: 'Sovereign Pure Gold', name_ru: 'Чистое золото суверена', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2600 },
+      { id: 'ball_hoops_classic', name: 'Classic Grain Leather', name_ru: 'Классическая зернистая кожа', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_hoops_rubber', name: 'Black Street Rubber', name_ru: 'Черная уличная резина', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 120 },
+      { id: 'ball_hoops_white', name: 'Pure White Court', name_ru: 'Чистый белый корт', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 150 },
+      { id: 'ball_hoops_asphalt', name: 'Asphalt Gripper', name_ru: 'Асфальтовый гриппер', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 180 },
+      { id: 'ball_hoops_navy', name: 'Navy Grip Edition', name_ru: 'Темно-синий хват', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 200 },
+      { id: 'ball_hoops_crimson', name: 'Crimson Street', name_ru: 'Багровая улица', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 220 },
+      { id: 'ball_hoops_lime', name: 'Electric Lime', name_ru: 'Электрический лайм', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 380 },
+      { id: 'ball_hoops_camo', name: 'Midnight Camo', name_ru: 'Полуночный камуфляж', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 420 },
+      { id: 'ball_hoops_sunset', name: 'Sunset Horizon', name_ru: 'Закатный горизонт', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 460 },
+      { id: 'ball_gold_groove', name: 'Golden Groove', name_ru: 'Золотая канавка', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 520 },
+      { id: 'ball_cyber_grid', name: 'Cyber Grid LED', name_ru: 'Кибер-сетка LED', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 950 },
+      { id: 'ball_molten', name: 'Molten Magma', name_ru: 'Расплавленная магма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1100 },
+      { id: 'ball_glitch', name: 'Glitch Hologram', name_ru: 'Глитч-голограмма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1250 },
+      { id: 'ball_supernova', name: 'Galactic Supernova', name_ru: 'Галактическая сверхновая', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2200 },
+      { id: 'ball_sovereign_bb', name: 'Sovereign Gold Ball', name_ru: 'Золотой мяч суверена', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2600 },
+      // Preserved legacy test items
+      { id: 'skin_crimson', name: 'Crimson Comet', name_ru: 'Багровая Комета', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 120 },
+      { id: 'ball_footy_classic', name: 'Match Classic', name_ru: 'Мяч Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
+      { id: 'ball_hoops_street', name: 'Street Classic', name_ru: 'Уличный Classic', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
+      // Preserved Pack Exclusives
+      { id: 'skin_footy_mythic_titan', name: 'Mythic Titan', name_ru: 'Мифический Титан', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
+      { id: 'skin_hoops_hyper_beast', name: 'Hyper Beast', name_ru: 'Гипер Бестия', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true },
+      { id: 'ball_footy_supernova', name: 'Supernova Burst', name_ru: 'Вспышка Сверхновой', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
+      { id: 'ball_hoops_vortex', name: 'Quantum Vortex', name_ru: 'Квантовый Вихрь', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true }
     ];
   }
 
@@ -12363,6 +12420,20 @@
   }
 
   // Complete Redesigned Main Menu
+  function updateTelegramBackButton(state) {
+    if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.BackButton) {
+      try {
+        if (state === 'menu') {
+          window.Telegram.WebApp.BackButton.hide();
+        } else if (state === 'match') {
+          // Live match controls its own Telegram BackButton via telegram.enterMatch
+        } else {
+          window.Telegram.WebApp.BackButton.show();
+        }
+      } catch (e) {}
+    }
+  }
+
   function renderRedesignedMenu(app) {
     window.renderRedesignedMenu = renderRedesignedMenu;
     if (!app) app = window.App || window.app || window.__fvh;
@@ -12379,7 +12450,7 @@
     document.querySelectorAll('.fvh-pause-overlay, .fvh-forfeit-victory-screen').forEach(function (el) {
       try { el.remove(); } catch (e) {}
     });
-    updateTelegramBackButton('menu');
+    if (typeof updateTelegramBackButton === 'function') updateTelegramBackButton('menu');
     var d = app.store.data;
     if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
       app.showTeamSelection();
@@ -13330,7 +13401,7 @@
     // Override showMenu with new redesigned main menu
     app.showMenu = function () {
       app.state = 'menu';
-      updateTelegramBackButton('menu');
+      if (typeof updateTelegramBackButton === 'function') updateTelegramBackButton('menu');
       var d = app.store.data;
       if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
         app.showTeamSelection();
