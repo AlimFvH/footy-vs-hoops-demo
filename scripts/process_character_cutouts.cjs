@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer-core');
 const CHROME_PATH = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 
 const footyInput = 'C:/Users/ASUS/.gemini/antigravity/brain/867d5f43-aefc-4485-baf3-3ce7b3f49ce3/footy_character_cutout_greenscreen_1794086513673.jpg';
-const hoopsInput = 'C:/Users/ASUS/.gemini/antigravity/brain/867d5f43-aefc-4485-baf3-3ce7b3f49ce3/hoops_23_fullbody_portrait_1794086517426.jpg';
+const hoopsInput = 'C:/Users/ASUS/.gemini/antigravity/brain/867d5f43-aefc-4485-baf3-3ce7b3f49ce3/hoops_23_fullbody_cutout_1794087015020.jpg';
 
 const footyOut = path.resolve('assets/characters/footy10_preview.png');
 const hoopsOut = path.resolve('assets/characters/hoops23_preview.png');
