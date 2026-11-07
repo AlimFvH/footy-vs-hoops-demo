@@ -965,10 +965,10 @@
       const px = a.x || 0;
       const py = (a.y || 0) + this.elevationLift;
       const pz = a.z || 0;
-      // Muscular, broader athletic torso and shoulders for football players
-      const sx = this.scale;
-      const sy = this.scale;
-      const sz = this.scale;
+      // Athletic proportions: broader athletic shoulders, taller basketball build
+      const sx = this.isFooty ? this.scale * 1.04 : this.scale * 1.08;
+      const sy = this.isFooty ? this.scale : this.scale * 1.05;
+      const sz = this.scale * 0.98;
       makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, sx, sy, sz, this.pitch, this.roll);
     }
   }
@@ -1020,7 +1020,7 @@
         // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 1.70,
+            scale: 1.74,
             skin: c.skin,
             isFooty: true,
             isKeeper: false,
@@ -1031,7 +1031,7 @@
         // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 1.78,
+            scale: 1.84,
             skin: c.skin,
             isFooty: false,
             isKeeper: false,
@@ -1120,76 +1120,65 @@
           let bindTex = inst.customTexture || pBuf.texture;
           let useTex = !!bindTex;
 
-          // Dynamic 3D PBR Kit Tinting & Texture Assignment based on equipped uniform
-          if (inst.customTexture) {
-            // High-detail custom baked texture is active: render texture with full vibrancy without double-tint
-            if (matName === 'LightBlue' || matName === 'White' || matName === 'Red_Dark') {
+          // Dynamic 3D PBR Material Mapping:
+          // Cube.010 Mat: LightBrown -> Jersey / Torso (with #10 / #23)
+          // Cube.019 Mat: LightBlue -> Shorts & Socks
+          // Cube.003 Mat: Red_Dark -> Boots / Sneakers Upper
+          // Cube.003 Mat: White -> Outsole & Studs
+          // Cube.015 Mat: Skin / Skin_Darker -> Face & Athlete Skin
+          // Cube.015 Mat: Hair -> Stylized Hair
+          // Cube.015 Mat: Eye -> Eyes
+          // Cube.015 Mat: Eyebrows -> Eyebrows
+          const isTorso = (matName === 'LightBrown');
+          const isLegs = (matName === 'LightBlue');
+          const isBoots = (matName === 'Red_Dark');
+          const isOutsole = (matName === 'White');
+          const isSkin = (matName === 'Skin' || matName === 'Skin_Darker');
+          const isHair = (matName === 'Hair');
+
+          if (inst.isKeeper) {
+            // High-visibility Goalkeeper uniform
+            if (isTorso) baseCol = [0.17, 0.85, 0.42, 1.0]; // Vibrant neon keeper green
+            else if (isLegs) baseCol = [0.04, 0.23, 0.11, 1.0]; // Dark forest green keeper shorts
+            else if (isBoots) baseCol = [0.10, 0.95, 0.50, 1.0]; // Neon keeper boots
+          } else if (inst.customTexture) {
+            // High-detail custom baked texture is active: render texture with full vibrancy
+            if (isTorso || isLegs || isBoots || isOutsole) {
               baseCol = [1, 1, 1, 1];
-              useTex = true;
-            } else if (matName === 'Skin' || matName === 'Skin_Darker' || matName === 'LightBrown') {
-              if (inst.skin && inst.skin.skin) {
-                const sRgb = hexToVec3(inst.skin.skin);
-                baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
-              }
-            } else if (matName === 'Hair') {
-              if (inst.skin && inst.skin.hair) {
-                const hRgb = hexToVec3(inst.skin.hair);
-                baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
-                useTex = false;
-              }
+            } else if (isSkin && inst.skin && inst.skin.skin) {
+              const sRgb = hexToVec3(inst.skin.skin);
+              baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
+            } else if (isHair && inst.skin && inst.skin.hair) {
+              const hRgb = hexToVec3(inst.skin.hair);
+              baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
             }
-          } else if (inst.skin && !inst.isKeeper) {
+          } else if (inst.skin) {
             const sk = inst.skin;
-            if (matName === 'LightBlue') {
-              // Jersey / Shirt primitive
-              if (sk.primary !== undefined) {
+            const isDefaultSkin = inst.isFooty ? (sk.id === 'skin_rookie') : (sk.id === 'skin_solar');
+
+            if (isDefaultSkin) {
+              // Default hero athlete: show 100% of the pristine Pixar/Fortnite arcade atlas!
+              baseCol = [1, 1, 1, 1];
+            } else {
+              // Customized uniform equipped from wardrobe
+              if (isTorso && sk.primary !== undefined) {
                 const pRgb = hexToVec3(sk.primary);
-                baseCol = [pRgb[0], pRgb[1], pRgb[2], 1.0];
-              }
-              if (!inst.customTexture) {
-                useTex = false;
-              }
-            } else if (matName === 'White') {
-              // Shorts & Socks primitive
-              const shColor = (sk.shorts !== undefined) ? sk.shorts : ((sk.secondary !== undefined) ? sk.secondary : (inst.isFooty ? 0x0a1e3f : 0x14151a));
-              const shRgb = hexToVec3(shColor);
-              baseCol = [shRgb[0], shRgb[1], shRgb[2], 1.0];
-              if (!inst.customTexture) {
-                useTex = false;
-              }
-            } else if (matName === 'Red_Dark') {
-              // Cleats / Boots primitive
-              const bColor = (sk.boots !== undefined) ? sk.boots : (sk.primary !== undefined ? sk.primary : (inst.isFooty ? 0x00c8ff : 0xff6b00));
-              const bRgb = hexToVec3(bColor);
-              baseCol = [bRgb[0], bRgb[1], bRgb[2], 1.0];
-              if (!inst.customTexture) {
-                useTex = false;
-              }
-            } else if (matName === 'Skin' || matName === 'Skin_Darker' || matName === 'LightBrown') {
-              // Athlete skin tone
-              if (sk.skin) {
+                baseCol = [pRgb[0] * 1.15, pRgb[1] * 1.15, pRgb[2] * 1.15, 1.0];
+              } else if (isLegs) {
+                const shColor = (sk.shorts !== undefined) ? sk.shorts : ((sk.secondary !== undefined) ? sk.secondary : (inst.isFooty ? 0x0a1e3f : 0x14151a));
+                const shRgb = hexToVec3(shColor);
+                baseCol = [shRgb[0] * 1.1, shRgb[1] * 1.1, shRgb[2] * 1.1, 1.0];
+              } else if (isBoots) {
+                const bColor = (sk.boots !== undefined) ? sk.boots : (sk.primary !== undefined ? sk.primary : (inst.isFooty ? 0x00c8ff : 0xff6b00));
+                const bRgb = hexToVec3(bColor);
+                baseCol = [bRgb[0], bRgb[1], bRgb[2], 1.0];
+              } else if (isSkin && sk.skin) {
                 const sRgb = hexToVec3(sk.skin);
                 baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
-              }
-            } else if (matName === 'Hair') {
-              // Athlete hair color
-              if (sk.hair) {
+              } else if (isHair && sk.hair) {
                 const hRgb = hexToVec3(sk.hair);
                 baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
-                useTex = false;
               }
-            }
-          } else if (inst.isKeeper) {
-            // High-visibility Goalkeeper uniform
-            if (matName === 'LightBlue') {
-              baseCol = [0.17, 0.85, 0.42, 1.0]; // Vibrant neon keeper green
-              useTex = false;
-            } else if (matName === 'White') {
-              baseCol = [0.04, 0.23, 0.11, 1.0]; // Dark forest green keeper shorts
-              useTex = false;
-            } else if (matName === 'Red_Dark') {
-              baseCol = [0.10, 0.95, 0.50, 1.0]; // Neon keeper boots
-              useTex = false;
             }
           }
 
