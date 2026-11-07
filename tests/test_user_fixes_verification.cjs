@@ -3,9 +3,9 @@ const assert = require('assert');
 
 console.log('=== FOOTY vs HOOPS Targeted Verification for User Issues ===');
 
-const js = fs.readFileSync('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/js/redesign.js', 'utf8');
-const css = fs.readFileSync('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/css/redesign.css', 'utf8');
-const gameJs = fs.readFileSync('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/js/game.js', 'utf8');
+const js = fs.readFileSync('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/js/redesign.js', 'utf8').replace(/\r\n/g, '\n');
+const css = fs.readFileSync('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/css/redesign.css', 'utf8').replace(/\r\n/g, '\n');
+const gameJs = fs.readFileSync('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/js/game.js', 'utf8').replace(/\r\n/g, '\n');
 
 // 1. Verify Football Icon
 console.log('Test 1: Football Icon (nav_home_footy)...');
@@ -38,7 +38,7 @@ console.log('  [PASS] Stamina Widget expands dynamically to comfortably contain 
 console.log('Test 4: Match Exit Navigation to Main Screen...');
 assert(js.includes('Robust Match Exit to Main Menu'), 'Robust app.quitToMenu wrapper must be installed');
 assert(js.includes('if (app.pauseEl) {\n                app.closePause();\n                app.quitToMenu();'), 'Telegram BackButton while paused must quitToMenu');
-assert(gameJs.includes('if (this.game.paused || this.pauseEl) {\r\n                this.quitToMenu();\r\n                return;\r\n            }'), 'game.js togglePause while paused must quitToMenu');
+assert(gameJs.includes('if (this.game.paused || this.pauseEl) {\n                this.quitToMenu();\n                return;\n            }'), 'game.js togglePause while paused must quitToMenu');
 assert(!js.includes("confirm(quitConfirmMsg)"), 'Blocking confirm dialog on quit must be removed');
 console.log('  [PASS] Exiting from match reliably navigates to main menu and cleans up match state.');
 
