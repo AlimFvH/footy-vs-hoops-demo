@@ -5980,18 +5980,46 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const [c, g] = makeCanvas(1024, 512);
         const base = hex(v.base || (v.mode === 'footy' ? 0xf8f9fa : 0xe86620));
         const acc = hex(v.accent || (v.mode === 'footy' ? 0x0f172a : 0x14151a));
-        
-        g.fillStyle = base;
+        const ballId = String(v.id || '').toLowerCase();
+        const style = String(v.style || '').toLowerCase();
+        const isFooty = (v.mode === 'footy');
+
+        // Determine ball rarity tier for distinctive visual presentation
+        let rarity = String(v.rarity || '').toLowerCase();
+        if (!rarity || rarity === 'undefined') {
+            if (ballId.includes('inferno') || ballId.includes('galactic') || ballId.includes('cosmic') || ballId.includes('midnight') || style === 'cosmic') {
+                rarity = 'legendary';
+            } else if (ballId.includes('golden') || ballId.includes('molten') || ballId.includes('chrome') || style === 'stars' || style === 'flame') {
+                rarity = 'epic';
+            } else if (ballId.includes('neon') || ballId.includes('cyber') || ballId.includes('blaze') || ballId.includes('plasma') || ballId.includes('classic_pro') || style === 'plasma') {
+                rarity = 'rare';
+            } else {
+                rarity = 'common';
+            }
+        }
+
+        // Base gradient background
+        const bgGrad = g.createLinearGradient(0, 0, 1024, 512);
+        bgGrad.addColorStop(0, base);
+        bgGrad.addColorStop(0.5, base);
+        bgGrad.addColorStop(1, acc);
+        g.fillStyle = (rarity === 'legendary' || rarity === 'epic') ? bgGrad : base;
         g.fillRect(0, 0, 1024, 512);
 
-        if (v.mode === 'footy') {
-            // Subtle embossed synthetic leather micro-texture
-            g.fillStyle = 'rgba(0,0,0,0.04)';
-            for (let i = 0; i < 8000; i++) {
+        if (isFooty) {
+            // FOOTBALL BALL VISUAL OVERHAUL
+
+            // 1. Synthetic leather micro-grain texture
+            g.fillStyle = 'rgba(0,0,0,0.05)';
+            for (let i = 0; i < 9000; i++) {
                 g.fillRect(Math.random() * 1024, Math.random() * 512, 2.0, 2.0);
             }
+            g.fillStyle = 'rgba(255,255,255,0.04)';
+            for (let i = 0; i < 6000; i++) {
+                g.fillRect(Math.random() * 1024, Math.random() * 512, 1.8, 1.8);
+            }
 
-            // Authentic 32-panel geodesic pattern with double-stitched 3D seams
+            // 32-Panel geodesic layout
             const spots = [];
             for (let i = 0; i < 6; i++) {
                 spots.push([i * 170.6 + 40, 256]);
@@ -6000,9 +6028,10 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 spots.push([i * 170.6 + 124, 72], [i * 170.6 + 124, 440]);
             }
 
-            // Draw stitched hex boundary lines between panels
-            g.strokeStyle = 'rgba(0,0,0,0.50)';
-            g.lineWidth = 6.0;
+            // Draw stitched boundary lines between hexagonal panels
+            const seamCol = (rarity === 'legendary') ? '#facc15' : (rarity === 'rare' ? '#38bdf8' : 'rgba(0,0,0,0.55)');
+            g.strokeStyle = seamCol;
+            g.lineWidth = (rarity === 'legendary' || rarity === 'rare') ? 7.0 : 5.5;
             for (const [x, y] of spots) {
                 g.beginPath();
                 for (let k = 0; k < 6; k++) {
@@ -6016,15 +6045,15 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 g.stroke();
             }
 
-            // Secondary subtle double-stitch line
+            // Secondary double-stitch micro-line
             g.strokeStyle = 'rgba(255,255,255,0.45)';
             g.lineWidth = 2.0;
             for (const [x, y] of spots) {
                 g.beginPath();
                 for (let k = 0; k < 6; k++) {
                     const a = (k / 6) * Math.PI * 2;
-                    const px = x + Math.cos(a) * 85;
-                    const py = y + Math.sin(a) * 85;
+                    const px = x + Math.cos(a) * 84;
+                    const py = y + Math.sin(a) * 84;
                     if (k === 0) g.moveTo(px, py);
                     else g.lineTo(px, py);
                 }
@@ -6032,10 +6061,10 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 g.stroke();
             }
 
-            // Draw contrasting pentagons with embossed highlights
+            // Draw distinctive pentagons with rarity-specific artwork
             for (const [x, y] of spots) {
                 // Shadow under pentagon
-                g.fillStyle = 'rgba(0,0,0,0.40)';
+                g.fillStyle = 'rgba(0,0,0,0.45)';
                 g.beginPath();
                 for (let k = 0; k < 5; k++) {
                     const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
@@ -6055,46 +6084,82 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 g.fill();
 
                 // Specular highlight rim inside pentagon
-                g.strokeStyle = 'rgba(255,255,255,0.45)';
+                g.strokeStyle = (rarity === 'legendary') ? 'rgba(250,204,21,0.85)' : 'rgba(255,255,255,0.55)';
                 g.lineWidth = 3.2;
                 g.stroke();
             }
 
-            // Special style rendering
-            if (v.style === 'plasma') {
+            // RARITY-SPECIFIC SIGNATURE EFFECTS
+            if (rarity === 'legendary') {
+                // Championship Gold / Galactic Cosmos
+                if (ballId.includes('inferno') || style === 'flame') {
+                    // Blazing lava tongues
+                    g.fillStyle = 'rgba(255,106,0,0.75)';
+                    for (let i = 0; i < 24; i++) {
+                        g.beginPath();
+                        g.arc((i * 42.6) % 1024, 256 + Math.sin(i * 1.5) * 120, 42, 0, Math.PI * 2);
+                        g.fill();
+                    }
+                    g.fillStyle = 'rgba(254,240,138,0.9)';
+                    for (let i = 0; i < 18; i++) {
+                        g.beginPath();
+                        g.arc((i * 56.8 + 20) % 1024, 256 + Math.cos(i * 1.2) * 80, 22, 0, Math.PI * 2);
+                        g.fill();
+                    }
+                } else {
+                    // Galactic / Cosmic deep space nebula with shimmering stars
+                    g.fillStyle = '#ffffff';
+                    g.shadowColor = '#c084fc';
+                    g.shadowBlur = 18;
+                    for (let i = 0; i < 36; i++) {
+                        const sx = (i * 28.4 + 14) % 1024;
+                        const sy = 40 + (i * 37) % 432;
+                        g.beginPath();
+                        g.arc(sx, sy, (i % 3 === 0) ? 6.5 : 4.0, 0, Math.PI * 2);
+                        g.fill();
+                    }
+                    g.shadowBlur = 0;
+
+                    // Golden metallic reflection sash
+                    g.strokeStyle = 'rgba(250,204,21,0.55)';
+                    g.lineWidth = 14.0;
+                    g.beginPath();
+                    g.moveTo(0, 160);
+                    g.lineTo(1024, 352);
+                    g.stroke();
+                }
+            } else if (rarity === 'epic') {
+                // Golden Elite / Molten Fire
+                g.fillStyle = 'rgba(255,215,0,0.35)';
+                for (let i = 0; i < 16; i++) {
+                    g.beginPath();
+                    g.arc(i * 64 + 32, 256 + Math.sin(i) * 90, 36, 0, Math.PI * 2);
+                    g.fill();
+                }
+                g.strokeStyle = '#facc15';
+                g.lineWidth = 4.5;
+                g.beginPath();
+                g.moveTo(0, 256);
+                g.lineTo(1024, 256);
+                g.stroke();
+            } else if (rarity === 'rare') {
+                // Cyber Neon / Electric Blue high-vis energy bands
                 g.strokeStyle = '#00f0ff';
-                g.lineWidth = 8;
+                g.lineWidth = 7.0;
                 g.shadowColor = '#00f0ff';
-                g.shadowBlur = 24;
+                g.shadowBlur = 16;
                 for (let i = 0; i < 8; i++) {
                     g.beginPath();
-                    g.arc(i * 128 + 64, 256, 48, 0, Math.PI * 2);
+                    g.arc(i * 128 + 64, 256, 44, 0, Math.PI * 2);
                     g.stroke();
                 }
                 g.shadowBlur = 0;
-            } else if (v.style === 'stars') {
-                g.fillStyle = '#ffffff';
-                g.shadowColor = '#ffe27a';
-                g.shadowBlur = 16;
-                for (let i = 0; i < 12; i++) {
-                    const sx = (i * 85.3 + 42) % 1024;
-                    const sy = 60 + (i % 3) * 180;
-                    g.beginPath();
-                    g.arc(sx, sy, 9, 0, Math.PI * 2);
-                    g.fill();
-                }
-                g.shadowBlur = 0;
-            } else if (v.style === 'flame') {
-                g.fillStyle = 'rgba(255,100,0,0.45)';
-                for (let i = 0; i < 16; i++) {
-                    g.beginPath();
-                    g.arc(i * 64 + 32, 256 + Math.sin(i) * 100, 36, 0, Math.PI * 2);
-                    g.fill();
-                }
             }
         } else {
-            // Basketball: authentic composite pebbled leather grip texture
-            g.fillStyle = 'rgba(0,0,0,0.22)';
+            // BASKETBALL BALL VISUAL OVERHAUL
+
+            // 1. Authentic pebbled composite leather grip micro-texture
+            g.fillStyle = 'rgba(0,0,0,0.24)';
             for (let y = 0; y < 512; y += 6) {
                 for (let x = 0; x < 1024; x += 6) {
                     if ((x + y) % 12 === 0) {
@@ -6103,20 +6168,21 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 }
             }
 
-            // Highlight pebble dots
-            g.fillStyle = 'rgba(255,255,255,0.18)';
+            // Highlight pebble grain dots for tactile depth
+            g.fillStyle = 'rgba(255,255,255,0.20)';
             for (let y = 0; y < 512; y += 8) {
                 for (let x = 0; x < 1024; x += 8) {
                     g.fillRect(x, y, 1.8, 1.8);
                 }
             }
 
-            // Deep recessed black rubber grip seams
-            g.strokeStyle = acc;
-            g.lineWidth = 13;
+            // 2. Recessed rubber grip seam channels
+            const channelCol = (rarity === 'legendary') ? '#facc15' : ((rarity === 'rare') ? '#22d3ee' : acc);
+            g.strokeStyle = channelCol;
+            g.lineWidth = 14;
             g.lineCap = 'round';
 
-            // Center horizontal equator seam
+            // Equator seam
             g.beginPath();
             g.moveTo(0, 256);
             g.lineTo(1024, 256);
@@ -6140,7 +6206,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 g.stroke();
             }
 
-            // Inner shadow groove for 3D depth
+            // Inner dark shadow groove for 3D depth
             g.strokeStyle = 'rgba(0,0,0,0.92)';
             g.lineWidth = 6.0;
             g.beginPath();
@@ -6154,13 +6220,49 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
                 g.stroke();
             }
 
-            // White accent seam highlights
-            g.strokeStyle = 'rgba(255,255,255,0.35)';
-            g.lineWidth = 2.0;
+            // Contrast seam highlights
+            const hlCol = (rarity === 'legendary') ? 'rgba(254,240,138,0.75)' : 'rgba(255,255,255,0.45)';
+            g.strokeStyle = hlCol;
+            g.lineWidth = 2.5;
             g.beginPath();
             g.moveTo(0, 252);
             g.lineTo(1024, 252);
             g.stroke();
+
+            // RARITY-SPECIFIC BASKETBALL SIGNATURES
+            if (rarity === 'legendary') {
+                // Cosmic / Midnight glowing star constellations and energy vortex
+                g.fillStyle = '#ffffff';
+                g.shadowColor = '#38bdf8';
+                g.shadowBlur = 18;
+                for (let i = 0; i < 30; i++) {
+                    const sx = (i * 34.1 + 17) % 1024;
+                    const sy = 40 + (i * 41) % 432;
+                    g.beginPath();
+                    g.arc(sx, sy, 5.0, 0, Math.PI * 2);
+                    g.fill();
+                }
+                g.shadowBlur = 0;
+            } else if (rarity === 'epic') {
+                // Molten Fire / Golden Elite
+                g.fillStyle = 'rgba(245,158,11,0.45)';
+                for (let i = 0; i < 16; i++) {
+                    g.beginPath();
+                    g.arc(i * 64 + 32, 256 + Math.sin(i * 1.4) * 90, 32, 0, Math.PI * 2);
+                    g.fill();
+                }
+            } else if (rarity === 'rare') {
+                // Neon Energy / Blaze cyan accent bands
+                g.strokeStyle = '#00f0ff';
+                g.lineWidth = 4.0;
+                g.shadowColor = '#00f0ff';
+                g.shadowBlur = 14;
+                g.beginPath();
+                g.moveTo(0, 260);
+                g.lineTo(1024, 260);
+                g.stroke();
+                g.shadowBlur = 0;
+            }
         }
 
         return c;
@@ -14386,9 +14488,7 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 this.lastSent = sig;
                 this.lastSentAt = nowMs;
                 this.inSeq = (this.inSeq || 0) + 1;
-                // High-performance unreliable fast channel (zero SCTP Head-of-Line blocking)
                 this.link.sendFast({ k: 'in', i: input, seq: this.inSeq });
-                // Action edges also sent on reliable channel to guarantee zero loss
                 if (edge) {
                     this.link.sendCtl({ k: 'in', i: input, seq: this.inSeq });
                 }
@@ -14406,25 +14506,24 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
             this.lastNowMs = nowMs;
 
             // Adaptive jitter buffer: dynamically adapt target interpolation delay to network RTT & jitter
-            const rttSec = (this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0) ? (this.link.rtt / 1000) : 0.035;
-            const jitterSec = this.jitter ? Math.min(0.05, this.jitter / 1000) : 0.012;
-            const targetDelay = Math.max(0.055, Math.min(0.14, 0.035 + rttSec * 0.35 + jitterSec * 1.2));
+            const rttSec = (this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0) ? (this.link.rtt / 1000) : 0.040;
+            const jitterSec = this.jitter ? Math.min(0.06, this.jitter / 1000) : 0.015;
+            const targetDelay = Math.max(0.075, Math.min(0.16, 0.055 + rttSec * 0.4 + jitterSec * 1.5));
             this.interpDelay += (targetDelay - this.interpDelay) * 0.05;
 
             const newestSnap = this.buf[n - 1].s;
             const oldestSnap = this.buf[0].s;
             const targetRenderTime = newestSnap.t - this.interpDelay;
 
-            // Initialize or resync renderTime if uninitialized or after significant network stall
+            // Continuous clock drift correction (timescale dilation up to +/-12%)
             if (this.renderTime === null || isNaN(this.renderTime)) {
                 this.renderTime = targetRenderTime;
             } else {
                 const timeDiff = targetRenderTime - this.renderTime;
-                if (Math.abs(timeDiff) > 0.28) {
+                if (Math.abs(timeDiff) > 0.30) {
                     this.renderTime = targetRenderTime;
                 } else {
-                    // Smooth continuous clock drift correction (timescale dilation up to +/-15%)
-                    const driftCorrection = Math.max(-0.15, Math.min(0.15, timeDiff * 2.5));
+                    const driftCorrection = Math.max(-0.12, Math.min(0.12, timeDiff * 2.2));
                     this.renderTime += dtFrame * (1.0 + driftCorrection);
                 }
             }
@@ -14449,21 +14548,70 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 (0, protocol_js_1.applySnapshot)(sim, a === b ? a : (0, protocol_js_1.blend)(a, b, f), true);
             } else {
                 // Buffer starvation / underrun: smoothly extrapolate forward along velocity vectors
-                const dtExtrap = disp - newestSnap.t;
+                const dtExtrap = Math.min(0.15, disp - newestSnap.t);
                 const extrapolated = (0, protocol_js_1.extrapolateSnapshot)(newestSnap, dtExtrap);
                 (0, protocol_js_1.applySnapshot)(sim, extrapolated, true);
             }
 
-            // Client-side visual responsiveness for guest's own controlled athlete (agent 0)
+            // Client-side visual prediction & soft reconciliation for guest's own controlled athlete (agent 0)
             if (sim.agents && sim.agents[0]) {
                 const myAg = sim.agents[0];
-                const mMag = Math.hypot(input.moveX, input.moveZ);
-                if (mMag > 0.18) {
-                    myAg.fx = input.moveX;
-                    myAg.fz = input.moveZ;
+                const authX = myAg.x;
+                const authZ = myAg.z;
+                if (typeof this.predX !== 'number' || isNaN(this.predX)) {
+                    this.predX = authX;
+                    this.predZ = authZ;
                 }
+
+                // Soft reconciliation: exponential decay of positional error towards authoritative state
+                const errX = authX - this.predX;
+                const errZ = authZ - this.predZ;
+                const errDist = Math.hypot(errX, errZ);
+                if (errDist > 2.2) {
+                    this.predX = authX;
+                    this.predZ = authZ;
+                } else if (errDist > 0.005) {
+                    const blendRate = Math.min(1.0, dtFrame * 8.5);
+                    this.predX += errX * blendRate;
+                    this.predZ += errZ * blendRate;
+                }
+
+                // Instant local client prediction from joystick movement (zero latency at 60 FPS)
+                const moveMag = Math.hypot(input.moveX, input.moveZ);
+                const topSpd = input.sprint ? 7.2 : 5.4;
+                if (moveMag > 0.05) {
+                    const nx = input.moveX / Math.max(1, moveMag);
+                    const nz = input.moveZ / Math.max(1, moveMag);
+                    myAg.fx = nx;
+                    myAg.fz = nz;
+                    const pVx = nx * topSpd * Math.min(1, moveMag);
+                    const pVz = nz * topSpd * Math.min(1, moveMag);
+                    this.predX += pVx * dtFrame;
+                    this.predZ += pVz * dtFrame;
+                    myAg.vx = pVx;
+                    myAg.vz = pVz;
+                    myAg.runPhase = (myAg.runPhase || 0) + topSpd * dtFrame * 2.8;
+                } else {
+                    myAg.vx = (myAg.vx || 0) * 0.82;
+                    myAg.vz = (myAg.vz || 0) * 0.82;
+                }
+
+                const halfW = (sim.mode === 'footy') ? 14.5 : 8.0;
+                const halfL = (sim.mode === 'footy') ? 24.0 : 13.5;
+                this.predX = Math.max(-halfW, Math.min(halfW, this.predX));
+                this.predZ = Math.max(-halfL, Math.min(halfL, this.predZ));
+
+                myAg.x = this.predX;
+                myAg.z = this.predZ;
+
                 if (input.sprint) myAg.sprint = true;
                 if (input.shootHeld) myAg.shootCharging = true;
+
+                if (sim.ball && sim.ball.owner === myAg) {
+                    const bOffset = (sim.mode === 'footy') ? 0.45 : 0.55;
+                    sim.ball.x = myAg.x + myAg.fx * bOffset;
+                    sim.ball.z = myAg.z + myAg.fz * bOffset;
+                }
             }
 
             while (this.evq.length && this.evq[0].t <= disp + 0.02)
@@ -14498,7 +14646,7 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                     const now = performance.now();
                     if (this.lastSnapRecvAt) {
                         const interval = now - this.lastSnapRecvAt;
-                        const diff = Math.abs(interval - 33.33);
+                        const diff = Math.abs(interval - 1000 * SNAP_INTERVAL);
                         this.jitter = this.jitter ? (this.jitter * 0.92 + diff * 0.08) : diff;
                     }
                     this.lastSnapRecvAt = now;

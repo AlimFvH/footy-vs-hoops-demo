@@ -123,11 +123,14 @@
 
     vec3 specular = (D * F * G) / (4.0 * NdotV * NdotL + 0.001) * uSunColor * NdotL * 1.5;
 
-    // Subtle Athletic Rim Light
-    float rim = pow(1.0 - NdotV, 3.0) * (1.0 - uRoughness * 0.5);
-    vec3 rimLight = rim * vec3(0.35, 0.65, 0.95) * baseColor.rgb * 0.8;
+    // Crisp Athletic Stadium Rim Contour (High-clarity player silhouette)
+    float rim = pow(1.0 - NdotV, 2.4);
+    vec3 rimColor = mix(vec3(0.42, 0.78, 1.0), vec3(1.0, 0.92, 0.65), NdotL * 0.5 + 0.5);
+    vec3 rimLight = rim * rimColor * (0.50 + (1.0 - uRoughness) * 0.60);
 
+    // Console-grade contrast curve for crisp, vivid athlete details
     vec3 finalRgb = ambient + diffuse + specular + rimLight;
+    finalRgb = mix(finalRgb, finalRgb * finalRgb * (3.0 - 2.0 * finalRgb), 0.12);
     fragColor = vec4(finalRgb, baseColor.a);
   }`;
 
@@ -172,12 +175,22 @@
   }
 
   function drawGlbJerseyPattern(ctx, W, H, isFooty, skinId, skin) {
-    if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_solar') return;
+    if (!skinId) return;
     try {
       ctx.save();
-      const pCol = skin && skin.primary ? skin.primary : (isFooty ? '#00f0ff' : '#f97316');
-      const sCol = skin && skin.secondary ? skin.secondary : '#ffffff';
-      const accCol = skin && skin.accent ? skin.accent : '#facc15';
+      const pCol = skin && skin.primary ? (typeof skin.primary === 'number' ? '#' + skin.primary.toString(16).padStart(6, '0') : skin.primary) : (isFooty ? '#00f0ff' : '#f97316');
+      const sCol = skin && skin.secondary ? (typeof skin.secondary === 'number' ? '#' + skin.secondary.toString(16).padStart(6, '0') : skin.secondary) : '#ffffff';
+      const accCol = skin && skin.accent ? (typeof skin.accent === 'number' ? '#' + skin.accent.toString(16).padStart(6, '0') : skin.accent) : '#facc15';
+
+      const sId = String(skinId).toLowerCase();
+      let rarity = 'common';
+      if (sId.includes('gold') || sId.includes('cyber') || sId.includes('phantom') || sId.includes('championship') || sId.includes('matrix') || sId.includes('premium')) {
+        rarity = 'legendary';
+      } else if (sId.includes('solar') || sId.includes('shadow') || sId.includes('electric') || sId.includes('crimson_elite') || sId.includes('golden_state') || sId.includes('cyber_dunk') || sId.includes('stealth') || sId.includes('astronaut') || sId.includes('mars')) {
+        rarity = 'epic';
+      } else if (sId.includes('neon') || sId.includes('frost') || sId.includes('royal') || sId.includes('hydro') || sId.includes('street') || sId.includes('splash') || sId.includes('sunset')) {
+        rarity = 'rare';
+      }
 
       const frontCX = W * 0.25;
       const backCX = W * 0.75;
@@ -185,80 +198,142 @@
       const hH = H * 0.34;
 
       [frontCX, backCX].forEach((cx, idx) => {
+        const isFront = (idx === 0);
         ctx.save();
         ctx.beginPath();
         ctx.rect(cx - W * 0.13, topY, W * 0.26, hH);
         ctx.clip();
         ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 0.85;
+        ctx.globalAlpha = 0.90;
 
-        if (skinId.includes('crimson')) {
-          ctx.fillStyle = '#fef08a';
-          const sw = W * 0.022;
-          ctx.fillRect(cx - sw * 2.2, topY, sw, hH);
-          ctx.fillRect(cx - sw * 0.5, topY, sw, hH);
-          ctx.fillRect(cx + sw * 1.2, topY, sw, hH);
-        } else if (skinId.includes('royal') || skinId.includes('frost')) {
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = W * 0.045;
+        // --- RARITY-BASED HIGH-DETAIL JERSEY PATTERNS ---
+
+        if (rarity === 'legendary') {
+          // CHAMPIONSHIP GOLD / CYBER MATRIX / PHANTOM BLACK
+          // Royal Gold Sash with metallic borders
+          const grad = ctx.createLinearGradient(cx - W * 0.11, topY, cx + W * 0.11, topY + hH);
+          grad.addColorStop(0, '#fef08a');
+          grad.addColorStop(0.5, '#f59e0b');
+          grad.addColorStop(1, '#b45309');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = W * 0.048;
           ctx.beginPath();
           ctx.moveTo(cx - W * 0.11, topY);
           ctx.lineTo(cx + W * 0.11, topY + hH);
           ctx.stroke();
-        } else if (skinId.includes('cyber') || skinId.includes('neon')) {
-          ctx.strokeStyle = '#00f0ff';
-          ctx.lineWidth = W * 0.02;
-          ctx.beginPath();
-          ctx.moveTo(cx - W * 0.09, topY + hH * 0.2);
-          ctx.lineTo(cx, topY + hH * 0.42);
-          ctx.lineTo(cx + W * 0.09, topY + hH * 0.2);
+
+          // Gold border pinstripes
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5;
           ctx.stroke();
+
+          // Cyber / Circuit geometric tracery
+          if (sId.includes('cyber') || sId.includes('matrix')) {
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 3.0;
+            ctx.beginPath();
+            ctx.moveTo(cx - W * 0.08, topY + hH * 0.25);
+            ctx.lineTo(cx, topY + hH * 0.45);
+            ctx.lineTo(cx + W * 0.08, topY + hH * 0.25);
+            ctx.moveTo(cx - W * 0.08, topY + hH * 0.55);
+            ctx.lineTo(cx, topY + hH * 0.75);
+            ctx.lineTo(cx + W * 0.08, topY + hH * 0.55);
+            ctx.stroke();
+          }
+
+          // Gold Crown emblem in center
+          ctx.fillStyle = '#facc15';
           ctx.beginPath();
-          ctx.moveTo(cx - W * 0.09, topY + hH * 0.48);
-          ctx.lineTo(cx, topY + hH * 0.70);
-          ctx.lineTo(cx + W * 0.09, topY + hH * 0.48);
-          ctx.stroke();
-        } else if (skinId.includes('gold') || skinId.includes('championship')) {
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = W * 0.035;
-          ctx.beginPath();
-          ctx.arc(cx, topY + hH * 0.4, W * 0.065, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(cx, topY + hH * 0.4, W * 0.02, 0, Math.PI * 2);
+          ctx.arc(cx, topY + hH * 0.38, W * 0.024, 0, Math.PI * 2);
           ctx.fill();
-        } else if (skinId.includes('titan')) {
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 5;
+        } else if (rarity === 'epic') {
+          // ELECTRIC BLUE / SOLAR FLARE / STEALTH SHADOW
+          // High-voltage lightning / angled chevron panels
+          const eGrad = ctx.createLinearGradient(cx - W * 0.1, topY, cx + W * 0.1, topY + hH);
+          eGrad.addColorStop(0, pCol);
+          eGrad.addColorStop(1, sCol);
+          ctx.fillStyle = eGrad;
+
           ctx.beginPath();
-          ctx.arc(cx, topY + hH * 0.38, W * 0.045, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.fillStyle = '#00f0ff';
-          ctx.beginPath();
-          ctx.arc(cx, topY + hH * 0.38, W * 0.022, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (skinId.includes('street')) {
-          ctx.fillStyle = '#ef4444';
-          ctx.fillRect(cx - W * 0.12, topY, W * 0.028, hH);
-          ctx.fillRect(cx + W * 0.092, topY, W * 0.028, hH);
-        } else if (skinId.includes('beast')) {
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 5;
-          ctx.beginPath();
-          ctx.moveTo(cx - W * 0.08, topY + hH * 0.25); ctx.lineTo(cx + W * 0.08, topY + hH * 0.45);
-          ctx.moveTo(cx - W * 0.06, topY + hH * 0.42); ctx.lineTo(cx + W * 0.10, topY + hH * 0.62);
-          ctx.stroke();
-        } else if (skinId.includes('splash')) {
-          ctx.fillStyle = '#db2777';
-          ctx.beginPath();
-          ctx.moveTo(cx - W * 0.12, topY);
-          ctx.lineTo(cx, topY);
-          ctx.lineTo(cx - W * 0.05, topY + hH);
-          ctx.lineTo(cx - W * 0.12, topY + hH);
+          ctx.moveTo(cx - W * 0.10, topY + hH * 0.15);
+          ctx.lineTo(cx, topY + hH * 0.38);
+          ctx.lineTo(cx + W * 0.10, topY + hH * 0.15);
+          ctx.lineTo(cx + W * 0.10, topY + hH * 0.26);
+          ctx.lineTo(cx, topY + hH * 0.49);
+          ctx.lineTo(cx - W * 0.10, topY + hH * 0.26);
           ctx.closePath();
           ctx.fill();
+
+          ctx.strokeStyle = accCol;
+          ctx.lineWidth = 3.2;
+          ctx.stroke();
+        } else if (rarity === 'rare') {
+          // NEON STRIKER / FROST GIANT / ROYAL STRIKER
+          if (sId.includes('stripes') || sId.includes('royal')) {
+            ctx.fillStyle = sCol;
+            const sw = W * 0.024;
+            ctx.fillRect(cx - sw * 2.2, topY, sw, hH);
+            ctx.fillRect(cx - sw * 0.5, topY, sw, hH);
+            ctx.fillRect(cx + sw * 1.2, topY, sw, hH);
+            ctx.strokeStyle = accCol;
+            ctx.lineWidth = 2.0;
+            ctx.strokeRect(cx - sw * 2.2, topY, sw, hH);
+            ctx.strokeRect(cx - sw * 0.5, topY, sw, hH);
+            ctx.strokeRect(cx + sw * 1.2, topY, sw, hH);
+          } else {
+            // Dynamic diagonal sash
+            ctx.strokeStyle = sCol;
+            ctx.lineWidth = W * 0.038;
+            ctx.beginPath();
+            ctx.moveTo(cx - W * 0.10, topY);
+            ctx.lineTo(cx + W * 0.10, topY + hH);
+            ctx.stroke();
+            ctx.strokeStyle = accCol;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+          }
+        } else {
+          // COMMON: Clean athletic cut with contrast collar trim & subtle federation pinstripes
+          ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+          ctx.lineWidth = 2.0;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.07, topY); ctx.lineTo(cx - W * 0.07, topY + hH);
+          ctx.moveTo(cx + W * 0.07, topY); ctx.lineTo(cx + W * 0.07, topY + hH);
+          ctx.stroke();
         }
+
+        // 2. Club Crest & Athlete Number Detailing
+        if (isFront) {
+          // Official Club Crest on left chest
+          ctx.fillStyle = accCol;
+          ctx.beginPath();
+          ctx.arc(cx - W * 0.052, topY + hH * 0.28, W * 0.016, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // High-visibility athlete number (#10 for Footy, #23 for Hoops)
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold ' + Math.round(W * 0.040) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 6;
+          ctx.fillText(isFooty ? '10' : '23', cx, topY + hH * 0.56);
+          ctx.shadowBlur = 0;
+        } else {
+          // Back: Large athlete number (#10 / #23)
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold ' + Math.round(W * 0.072) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 8;
+          ctx.fillText(isFooty ? '10' : '23', cx, topY + hH * 0.50);
+          ctx.shadowBlur = 0;
+        }
+
         ctx.restore();
       });
       ctx.restore();
@@ -266,7 +341,6 @@
       console.warn('drawGlbJerseyPattern error', e);
     }
   }
-
   function getOrCreateSkinTexture(gl, model, skin, isFooty) {
     if (!gl || !model || !skin || !skin.id) return null;
     const defSkin = isFooty ? 'skin_rookie' : 'skin_solar';

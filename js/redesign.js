@@ -5860,7 +5860,12 @@
           name: isFooty ? tr('upgradeSkillPowerFooty') : tr('upgradeSkillPowerHoops'),
           desc: isFooty ? tr('upgradeSkillPowerFootyDesc') : tr('upgradeSkillPowerHoopsDesc'),
           level: pL,
-          stepPct: 5.0
+          stepPct: 5.0,
+          curMetric: isFooty ? (76 + (pL - 1) * 3.8).toFixed(0) + ' км/ч' : (72 + (pL - 1) * 3.4).toFixed(0) + ' км/ч',
+          nextMetric: isFooty ? (76 + pL * 3.8).toFixed(0) + ' км/ч' : (72 + pL * 3.4).toFixed(0) + ' км/ч',
+          metricLabel: isFooty ? (lang === 'ru' ? 'Скорость удара' : 'Strike Velocity') : (lang === 'ru' ? 'Мощь броска' : 'Shot Arc & Power'),
+          traitLv5: isFooty ? (lang === 'ru' ? '⭐ Lv.5 Трейт: Подкрутка в девятку' : '⭐ Lv.5 Trait: Top Corner Curve') : (lang === 'ru' ? '⭐ Lv.5 Trait: Снайпер трехочковых' : '⭐ Lv.5 Trait: 3-Point Precision'),
+          traitLv10: isFooty ? (lang === 'ru' ? '👑 Lv.10 Трейт: Пушечный выстрел' : '👑 Lv.10 Trait: Golden Cannonball') : (lang === 'ru' ? '👑 Lv.10 Trait: Мощный постер-данк' : '👑 Lv.10 Trait: Thunderous Poster Dunk')
         },
         {
           key: 'stamina',
@@ -5868,7 +5873,12 @@
           name: tr('upgradeSkillStamina'),
           desc: tr('upgradeSkillStaminaDesc'),
           level: sL,
-          stepPct: 4.0
+          stepPct: 4.0,
+          curMetric: (5.0 + (sL - 1) * 0.7).toFixed(1) + ' с',
+          nextMetric: (5.0 + sL * 0.7).toFixed(1) + ' с',
+          metricLabel: lang === 'ru' ? 'Длительность спринта' : 'Turbo Sprint Duration',
+          traitLv5: lang === 'ru' ? '⭐ Lv.5 Трейт: Второе дыхание (+25% реген)' : '⭐ Lv.5 Trait: Second Wind (+25% recovery)',
+          traitLv10: lang === 'ru' ? '👑 Lv.10 Трейт: Неутомимый марафонец' : '👑 Lv.10 Trait: Iron Athlete Marathon'
         },
         {
           key: 'speed',
@@ -5876,7 +5886,12 @@
           name: tr('upgradeSkillSpeed'),
           desc: tr('upgradeSkillSpeedDesc'),
           level: spL,
-          stepPct: 4.5
+          stepPct: 4.5,
+          curMetric: (6.0 + (spL - 1) * 0.20).toFixed(2) + ' м/с',
+          nextMetric: (6.0 + spL * 0.20).toFixed(2) + ' м/с',
+          metricLabel: lang === 'ru' ? 'Максимальная скорость' : 'Top Burst Speed',
+          traitLv5: lang === 'ru' ? '⭐ Lv.5 Трейт: Взрывной первый шаг' : '⭐ Lv.5 Trait: Explosive First Step',
+          traitLv10: lang === 'ru' ? '👑 Lv.10 Трейт: Скорость молнии' : '👑 Lv.10 Trait: Lightning Velocity'
         },
         {
           key: 'keeper',
@@ -5884,10 +5899,14 @@
           name: isFooty ? tr('upgradeSkillKeeperFooty') : tr('upgradeSkillKeeperHoops'),
           desc: isFooty ? tr('upgradeSkillKeeperFootyDesc') : tr('upgradeSkillKeeperHoopsDesc'),
           level: kL,
-          stepPct: 3.5
+          stepPct: 3.5,
+          curMetric: Math.round(195 - (kL - 1) * 7.5) + ' мс',
+          nextMetric: Math.round(195 - kL * 7.5) + ' мс',
+          metricLabel: isFooty ? (lang === 'ru' ? 'Реакция сейва' : 'Save Reflex Time') : (lang === 'ru' ? 'Блок-шот & Защита' : 'Block & Defensive Span'),
+          traitLv5: isFooty ? (lang === 'ru' ? '⭐ Lv.5 Трейт: Кошачий прыжок в угол' : '⭐ Lv.5 Trait: Acrobatic Corner Reach') : (lang === 'ru' ? '⭐ Lv.5 Trait: Железный заслон' : '⭐ Lv.5 Trait: Iron Rim Lockdown'),
+          traitLv10: isFooty ? (lang === 'ru' ? '👑 Lv.10 Трейт: Непробиваемая стена' : '👑 Lv.10 Trait: Immovable Goalkeeper') : (lang === 'ru' ? '👑 Lv.10 Trait: Блок-шот века' : '👑 Lv.10 Trait: Master Shot Blocker')
         }
       ];
-
       var costs = [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000];
       var reqLevels = [0, 1, 2, 4, 6, 9, 12, 15, 19, 23];
 
@@ -5936,7 +5955,10 @@
           '      <div class="fvh-upgrade-lvl-badge">' + (lang === 'ru' ? 'Уровень ' : 'Level ') + curL + ' / 10</div>' +
           '    </div>' +
           '  </div>' +
-          '  <div class="fvh-upgrade-boost-val">' + curBoostText + (isMax ? '' : (' ➔ <span style="color:#00f0ff;">' + nextBoostText + '</span>')) + '</div>' +
+          '  <div style="text-align:right;">' +
+  '  <div class="fvh-upgrade-boost-val">' + curBoostText + (isMax ? '' : (' ➔ <span style="color:#00f0ff;">' + nextBoostText + '</span>')) + '</div>' +
+  '  <div class="fvh-upgrade-metric-chip">' + sk.metricLabel + ': <b style="color:#fff;">' + sk.curMetric + '</b>' + (isMax ? '' : (' ➔ <b style="color:#00f0ff;">' + sk.nextMetric + '</b>')) + '</div>' +
+  '</div>' +
           '</div>' +
           '<p class="fvh-upgrade-desc">' + sk.desc + '</p>' +
           '<div class="fvh-skill-bar-wrap">' +
@@ -8450,10 +8472,21 @@
     return { id: 'bronze', name: tr('rankTierBronze'), badge: '🥉 ' + tr('rankTierBronze').toUpperCase(), color: '#cd7f32' };
   }
 
+  function getTierInfo(rank, isRu) {
+    if (rank <= 3) return { tier: 'grandmaster', label: isRu ? '👑 ЛЕГЕНДА' : '👑 LEGEND', badge: 'GM' };
+    if (rank <= 10) return { tier: 'diamond', label: isRu ? '💎 АЛМАЗ' : '💎 DIAMOND', badge: 'DIA' };
+    if (rank <= 25) return { tier: 'platinum', label: isRu ? '💠 ПЛАТИНА' : '💠 PLATINUM', badge: 'PLT' };
+    if (rank <= 50) return { tier: 'gold', label: isRu ? '🥇 ЗОЛОТО' : '🥇 GOLD', badge: 'GLD' };
+    if (rank <= 100) return { tier: 'silver', label: isRu ? '🥈 СЕРЕБРО' : '🥈 SILVER', badge: 'SLV' };
+    return { tier: 'bronze', label: isRu ? '🥉 БРОНЗА' : '🥉 BRONZE', badge: 'BRZ' };
+  }
+
   function createPodiumColHtml(ath, place, cat) {
     var pClass = 'p' + place;
+    var isRu = (getActiveLang() === 'ru');
     var crownHtml = place === 1 ? '<div class="fvh-podium-crown">👑</div>' : '';
     var medalEmoji = place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉';
+    var placeTitle = place === 1 ? (isRu ? '1-Е МЕСТО' : '1ST PLACE') : place === 2 ? (isRu ? '2-Е МЕСТО' : '2ND PLACE') : (isRu ? '3-Е МЕСТО' : '3RD PLACE');
     var isHoops = (ath.char === 'hoops');
     var avatarHtml = getPlayerAvatarHtml({ photoUrl: ath.photoUrl, character: ath.char, extraClass: 'podium-avatar', alt: ath.name });
     var teamTag = isHoops ?
@@ -8464,25 +8497,33 @@
     var losses = ath.losses || 0;
     var matches = (ath.matches !== undefined ? ath.matches : (wins + losses));
     var winRate = (matches > 0 && ath.winRate !== undefined) ? ath.winRate : (matches > 0 ? Math.round((wins / matches) * 100) : 0);
-    var isRu = (getActiveLang() === 'ru');
     var statsText = matches > 0
       ? tr('winsLossesLabel', { w: wins, l: losses }) + ' · ' + tr('winRateLabel', { n: winRate })
       : (matches + (isRu ? ' матчей' : ' matches'));
+
+    var tier = getTierInfo(place, isRu);
+    var athOvr = Math.min(99, Math.max(75, Math.round(82 + (ath.score || 0) / 250)));
 
     return '<div class="fvh-podium-col ' + pClass + (isHoops ? ' is-hoops' : ' is-footy') + '">' +
       crownHtml +
       '<div class="fvh-podium-avatar-box ' + (isHoops ? 'hoops-halo' : 'footy-halo') + '">' + avatarHtml + '</div>' +
       '<div class="fvh-podium-name" title="' + escapeHtml(ath.name) + '">' + escapeHtml(ath.name) + '</div>' +
+      '<div class="fvh-podium-meta-row">' +
       teamTag +
-      '<div class="fvh-podium-score">' + (ath.score || 0).toLocaleString() + ' <small style="font-size:10px;opacity:0.8;">' + tr('ptsUnit') + '</small></div>' +
+      '  <span class="fvh-podium-ovr-pill">OVR ' + athOvr + '</span>' +
+      '</div>' +
+      '<div class="fvh-podium-score">' + (ath.score || 0).toLocaleString() + ' <small style="font-size:10px;opacity:0.85;">' + tr('ptsUnit') + '</small></div>' +
       '<div class="fvh-podium-winrate">' + statsText + '</div>' +
       '<div class="fvh-podium-pedestal">' +
-      '  <span class="fvh-podium-num">#' + place + '</span>' +
-      '  <span class="fvh-podium-medal">' + medalEmoji + '</span>' +
+      '  <div class="fvh-podium-medal-row">' +
+      '    <span class="fvh-podium-medal">' + medalEmoji + '</span>' +
+      '    <span class="fvh-podium-num">#' + place + '</span>' +
+      '  </div>' +
+      '  <div class="fvh-podium-place-label">' + placeTitle + '</div>' +
+      '  <div class="fvh-podium-tier-tag ' + tier.tier + '">' + tier.label + '</div>' +
       '</div>' +
       '</div>';
   }
-
   function fetchLeaderboardData(cat, timeframe, app, cb) {
     var pid = getAppPlayerId(app);
     var queryCat = cat || 'season';
@@ -9004,6 +9045,8 @@
         var statsText = matches > 0
           ? tr('winsLossesLabel', { w: wins, l: losses }) + ' (' + tr('winRateLabel', { n: winRate }) + ')'
           : (matches + (isRu ? ' матчей' : ' matches'));
+        var tier = getTierInfo(ath.rank || 999, isRu);
+        var athOvr = Math.min(99, Math.max(70, Math.round(75 + (ath.score || 0) / 300)));
 
         var row = document.createElement('div');
         row.className = 'fvh-leaderboard-row' + (ath.isCurrentUser ? ' is-me' : '') + (isHoops ? ' row-hoops' : ' row-footy');
@@ -9015,9 +9058,11 @@
           '<div class="fvh-lb-info">' +
           '  <div class="fvh-lb-name">' +
           escapeHtml(ath.name) + (ath.isCurrentUser ? ' <span class="fvh-me-badge">' + (isRu ? 'ВЫ' : 'YOU') + '</span>' : '') +
+          '    <span class="fvh-tier-pill ' + tier.tier + '">' + tier.label + '</span>' +
           '  </div>' +
           '  <div class="fvh-lb-club">' +
           '    <span class="fvh-team-pill ' + (isHoops ? 'hoops' : 'footy') + '">' + (isHoops ? '🏀 ' + tr('hoopsChar') : '⚽ ' + tr('footyChar')) + '</span>' +
+          '    <span class="fvh-ovr-mini-badge">OVR ' + athOvr + '</span>' +
           '    · ' + escapeHtml(ath.club || 'FvH Club') +
           '    · <span class="fvh-lb-winrate-text">' + statsText + '</span>' +
           '  </div>' +
@@ -9030,8 +9075,7 @@
           '  <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + matches + (isRu ? ' матчей' : ' matches') + '</div>' +
           '</div>';
         rowsWrap.appendChild(row);
-      });
-      resultsMount.appendChild(rowsWrap);
+      });resultsMount.appendChild(rowsWrap);
     }
 
     searchInput.oninput = function () {
@@ -10622,13 +10666,13 @@
         // Fast-track WebRTC negotiation or fall back to Server RelayLink smoothly within 1.2s
         relayFallbackTimer = setTimeout(function () {
           if (!isStarted) {
-            console.log('WebRTC negotiation timeout (1.2s), fast-tracking Server Relay Link');
+            console.log('WebRTC negotiation fallback (2.8s), fast-tracking Server Relay Link');
             if (link) {
               try { link.close(); } catch (e) {}
             }
             startWithRelay();
           }
-        }, 1200);
+        }, 2800);
 
         link.h.onClose = function () {
           if (!isStarted) startWithRelay();
@@ -10674,7 +10718,7 @@
                     }
                   }
                 }).catch(function () {});
-            }, 600);
+            }, 120);
           }).catch(function (e) {
             startWithRelay();
           });
