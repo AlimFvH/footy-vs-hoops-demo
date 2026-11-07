@@ -1966,16 +1966,16 @@ canvas {
   position: absolute !important;
   top: calc(env(safe-area-inset-top, 44px) + 98px) !important;
   left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
-  width: auto !important;
-  min-width: 136px !important;
-  max-width: 170px !important;
-  padding: 6px 12px !important;
+  width: fit-content !important;
+  min-width: 154px !important;
+  max-width: 190px !important;
+  padding: 7px 15px !important;
   border-radius: 14px !important;
-  background: rgba(8, 14, 28, 0.88) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(8, 14, 28, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55) !important;
   box-sizing: border-box !important;
   z-index: 100 !important;
 }
@@ -1984,10 +1984,10 @@ canvas {
   white-space: nowrap !important;
   display: flex !important;
   align-items: center !important;
-  gap: 5px !important;
-  font-size: 10.5px !important;
+  gap: 6px !important;
+  font-size: 10px !important;
   font-weight: 800 !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.35px !important;
   text-transform: uppercase !important;
   color: #cfe !important;
 }

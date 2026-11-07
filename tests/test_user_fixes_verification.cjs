@@ -28,8 +28,8 @@ console.log('  [PASS] Rivalry Header Bar guarantees FOOTY and HOOPS never trunca
 console.log('Test 3: Stamina Widget Container Width...');
 assert(css.includes('.stamina {'), 'CSS must define .stamina');
 assert(!/\.stamina\s*\{[^}]*width:\s*104px/i.test(css), 'Fixed width: 104px on .stamina must be eliminated');
-assert(css.includes('min-width: 136px !important;'), 'min-width: 136px must be present');
-assert(css.includes('width: auto !important;'), 'width: auto must be present');
+assert(/min-width:\s*(?:136px|154px)\s*!important;/.test(css), 'min-width >= 136px must be present');
+assert(/width:\s*(?:auto|fit-content)\s*!important;/.test(css), 'dynamic width must be present');
 assert(css.includes('.stamina span {'), '.stamina span must be styled');
 assert(css.includes('white-space: nowrap !important;'), 'white-space: nowrap must be set on .stamina span');
 console.log('  [PASS] Stamina Widget expands dynamically to comfortably contain "ВЫНОСЛИВОСТЬ".');
