@@ -4633,7 +4633,8 @@ const server = http.createServer((req, res) => {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
       const playerId = String(data.playerId || '').trim();
-      const skill = String(data.skill || '').trim(); // 'power' | 'stamina' | 'keeper'
+      let skill = String(data.skill || '').trim(); // 'power' | 'stamina' | 'keeper' | 'speed'
+      if (skill === 'speed') skill = 'stamina';
       if (!playerId || !skill || !UPGRADE_CONFIG[skill]) {
         return sendJson(res, 400, { ok: false, error: 'invalid_skill' });
       }
@@ -4648,7 +4649,10 @@ const server = http.createServer((req, res) => {
       const nextLvl = curLvl + 1;
       const cost = cfg.costs[curLvl];
       const reqLvl = cfg.reqLevels[curLvl];
-      const playerLvl = Math.max(player.level || 1, currentLevelForXp(player.xp || 0));
+      if (data.xp && Number(data.xp) > (player.xp || 0)) {
+        player.xp = Number(data.xp);
+      }
+      const playerLvl = Math.max(player.level || 1, Number(data.level || 0), currentLevelForXp(player.xp || 0));
 
       if (playerLvl < reqLvl) {
         return sendJson(res, 403, {

@@ -5867,7 +5867,7 @@
               upBtn.disabled = true;
               var pid = getAppPlayerId(app);
               var serverSkill = (sk.key === 'speed') ? 'stamina' : sk.key;
-              safeEconomyApi('/api/economy/upgrade', { playerId: pid, skill: serverSkill }).then(function (res) {
+              safeEconomyApi('/api/economy/upgrade', { playerId: pid, skill: serverSkill, level: curPlayerLvl, xp: curPlayerXp }).then(function (res) {
                 if (res && res.ok) {
                   app.store.update(function (d) {
                     d.coins = res.coins;
