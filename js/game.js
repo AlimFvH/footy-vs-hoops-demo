@@ -7798,7 +7798,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
         { primary: 0xd93a3a, secondary: 0x2a0f0f, shorts: 0x2a0f0f, skin: 0xc68642, hair: 0x101010, boots: 0x111111, accent: 0xffffff, style: 'plain' },
         { primary: 0x23232b, secondary: 0xff5a1f, shorts: 0x15151a, skin: 0xe0ac86, hair: 0x3a2412, boots: 0xff5a1f, accent: 0xff5a1f, style: 'stripes' },
     ];
-    exports.PLAYER_SCALE = 1.35;
+    exports.PLAYER_SCALE = 1.68;
     exports.FOOTY_GROW = 1.0;
     const lin = (c, k = 1) => (0, math_js_8.rgb)(c).map((v) => Math.min(1, v * k));
 
