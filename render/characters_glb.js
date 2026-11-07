@@ -126,7 +126,7 @@
     // Crisp Athletic Stadium Rim Contour (High-clarity player silhouette)
     float rim = pow(1.0 - NdotV, 2.4);
     vec3 rimColor = mix(vec3(0.42, 0.78, 1.0), vec3(1.0, 0.92, 0.65), NdotL * 0.5 + 0.5);
-    vec3 rimLight = rim * rimColor * (0.50 + (1.0 - uRoughness) * 0.60);
+    vec3 rimLight = rim * rimColor * (0.80 + (1.0 - uRoughness) * 0.85);
 
     // Console-grade contrast curve for crisp, vivid athlete details
     vec3 finalRgb = ambient + diffuse + specular + rimLight;
@@ -973,7 +973,7 @@
         // 1. Goalkeeper in goal (Goalkeeper #1) - scale 1.82 (athletic keeper, fits perfectly in 2.5m goal)
         if (isKeeper) {
           const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 1.82,
+            scale: 2.26,
             skin: c.skin,
             isFooty: true,
             isKeeper: true,
@@ -984,7 +984,7 @@
         // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 1.76,
+            scale: 2.22,
             skin: c.skin,
             isFooty: true,
             isKeeper: false,
@@ -995,7 +995,7 @@
         // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 1.82,
+            scale: 2.28,
             skin: c.skin,
             isFooty: false,
             isKeeper: false,

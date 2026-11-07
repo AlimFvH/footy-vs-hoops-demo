@@ -2405,137 +2405,310 @@
   try { initHeroBaseImages(); } catch (e) {}
 
   function drawHeroJerseyPattern(ctx, W, H, isFooty, skinId) {
-    // Disabled: patterns cause ugly visual stripes on hero preview
-    return;
+    if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_solar') {
+      return; // Keep pristine authentic base graphics for starter kits
+    }
     try {
       ctx.save();
-      var chestX = isFooty ? W * 0.31 : W * 0.33;
-      var chestY = isFooty ? H * 0.22 : H * 0.22;
-      var chestW = isFooty ? W * 0.38 : W * 0.34;
-      var chestH = isFooty ? H * 0.25 : H * 0.23;
+      var pal = HERO_SKIN_PALETTES[skinId] || {};
+      var targetH = pal.h !== undefined ? pal.h : 205;
+      var targetS = pal.s !== undefined ? pal.s : 0.85;
+      var targetL = pal.lMult !== undefined ? Math.min(0.65, 0.40 * pal.lMult) : 0.40;
+      var baseRgb = heroHslToRgb(targetH, targetS, targetL);
+      var baseFill = 'rgb(' + baseRgb.r + ',' + baseRgb.g + ',' + baseRgb.b + ')';
 
+      // 1. Cleanly mask the default rookie chevron and #10 on the chest
       ctx.beginPath();
-      ctx.rect(chestX, chestY, chestW, chestH);
-      ctx.clip();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 0.88;
-
-      if (skinId === 'skin_crimson' || skinId === 'skin_crimson_elite') {
-        ctx.fillStyle = '#fef08a';
-        var sw = W * 0.032;
-        ctx.fillRect(W * 0.40, chestY, sw, chestH);
-        ctx.fillRect(W * 0.485, chestY, sw, chestH);
-        ctx.fillRect(W * 0.57, chestY, sw, chestH);
-      } else if (skinId === 'skin_footy_royal_striker') {
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.9)';
-        ctx.lineWidth = W * 0.065;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.34, H * 0.22);
-        ctx.lineTo(W * 0.64, H * 0.46);
-        ctx.stroke();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.34, H * 0.22);
-        ctx.lineTo(W * 0.64, H * 0.46);
-        ctx.stroke();
-      } else if (skinId === 'skin_frost') {
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
-        ctx.lineWidth = W * 0.055;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.65, H * 0.22);
-        ctx.lineTo(W * 0.35, H * 0.46);
-        ctx.stroke();
-      } else if (skinId === 'skin_footy_cyber_strike' || skinId === 'skin_neon' || skinId === 'skin_neon_elite' || skinId === 'skin_neon_cyber') {
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = W * 0.025;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.36, H * 0.25);
-        ctx.lineTo(W * 0.50, H * 0.33);
-        ctx.lineTo(W * 0.64, H * 0.25);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(W * 0.37, H * 0.31);
-        ctx.lineTo(W * 0.50, H * 0.39);
-        ctx.lineTo(W * 0.63, H * 0.31);
-        ctx.stroke();
-      } else if (skinId === 'skin_footy_golden_legend' || skinId === 'skin_gold' || skinId === 'skin_championship') {
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = W * 0.04;
-        ctx.beginPath();
-        ctx.arc(W * 0.50, H * 0.34, W * 0.09, Math.PI * 0.8, Math.PI * 0.2, true);
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(W * 0.50, H * 0.30, W * 0.02, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (skinId === 'skin_footy_mythic_titan') {
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.arc(W * 0.50, H * 0.33, W * 0.055, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.fillStyle = '#00f0ff';
-        ctx.beginPath();
-        ctx.arc(W * 0.50, H * 0.33, W * 0.028, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.35, H * 0.33); ctx.lineTo(W * 0.44, H * 0.33);
-        ctx.moveTo(W * 0.56, H * 0.33); ctx.lineTo(W * 0.65, H * 0.33);
-        ctx.stroke();
-      } else if (skinId === 'skin_premium_black_gold') {
-        ctx.fillStyle = 'rgba(250, 204, 21, 0.8)';
-        for (var i = -2; i <= 2; i++) {
-          ctx.fillRect(W * (0.50 + i * 0.04), chestY, 2.5, chestH);
-        }
-      } else if (skinId === 'skin_electric_blue') {
-        ctx.strokeStyle = '#60a5fa';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.52, H * 0.23);
-        ctx.lineTo(W * 0.47, H * 0.31);
-        ctx.lineTo(W * 0.53, H * 0.32);
-        ctx.lineTo(W * 0.48, H * 0.44);
-        ctx.stroke();
-      } else if (skinId === 'skin_hoops_street_legend') {
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
-        ctx.fillRect(W * 0.33, chestY, W * 0.035, chestH);
-        ctx.fillRect(W * 0.635, chestY, W * 0.035, chestH);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.42, H * 0.24);
-        ctx.lineTo(W * 0.58, H * 0.42);
-        ctx.stroke();
-      } else if (skinId === 'skin_hoops_golden_state') {
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 4.5;
-        ctx.beginPath();
-        ctx.arc(W * 0.50, H * 0.35, W * 0.08, Math.PI, 0, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(W * 0.50, H * 0.35, W * 0.045, 0, Math.PI * 2);
-        ctx.stroke();
-      } else if (skinId === 'skin_hoops_hyper_beast') {
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(W * 0.38, H * 0.27); ctx.lineTo(W * 0.58, H * 0.35);
-        ctx.moveTo(W * 0.40, H * 0.33); ctx.lineTo(W * 0.60, H * 0.41);
-        ctx.moveTo(W * 0.36, H * 0.22); ctx.lineTo(W * 0.54, H * 0.29);
-        ctx.stroke();
-      } else if (skinId === 'skin_hoops_neon_splash') {
-        ctx.fillStyle = 'rgba(219, 39, 119, 0.8)';
-        ctx.beginPath();
-        ctx.moveTo(W * 0.33, chestY);
-        ctx.lineTo(W * 0.53, chestY);
-        ctx.lineTo(W * 0.47, chestY + chestH);
-        ctx.lineTo(W * 0.33, chestY + chestH);
-        ctx.closePath();
-        ctx.fill();
+      if (isFooty) {
+        ctx.moveTo(W * 0.38, H * 0.305);
+        ctx.lineTo(W * 0.62, H * 0.305);
+        ctx.lineTo(W * 0.61, H * 0.445);
+        ctx.lineTo(W * 0.39, H * 0.445);
+      } else {
+        ctx.moveTo(W * 0.385, H * 0.295);
+        ctx.lineTo(W * 0.615, H * 0.295);
+        ctx.lineTo(W * 0.605, H * 0.440);
+        ctx.lineTo(W * 0.395, H * 0.440);
       }
+      ctx.closePath();
+      ctx.fillStyle = baseFill;
+      ctx.fill();
+
+      // Soft 3D lighting gradient across chest
+      var grad = ctx.createLinearGradient(W * 0.38, H * 0.30, W * 0.62, H * 0.44);
+      grad.addColorStop(0, 'rgba(255,255,255,0.14)');
+      grad.addColorStop(0.5, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.24)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Clip subsequent pattern drawing strictly to torso bounds
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(W * 0.36, H * 0.28, W * 0.28, H * 0.20);
+      ctx.clip();
+
+      function drawNumber(text, x, y, size, fillCol, strokeCol) {
+        ctx.save();
+        ctx.font = '900 ' + Math.round(size) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        if (strokeCol) {
+          ctx.strokeStyle = strokeCol;
+          ctx.lineWidth = Math.max(2, size * 0.12);
+          ctx.lineJoin = 'miter';
+          ctx.strokeText(text, x, y);
+        }
+        ctx.fillStyle = fillCol;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function drawCrest(cx, cy, r, borderCol, fillCol, emblemChar) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx - r, cy - r * 0.7);
+        ctx.lineTo(cx + r, cy - r * 0.7);
+        ctx.lineTo(cx + r, cy + r * 0.2);
+        ctx.quadraticCurveTo(cx + r, cy + r, cx, cy + r * 1.2);
+        ctx.quadraticCurveTo(cx - r, cy + r, cx - r, cy + r * 0.2);
+        ctx.closePath();
+        ctx.fillStyle = fillCol;
+        ctx.fill();
+        ctx.strokeStyle = borderCol;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        if (emblemChar) {
+          ctx.font = 'bold ' + Math.round(r * 1.1) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = borderCol;
+          ctx.fillText(emblemChar, cx, cy + r * 0.1);
+        }
+        ctx.restore();
+      }
+
+      // ==========================================
+      // FOOTBALL KITS UNIQUE ART DIRECTION
+      // ==========================================
+      if (isFooty) {
+        if (skinId === 'skin_crimson' || skinId === 'skin_crimson_elite') {
+          // Classic Triple Athletic Stripes with Gold Accents & Federation Star Shield
+          var sw = W * 0.024;
+          var stripeY1 = H * 0.30;
+          var stripeH = H * 0.16;
+          [-0.055, 0, 0.055].forEach(function(offset) {
+            var sx = W * (0.50 + offset);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(sx - sw * 0.58, stripeY1, sw * 1.16, stripeH);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(sx - sw * 0.45, stripeY1, sw * 0.9, stripeH);
+          });
+          drawCrest(W * 0.425, H * 0.338, W * 0.024, '#fef08a', '#7f1d1d', '★');
+          drawNumber('7', W * 0.575, H * 0.342, W * 0.042, '#fef08a', '#450a0a');
+        }
+        else if (skinId === 'skin_footy_royal_striker') {
+          // Magnificent 24K Gold Diagonal Royal Sash
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(W * 0.57, H * 0.28);
+          ctx.lineTo(W * 0.63, H * 0.28);
+          ctx.lineTo(W * 0.43, H * 0.46);
+          ctx.lineTo(W * 0.37, H * 0.46);
+          ctx.closePath();
+          var sashGrad = ctx.createLinearGradient(W * 0.38, H * 0.46, W * 0.62, H * 0.28);
+          sashGrad.addColorStop(0, '#f59e0b');
+          sashGrad.addColorStop(0.5, '#fef08a');
+          sashGrad.addColorStop(1, '#d97706');
+          ctx.fillStyle = sashGrad;
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+          ctx.restore();
+          drawCrest(W * 0.425, H * 0.338, W * 0.024, '#fef08a', '#1e3a8a', '👑');
+          drawNumber('7', W * 0.575, H * 0.342, W * 0.042, '#ffffff', '#1e3a8a');
+        }
+        else if (skinId === 'skin_footy_cyber_strike' || skinId === 'skin_neon' || skinId === 'skin_neon_elite' || skinId === 'skin_neon_cyber') {
+          // High-Tech Circuit Body & Dual Neon Cyan Chevrons
+          ctx.save();
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 12;
+          ctx.strokeStyle = '#00f0ff';
+          ctx.lineWidth = W * 0.026;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(W * 0.39, H * 0.315); ctx.lineTo(W * 0.50, H * 0.355); ctx.lineTo(W * 0.61, H * 0.315);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(W * 0.40, H * 0.370); ctx.lineTo(W * 0.50, H * 0.410); ctx.lineTo(W * 0.60, H * 0.370);
+          ctx.stroke();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.75)';
+          ctx.beginPath();
+          ctx.moveTo(W * 0.38, H * 0.34); ctx.lineTo(W * 0.44, H * 0.34);
+          ctx.moveTo(W * 0.56, H * 0.34); ctx.lineTo(W * 0.62, H * 0.34);
+          ctx.stroke();
+          ctx.restore();
+          drawNumber('99', W * 0.50, H * 0.380, W * 0.040, '#00f0ff', '#082f49');
+        }
+        else if (skinId === 'skin_frost') {
+          // Glacier Deep Navy Horizontal Chest Band with Snowflake Badge
+          var bandY = H * 0.34;
+          var bandH = H * 0.055;
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(W * 0.36, bandY, W * 0.28, bandH);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(W * 0.36, bandY); ctx.lineTo(W * 0.64, bandY);
+          ctx.moveTo(W * 0.36, bandY + bandH); ctx.lineTo(W * 0.64, bandY + bandH);
+          ctx.stroke();
+          drawCrest(W * 0.50, bandY + bandH * 0.5, W * 0.022, '#38bdf8', '#0284c7', '❄');
+          drawNumber('33', W * 0.58, H * 0.34, W * 0.038, '#e0f2fe', '#0369a1');
+        }
+        else if (skinId === 'skin_footy_golden_legend' || skinId === 'skin_gold' || skinId === 'skin_championship') {
+          // 24K Gold Foil Body with Obsidian V-Neck Collar & Laurel Champion Star
+          ctx.fillStyle = '#171717';
+          ctx.beginPath();
+          ctx.moveTo(W * 0.44, H * 0.295);
+          ctx.lineTo(W * 0.50, H * 0.345);
+          ctx.lineTo(W * 0.56, H * 0.295);
+          ctx.closePath();
+          ctx.fill();
+          drawCrest(W * 0.50, H * 0.365, W * 0.028, '#ca8a04', '#171717', '★');
+          drawNumber('9', W * 0.50, H * 0.415, W * 0.045, '#171717', '#facc15');
+        }
+        else if (skinId === 'skin_footy_stealth_shadow' || skinId === 'skin_shadow') {
+          // Matte Obsidian with Dynamic Neon Purple/Violet Slash
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(W * 0.41, H * 0.30);
+          ctx.lineTo(W * 0.47, H * 0.30);
+          ctx.lineTo(W * 0.61, H * 0.44);
+          ctx.lineTo(W * 0.55, H * 0.44);
+          ctx.closePath();
+          var slashGrad = ctx.createLinearGradient(W * 0.41, H * 0.30, W * 0.61, H * 0.44);
+          slashGrad.addColorStop(0, '#7c3aed');
+          slashGrad.addColorStop(1, '#ec4899');
+          ctx.fillStyle = slashGrad;
+          ctx.fill();
+          ctx.restore();
+          drawNumber('11', W * 0.44, H * 0.35, W * 0.040, '#c084fc', '#09090b');
+        }
+        else if (skinId === 'skin_astronaut') {
+          // Aerospace White with Tactical Strap & NASA-Style Mission Patch
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(W * 0.36, H * 0.36, W * 0.28, H * 0.024);
+          ctx.fillStyle = '#f97316';
+          ctx.fillRect(W * 0.485, H * 0.355, W * 0.03, H * 0.034);
+          drawCrest(W * 0.43, H * 0.335, W * 0.022, '#38bdf8', '#0f172a', '✦');
+          drawNumber('01', W * 0.57, H * 0.335, W * 0.038, '#0f172a', '#e2e8f0');
+        }
+        else if (skinId === 'skin_footy_neon_matrix') {
+          // Cyber Matrix Digital Rain Lines
+          ctx.fillStyle = '#10b981';
+          for (var i = -3; i <= 3; i++) {
+            var mx = W * (0.50 + i * 0.035);
+            ctx.fillRect(mx, H * 0.30, 2.5, H * 0.14);
+          }
+          drawNumber('8', W * 0.50, H * 0.37, W * 0.045, '#00f0ff', '#052e16');
+        }
+        else if (skinId === 'skin_footy_mythic_titan') {
+          // Mythic Celestial Core Orb
+          ctx.save();
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 16;
+          drawCrest(W * 0.50, H * 0.36, W * 0.032, '#00f0ff', '#1e1b4b', '⚡');
+          ctx.restore();
+          drawNumber('99', W * 0.50, H * 0.415, W * 0.038, '#00f0ff', '#1e1b4b');
+        }
+      }
+      // ==========================================
+      // BASKETBALL JERSEYS UNIQUE ART DIRECTION
+      // ==========================================
+      else {
+        if (skinId === 'skin_hoops_street_legend') {
+          // Urban Split: Red Left Half, Matte Black Right Half with Lightning Slash
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(W * 0.37, H * 0.29, W * 0.13, H * 0.16);
+          ctx.fillStyle = '#1f2937';
+          ctx.fillRect(W * 0.50, H * 0.29, W * 0.13, H * 0.16);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(W * 0.42, H * 0.30);
+          ctx.lineTo(W * 0.58, H * 0.43);
+          ctx.stroke();
+          drawNumber('3', W * 0.50, H * 0.365, W * 0.046, '#ffffff', '#000000');
+        }
+        else if (skinId === 'skin_hoops_golden_state') {
+          // Golden State Bay Bridge Circular Crest
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(W * 0.50, H * 0.355, W * 0.055, 0, Math.PI * 2);
+          ctx.fillStyle = '#1e3a8a';
+          ctx.fill();
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(W * 0.50, H * 0.355, W * 0.038, Math.PI * 0.8, Math.PI * 0.2, true);
+          ctx.stroke();
+          ctx.restore();
+          drawNumber('30', W * 0.50, H * 0.415, W * 0.042, '#facc15', '#1e3a8a');
+        }
+        else if (skinId === 'skin_hoops_cyber_dunk') {
+          // Neon Cyan Geometric Shards on Purple
+          ctx.save();
+          ctx.fillStyle = '#06b6d4';
+          ctx.beginPath();
+          ctx.moveTo(W * 0.40, H * 0.31); ctx.lineTo(W * 0.47, H * 0.35); ctx.lineTo(W * 0.42, H * 0.39);
+          ctx.closePath(); ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(W * 0.60, H * 0.31); ctx.lineTo(W * 0.53, H * 0.35); ctx.lineTo(W * 0.58, H * 0.39);
+          ctx.closePath(); ctx.fill();
+          ctx.restore();
+          drawNumber('77', W * 0.50, H * 0.370, W * 0.045, '#22d3ee', '#4c1d95');
+        }
+        else if (skinId === 'skin_hoops_phantom_black') {
+          // Obsidian Black with 24K Gold Crown Crest
+          drawCrest(W * 0.50, H * 0.345, W * 0.030, '#facc15', '#09090b', '👑');
+          drawNumber('24', W * 0.50, H * 0.410, W * 0.044, '#facc15', '#000000');
+        }
+        else if (skinId === 'skin_sunset') {
+          // Horizontal Triple Sunset City Gradient Bands
+          var bH = H * 0.022;
+          ctx.fillStyle = '#db2777';
+          ctx.fillRect(W * 0.37, H * 0.33, W * 0.26, bH);
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(W * 0.37, H * 0.33 + bH, W * 0.26, bH);
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(W * 0.37, H * 0.33 + bH * 2, W * 0.26, bH);
+          drawNumber('8', W * 0.50, H * 0.410, W * 0.042, '#ffffff', '#581c87');
+        }
+        else if (skinId === 'skin_mars') {
+          // Mars Rover Ares Exploration Badge
+          drawCrest(W * 0.50, H * 0.345, W * 0.026, '#f97316', '#450a0a', '♂');
+          drawNumber('42', W * 0.50, H * 0.410, W * 0.042, '#fed7aa', '#450a0a');
+        }
+        else if (skinId === 'skin_hoops_hyper_beast') {
+          // Fiery Beast Claw Rip Marks
+          ctx.save();
+          ctx.strokeStyle = '#f97316';
+          ctx.lineWidth = 4.5;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(W * 0.40, H * 0.31); ctx.lineTo(W * 0.58, H * 0.39);
+          ctx.moveTo(W * 0.42, H * 0.35); ctx.lineTo(W * 0.60, H * 0.43);
+          ctx.stroke();
+          ctx.restore();
+          drawNumber('99', W * 0.50, H * 0.365, W * 0.044, '#facc15', '#450a0a');
+        }
+      }
+
+      ctx.restore();
       ctx.restore();
     } catch (e) {
       console.warn('drawHeroJerseyPattern error', e);
@@ -6120,15 +6293,14 @@
     var isFooty = (curChar === 'footy');
     var ballSlotId = isFooty ? 'balls_footy' : 'balls_hoops';
     var ballSlotLabel = isFooty ? tr('catFootballBalls') : tr('catBasketballBalls');
-    var validSlots = ['skins', ballSlotId, 'packs'];
+    var validSlots = ['skins', ballSlotId];
     if (validSlots.indexOf(curSlot) === -1) curSlot = 'skins';
     var slotSeg = document.createElement('div');
     slotSeg.className = 'seg fvh-wardrobe-seg';
     slotSeg.style.marginBottom = '8px';
     var slots = [
       { id: 'skins', label: '👕 ' + (tr('catSkins') || (lang === 'ru' ? 'Форма' : 'Kits')) },
-      { id: ballSlotId, label: (isFooty ? '⚽ ' : '🏀 ') + ballSlotLabel },
-      { id: 'packs', label: '🎁 ' + (lang === 'ru' ? 'Наборы' : 'Packs') }
+      { id: ballSlotId, label: (isFooty ? '⚽ ' : '🏀 ') + ballSlotLabel }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');

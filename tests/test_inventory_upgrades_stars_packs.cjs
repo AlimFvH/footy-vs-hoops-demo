@@ -32,7 +32,7 @@ assert(redesignJs.includes("tabInventory: 'INVENTORY'") || redesignJs.includes("
 assert(redesignJs.includes("toWardrobe: 'В инвентарь'"), 'RU toWardrobe must be В инвентарь');
 assert(redesignJs.includes("toWardrobe: 'To Inventory'"), 'EN toWardrobe must be To Inventory');
 assert(redesignJs.includes("characters: 'ИНВЕНТАРЬ'"), 'RU characters screen title must be ИНВЕНТАРЬ');
-assert(redesignJs.includes("validSlots = ['skins', ballSlotId, 'packs']"), 'Inventory slots must ONLY contain skins, balls, and packs (no upgrades)');
+assert(redesignJs.includes("validSlots = ['skins', ballSlotId]"), 'Inventory slots must ONLY contain skins and balls (packs removed from inventory per user request, purchased in shop)');
 console.log('  ✓ Wardrobe renamed to Inventory and upgrades removed from wardrobe slots.\n');
 
 // Test 2: Dedicated Upgrades Hub & Routing

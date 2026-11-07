@@ -7880,7 +7880,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CameraRig = exports.CLOSE_UP = void 0;
     const NDC_LIMIT = 0.9;
-    exports.CLOSE_UP = { footy: 0.92, hoops: 0.88 };
+    exports.CLOSE_UP = { footy: 0.82, hoops: 0.78 };
     class CameraRig {
         constructor(mode, aspect, halfW, halfL) {
             this.mode = mode;
@@ -8017,7 +8017,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
         { primary: 0xd93a3a, secondary: 0x2a0f0f, shorts: 0x2a0f0f, skin: 0xc68642, hair: 0x101010, boots: 0x111111, accent: 0xffffff, style: 'plain' },
         { primary: 0x23232b, secondary: 0xff5a1f, shorts: 0x15151a, skin: 0xe0ac86, hair: 0x3a2412, boots: 0xff5a1f, accent: 0xff5a1f, style: 'stripes' },
     ];
-    exports.PLAYER_SCALE = 1.35;
+    exports.PLAYER_SCALE = 1.72;
     exports.FOOTY_GROW = 1.0;
     const lin = (c, k = 1) => (0, math_js_8.rgb)(c).map((v) => Math.min(1, v * k));
 
