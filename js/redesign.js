@@ -2463,9 +2463,8 @@
 
   function getRecoloredHeroUrl(charId, skinId) {
     var isFooty = (charId === 'footy');
-    var defaultSkin = isFooty ? 'skin_rookie' : 'skin_solar';
-    if (!skinId || skinId === defaultSkin) {
-      return isFooty ? 'assets/characters/footy10_preview.png?v=2.3.0' : 'assets/characters/hoops23_preview.png?v=2.3.0';
+    if (!skinId || (isFooty && skinId === 'skin_rookie') || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_bb_gold' || skinId === 'skin_solar'))) {
+      return isFooty ? 'assets/characters/footy10_preview.png?v=2.4.0' : 'assets/characters/hoops23_preview.png?v=2.4.0';
     }
     var cacheKey = charId + '_' + skinId;
     if (HERO_SKIN_CACHE[cacheKey]) {
