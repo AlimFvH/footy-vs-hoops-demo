@@ -126,7 +126,7 @@
     // Crisp Athletic Stadium Rim Contour (High-clarity player silhouette)
     float rim = pow(1.0 - NdotV, 2.4);
     vec3 rimColor = mix(vec3(0.42, 0.78, 1.0), vec3(1.0, 0.92, 0.65), NdotL * 0.5 + 0.5);
-    vec3 rimLight = rim * rimColor * (0.80 + (1.0 - uRoughness) * 0.85);
+    vec3 rimLight = rim * rimColor * (1.65 + (1.0 - uRoughness) * 1.25);
 
     // Console-grade contrast curve for crisp, vivid athlete details
     vec3 finalRgb = ambient + diffuse + specular + rimLight;
@@ -514,6 +514,52 @@
       }
 
       ctx.putImageData(imgData, 0, 0);
+
+      // Explicitly paint genuine Fortnite stylized Hair, Face Skin, and Facial Features onto Atlas
+      const hColor = isFooty ? (skin.hair ? hexToRgb(skin.hair) : [34, 24, 16]) : (skin.hair ? hexToRgb(skin.hair) : [10, 10, 10]);
+      const sColor = isFooty ? (skin.skin ? hexToRgb(skin.skin) : [223, 160, 112]) : (skin.skin ? hexToRgb(skin.skin) : [108, 68, 36]);
+
+      // 1. Stylized Hair (U: 0.78 to 0.98, V: 0.51 to 0.63)
+      ctx.fillStyle = `rgb(${hColor[0]}, ${hColor[1]}, ${hColor[2]})`;
+      ctx.fillRect(W * 0.78, H * 0.51, W * 0.20, H * 0.12);
+      // Subtle hair highlight gradient for Pixar/Fortnite look
+      const hairGrad = ctx.createLinearGradient(W * 0.78, H * 0.51, W * 0.98, H * 0.63);
+      hairGrad.addColorStop(0, `rgba(${Math.min(255, hColor[0] + 35)}, ${Math.min(255, hColor[1] + 35)}, ${Math.min(255, hColor[2] + 45)}, 0.45)`);
+      hairGrad.addColorStop(0.5, 'rgba(255,255,255,0)');
+      ctx.fillStyle = hairGrad;
+      ctx.fillRect(W * 0.78, H * 0.51, W * 0.20, H * 0.12);
+
+      // 2. Face & Neck Skin (U: 0.54 to 0.74, V: 0.53 to 0.74)
+      ctx.fillStyle = `rgb(${sColor[0]}, ${sColor[1]}, ${sColor[2]})`;
+      ctx.fillRect(W * 0.54, H * 0.53, W * 0.20, H * 0.21);
+      // Warm Pixar cheek blush
+      const blushGrad = ctx.createRadialGradient(W * 0.64, H * 0.64, 4, W * 0.64, H * 0.64, W * 0.08);
+      blushGrad.addColorStop(0, `rgba(${Math.min(255, sColor[0] + 40)}, ${Math.max(0, sColor[1] - 20)}, ${Math.max(0, sColor[2] - 20)}, 0.35)`);
+      blushGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = blushGrad;
+      ctx.fillRect(W * 0.54, H * 0.53, W * 0.20, H * 0.21);
+
+      // 3. Eyebrows (U: 0.90 to 0.98, V: 0.65 to 0.72)
+      ctx.fillStyle = `rgb(${Math.max(0, hColor[0] - 10)}, ${Math.max(0, hColor[1] - 10)}, ${Math.max(0, hColor[2] - 10)})`;
+      ctx.fillRect(W * 0.90, H * 0.65, W * 0.08, H * 0.07);
+
+      // 4. Eyes (U: 0.78 to 0.86, V: 0.65 to 0.72)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(W * 0.78, H * 0.65, W * 0.08, H * 0.07);
+      // Iris & pupil
+      ctx.fillStyle = isFooty ? '#1d4ed8' : '#451a03';
+      ctx.beginPath();
+      ctx.arc(W * 0.82, H * 0.685, W * 0.022, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(W * 0.82, H * 0.685, W * 0.012, 0, Math.PI * 2);
+      ctx.fill();
+      // White reflection dot
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(W * 0.825, H * 0.680, W * 0.005, 0, Math.PI * 2);
+      ctx.fill();
 
       // Render high-detail rarity patterns, club crest, and squad numbers onto uniform
       drawGlbJerseyPattern(ctx, W, H, isFooty, skin.id, skin);
@@ -1023,7 +1069,7 @@
         // 1. Goalkeeper in goal (Goalkeeper #1) - scale 1.82 (athletic keeper, fits perfectly in 2.5m goal)
         if (isKeeper) {
           const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 1.72,
+            scale: 2.22,
             skin: c.skin,
             isFooty: true,
             isKeeper: true,
@@ -1034,7 +1080,7 @@
         // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 1.74,
+            scale: 2.25,
             skin: c.skin,
             isFooty: true,
             isKeeper: false,
@@ -1045,7 +1091,7 @@
         // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 1.84,
+            scale: 2.35,
             skin: c.skin,
             isFooty: false,
             isKeeper: false,
@@ -1170,8 +1216,16 @@
             const sk = inst.skin;
             const isDefaultSkin = inst.isFooty ? (sk.id === 'skin_rookie') : (sk.id === 'skin_solar');
 
-            if (isDefaultSkin) {
-              // Default hero athlete: show 100% of the pristine Pixar/Fortnite arcade atlas!
+            if (isHair) {
+              const hRgb = hexToVec3(sk.hair || (inst.isFooty ? 0x221810 : 0x0a0a0a));
+              baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
+              useTex = false; // Rich stylish sculpted hair without atlas bleed
+            } else if (isSkin) {
+              const sRgb = hexToVec3(sk.skin || (inst.isFooty ? 0xdfa070 : 0x6c4424));
+              baseCol = [sRgb[0], sRgb[1], sRgb[2], 1.0];
+              useTex = false; // Smooth athletic skin tone
+            } else if (isDefaultSkin) {
+              // Default hero athlete: show 100% of the pristine Pixar/Fortnite arcade jersey & footwear!
               baseCol = [1, 1, 1, 1];
             } else {
               // Customized uniform equipped from wardrobe
