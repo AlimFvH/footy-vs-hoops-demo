@@ -12,7 +12,7 @@ console.log('=== FOOTY vs HOOPS: Mobile UX & Gameplay Repair Suite ===\n');
 // --------------------------------------------------------------------------
 console.log('[RUN] Test 1: Scrolling Fix & Touch Interception Guards in js/game.js');
 const gameJsPath = path.join(__dirname, '..', 'js', 'game.js');
-const gameJsCode = fs.readFileSync(gameJsPath, 'utf8');
+const gameJsCode = fs.readFileSync(gameJsPath, 'utf8').replace(/\r\n/g, '\n');
 
 // 1.1: Hud.prototype.bindStick sets this.activeTouchId = null and this.stickPointer = -1
 assert.ok(
@@ -55,7 +55,7 @@ console.log('[PASS] Test 1: Scrolling touch guards and telegram.leaveMatch exitF
 // --------------------------------------------------------------------------
 console.log('[RUN] Test 2: CSS Main Screen Scrollable & Mobile Viewport Styling');
 const cssPath = path.join(__dirname, '..', 'css', 'redesign.css');
-const cssCode = fs.readFileSync(cssPath, 'utf8');
+const cssCode = fs.readFileSync(cssPath, 'utf8').replace(/\r\n/g, '\n');
 
 assert.ok(
   cssCode.includes('overflow-y: auto !important;\n  overflow-x: hidden !important;\n  -webkit-overflow-scrolling: touch !important;\n  touch-action: pan-y !important;'),
@@ -69,7 +69,7 @@ console.log('[PASS] Test 2: CSS scrollable properties verified.');
 // --------------------------------------------------------------------------
 console.log('[RUN] Test 3: Removal of Social-Links Block from Home Screen');
 const redesignJsPath = path.join(__dirname, '..', 'js', 'redesign.js');
-const redesignJsCode = fs.readFileSync(redesignJsPath, 'utf8');
+const redesignJsCode = fs.readFileSync(redesignJsPath, 'utf8').replace(/\r\n/g, '\n');
 
 // Ensure renderRedesignedMenu does not append createOfficialSocialsCard
 const renderMenuFnMatch = redesignJsCode.match(/function renderRedesignedMenu\([\s\S]*?\n  \}/);
@@ -247,7 +247,7 @@ assert.ok(
 
 // 6.2: Server WebSocket relay forwards directly to peer without unnecessary array buffering
 const serverJsPath = path.join(__dirname, '..', 'server', 'server.js');
-const serverJsCode = fs.readFileSync(serverJsPath, 'utf8');
+const serverJsCode = fs.readFileSync(serverJsPath, 'utf8').replace(/\r\n/g, '\n');
 assert.ok(
   serverJsCode.includes("if (peerSocket && !peerSocket.destroyed && peerSocket.writable) {\n            peerSocket.write(makeWsTextFrame(text));\n          } else {"),
   'FAIL: Server must directly forward WebSocket frames without HTTP queue thrashing when peer is on WS'
