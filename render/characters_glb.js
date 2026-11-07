@@ -882,13 +882,13 @@
           const diveArc = Math.sin(diveProg * Math.PI);
           const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : 1);
           this.roll = -diveDir * (1.15 + 0.3 * diveArc);
-          this.elevationLift = 0.26 * diveArc;
+          this.elevationLift = 0.20 * diveArc;
           this.pitch = 0.15 * diveArc;
           this.setAnimation('Roll', 1.7);
         }
         else if (a.role === 'keeper' && a.jumpT > 0) {
           const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
-          this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.38;
+          this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.30;
           this.pitch = -0.10;
           this.setAnimation('Punch_Right', 2.0);
         }
@@ -930,9 +930,9 @@
       const py = (a.y || 0) + this.elevationLift;
       const pz = a.z || 0;
       // Muscular, broader athletic torso and shoulders for football players
-      const sx = this.isFooty ? (this.scale * 1.15) : this.scale;
+      const sx = this.scale;
       const sy = this.scale;
-      const sz = this.isFooty ? (this.scale * 1.10) : this.scale;
+      const sz = this.scale;
       makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, sx, sy, sz, this.pitch, this.roll);
     }
   }
@@ -973,7 +973,7 @@
         // 1. Goalkeeper in goal (Goalkeeper #1) - scale 1.82 (athletic keeper, fits perfectly in 2.5m goal)
         if (isKeeper) {
           const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 1.78,
+            scale: 1.72,
             skin: c.skin,
             isFooty: true,
             isKeeper: true,
@@ -984,7 +984,7 @@
         // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 1.76,
+            scale: 1.70,
             skin: c.skin,
             isFooty: true,
             isKeeper: false,
@@ -995,7 +995,7 @@
         // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 1.82,
+            scale: 1.78,
             skin: c.skin,
             isFooty: false,
             isKeeper: false,

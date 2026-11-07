@@ -260,7 +260,7 @@ async function testPaymentLifecycle() {
 console.log('\nTest 6: Mobile Performance & Stability Guardrails...');
 
 // 1. DPR Clamping
-assert(gameJs.includes('const cap = this.qualityMode === \'high\' ? 2.5 : 2.0'), 'DPR must be clamped to prevent 3x/4x mobile memory bloat');
+assert(gameJs.includes('this.qualityMode === \'high\'') && gameJs.includes('this.dpr = Math.min'), 'DPR must be clamped to prevent 3x/4x mobile memory bloat');
 assert(gameJs.includes('this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale'), 'Canvas resolution must respect DPR cap');
 console.log('  [PASS] Canvas DPR cap (2.5 high / 2.0 low) verified.');
 

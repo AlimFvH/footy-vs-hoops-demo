@@ -4965,6 +4965,22 @@
     }
   }
 
+  function safeStoreEquip(d, item) {
+    if (!d) return;
+    if (!d.equipped) d.equipped = {};
+    if (!item) return;
+    if (item.category === 'skins') {
+      var sMode = item.mode || (item.id.includes('hoops') || item.id === 'skin_solar' || item.id === 'skin_sunset' || item.id === 'skin_mars' ? 'hoops' : 'footy');
+      d.equipped['skin.' + sMode] = item.id;
+      d.equipped.skin = item.id;
+    }
+    if (item.category === 'balls_footy' || item.category === 'balls_hoops' || item.category === 'balls') {
+      var bMode = item.mode || (item.category === 'balls_hoops' || item.id.includes('hoops') ? 'hoops' : 'footy');
+      d.equipped['ball.' + bMode] = item.id;
+      d.equipped.ball = item.id;
+    }
+  }
+
   function getAppPlayerId(app) {
     if (app && app.store && app.store.data) {
       if (app.store.data.playerId) {
@@ -5675,7 +5691,7 @@
         }
         return Math.min(30, level);
       }
-      var curPlayerLvl = curData.level || (curData.profile && curData.profile.level) || (app.store && app.store.level) || calcLevelForXp(curPlayerXp);
+      var curPlayerLvl = Math.max(curData.level || 1, (curData.profile && curData.profile.level) || 1, (app.store && app.store.level) || 1, calcLevelForXp(curPlayerXp));
       var curUp = curData.upgrades || { power: 1, stamina: 1, keeper: 1, speed: 1 };
 
       var pL = Math.max(1, Math.min(10, curUp.power || 1));
@@ -6945,7 +6961,7 @@
           name: 'Telegram News',
           handle: '@FootyHoops',
           url: 'https://t.me/FootyHoops',
-          icon: getSocialIconSvg('tg'),
+          icon: getTelegramLogoSvg(36),
           isTelegramChannel: true,
           desc: lang === 'ru' ? 'Официальный новостной канал FOOTY vs HOOPS' : 'Official FOOTY vs HOOPS news channel'
         },
@@ -6971,7 +6987,7 @@
           name: 'X / Twitter',
           handle: '@footyvshoops',
           url: 'https://x.com/footyvshoops?s=11',
-          icon: getSocialIconSvg('x'),
+          icon: getXLogoSvg(36),
           desc: lang === 'ru' ? 'Анонсы турниров, аналитика и новости' : 'Tournament announcements and Web3 alpha'
         },
         {
@@ -7108,6 +7124,7 @@
                 telegramUserId: tgUserId,
                 target: task.isTelegramChat ? 'chat' : 'channel',
                 questId: task.id,
+                // Support claim: false for status check, claim: true to claim
                 claim: true
               })
             })
@@ -7665,7 +7682,7 @@
 
     // 0. Locked Faction Shop Header (Strictly displays player's faction items; other faction selector hidden)
     var factionBadge = document.createElement('div');
-    factionBadge.className = 'fvh-shop-faction-badge ' + shopSport;
+    factionBadge.className = 'fvh-shop-faction-badge fvh-shop-sport-switcher ' + shopSport;
     factionBadge.style.display = 'flex';
     factionBadge.style.alignItems = 'center';
     factionBadge.style.justifyContent = 'space-between';

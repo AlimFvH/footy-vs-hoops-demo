@@ -572,7 +572,7 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar .fvh-hero-real-img {
-  max-height: clamp(210px, 29vh, 265px) !important;
+  max-height: clamp(170px, 24vh, 215px) !important;
   width: auto !important;
   object-fit: contain !important;
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.85)) !important;
@@ -965,7 +965,7 @@ html.is-telegram {
     padding-top: calc(max(var(--sat), 44px) + 12px) !important;
   }
   html.is-telegram .screen.page-screen {
-    padding-top: calc(max(var(--sat), 44px) + 12px) !important;
+    padding-top: calc(max(var(--sat), 44px) + 52px) !important;
   }
   .screen.menu-bg {
     width: 100% !important;
@@ -1401,10 +1401,10 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar {
-  /* Baseline sizing clamp(205px, 28vh, 250px) and clamp(170px, 24vh, 215px) */
+  /* Baseline sizing clamp(290px, 45vh, 360px) and clamp(260px, 40vh, 320px) */
   width: 100% !important;
   max-width: 290px !important;
-  height: clamp(235px, 32vh, 280px) !important;
+  height: clamp(205px, 28vh, 250px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2023,6 +2023,9 @@ canvas {
 }
 
 /* Safe-area padding for all page views */
+.screen.page-screen {
+  padding-top: calc(max(var(--sat), 16px) + 52px) !important;
+}
 .screen.page-screen,
 .page-body,
 .fvh-shop-container,
@@ -3342,7 +3345,7 @@ canvas {
   }
   .fvh-wardrobe-avatar {
     /* Baseline mobile clamp(175px, 24vh, 215px) and clamp(145px, 20vh, 180px) */
-    height: clamp(210px, 28vh, 255px) !important;
+    height: clamp(175px, 24vh, 215px) !important;
     max-width: 270px !important;
     width: 100% !important;
     margin: 0 auto !important;
@@ -3351,7 +3354,7 @@ canvas {
     max-height: clamp(190px, 26vh, 235px) !important;
   }
   .fvh-wardrobe-avatar .fvh-hero-real-img {
-    max-height: clamp(190px, 26vh, 235px) !important;
+    max-height: clamp(145px, 20vh, 180px) !important;
   }
   .fvh-equipped-list {
     margin: 6px 0 2px !important;

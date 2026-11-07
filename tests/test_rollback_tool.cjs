@@ -43,8 +43,9 @@ async function testRollbackTool() {
 
   const exportedRaw = fs.readFileSync(exportPath, 'utf8');
   const exported = JSON.parse(exportedRaw);
-  assert.strictEqual(Object.keys(exported.players).length, 159);
-  assert.strictEqual(exported.economyLedger.length, 98);
+  const origData = JSON.parse(fs.readFileSync(path.join(__dirname, '../server/data.json'), 'utf8'));
+  assert.strictEqual(Object.keys(exported.players).length, Object.keys(origData.players).length);
+  assert.strictEqual(exported.economyLedger.length, origData.economyLedger.length);
 
   // 3. Restore state from backup
   console.log('\nStep 3: Restoring DB state from export via rollback tool...');
@@ -58,7 +59,7 @@ async function testRollbackTool() {
 
   // Verify database has exact same record counts
   const pCount = await pool.query('SELECT COUNT(*) as count FROM players');
-  assert.strictEqual(parseInt(pCount.rows[0].count, 10), 159);
+  assert.strictEqual(parseInt(pCount.rows[0].count, 10), Object.keys(origData.players).length);
 
   // Clean up temp dir
   fs.rmSync(tempDir, { recursive: true, force: true });

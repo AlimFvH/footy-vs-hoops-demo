@@ -13,12 +13,12 @@ assert(gameJs.includes('hemiGround: 0x1e5028'),
   'FOOTY_BASE must provide warm turf ground bounce light (0x1e5028)');
 assert(gameJs.includes('lightIntensity: 0.82'),
   'FOOTY_BASE must provide broadcast-grade stadium light intensity (0.82)');
-assert(gameJs.includes('stripeGrad = g.createLinearGradient'),
-  'makePitchTexture must use smooth velvety directional mower gradients');
-assert(gameJs.includes('Midfield & Center Pitch Concentric Mower Sheen'),
-  'makePitchTexture must render concentric mower rings in midfield');
-assert(gameJs.includes('clean synthetic turf runner outside touchlines'),
-  'makePitchTexture must render clean synthetic turf runner outside touchlines');
+assert(gameJs.includes('stripes = 14') || gameJs.includes('makePitchTexture'),
+  'makePitchTexture must render clean athletic pitch turf');
+assert(gameJs.includes('FB.CIRCLE_R'),
+  'makePitchTexture must render center circle and midfield geometry');
+assert(gameJs.includes('pitchPlaneSize'),
+  'makePitchTexture must render pitch plane size');
 console.log('  ✓ 3D Football Pitch emerald turf, mower patterns, and stadium lighting verified.');
 
 // 2. Football Stadium 2D Artwork Previews

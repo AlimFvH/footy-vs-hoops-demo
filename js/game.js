@@ -14730,7 +14730,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const w = Math.max(1, this.stage.clientWidth || window.innerWidth);
                 const hgt = Math.max(1, this.stage.clientHeight || window.innerHeight);
                 const isMob = isMobileDevice();
-                const cap = this.qualityMode === 'high' ? 2.5 : 2.0;
+                const cap = isMob ? (this.qualityMode === 'high' ? 2.0 : 1.75) : (this.qualityMode === 'high' ? 2.5 : 2.0);
                 this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale;
                 this.renderer.resize(w, hgt, this.dpr);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.setAspect(w / hgt);
@@ -14782,6 +14782,123 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             (_a = window.visualViewport) === null || _a === void 0 ? void 0 : _a.addEventListener('resize', this.resize);
             window.addEventListener('orientationchange', () => setTimeout(this.resize, 200));
             this.resize();
+        }
+        recordReplaySnapshot() {
+            if (!this.replayBuffer) this.replayBuffer = [];
+            if (this.sim) {
+                const b = this.sim.ball;
+                const snap = {
+                    t: this.sim.time || 0,
+                    bx: b ? b.x : 0,
+                    by: b ? b.y : 0,
+                    bz: b ? b.z : 0,
+                    bvx: b ? b.vx || 0 : 0,
+                    bvy: b ? b.vy || 0 : 0,
+                    bvz: b ? b.vz || 0 : 0,
+                    agents: (this.sim.agents || []).map(a => ({
+                        id: a.id,
+                        x: a.x || 0,
+                        y: a.y || 0,
+                        z: a.z || 0,
+                        fx: a.fx || 0,
+                        fz: a.fz || 0,
+                        mx: a.mx || 0,
+                        mz: a.mz || 0,
+                        kickT: a.kickT || 0,
+                        shotT: a.shotT || 0,
+                        jumpT: a.jumpT || 0,
+                        diveT: a.diveT || 0,
+                        celebrateT: a.celebrateT || 0
+                    }))
+                };
+                this.replayBuffer.push(snap);
+            }
+            if (this.replayBuffer.length > 120) this.replayBuffer.shift();
+            return null;
+        }
+        startReplay(goalInfo) {
+            if (this.replayActive) return;
+            if (this.cfg && (this.cfg.online || this.cfg.demo)) return;
+            if (this.sim && this.sim.mode === 'hoops') return;
+            this.replayActive = true;
+            this.replayGoalInfo = goalInfo || null;
+            this.replayTimer = 0;
+            const count = Math.min((this.replayBuffer || []).length, 95);
+            this.replayActiveFrames = (this.replayBuffer || []).slice(-count);
+            if (this.hud && typeof this.hud.showReplay === 'function') {
+                this.hud.showReplay(true, () => this.stopReplay());
+            }
+        }
+        stepReplay(dt) {
+            const totalFrames = this.replayActiveFrames ? this.replayActiveFrames.length : 0;
+            if (totalFrames < 2 || !this.view) {
+                this.stopReplay();
+                return;
+            }
+            const frameDur = 1 / 30;
+            const fPos = this.replayTimer / frameDur;
+            const progress = fPos / totalFrames;
+            const slowMo = progress > 0.58 ? Math.max(0.42, 1.0 - (progress - 0.58) * 1.4) : 0.88;
+            this.replayTimer += dt * slowMo;
+
+            const curIdx = Math.floor(fPos);
+            if (curIdx >= totalFrames - 1) {
+                this.stopReplay();
+                return;
+            }
+            const frac = Math.max(0, Math.min(1, fPos - curIdx));
+            const snapA = this.replayActiveFrames[curIdx];
+            const snapB = this.replayActiveFrames[curIdx + 1] || snapA;
+
+            const lerp = (v0, v1, t) => v0 + (v1 - v0) * t;
+            const blended = {
+                bx: lerp(snapA.bx, snapB.bx, frac),
+                by: lerp(snapA.by, snapB.by, frac),
+                bz: lerp(snapA.bz, snapB.bz, frac),
+                bvx: lerp(snapA.bvx || 0, snapB.bvx || 0, frac),
+                bvy: lerp(snapA.bvy || 0, snapB.bvy || 0, frac),
+                bvz: lerp(snapA.bvz || 0, snapB.bvz || 0, frac),
+                agents: (snapA.agents || []).map((agA, i) => {
+                    const agB = (snapB.agents && snapB.agents[i]) || agA;
+                    return {
+                        id: agA.id,
+                        x: lerp(agA.x, agB.x, frac),
+                        y: lerp(agA.y || 0, agB.y || 0, frac),
+                        z: lerp(agA.z, agB.z, frac),
+                        fx: lerp(agA.fx, agB.fx, frac),
+                        fz: lerp(agA.fz, agB.fz, frac),
+                        mx: lerp(agA.mx || 0, agB.mx || 0, frac),
+                        mz: lerp(agA.mz || 0, agB.mz || 0, frac),
+                        kickT: lerp(agA.kickT || 0, agB.kickT || 0, frac),
+                        shotT: lerp(agA.shotT || 0, agB.shotT || 0, frac),
+                        jumpT: lerp(agA.jumpT || 0, agB.jumpT || 0, frac),
+                        diveT: lerp(agA.diveT || 0, agB.diveT || 0, frac),
+                        celebrateT: lerp(agA.celebrateT || 0, agB.celebrateT || 0, frac)
+                    };
+                })
+            };
+
+            if (this.view && typeof this.view.applySnapshot === 'function') {
+                this.view.applySnapshot(blended);
+                if (typeof this.view.renderReplay === 'function') {
+                    this.view.renderReplay(dt, blended, this.replayGoalInfo);
+                }
+            }
+        }
+        stopReplay() {
+            if (!this.replayActive) return;
+            this.replayActive = false;
+            this.replayActiveFrames = [];
+            this.replayGoalInfo = null;
+            if (this.hud && typeof this.hud.showReplay === 'function') {
+                this.hud.showReplay(false);
+            }
+            if (this.view) {
+                if (typeof this.view.restoreLivePositions === 'function') {
+                    this.view.restoreLivePositions();
+                }
+                if (this.view.rig) this.view.rig.snap = true;
+            }
         }
         pickQuality() {
             var _a, _b;

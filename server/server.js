@@ -1435,7 +1435,12 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  const parsedUrl = url.parse(req.url, true);
+  const host = req.headers.host || "localhost";
+  const u = new URL(req.url, "http://" + host);
+  const parsedUrl = {
+    pathname: u.pathname,
+    query: Object.fromEntries(u.searchParams.entries())
+  };
   const pathname = parsedUrl.pathname;
 
   // 0. Health check endpoint
@@ -1520,8 +1525,12 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      // Check if there is an eligible opponent waiting in the queue (exact sport mode match to guarantee synchronized gameplay)
-      const opponentIdx = state.queue.findIndex(q => q.playerId !== playerId && q.mode === mode);
+      // Check if there is an eligible opponent waiting in the queue for the same discipline
+      let opponentIdx = state.queue.findIndex(q => q.playerId !== playerId && q.mode === mode);
+      if (opponentIdx === -1 && !data.char) {
+        // Allow cross-discipline pairing fallback only when exact character lock is not specified
+        opponentIdx = state.queue.findIndex(q => q.playerId !== playerId);
+      }
 
       if (opponentIdx !== -1) {
         // Real Opponent Found! Pair them into the same game session
@@ -4391,6 +4400,15 @@ const server = http.createServer((req, res) => {
       if (rewardType === 'quest') {
         const questId = String(data.questId || rewardId);
 
+        // External social tasks: must not be claimed without verification
+        if (questId === 'q_sub_x' || questId === 'q_sub_yt' || questId === 'q_sub_insta' || questId === 'q_sub_tiktok') {
+          return sendJson(res, 400, {
+            ok: false,
+            error: 'verification_unavailable',
+            message: 'Third-party task verification is unavailable'
+          });
+        }
+
         // Telegram subscription task: MUST be verified via Telegram Bot API getChatMember
         if (questId === 'q_sub_tg') {
           const telegramUserId = data.telegramUserId || (player.telegramUser && player.telegramUser.id);
@@ -4884,7 +4902,12 @@ function makeWsTextFrame(str) {
 }
 
 server.on('upgrade', (req, socket, head) => {
-  const parsed = url.parse(req.url, true);
+  const host = req.headers.host || "localhost";
+  const u = new URL(req.url, "http://" + host);
+  const parsed = {
+    pathname: u.pathname,
+    query: Object.fromEntries(u.searchParams.entries())
+  };
   if (parsed.pathname !== '/ws/match') {
     socket.destroy();
     return;
@@ -4919,6 +4942,7 @@ server.on('upgrade', (req, socket, head) => {
     'Connection: Upgrade\r\n' +
     'Sec-WebSocket-Accept: ' + acceptKey + '\r\n\r\n'
   );
+  try { socket.setNoDelay(true); socket.setKeepAlive(true, 10000); } catch (e) {}
 
   if (!state.wsClients[matchId]) {
     state.wsClients[matchId] = { host: null, guest: null };
