@@ -17219,9 +17219,15 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 this.tutorial(false);
         }
         togglePause() {
-            if (this.state !== 'match' || !this.game.running)
+            if (this.state !== 'match' || !this.game.running) {
+                this.showMenu();
                 return;
-            this.setPause(!this.game.paused);
+            }
+            if (this.game.paused || this.pauseEl) {
+                this.quitToMenu();
+                return;
+            }
+            this.setPause(true);
         }
         setPause(p) {
             if (this.state !== 'match')

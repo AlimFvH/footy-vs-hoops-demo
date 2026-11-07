@@ -316,7 +316,7 @@ html.is-telegram {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 8px !important;
+  gap: 6px !important;
   margin-bottom: 8px !important;
   box-sizing: border-box !important;
 }
@@ -327,10 +327,10 @@ html.is-telegram {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 6px 10px !important;
-  border-radius: 14px !important;
+  padding: 5px 8px !important;
+  border-radius: 12px !important;
   box-sizing: border-box !important;
-  gap: 6px !important;
+  gap: 4px !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
@@ -360,19 +360,21 @@ html.is-telegram {
 .fvh-rival-side .fvh-rival-brand {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 4px !important;
   min-width: 0 !important;
-  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
 }
 
 .fvh-rival-side .fvh-rival-brand .fvh-rival-name {
-  font-size: 11.5px !important;
+  font-size: 11px !important;
   font-weight: 900 !important;
-  letter-spacing: 0.6px !important;
+  letter-spacing: 0.5px !important;
   text-transform: uppercase !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  flex-shrink: 0 !important;
 }
 
 .fvh-rival-side.footy .fvh-rival-name {
@@ -386,11 +388,11 @@ html.is-telegram {
 .fvh-rival-side .fvh-rival-ovr-capsule {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 3px !important;
-  font-size: 10.5px !important;
+  gap: 2px !important;
+  font-size: 9.5px !important;
   font-weight: 900 !important;
-  padding: 3px 8px !important;
-  border-radius: 20px !important;
+  padding: 2px 5px !important;
+  border-radius: 8px !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
   cursor: pointer !important;
@@ -410,29 +412,47 @@ html.is-telegram {
 }
 
 .fvh-rival-side .fvh-rival-ovr-capsule:hover {
-  transform: scale(1.05) !important;
+  transform: scale(1.04) !important;
 }
 
 .fvh-rivalry-center-badge {
-  width: 26px !important;
-  height: 26px !important;
-  border-radius: 50% !important;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(249, 115, 22, 0.25) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  flex-shrink: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex-shrink: 0 !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(249, 115, 22, 0.25) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
 }
 
 .fvh-rivalry-center-badge .fvh-clash-vs {
-  font-size: 9.5px !important;
+  font-size: 9px !important;
   font-weight: 900 !important;
   letter-spacing: 0.5px !important;
   background: linear-gradient(90deg, #00f0ff, #fb923c) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+}
+
+@media (max-width: 360px) {
+  .fvh-rival-side {
+    padding: 4px 5px !important;
+    gap: 3px !important;
+  }
+  .fvh-rival-side .fvh-rival-brand .fvh-rival-name {
+    font-size: 10px !important;
+  }
+  .fvh-rival-side .fvh-rival-ovr-capsule {
+    font-size: 9px !important;
+    padding: 2px 4px !important;
+  }
+  .fvh-rivalry-center-badge {
+    width: 20px !important;
+    height: 20px !important;
+  }
 }
 
 .solo-avatar-box {
@@ -1946,20 +1966,30 @@ canvas {
   position: absolute !important;
   top: calc(env(safe-area-inset-top, 44px) + 98px) !important;
   left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
-  width: 104px !important;
-  padding: 5px 8px !important;
-  border-radius: 12px !important;
+  width: auto !important;
+  min-width: 136px !important;
+  max-width: 170px !important;
+  padding: 6px 12px !important;
+  border-radius: 14px !important;
   background: rgba(8, 14, 28, 0.88) !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  backdrop-filter: blur(8px) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
-  font-size: 9.5px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.6px !important;
-  color: #e2e8f0 !important;
-  z-index: 35 !important;
-  pointer-events: none !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
   box-sizing: border-box !important;
+  z-index: 100 !important;
+}
+
+.stamina span {
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  color: #cfe !important;
 }
 
 .stamina .bar {

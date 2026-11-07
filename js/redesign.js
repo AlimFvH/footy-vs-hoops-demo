@@ -4822,14 +4822,39 @@
 
     switch (name) {
       case 'nav_home_footy':
+      case 'ball_footy':
+      case 'football_ball':
         return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_nav_f_bg)" stroke="#00f0ff" stroke-width="1.3"/>' +
-          '<path d="M12 5.5L14.5 8H9.5L12 5.5Z" fill="#00f0ff"/>' +
-          '<path d="M9.5 8L7.5 11.5L8.5 14L11 12.5L9.5 8Z" fill="rgba(255,255,255,0.9)"/>' +
-          '<path d="M14.5 8L16.5 11.5L15.5 14L13 12.5L14.5 8Z" fill="rgba(255,255,255,0.9)"/>' +
-          '<path d="M11 12.5L13 12.5L12 15.5L11 12.5Z" fill="#00f0ff"/>' +
-          '<path d="M8.5 14L10 18.5H14L15.5 14L12 15.5L8.5 14Z" fill="rgba(255,255,255,0.9)"/>' +
-          '<defs><radialGradient id="fvh_nav_f_bg" cx="0.3" cy="0.3" r="0.8"><stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#090d16"/></radialGradient></defs>' +
+          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_nav_f_ball)" stroke="#00f0ff" stroke-width="1.2"/>' +
+          '<g clip-path="url(#fvh_nav_f_clip)">' +
+          '  <polygon points="12,8.6 15.2,10.9 14.0,14.7 10.0,14.7 8.8,10.9" fill="#0f172a"/>' +
+          '  <polygon points="12,2.5 9.4,4.2 8.4,1.0 15.6,1.0 14.6,4.2" fill="#0f172a"/>' +
+          '  <polygon points="21.0,8.1 19.1,5.2 23.0,3.5 24.5,10.0 21.0,12.0" fill="#0f172a"/>' +
+          '  <polygon points="18.2,19.6 16.4,16.8 19.5,14.2 23.5,17.5 21.2,21.8" fill="#0f172a"/>' +
+          '  <polygon points="5.8,19.6 7.6,16.8 4.5,14.2 0.5,17.5 2.8,21.8" fill="#0f172a"/>' +
+          '  <polygon points="3.0,8.1 4.9,5.2 1.0,3.5 -0.5,10.0 3.0,12.0" fill="#0f172a"/>' +
+          '  <line x1="12" y1="8.6" x2="12" y2="4.2" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
+          '  <line x1="15.2" y1="10.9" x2="19.1" y2="8.1" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
+          '  <line x1="14.0" y1="14.7" x2="16.4" y2="17.9" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
+          '  <line x1="10.0" y1="14.7" x2="7.6" y2="17.9" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
+          '  <line x1="8.8" y1="10.9" x2="4.9" y2="8.1" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
+          '  <line x1="9.4" y1="4.2" x2="4.9" y2="5.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
+          '  <line x1="14.6" y1="4.2" x2="19.1" y2="5.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
+          '  <line x1="21.0" y1="12.0" x2="19.5" y2="14.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
+          '  <line x1="16.4" y1="16.8" x2="7.6" y2="16.8" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
+          '  <line x1="3.0" y1="12.0" x2="4.5" y2="14.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
+          '</g>' +
+          '<path d="M5.5 6.5C7.5 4.5 9.8 3.5 12 3.5" stroke="#ffffff" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/>' +
+          '<defs>' +
+          '  <radialGradient id="fvh_nav_f_ball" cx="35%" cy="30%" r="68%">' +
+          '    <stop offset="0%" stop-color="#ffffff"/>' +
+          '    <stop offset="70%" stop-color="#e2e8f0"/>' +
+          '    <stop offset="100%" stop-color="#94a3b8"/>' +
+          '  </radialGradient>' +
+          '  <clipPath id="fvh_nav_f_clip">' +
+          '    <circle cx="12" cy="12" r="9.5"/>' +
+          '  </clipPath>' +
+          '</defs>' +
           '</svg>';
 
       case 'nav_home_hoops':
@@ -12340,6 +12365,21 @@
   // Complete Redesigned Main Menu
   function renderRedesignedMenu(app) {
     window.renderRedesignedMenu = renderRedesignedMenu;
+    if (!app) app = window.App || window.app || window.__fvh;
+    if (!app || !app.store || !app.store.data) return;
+    if (app.game && app.game.running) {
+      try { app.game.stop(); } catch (e) {}
+    }
+    if (app.hud) {
+      try { app.hud.show(false); app.hud.resetState(); } catch (e) {}
+    }
+    if (typeof app.closePause === 'function') {
+      try { app.closePause(); } catch (e) {}
+    }
+    document.querySelectorAll('.fvh-pause-overlay, .fvh-forfeit-victory-screen').forEach(function (el) {
+      try { el.remove(); } catch (e) {}
+    });
+    updateTelegramBackButton('menu');
     var d = app.store.data;
     if (!d.teamChosen || (!d.selectedTeam && !d.selectedCharacter)) {
       app.showTeamSelection();
@@ -12776,10 +12816,11 @@
 
       // 4. Quit to Menu
       panel.appendChild(createPauseBtn(quitLabel, '🚪', 'danger fvh-pause-danger-btn', function () {
-        var quitConfirmMsg = tr('pauseQuitConfirm') || (lang === 'ru' ? 'Выйти в главное меню? Текущий прогресс матча будет потерян.' : 'Quit to main menu? Current match progress will be lost.');
-        if (confirm(quitConfirmMsg)) {
-          self.quitToMenu();
+        self.closePause();
+        if (self.game) {
+          try { self.game.stop(); } catch (e) {}
         }
+        self.quitToMenu();
       }));
 
       overlay.appendChild(panel);
@@ -12794,6 +12835,36 @@
     window.app = app;
     window.__fvh = app;
     installRedesignedPause(app);
+
+    // Robust Match Exit to Main Menu
+    var origQuitToMenu = app.quitToMenu ? app.quitToMenu.bind(app) : null;
+    app.quitToMenu = function () {
+      if (app.game) {
+        try { app.game.stop(); } catch (e) {}
+      }
+      if (typeof app.closePause === 'function') {
+        try { app.closePause(); } catch (e) {}
+      }
+      if (app.hud) {
+        try {
+          app.hud.show(false);
+          app.hud.resetState();
+        } catch (e) {}
+      }
+      if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.BackButton) {
+        try { window.Telegram.WebApp.BackButton.hide(); } catch (e) {}
+      }
+      document.querySelectorAll('.fvh-pause-overlay, .fvh-forfeit-victory-screen').forEach(function (el) {
+        try { el.remove(); } catch (e) {}
+      });
+      if (app.telegram && typeof app.telegram.leaveMatch === 'function') {
+        try { app.telegram.leaveMatch(); } catch (e) {}
+      }
+      if (origQuitToMenu) {
+        try { origQuitToMenu(); } catch (e) {}
+      }
+      app.showMenu();
+    };
     // Initial sync with authoritative backend economy
     syncAuthoritativeEconomy(app);
 
@@ -13101,8 +13172,20 @@
         // Native Telegram BackButton
         if (tg.BackButton) {
           tg.BackButton.onClick(function () {
-            // Live match controls pause dialog via game engine; never exit directly from match state
-            if (app.state !== 'menu' && app.state !== 'match' && (!app.game || !app.game.running)) {
+            if (app.state === 'match' || (app.game && app.game.running)) {
+              if (app.pauseEl) {
+                app.closePause();
+                app.quitToMenu();
+              } else {
+                app.openPause();
+              }
+              return;
+            }
+            if (app.state === 'results') {
+              app.showMenu();
+              return;
+            }
+            if (app.state !== 'menu') {
               app.showMenu();
             }
           });
