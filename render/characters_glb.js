@@ -184,7 +184,9 @@
 
       const sId = String(skinId).toLowerCase();
       let rarity = 'common';
-      if (sId.includes('gold') || sId.includes('cyber') || sId.includes('phantom') || sId.includes('championship') || sId.includes('matrix') || sId.includes('premium')) {
+      if (sId.includes('titan') || sId.includes('mythic') || sId.includes('beast') || (skin && skin.rarity === 'mythic')) {
+        rarity = 'mythic';
+      } else if (sId.includes('gold') || sId.includes('cyber') || sId.includes('phantom') || sId.includes('championship') || sId.includes('matrix') || sId.includes('premium')) {
         rarity = 'legendary';
       } else if (sId.includes('solar') || sId.includes('shadow') || sId.includes('electric') || sId.includes('crimson_elite') || sId.includes('golden_state') || sId.includes('cyber_dunk') || sId.includes('stealth') || sId.includes('astronaut') || sId.includes('mars')) {
         rarity = 'epic';
@@ -208,7 +210,38 @@
 
         // --- RARITY-BASED HIGH-DETAIL JERSEY PATTERNS ---
 
-        if (rarity === 'legendary') {
+        if (rarity === 'mythic') {
+          // MYTHIC TITAN / HYPER BEAST: Celestial Double Aurora Sash & Cosmic Core
+          const mGrad = ctx.createLinearGradient(cx - W * 0.12, topY, cx + W * 0.12, topY + hH);
+          mGrad.addColorStop(0, '#c084fc');
+          mGrad.addColorStop(0.5, '#00f0ff');
+          mGrad.addColorStop(1, '#ec4899');
+          ctx.strokeStyle = mGrad;
+          ctx.lineWidth = W * 0.052;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.11, topY);
+          ctx.lineTo(cx + W * 0.11, topY + hH);
+          ctx.stroke();
+
+          // Dual glowing laser pinstripes
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 3.0;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.11 - 4, topY);
+          ctx.lineTo(cx + W * 0.11 - 4, topY + hH);
+          ctx.moveTo(cx - W * 0.11 + 4, topY);
+          ctx.lineTo(cx + W * 0.11 + 4, topY + hH);
+          ctx.stroke();
+
+          // Mythic Gem Core
+          ctx.fillStyle = '#00f0ff';
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.38, W * 0.026, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.0;
+          ctx.stroke();
+        } else if (rarity === 'legendary') {
           // CHAMPIONSHIP GOLD / CYBER MATRIX / PHANTOM BLACK
           // Royal Gold Sash with metallic borders
           const grad = ctx.createLinearGradient(cx - W * 0.11, topY, cx + W * 0.11, topY + hH);
@@ -481,6 +514,9 @@
       }
 
       ctx.putImageData(imgData, 0, 0);
+
+      // Render high-detail rarity patterns, club crest, and squad numbers onto uniform
+      drawGlbJerseyPattern(ctx, W, H, isFooty, skin.id, skin);
 
       const skinTex = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, skinTex);
@@ -1074,7 +1110,24 @@
           let useTex = !!bindTex;
 
           // Dynamic 3D PBR Kit Tinting & Texture Assignment based on equipped uniform
-          if (inst.skin && !inst.isKeeper) {
+          if (inst.customTexture) {
+            // High-detail custom baked texture is active: render texture with full vibrancy without double-tint
+            if (matName === 'LightBlue' || matName === 'White' || matName === 'Red_Dark') {
+              baseCol = [1, 1, 1, 1];
+              useTex = true;
+            } else if (matName === 'Skin' || matName === 'Skin_Darker' || matName === 'LightBrown') {
+              if (inst.skin && inst.skin.skin) {
+                const sRgb = hexToVec3(inst.skin.skin);
+                baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
+              }
+            } else if (matName === 'Hair') {
+              if (inst.skin && inst.skin.hair) {
+                const hRgb = hexToVec3(inst.skin.hair);
+                baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
+                useTex = false;
+              }
+            }
+          } else if (inst.skin && !inst.isKeeper) {
             const sk = inst.skin;
             if (matName === 'LightBlue') {
               // Jersey / Shirt primitive
@@ -1082,7 +1135,6 @@
                 const pRgb = hexToVec3(sk.primary);
                 baseCol = [pRgb[0], pRgb[1], pRgb[2], 1.0];
               }
-              // When custom texture with patterns is present use it, otherwise render pure saturated jersey color
               if (!inst.customTexture) {
                 useTex = false;
               }

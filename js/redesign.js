@@ -1259,6 +1259,34 @@
       'Shadow Ninja': 'Теневой Ниндзя',
       'Solar Flare': 'Солнечная Вспышка',
       'Cyber Striker': 'Кибер Страйкер',
+      'Cyber Strike': 'Кибер Удар',
+      'Stealth Shadow': 'Скрытная Тень',
+      'Golden Legend': 'Золотая Легенда',
+      'Neon Matrix': 'Неоновая Матрица',
+      'Mythic Titan': 'Мифический Титан',
+      'Street Legend': 'Легенда Улиц',
+      'Neon Splash': 'Неоновый Всплеск',
+      'Golden State': 'Золотой Штат',
+      'Cyber Dunker': 'Кибер Данкер',
+      'Phantom Black': 'Призрачный Черный',
+      'Hyper Beast': 'Гипер Зверь',
+      'Solar Inferno': 'Солнечное Инферно',
+      'Plasma Energy': 'Плазменная Энергия',
+      'Cyber Matrix': 'Кибер Матрица',
+      'Championship Gold': 'Золото Чемпионата',
+      'Supernova Burst': 'Вспышка Сверхновой',
+      'Neon Energy': 'Неоновая Энергия',
+      'Molten Fire': 'Раскаленный Огонь',
+      'Chrome Edition': 'Хромированное Издание',
+      'Midnight Shadow': 'Полуночная Тень',
+      'Cosmic Galaxy': 'Космическая Галактика',
+      'Golden All-Star': 'Золотой Олл-Стар',
+      'Quantum Vortex': 'Квантовый Вихрь',
+      'Match Classic': 'Матчевая Классика',
+      'Pro Leather': 'Профи Кожа',
+      'Classic Ball': 'Классический Мяч',
+      'FOOTY Kit': 'Форма FOOTY',
+      'HOOPS Jersey': 'Джерси HOOPS',
       'Neon Striker Kit': 'Комплект Неонового Страйкера',
       'Inferno Ball': 'Огненный Мяч',
       'Inferno Ball Skin': 'Скин Мяча "Инферно"',
@@ -2136,8 +2164,11 @@
 
   function getItemLabelById(id, fallback) {
     if (!id) return fallback || '';
+    var lang = getActiveLang();
     if (typeof HERO_SKIN_PALETTES !== 'undefined' && HERO_SKIN_PALETTES[id]) {
-      return HERO_SKIN_PALETTES[id].name || id;
+      if (lang === 'ru' && HERO_SKIN_PALETTES[id].ru) return HERO_SKIN_PALETTES[id].ru;
+      var palName = HERO_SKIN_PALETTES[id].name || id;
+      return trItem(palName) || palName;
     }
     if (typeof CROWD_CATALOG !== 'undefined') {
       var cr = CROWD_CATALOG.find(function(c) { return c.id === id; });
@@ -2201,10 +2232,13 @@
       'cel_flame': 'Flame Burst',
       'cel_gold_rain': 'Gold Rain'
     };
-    if (idToName[id]) return idToName[id];
-    var canonical = LEGACY_ITEM_ALIASES[id];
-    if (canonical && idToName[canonical]) return idToName[canonical];
-    return fallback || id;
+    var foundRaw = idToName[id];
+    if (!foundRaw) {
+      var canonical = LEGACY_ITEM_ALIASES[id];
+      if (canonical && idToName[canonical]) foundRaw = idToName[canonical];
+    }
+    if (foundRaw) return trItem(foundRaw) || foundRaw;
+    return trItem(fallback) || fallback || id;
   }
 
   function showToast(text) {
@@ -6338,19 +6372,7 @@
         return;
       }
 
-      if (curSlot === 'packs') {
-        raritySeg.style.display = 'none';
-        avatarBox.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:12px;box-sizing:border-box;">' +
-          '<div style="font-size:52px;filter:drop-shadow(0 0 16px rgba(250,204,21,0.6));">🎁</div>' +
-          '<div style="font-size:12px;font-weight:900;color:#facc15;margin-top:8px;text-align:center;">MYSTERY PACKS</div>' +
-          '</div>';
-        equipSlotList.innerHTML =
-          '<div class="fvh-equipped-slot"><span>🎁 ' + (lang === 'ru' ? 'Шанс на эксклюзив:' : 'Exclusive Chance:') + '</span><b style="color:#facc15;">4.0%</b></div>' +
-          '<div class="fvh-equipped-slot"><span>🪙 ' + (lang === 'ru' ? 'Бонус монет:' : 'Bonus Coins:') + '</span><b>+100-250 FvH</b></div>' +
-          '<div class="fvh-equipped-slot"><span>🛡️ ' + (lang === 'ru' ? 'Защита от дублей:' : 'Dup Protection:') + '</span><b style="color:#22c55e;">+350 🪙</b></div>';
-        renderPacksView();
-        return;
-      }
+// Packs tab permanently excluded from inventory
 
       raritySeg.style.display = 'flex';
 
@@ -9828,7 +9850,7 @@
     var statsCard = document.createElement('div');
     statsCard.className = 'fvh-card-panel';
     statsCard.innerHTML =
-      '<div class="fvh-panel-head">🏆 ' + tr('statRecords') + '</div>' +
+      '<div class="fvh-panel-head"><span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('trophy', 16) + ' <span>' + tr('statRecords') + '</span></span></div>' +
       '<div class="fvh-stats-kpi-grid">' +
       '<div class="fvh-kpi-item"><small>' + tr('matches') + '</small><b>' + totalMatches + '</b></div>' +
       '<div class="fvh-kpi-item win"><small>' + tr('victories') + '</small><b>' + totalWins + '</b></div>' +
@@ -9837,8 +9859,8 @@
       '</div>' +
       '<div style="margin-top:14px;">' +
       '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:800;">' +
-      '<span style="color:#38bdf8;">⚽ ' + tr('football') + ' (' + wF + ')</span>' +
-      '<span style="color:#fb923c;">🏀 ' + tr('basketball') + ' (' + wH + ')</span>' +
+      '<span style="color:#38bdf8;display:inline-flex;align-items:center;gap:4px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>' + tr('football') + ' (' + wF + ')</span></span>' +
+      '<span style="color:#fb923c;display:inline-flex;align-items:center;gap:4px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>' + tr('basketball') + ' (' + wH + ')</span></span>' +
       '</div>' +
       '<div class="fvh-dual-bar" style="height:10px;border-radius:6px;overflow:hidden;background:#0f172a;display:flex;border:1px solid rgba(255,255,255,0.1);">' +
       '<div class="fvh-dual-footy" style="width:' + pctF + '%;background:linear-gradient(90deg,#0284c7,#00f0ff);transition:width 0.3s ease;"></div>' +
@@ -10944,7 +10966,7 @@
         '<div class="fvh-mm-radar-ring r1"></div>' +
         '<div class="fvh-mm-radar-ring r2"></div>' +
         '<div class="fvh-mm-radar-ring r3"></div>' +
-        '<div class="fvh-mm-radar-center">' + (curChar === 'footy' ? '⚽' : '🏀') + '</div>' +
+        '<div class="fvh-mm-radar-center" style="display:flex;align-items:center;justify-content:center;">' + (curChar === 'footy' ? getUiIconSvg('nav_home_footy', 28) : getUiIconSvg('nav_home_hoops', 28)) + '</div>' +
         '</div>' +
         '<div class="fvh-mm-status" id="fvh-mm-status-text">' + tr('searchingOpponent') + '</div>' +
         '<div class="fvh-mm-timer" id="fvh-mm-timer">00:01</div>' +
@@ -11257,7 +11279,7 @@
           // Host Card
           '<div class="fvh-lobby-player-card' + (isHost ? ' is-you' : '') + (hostObj.ready ? ' is-ready' : '') + '">' +
             '<div class="fvh-lobby-role-pill">' + (lang === 'ru' ? 'ХОСТ' : 'HOST') + (isHost ? ' (ВЫ)' : '') + '</div>' +
-            '<div class="fvh-lobby-player-avatar">⚽</div>' +
+            '<div class="fvh-lobby-player-avatar" style="display:flex;align-items:center;justify-content:center;">' + getUiIconSvg('nav_home_footy', 24) + '</div>' +
             '<div class="fvh-lobby-player-name">' + hostObj.name + '</div>' +
             '<div class="fvh-lobby-ready-pill ' + hostReadyClass + '">' + hostReadyText + '</div>' +
           '</div>' +
@@ -11266,7 +11288,7 @@
           // Guest Card
           '<div class="fvh-lobby-player-card' + (!isHost ? ' is-you' : '') + (guestObj && guestObj.ready ? ' is-ready' : '') + '">' +
             '<div class="fvh-lobby-role-pill">' + (lang === 'ru' ? 'ГОСТЬ' : 'GUEST') + (!isHost ? ' (ВЫ)' : '') + '</div>' +
-            '<div class="fvh-lobby-player-avatar">🏀</div>' +
+            '<div class="fvh-lobby-player-avatar" style="display:flex;align-items:center;justify-content:center;">' + getUiIconSvg('nav_home_hoops', 24) + '</div>' +
             '<div class="fvh-lobby-player-name">' + guestNameDisplay + '</div>' +
             '<div class="fvh-lobby-ready-pill ' + guestReadyClass + '">' + guestReadyText + '</div>' +
           '</div>' +
@@ -11275,12 +11297,12 @@
         '<div class="fvh-lobby-section-title">' + (lang === 'ru' ? 'РЕЖИМ СПОРТА (СИНХРОНИЗИРОВАН):' : 'SPORT MODE (SYNCHRONIZED):') + '</div>' +
         '<div class="fvh-lobby-mode-grid">' +
           '<button class="fvh-lobby-mode-option' + (isFooty ? ' active' : '') + '" data-mode="footy"' + (!isHost ? ' disabled style="opacity:0.9;cursor:default;"' : '') + '>' +
-            '<div class="mode-icon">⚽</div>' +
+            '<div class="mode-icon" style="display:flex;align-items:center;justify-content:center;">' + getUiIconSvg('nav_home_footy', 24) + '</div>' +
             '<div class="mode-name">FOOTY</div>' +
             '<div class="mode-sub">' + (lang === 'ru' ? 'Футбол 1v1' : 'Football 1v1') + '</div>' +
           '</button>' +
           '<button class="fvh-lobby-mode-option' + (!isFooty ? ' active' : '') + '" data-mode="hoops"' + (!isHost ? ' disabled style="opacity:0.9;cursor:default;"' : '') + '>' +
-            '<div class="mode-icon">🏀</div>' +
+            '<div class="mode-icon" style="display:flex;align-items:center;justify-content:center;">' + getUiIconSvg('nav_home_hoops', 24) + '</div>' +
             '<div class="mode-name">HOOPS</div>' +
             '<div class="mode-sub">' + (lang === 'ru' ? 'Баскетбол 1v1' : 'Basketball 1v1') + '</div>' +
           '</button>' +
@@ -12395,11 +12417,30 @@
 
     var charPortraitHtml = getCharacterDisplayHtml(curChar, null, { showJerseyTag: false });
 
+    var footyActive = isFooty ? ' active' : '';
+    var hoopsActive = !isFooty ? ' active' : '';
+    var footyOvr = ovr;
+    var hoopsOvr = ovr;
+
     heroCard.innerHTML =
-      '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:6px;">' +
-      '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:11px;font-weight:900;padding:5px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
-      '  <span class="fvh-solo-ovr-pill" style="cursor:pointer;font-size:12px;font-weight:900;color:#00f0ff;background:rgba(0,240,255,0.12);padding:4px 10px;border-radius:20px;border:1px solid rgba(0,240,255,0.35);display:inline-flex;align-items:center;gap:4px;" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">' + getUiIconSvg('lightning', 13) + ' <span>' + ovr + ' OVR</span></span>' +
-      '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
+      '<div class="fvh-rivalry-bar-symmetrical fvh-solo-compact-header">' +
+      '  <div class="fvh-rival-side footy' + footyActive + '" data-side="footy" title="' + (isFooty ? (lang === 'ru' ? 'Ваш атлет FOOTY' : 'Your FOOTY Athlete') : (lang === 'ru' ? 'Соперник FOOTY' : 'Rival FOOTY')) + '">' +
+      '    <div class="fvh-rival-brand">' +
+      '      <span class="fvh-rival-icon" style="display:inline-flex;align-items:center;">' + getUiIconSvg('nav_home_footy', 16) + '</span>' +
+      '      <span class="fvh-rival-name">FOOTY</span>' +
+      '    </div>' +
+      '    <span class="fvh-rival-ovr-capsule fvh-solo-ovr-pill" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">' + getUiIconSvg('lightning', 12) + ' <span>' + footyOvr + ' OVR</span></span>' +
+      '  </div>' +
+      '  <div class="fvh-rivalry-center-badge">' +
+      '    <span class="fvh-clash-vs">VS</span>' +
+      '  </div>' +
+      '  <div class="fvh-rival-side hoops' + hoopsActive + '" data-side="hoops" title="' + (!isFooty ? (lang === 'ru' ? 'Ваш атлет HOOPS' : 'Your HOOPS Athlete') : (lang === 'ru' ? 'Соперник HOOPS' : 'Rival HOOPS')) + '">' +
+      '    <div class="fvh-rival-brand">' +
+      '      <span class="fvh-rival-icon" style="display:inline-flex;align-items:center;">' + getUiIconSvg('nav_home_hoops', 16) + '</span>' +
+      '      <span class="fvh-rival-name">HOOPS</span>' +
+      '    </div>' +
+      '    <span class="fvh-rival-ovr-capsule fvh-solo-ovr-pill" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">' + getUiIconSvg('lightning', 12) + ' <span>' + hoopsOvr + ' OVR</span></span>' +
+      '  </div>' +
       '</div>' +
       '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
       charPortraitHtml +
@@ -12428,10 +12469,21 @@
       app.audio.play('click');
       app.go('upgrades');
     };
-    var ovrPill = heroCard.querySelector('.fvh-solo-ovr-pill');
-    if (ovrPill) ovrPill.onclick = openUpgrades;
+    heroCard.querySelectorAll('.fvh-rival-ovr-capsule').forEach(function (pill) {
+      pill.onclick = openUpgrades;
+    });
     var upgBtn = heroCard.querySelector('.fvh-solo-upgrade-pill');
     if (upgBtn) upgBtn.onclick = openUpgrades;
+
+    heroCard.querySelectorAll('.fvh-rival-side').forEach(function (sideEl) {
+      sideEl.onclick = function (e) {
+        if (e.target.closest('.fvh-rival-ovr-capsule')) return;
+        e.stopPropagation();
+        app.audio.play('click');
+        var side = sideEl.getAttribute('data-side') || curChar;
+        app.openCharacterLocker(side);
+      };
+    });
 
     heroCard.style.cursor = 'pointer';
     heroCard.onclick = function () {
@@ -12509,12 +12561,12 @@
 
     secondaryHub.innerHTML =
       '<button type="button" class="fvh-hub-tile" id="fvh-hub-shop">' +
-      '  <span class="tile-icon">🛒</span>' +
+      '  <span class="tile-icon">' + getUiIconSvg('nav_shop', 22) + '</span>' +
       '  <span class="tile-title">' + shopLabel + '</span>' +
       '  <span class="tile-sub">' + shopSub + '</span>' +
       '</button>' +
       '<button type="button" class="fvh-hub-tile" id="fvh-hub-quests" style="border-color:rgba(250,204,21,0.3);">' +
-      '  <span class="tile-icon">🎯</span>' +
+      '  <span class="tile-icon">' + getUiIconSvg('nav_quests', 22) + '</span>' +
       '  <span class="tile-title">' + questsLabel + '</span>' +
       '  <span class="tile-sub" style="color:#facc15;font-weight:800;">' + questsSub + '</span>' +
       '</button>' +
@@ -12590,18 +12642,18 @@
       var tauntSub = isFootyWin ? tr('victoryTauntFootySub') : tr('victoryTauntHoopsSub');
 
       tauntCard.innerHTML =
-        '<div class="fvh-taunt-badge-tag">' + (isFootyWin ? '⚽ FOOTY VICTORY' : '🏀 HOOPS VICTORY') + '</div>' +
+        '<div class="fvh-taunt-badge-tag" style="display:inline-flex;align-items:center;gap:6px;">' + (isFootyWin ? getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY VICTORY</span>' : getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS VICTORY</span>') + '</div>' +
         '<div class="fvh-taunt-headline">' + tauntTitle + '</div>' +
         '<div class="fvh-taunt-subtext">' + tauntSub + '</div>';
     } else if (isHumanLoss) {
       var oppIsFooty = (curChar !== 'footy');
       var oppTitle = oppIsFooty ? tr('defeatTauntHoops') : tr('defeatTauntFooty');
       tauntCard.innerHTML =
-        '<div class="fvh-taunt-badge-tag opponent">' + (oppIsFooty ? '⚽ FOOTY VICTORY' : '🏀 HOOPS VICTORY') + '</div>' +
+        '<div class="fvh-taunt-badge-tag opponent" style="display:inline-flex;align-items:center;gap:6px;">' + (oppIsFooty ? getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY VICTORY</span>' : getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS VICTORY</span>') + '</div>' +
         '<div class="fvh-taunt-headline opp">' + oppTitle + '</div>';
     } else {
       tauntCard.innerHTML =
-        '<div class="fvh-taunt-badge-tag draw">⚔️ CLASH TIED</div>' +
+        '<div class="fvh-taunt-badge-tag draw" style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('swords', 14) + ' <span>CLASH TIED</span></div>' +
         '<div class="fvh-taunt-headline" style="color:#facc15;font-size:16px;">' + (getActiveLang() === 'ru' ? 'Боевая ничья фракций!' : 'Clash Tied!') + '</div>';
     }
 
@@ -12658,9 +12710,9 @@
       statusBox.innerHTML =
         '<div class="fvh-pause-arena-tag">' + arenaName + '</div>' +
         '<div class="fvh-pause-score-row">' +
-        '  <span class="fvh-pause-team-badge">⚽ ' + (isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span>' +
+        '  <span class="fvh-pause-team-badge" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>' + (isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span></span>' +
         '  <span class="fvh-pause-score-nums">' + scoreText + '</span>' +
-        '  <span class="fvh-pause-team-badge">🏀 ' + (!isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span>' +
+        '  <span class="fvh-pause-team-badge" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>' + (!isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span></span>' +
         '</div>';
       panel.appendChild(statusBox);
 
@@ -12704,7 +12756,7 @@
       var quitLabel = tr('pauseQuit') || (lang === 'ru' ? 'Выйти в меню' : 'Quit to Menu');
 
       // 1. Resume (dominant primary glowing)
-      panel.appendChild(createPauseBtn(resumeLabel, '▶', 'primary fvh-pause-resume-btn', function () {
+      panel.appendChild(createPauseBtn(resumeLabel, getUiIconSvg('play', 16), 'primary fvh-pause-resume-btn', function () {
         self.setPause(false);
       }));
 
@@ -12718,7 +12770,7 @@
       }
 
       // 3. Settings
-      panel.appendChild(createPauseBtn(settingsLabel, '⚙', 'fvh-pause-secondary-btn', function () {
+      panel.appendChild(createPauseBtn(settingsLabel, getUiIconSvg('settings', 16), 'fvh-pause-secondary-btn', function () {
         self.pages.settingsOverlay(function () {});
       }));
 
@@ -12905,10 +12957,10 @@
         panel.innerHTML =
           '<div class="note">' + (lang === 'ru' ? 'ОНЛАЙН-МАТЧ' : 'ONLINE MATCH') + '</div>' +
           '<h2 class="result-title win" style="margin:8px 0 10px;font-size:clamp(20px, 5.5vw, 26px);color:#4ade80;">' +
-            '🏆 ' + (lang === 'ru' ? 'Победа — соперник отключился' : 'Victory — Opponent Disconnected') +
+            '<span style="display:inline-flex;align-items:center;gap:8px;">' + getUiIconSvg('trophy', 22) + ' <span>' + (lang === 'ru' ? 'Победа — соперник отключился' : 'Victory — Opponent Disconnected') + '</span></span>' +
           '</h2>' +
           '<div class="fvh-victory-taunt-card ' + curChar + '" style="margin-bottom:12px;">' +
-          '  <div class="fvh-taunt-badge-tag">' + (isFootyWin ? '⚽ FOOTY VICTORY' : '🏀 HOOPS VICTORY') + '</div>' +
+          '  <div class="fvh-taunt-badge-tag" style="display:inline-flex;align-items:center;gap:6px;">' + (isFootyWin ? getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY VICTORY</span>' : getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS VICTORY</span>') + '</div>' +
           '  <div class="fvh-taunt-headline">' + tauntTitle + '</div>' +
           '  <div class="fvh-taunt-subtext">' + tauntSub + '</div>' +
           '</div>' +

@@ -310,6 +310,131 @@ html.is-telegram {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(249, 115, 22, 0.12) !important;
 }
 
+/* Symmetrical Rivalry Header Bar */
+.fvh-rivalry-bar-symmetrical {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.fvh-rival-side {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 10px !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.fvh-rival-side.footy {
+  background: rgba(0, 240, 255, 0.08) !important;
+  border: 1.5px solid rgba(0, 240, 255, 0.28) !important;
+}
+
+.fvh-rival-side.footy.active {
+  background: rgba(0, 240, 255, 0.16) !important;
+  border-color: rgba(0, 240, 255, 0.70) !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.30) !important;
+}
+
+.fvh-rival-side.hoops {
+  background: rgba(249, 115, 22, 0.08) !important;
+  border: 1.5px solid rgba(249, 115, 22, 0.28) !important;
+}
+
+.fvh-rival-side.hoops.active {
+  background: rgba(249, 115, 22, 0.16) !important;
+  border-color: rgba(249, 115, 22, 0.70) !important;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.30) !important;
+}
+
+.fvh-rival-side .fvh-rival-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.fvh-rival-side .fvh-rival-brand .fvh-rival-name {
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.fvh-rival-side.footy .fvh-rival-name {
+  color: #00f0ff !important;
+}
+
+.fvh-rival-side.hoops .fvh-rival-name {
+  color: #fb923c !important;
+}
+
+.fvh-rival-side .fvh-rival-ovr-capsule {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  font-size: 10.5px !important;
+  font-weight: 900 !important;
+  padding: 3px 8px !important;
+  border-radius: 20px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease !important;
+}
+
+.fvh-rival-side.footy .fvh-rival-ovr-capsule {
+  color: #00f0ff !important;
+  background: rgba(0, 240, 255, 0.15) !important;
+  border: 1px solid rgba(0, 240, 255, 0.35) !important;
+}
+
+.fvh-rival-side.hoops .fvh-rival-ovr-capsule {
+  color: #fb923c !important;
+  background: rgba(249, 115, 22, 0.15) !important;
+  border: 1px solid rgba(249, 115, 22, 0.35) !important;
+}
+
+.fvh-rival-side .fvh-rival-ovr-capsule:hover {
+  transform: scale(1.05) !important;
+}
+
+.fvh-rivalry-center-badge {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(249, 115, 22, 0.25) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.fvh-rivalry-center-badge .fvh-clash-vs {
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  background: linear-gradient(90deg, #00f0ff, #fb923c) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 .solo-avatar-box {
   width: 100% !important;
   height: clamp(255px, 36vh, 320px) !important;
