@@ -3126,7 +3126,14 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 b.vz = -hoop.dir * 0.25;
                 b.vy = -6.5;
                 b.lastTouch = a;
-                a.pickupLock = 0.65;
+                a.pickupLock = 0.75;
+                this.shotReleaseState = {
+                    shooterId: a.id,
+                    cleared: false,
+                    separationDist: 2.2,
+                    time: 0,
+                    maxLockTime: 1.5
+                };
                 this.emit({ type: 'rim', speed: 6.5, x: b.x, y: b.y, z: b.z });
                 hoop.net = 1.0;
                 hoop.armed = true;
@@ -3362,7 +3369,16 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             for (const a of this.agents) {
                 if (a.pickupLock > 0 || a.stun > 0.3)
                     continue;
-                // Ball must move independently when shot and not remain stuck or reattach to shooter mid-air
+                // 1. Prevent ball re-attaching while dropping through net or right below rim
+                const hp = this.hoopFor(a.team);
+                if (this.shot && (this.shot.dunk || this.shot.age < 0.45) && b.y > 1.4 && Math.hypot(b.x, b.z - hp.z) < 1.35) {
+                    continue;
+                }
+                // 2. Prevent nearby players from vacuuming shot at point-blank launch
+                if (this.shot && this.shot.age < 0.18 && b.y > 1.5) {
+                    continue;
+                }
+                // 3. Ball must move independently when shot and not reattach to shooter mid-air
                 if (this.shot && a === this.shot.shooter) {
                     if (!this.shot.touchedRim && !this.shot.touchedBoard && b.y > b.r + 0.25 && this.shot.age < 2.5) {
                         continue;
@@ -4233,9 +4249,9 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             for (const a of this.agents) {
                 if (a.pickupLock > 0 || a.stun > 0.3)
                     continue;
+                const keeper = a.role === 'keeper';
                 if (this.shotReleaseState && this.shotReleaseState.kickerId === a.id && !this.shotReleaseState.cleared)
                     continue;
-                const keeper = a.role === 'keeper';
                 const reach = keeper ? (kr + (a.diveT > 0 ? 0.6 : 0)) : 1.5;
                 const d = (0, math_js_5.dist2)(a.x, a.z, b.x, b.z);
                 if (d > reach)
@@ -8908,9 +8924,8 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 const c = new characters_js_1.Character(a, s, charSport, 1.0, opts.quality);
                 c.sport = charSport;
                 c.team = a.team;
-                if (typeof window !== 'undefined' && window.CharactersGLB && window.CharactersGLB.enabled) {
-                    c.pivot.visible = false;
-                }
+                // Keep procedural mesh visible as solid fallback until GLB is ready
+                c.pivot.visible = true;
                 this.chars.push(c);
                 this.scene.root.add(c.root);
             }
@@ -12888,7 +12903,26 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 }
             });
             this.muteBtn.innerHTML = SOUND_ON_SVG;
-            this.pauseBtn = (0, dom_js_1.h)('button', { class: 'hud-pause', type: 'button', 'aria-label': (0, index_js_1.t)('hud.pause'), on: { click: () => this.onPause() } });
+            let lastPauseT = 0;
+            const handlePauseAction = (e) => {
+                if (e) {
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation();
+                }
+                const now = Date.now();
+                if (now - lastPauseT < 320) return;
+                lastPauseT = now;
+                this.onPause();
+            };
+            this.pauseBtn = (0, dom_js_1.h)('button', {
+                class: 'hud-pause',
+                type: 'button',
+                'aria-label': (0, index_js_1.t)('hud.pause'),
+                on: {
+                    click: handlePauseAction,
+                    pointerdown: handlePauseAction
+                }
+            });
             this.pauseBtn.innerHTML = PAUSE_SVG;
             this.replayBadge = (0, dom_js_1.h)('span', { class: 'hud-replay-badge' }, (0, index_js_1.t)('hud.replay'));
             this.replaySkipBtn = (0, dom_js_1.h)('button', {

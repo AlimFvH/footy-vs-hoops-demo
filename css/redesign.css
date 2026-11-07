@@ -1861,9 +1861,9 @@ canvas {
   left: 0 !important;
   right: 0 !important;
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   z-index: 40 !important;
   pointer-events: none !important;
 }
@@ -1883,31 +1883,40 @@ canvas {
 }
 
 .hud-top-ctrls {
+  position: absolute !important;
+  top: 48px !important;
+  right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+  left: auto !important;
+  margin: 0 !important;
   pointer-events: auto !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   gap: 8px !important;
-  margin-top: 5px !important;
+  z-index: 120 !important;
 }
 
 .hud-top-ctrls .hud-pause,
 .hud-top-ctrls .hud-mute {
-  position: static !important;
-  width: 38px !important;
-  height: 32px !important;
+  position: relative !important;
+  width: 40px !important;
+  height: 36px !important;
   border-radius: 10px !important;
-  background: rgba(8, 14, 28, 0.90) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(8, 14, 28, 0.92) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
   backdrop-filter: blur(8px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
   color: #fff !important;
-  font-size: 13px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
+  font-size: 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55) !important;
   transition: transform 0.12s ease, background 0.12s ease !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  z-index: 125 !important;
 }
 
 .hud-top-ctrls .hud-pause:active,
@@ -1966,10 +1975,11 @@ canvas {
   position: absolute !important;
   top: calc(env(safe-area-inset-top, 44px) + 98px) !important;
   left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+  right: auto !important;
   width: fit-content !important;
   min-width: 154px !important;
-  max-width: 190px !important;
-  padding: 7px 15px !important;
+  max-width: 154px !important;
+  padding: 6px 12px !important;
   border-radius: 14px !important;
   background: rgba(8, 14, 28, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.20) !important;
@@ -1977,7 +1987,13 @@ canvas {
   -webkit-backdrop-filter: blur(10px) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55) !important;
   box-sizing: border-box !important;
-  z-index: 100 !important;
+  z-index: 35 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.stamina * {
+  pointer-events: none !important;
 }
 
 .stamina span {

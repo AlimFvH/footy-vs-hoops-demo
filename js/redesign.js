@@ -6262,33 +6262,76 @@
     var body = document.createElement('div');
     body.className = 'page-body';
 
-    // Fixed Team: Once chosen, team is permanently locked
-    curChar = (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || curChar || 'footy';
+    // Active athlete in Locker: defaults to passed initialChar or store selected athlete
+    curChar = initialChar || (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
     var isFooty = (curChar === 'footy');
     var lang = getActiveLang();
 
-    var teamLockBadge = document.createElement('div');
-    teamLockBadge.className = 'fvh-team-lock-banner';
-    teamLockBadge.style.display = 'flex';
-    teamLockBadge.style.alignItems = 'center';
-    teamLockBadge.style.gap = '10px';
-    teamLockBadge.style.padding = '10px 14px';
-    teamLockBadge.style.marginBottom = '14px';
-    teamLockBadge.style.borderRadius = '12px';
-    teamLockBadge.style.background = isFooty ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 122, 0, 0.08)';
-    teamLockBadge.style.border = isFooty ? '1px solid rgba(0, 240, 255, 0.25)' : '1px solid rgba(255, 122, 0, 0.25)';
-    teamLockBadge.innerHTML =
-      '<span class="fvh-lock-ico" style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + getUiIconSvg('lock', 22) + '</span>' +
-      '<div style="flex:1;min-width:0;">' +
-      '  <div style="font-size:12px;font-weight:900;color:#fff;letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;">' +
-           (isFooty ? getUiIconSvg('nav_home_footy', 14) + ' <span>' + (lang === 'ru' ? 'КОМАНДА ФУТБОЛА (FOOTY)' : 'TEAM FOOTBALL (FOOTY)') + '</span>'
-                    : getUiIconSvg('nav_home_hoops', 14) + ' <span>' + (lang === 'ru' ? 'КОМАНДА БАСКЕТБОЛА (HOOPS)' : 'TEAM BASKETBALL (HOOPS)') + '</span>') +
-      '  </div>' +
-      '  <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' +
-           (lang === 'ru' ? 'Выбор команды сделан навсегда · Доступна экипировка вашего атлета' : 'Team chosen permanently · Equipping your active athlete') +
-      '  </div>' +
-      '</div>';
-    body.appendChild(teamLockBadge);
+    // Interactive Athlete Switcher: Effortlessly toggle between FOOTY #10 and HOOPS #23
+    var athleteSwitcher = document.createElement('div');
+    athleteSwitcher.className = 'fvh-athlete-switcher';
+    athleteSwitcher.style.display = 'flex';
+    athleteSwitcher.style.alignItems = 'center';
+    athleteSwitcher.style.gap = '8px';
+    athleteSwitcher.style.marginBottom = '14px';
+    athleteSwitcher.style.background = 'rgba(8, 14, 28, 0.75)';
+    athleteSwitcher.style.padding = '6px';
+    athleteSwitcher.style.borderRadius = '14px';
+    athleteSwitcher.style.border = '1px solid rgba(255, 255, 255, 0.12)';
+
+    var tabFooty = document.createElement('button');
+    tabFooty.type = 'button';
+    tabFooty.className = 'fvh-athlete-tab ' + (curChar === 'footy' ? 'active' : '');
+    tabFooty.style.flex = '1';
+    tabFooty.style.minHeight = '42px';
+    tabFooty.style.border = 'none';
+    tabFooty.style.borderRadius = '10px';
+    tabFooty.style.cursor = 'pointer';
+    tabFooty.style.fontWeight = '900';
+    tabFooty.style.fontSize = '12px';
+    tabFooty.style.letterSpacing = '0.5px';
+    tabFooty.style.display = 'flex';
+    tabFooty.style.alignItems = 'center';
+    tabFooty.style.justifyContent = 'center';
+    tabFooty.style.gap = '6px';
+    tabFooty.style.background = curChar === 'footy' ? 'linear-gradient(135deg, #00f0ff, #0284c7)' : 'transparent';
+    tabFooty.style.color = curChar === 'footy' ? '#000' : '#94a3b8';
+    tabFooty.innerHTML = getUiIconSvg('nav_home_footy', 16) + ' <span>FOOTY #10</span>';
+    tabFooty.onclick = function() {
+      if (curChar === 'footy') return;
+      app.audio.play('click');
+      app.store.update(function(d) { d.selectedCharacter = 'footy'; d.selectedTeam = 'footy'; });
+      app.show(buildCharactersPage(app, 'footy', curSlot), 'characters');
+    };
+
+    var tabHoops = document.createElement('button');
+    tabHoops.type = 'button';
+    tabHoops.className = 'fvh-athlete-tab ' + (curChar === 'hoops' ? 'active' : '');
+    tabHoops.style.flex = '1';
+    tabHoops.style.minHeight = '42px';
+    tabHoops.style.border = 'none';
+    tabHoops.style.borderRadius = '10px';
+    tabHoops.style.cursor = 'pointer';
+    tabHoops.style.fontWeight = '900';
+    tabHoops.style.fontSize = '12px';
+    tabHoops.style.letterSpacing = '0.5px';
+    tabHoops.style.display = 'flex';
+    tabHoops.style.alignItems = 'center';
+    tabHoops.style.justifyContent = 'center';
+    tabHoops.style.gap = '6px';
+    tabHoops.style.background = curChar === 'hoops' ? 'linear-gradient(135deg, #ff7a00, #ea580c)' : 'transparent';
+    tabHoops.style.color = curChar === 'hoops' ? '#000' : '#94a3b8';
+    tabHoops.innerHTML = getUiIconSvg('nav_home_hoops', 16) + ' <span>HOOPS #23</span>';
+    tabHoops.onclick = function() {
+      if (curChar === 'hoops') return;
+      app.audio.play('click');
+      app.store.update(function(d) { d.selectedCharacter = 'hoops'; d.selectedTeam = 'hoops'; });
+      app.show(buildCharactersPage(app, 'hoops', curSlot), 'characters');
+    };
+
+    athleteSwitcher.appendChild(tabFooty);
+    athleteSwitcher.appendChild(tabHoops);
+    body.appendChild(athleteSwitcher);
 
     // Wardrobe & Inspection Layout
     var layout = document.createElement('div');
@@ -12592,6 +12635,10 @@
         e.stopPropagation();
         app.audio.play('click');
         var side = sideEl.getAttribute('data-side') || curChar;
+        app.store.update(function(d) {
+          d.selectedCharacter = side;
+          d.selectedTeam = side;
+        });
         app.openCharacterLocker(side);
       };
     });

@@ -1,0 +1,508 @@
+{
+  "timestamp": "2026-11-07T20:11:23.065Z",
+  "total": 50,
+  "passed": 50,
+  "failed": 0,
+  "results": [
+    {
+      "index": 1,
+      "file": "test_arena_perf_and_character_parity.cjs",
+      "path": "tests/test_arena_perf_and_character_parity.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.17s",
+      "output": "=== TEST: ARENA SELECTOR, MOBILE GPU PERF & WARDROBE CHARACTER PARITY ===\n\n[TEST 1] Standard Basketball and Football Arenas in Selector & Match Defaults\n  ✓ Standard Basketball Arena (std_hoops_street) and Football Pitch (std_footy_classic) fully integrated in selector and server\n\n[TEST 2] Mobile GPU Optimization, WebGL2 MSAA & Retina Sharpness\n  ✓ Mobile GPU shadow rendering pass eliminated, WebGL2 MSAA active, Retina DPR enabled, planar blob shadows preserved\n\n[TEST 3] Wardrobe to 3D In-Game Character Visual Parity\n  ✓ In-game 3D athletes strictly mirror wardrobe artwork, skin tones, hair styles, kits, and 1:1 balanced height\n\n[TEST 4] Crowd Visual Polish & Visible LED Boards Under Hoops\n  ✓ Crowd geometry smoothed to eliminate pixelated/blocky look and baseline LED boards visible under both baskets\n\n=============================================================\n🎉 ALL ARENA, PERF, AND CHARACTER PARITY TESTS PASSED!\n=============================================================",
+      "error": null
+    },
+    {
+      "index": 2,
+      "file": "test_basketball_and_social_tasks.cjs",
+      "path": "tests/test_basketball_and_social_tasks.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.22s",
+      "output": "=== FOOTY vs HOOPS: Basketball Gameplay & Social Tasks Suite ===\n\n[PASS] Test 1: Item 1.1: BasketballSim initializes, steps, handles human & AI movement, and shoots\n[PASS] Test 2: Item 1.2: MatchView cleanly separates football and basketball modes and prevents kit cross-over\n[PASS] Test 3: Item 2.1: All project kits are defined in game.js ITEMS and visual mapping\n[PASS] Test 4: Item 2.2: All 17 balls are defined in game.js ITEMS with distinct visuals\n[PASS] Test 5: Item 2.3: Shop equip persists both namespaced and generic keys for instant match sync\n[PASS] Test 6: Item 3.1: Tasks screen eliminates old cluttered headers and empty-state banners\n[PASS] Test 7: Item 3.2: Tasks screen renders transparent verification disclosure notice\n[PASS] Test 8: Item 3.3: Claimed tasks are moved to compact completed section without duplicates\n[PASS] Test 9: Item 4.1: Six separate social tasks exist with accurate destinations and IDs\n[PASS] Test 10: Item 4.2: Server supports verify-telegram and claim-social with idempotency and ledger entries\n[PASS] Test 11: Item 5.1: Storage adapter is JsonStorageAdapter and Neon remains disconnected\n[PASS] Test 12: Item 5.2: Withdrawals disabled notice present\n[PASS] Test 13: Item 5.3: Approved Telegram Stars packages & prices preserved (100=25⭐, 500=100⭐, 1200=220⭐, 3000=500⭐)\n\n=================================================================\nALL BASKETBALL & SOCIAL TASKS TESTS PASSED (13/13)!\n=================================================================",
+      "error": null
+    },
+    {
+      "index": 3,
+      "file": "test_complete_mechanics_and_purchases_audit.cjs",
+      "path": "tests/test_complete_mechanics_and_purchases_audit.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.51s",
+      "output": "=== FOOTY vs HOOPS: Comprehensive Mechanics, Purchases & Logic Audit ===\n\n[AUDIT INIT] Test server started and ready.\n\n[AUDIT 1] 1.1 Player initial sync establishes starting state... PASSED\n[AUDIT 2] 1.2 Item purchase deducts coins, adds to owned, writes ledger... PASSED\n[AUDIT 3] 1.3 Repurchasing already owned cosmetic item is rejected... PASSED\n[AUDIT 4] 1.4 Insufficient funds purchase is strictly rejected... PASSED\n[AUDIT 5] 1.5 Mystery pack purchase, guaranteed drop & duplicate compensation... PASSED\n[AUDIT 6] 2.1 Upgrading Skill from Tier 1 to Tier 2 succeeds when player has level and coins... PASSED\n[AUDIT 7] 2.2 Upgrading with insufficient level is strictly rejected with level_too_low... PASSED\n[AUDIT 8] 2.3 Level 2 player with XP >= 100 successfully unlocks Tier 2 upgrade... PASSED\n[AUDIT 9] 3.1 Referral registration prevents self-referral... PASSED\n[AUDIT 10] 3.2 Referral registration prevents circular cycles... PASSED\n[AUDIT 11] 4.1 TON Wallet link rejects seed phrase with space... PASSED\n[AUDIT 12] 4.2 TON Wallet link accepts valid public address and disconnects... PASSED\n[AUDIT 13] 5.1 Football and Basketball simulation code syntax and boost calculations... PASSED\n\n======================================================\nALL MECHANICS, PURCHASES & LOGIC AUDITED SUCCESSFULLY (13/13)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 4,
+      "file": "test_economy_purchase_persistence.cjs",
+      "path": "tests/test_economy_purchase_persistence.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.59s",
+      "output": "=== FOOTY vs HOOPS Economy Purchase Persistence & Sync Integrity Suite ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8529\nTest 1: Initial player onboarding sync...\n  [PASS] Initial balance established at 2000 coins.\n\nTest 2: Purchasing item in store (cost: 1400 coins)...\n  [PASS] Item purchased: balance decreased to 600, item added to owned.\n\nTest 3: Simulating game restart and reconnect sync (anti-duplication / no coin refund)...\n  [PASS] Coins stayed at 600 (no refund glitch) and item remained owned; fake item rejected.\n\nTest 4: Attempting purchase with insufficient funds (cost: 1000, balance: 600)...\n  [PASS] Insufficient funds purchase strictly rejected without modifying balance or inventory.\n\nTest 5: Verifying economy ledger transactions...\n  [PASS] Ledger contains exact transactional record of purchase.\n\n======================================================\nALL ECONOMY PURCHASE PERSISTENCE TESTS PASSED (5/5)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 5,
+      "file": "test_final_gameplay_fixes.cjs",
+      "path": "tests/test_final_gameplay_fixes.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.22s",
+      "output": "=== FOOTY vs HOOPS: Final Gameplay Fixes & Leaderboard Suite ===\n\n[PASS] Req 1.1: BasketballSim shooter squares to hoop and launches shot independently\n[PASS] Req 1.2: Shooter cannot re-grab their own shot while in-flight mid-air\n[PASS] Req 1.3: CameraRig on iPhone portrait sets fitHalfZ >= 16.0 for basketball and keeps top hoop in view\n[PASS] Req 2.1: Player faction is preserved across football and basketball modes without unconditional overrides\n[PASS] Req 2.2: Scoreboard names reflect player faction emoji (⚽ FOOTY vs 🏀 HOOPS)\n[PASS] Req 3.1: Shop defaults to selectedTeam || selectedCharacter\n[PASS] Req 3.2: Wardrobe hero preview uses curCharSkin and updates upon equip\n[PASS] Req 4.1: Game supports 10 consecutive pause/resume cycles without crash or corrupted state\n[PASS] Req 5.1: onOnlineLost displays Victory result screen and awards +20 FvH Coin, +30 XP\n[PASS] Req 6.1: Leaderboard removes Bronze/Silver/Gold tier pill badges from podium, rows, and docked bar\n[PASS] Req 6.2: Leaderboard renders Ranking Rules Card and deterministic tie-breaker\n[PASS] Req 6.3: War scoreboard card uses non-overflowing team tags (⚽ FOOTY and 🏀 HOOPS)\n[PASS] Req 7.1: HUD scoreboard has max-width margin to prevent overlapping mute & pause buttons\n[PASS] Req 9.1: JsonStorageAdapter active, Neon disconnected, Season 1 prelaunch, exact Stars pricing\n\n=================================================================\nALL FINAL GAMEPLAY FIXES & LEADERBOARD TESTS PASSED (14/14)!\n=================================================================",
+      "error": null
+    },
+    {
+      "index": 6,
+      "file": "test_final_polish_and_release.cjs",
+      "path": "tests/test_final_polish_and_release.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.18s",
+      "output": "=== FOOTY vs HOOPS Final Release Polish Test Suite ===\n\nTest 1: Checking getPlayerAvatarHtml and Telegram photo support...\n  [PASS] getPlayerAvatarHtml correctly defined with 3D cartoon fallbacks\nTest 2: Checking Telegram photo_url extraction...\n  [PASS] Telegram photoUrl successfully extracted and synced\nTest 3: Checking Profile packs badge elimination...\n  [PASS] Floating green \"0 доступно\" badge removed from Profile\nTest 4: Checking Profile stats Clash removal...\n  [PASS] Clash removed from Profile stats, dual Football vs Basketball rivalry active\nTest 5: Checking Shop featured drop removal...\n  [PASS] \"Item of the Day\" hero spotlight removed; catalog categories immediately visible\nTest 6: Checking Mode Selection arena removal...\n  [PASS] Arena selection banner completely removed from mode selection screen\nTest 7: Checking Rivalry note text...\n  [PASS] DEMO notes replaced with live competition status\nTest 8: Checking Leaderboard avatar rendering...\n  [PASS] Leaderboard podium and rows render high-res avatars with zero top clipping\nTest 9: Checking Boost cards CSS...\n  [PASS] Boost cards grid alignment rules enforced\nTest 10: Checking Topbar settings button responsiveness...\n  [PASS] Topbar settings button verified safe on all viewports down to 320px\nTest 11: Checking Haptic Feedback integration...\n  [PASS] Tactile Haptic Feedback connected to Telegram WebApp\nTest 12: Checking Battle Pass elimination and clean redirection to Quests...\n  [PASS] Battle Pass eliminated and cleanly redirected to Quests\nTest 13: Checking Easy AI difficulty settings and gameplay tuning...\n  [PASS] Easy AI is genuinely easy and distinctly balanced from Normal and Hard\nTest 14: Checking Football-Only wardrobe category controls and catalog...\n  [PASS] Wardrobe category controls and catalog are strictly football-only\nTest 15: Checking Mobile safe-area, bottom nav clearance, and Daily Tasks discoverability...\n  [PASS] Mobile layout respects safe-area, allows full Daily Tasks scroll clearance\nTest 16: Checking Wardrobe card grid uniformity...\n  [PASS] Wardrobe cards have uniform widths, image containers, titles, and button heights\n\nAll 16/16 release verification tests passed successfully!",
+      "error": null
+    },
+    {
+      "index": 7,
+      "file": "test_flow_football_then_basketball_online.cjs",
+      "path": "tests/test_flow_football_then_basketball_online.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.98s",
+      "output": "=== TEST: FOOTBALL ONLINE 1v1 -> BASKETBALL ONLINE 1v1 LIFECYCLE ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8097\n[PHASE 1] PLAYING FOOTBALL 1v1 ONLINE\n  ✓ Matchmaking paired both players into Football Match: FVH-MB456162E\n  ✓ Football Match ran 30 simulation frames with 0 NaNs and synced state\n  ✓ Football Match cleanly ended and abandoned on server\n\n[PHASE 2] PLAYING BASKETBALL 1v1 ONLINE (VERIFYING ZERO LEAKAGE)\n  ✓ Matchmaking paired both players into Basketball Match: FVH-MA1B286AC\n  ✓ Basketball Match ran 60 simulation frames with 0 NaNs, full dribbling and sync\n\n[PHASE 3] PRIVATE LOBBY MODE SWITCH (FOOTY -> HOOPS)\n  ✓ Private Lobby synchronized HOOPS mode seamlessly between Host and Guest\n\n=============================================================\n🎉 FULL FOOTBALL -> BASKETBALL ONLINE LIFECYCLE TEST PASSED!\n=============================================================",
+      "error": null
+    },
+    {
+      "index": 8,
+      "file": "test_football_ai_difficulty.cjs",
+      "path": "tests/test_football_ai_difficulty.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.20s",
+      "output": "=== FOOTY vs HOOPS: Football AI Difficulty Balance Suite ===\n\n[PASS] Test 1: FOOTBALL_DIFFICULTY configuration exists with easy, normal, and hard presets\n[PASS] Test 2: Normal football AI has balanced, accessible parameters\n[PASS] Test 3: Hard football AI is challenging but not overwhelming\n[PASS] Test 4: Normal difficulty is demonstrably easier than Hard\n[PASS] Test 5: FootballSim applies FOOTBALL_DIFFICULTY according to selected difficulty\n[PASS] Test 6: Basketball AI preserves original DIFFICULTY settings without alteration\n[PASS] Test 7: Football field and ball physics parameters remain intact\n[PASS] Test 8: Runtime simulation: Normal AI allows more possession time before tackling than Hard\n\n========================================\nTests finished: 8/8 passed (0 failed)\n========================================",
+      "error": null
+    },
+    {
+      "index": 9,
+      "file": "test_friend_invites_and_menu_redesign.cjs",
+      "path": "tests/test_friend_invites_and_menu_redesign.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.44s",
+      "output": "--- TEST SUITE: FRIEND INVITES & MAIN MENU REDESIGN ---\n\n[TEST 0] Verifying JavaScript syntax of js/redesign.js, js/game.js, and server/server.js...\n✓ Verified: Zero syntax errors across client and server scripts.\n\n[TEST 1] Verifying Telegram Bot username & link generation in client code...\n✓ Verified: Valid deep link formats and official bot @FootyHoopsGameBot configured.\n\n[TEST 2] Verifying CSS styles and mobile touch targets...\n✓ Verified: Dominant Play button, secondary hub styling, and mobile touch target >= 58px confirmed.\n\n[TEST 3] Verifying Main Menu structure in renderRedesignedMenu...\n✓ Verified: Main menu hierarchy conforms to specifications without social card clutter.\n\n[TEST 4] Verifying storage and economy invariants...\n✓ Verified: All economy, Stars pricing, and security invariants strictly preserved.\n\n[TEST 5] Testing two separate Telegram accounts referral flow via live HTTP server...\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8099\nTesting self-referral rejection...\nAccount B joins via Account A referral link...\nTesting duplicate referral rejection for Account B...\nTesting referral cycle rejection (Account B referring Account A)...\nAccount B qualifies (chooses faction / plays match)...\n✓ Verified: Full two-account referral lifecycle succeeded:\n  1. Link generation with official bot and safe startapp/start parameters\n  2. Self-referral prevented (400)\n  3. Referral registered and attributed to Inviter\n  4. Duplicate referral prevented (400)\n  5. Referral cycle prevented (400)\n  6. Friend qualification triggered upon faction/match completion\n  7. Inviter credited +100 FvH Coins authoritative balance with ledger entry\n  8. Idempotent re-qualification check confirmed (no duplicate reward)\n\n=========================================\n🎉 ALL FRIEND INVITES & MAIN MENU TESTS PASSED!\n=========================================",
+      "error": null
+    },
+    {
+      "index": 10,
+      "file": "test_gameplay_and_multiplayer.cjs",
+      "path": "tests/test_gameplay_and_multiplayer.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.73s",
+      "output": "=== FOOTY vs HOOPS Gameplay & Online PvP Verification Suite ===\n\nStep 1: Inspecting Football & Basketball Simulation classes in game.js...\n  [PASS] Football pitch, rules, keeper, and goal detection verified\n  [PASS] Basketball court, rim collision, 2pt/3pt zone, and dunk verified\n  [PASS] Mobile joystick, touch buttons, and keyboard controls verified\n\nStep 2: Spawning server on test port 8199 and testing live multiplayer...\n  [PASS] Server online on port 8199\n  [PASS] Backend /api/health responding ok\n  [PASS] Authoritative season status is prelaunch (0 season points)\n  [PASS] Player 1 joined queue (status: searching)\n  [PASS] Player 2 joined queue -> Matched successfully with Room Code: FVH-MEBE3B26F\n  [PASS] Player 1 polled and confirmed match pairing with Player 2\n  [PASS] Both players connected to native RFC-6455 WebSocket signaling channel\n  [PASS] Server verified match outcome and issued cryptographic matchToken\n  [PASS] Player 1 claimed 20 FvH Coins with valid matchToken\n  [PASS] Duplicate match reward attempt strictly rejected by server\n\n======================================================\nALL GAMEPLAY & MULTIPLAYER TESTS PASSED (100% REAL)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 11,
+      "file": "test_gameplay_fixes_and_polish.cjs",
+      "path": "tests/test_gameplay_fixes_and_polish.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.17s",
+      "output": "=== FOOTY vs HOOPS: Critical Gameplay Fixes & Final Polish Test Suite ===\n\n[PASS] Test 1: 1. Virtual joystick and stickPointer reset prevent stuck touches and unresponsiveness\n[PASS] Test 2: 2. Basketball ball initial spawn is cleanly placed in front and side of carrier\n[PASS] Test 3: 3. Action button labels: \"УДАР\" in footy, \"БРОСОК\" in hoops, \"ОТБОР\" vs \"ПЕРЕХВАТ\"\n[PASS] Test 4: 4. Match simulation starts immediately with controls enabled (hold = false unconditionally)\n[PASS] Test 5: 6. Goal celebration animations for scorer (fist pump/jump) and conceding team (defeated slump)\n[PASS] Test 6: 8. Camera framing on iPhone portrait has fitHalfZ = 18.5, fov = 42, bounded hx\n[PASS] Test 7: 9. Complete absence of large 3D character model on home menu screen\n[PASS] Test 8: 10. Single rewarded Telegram subscription task (q_sub_tg -> @FootyHoops) in Quests\n[PASS] Test 9: 11. /api/tasks/verify-telegram is strictly fail-closed via getChatMember without mock bypasses\n[PASS] Test 10: 12. Quest claim is strictly idempotent: double claiming is rejected with 400\n[PASS] Test 11: 13. Production safeguards preserved: 4 Stars packages, disabled withdrawals, prelaunch, Neon disconnected\n[PASS] Test 12: 14. Exact restored official social URLs in both Home Screen and Quests\n[PASS] Test 13: 15. Leaderboards strictly segregate football and basketball records with zero cross-contamination\n\n======================================================\nALL 15 GAMEPLAY FIXES & RELEASE POLISH TESTS PASSED (13/13)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 12,
+      "file": "test_goal_replay_system.cjs",
+      "path": "tests/test_goal_replay_system.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "2.80s",
+      "output": "=== FOOTY vs HOOPS: Goal Replay System Test Suite ===\n\nTest 1: Football goal triggers startReplay with goal info and activates replay mode...\n  [PASS] Football goal triggers startReplay with goal info and activates replay mode\nTest 2: Match timer and player/AI physics remain strictly paused during replay frames...\n  [PASS] Match timer and player/AI physics remain strictly paused during replay frames\nTest 3: Replay duration spans approximately 3.5 to 4.5 seconds...\n  [PASS] Replay duration spans approximately 3.5 to 4.5 seconds\nTest 4: Replay frames never cause duplicate goal detections, score increments, or replay loops...\n  [PASS] Replay frames never cause duplicate goal detections, score increments, or replay loops\nTest 5: Replay camera positions at elevated sideline angle framing scorer, ball, and goal...\n  [PASS] Replay camera positions at elevated sideline angle framing scorer, ball, and goal\nTest 6: stopReplay cleanly restores gameplay camera rig and touch controls...\n  [PASS] stopReplay cleanly restores gameplay camera rig and touch controls\nTest 7: Basketball mode scoring strictly excludes goal replay...\n  [PASS] Basketball mode scoring strictly excludes goal replay\n\nAll 7/7 Goal Replay System tests passed successfully!",
+      "error": null
+    },
+    {
+      "index": 13,
+      "file": "test_inventory_upgrades_stars_packs.cjs",
+      "path": "tests/test_inventory_upgrades_stars_packs.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.46s",
+      "output": "=== TEST SUITE: INVENTORY, UPGRADES, FACTION ISOLATION & STAR PACKS ===\n\n[Test 0] Verifying script syntax...\n  ✓ js/redesign.js and server/server.js syntax OK.\n\n[Test 1] Testing Inventory naming and wardrobe slot structure...\n  ✓ Wardrobe renamed to Inventory and upgrades removed from wardrobe slots.\n\n[Test 2] Testing Dedicated Upgrades Hub & Routing...\n  ✓ Dedicated Upgrades Hub and app.showUpgrades / app.go(\"upgrades\") verified.\n\n[Test 3] Testing Strict Faction Isolation...\n  ✓ Strict Faction Isolation confirmed: Footy sees only football, Hoops sees only basketball.\n\n[Test 4] Testing 3 Telegram Stars mystery packs...\n  ✓ 3 Telegram Stars packs (50, 150, 350 Stars) verified across server and client.\n\n[Test 5] Testing Duplicate Compensation by Rarity...\n  ✓ Duplicate compensation based on item rarity verified with celebratory UI.\n\n[Test 6] Testing Bundles & Star Packs Artwork...\n  ✓ Detailed vector artwork verified for all bundles and mystery packs.\n\n[Test 7] Testing Main Menu clean layout & non-overlapping responsive rules...\n  ✓ Main Menu non-overlapping hierarchy verified.\n\n===============================================================\n🎉 ALL INVENTORY, UPGRADES, FACTION ISOLATION & STAR PACKS TESTS PASSED!\n===============================================================",
+      "error": null
+    },
+    {
+      "index": 14,
+      "file": "test_iphone_critical_fixes.cjs",
+      "path": "tests/test_iphone_critical_fixes.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.18s",
+      "output": "=== FOOTY vs HOOPS: iPhone Critical Fixes & Production Audit Suite ===\n\n[PASS] Issue 1: Basketball launch crash prevented with default ball, safe visualOf, and MatchView sanity\n[PASS] Issue 2: Mobile player movement joystick multi-touch tracking and touch-action css\n[PASS] Issue 3: Single scroll container, no nested scroll traps, bottom scroll spacers\n[PASS] Issue 4: 5 Footy kits, 5 Hoops kits, 5 Football balls, 5 Basketball balls in Shop & Wardrobe\n[PASS] Issue 5: Exactly 1 rewarded Telegram subscription task (@FootyHoops) and informational official links\n[PASS] Issue 6: Wardrobe hero avatar enlarged clamp(290px, 45vh, 360px), sleek home console, production safeguards\n\n======================================================\nALL IPHONE CRITICAL AUDIT TESTS PASSED (6/6)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 15,
+      "file": "test_migration_pipeline.cjs",
+      "path": "tests/test_migration_pipeline.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "3.91s",
+      "output": "=== FOOTY vs HOOPS: Migration Pipeline Automated Test ===\n\n=== FOOTY vs HOOPS: PostgreSQL Migration Tool ===\n\nSource File: C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\server\\data.json\n  Athletes:           169\n  Ledger Entries:     110\n  Completed Matches:  18\n  Total Player Coins: 102 822\n\n[BACKUP CREATED] C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\tests\\temp_backups\\data.backup.1794082249979.json (SHA-256: d86d2823af9beb99...)\nTarget Database: In-Memory / Injected Pool\n\n[OK] Connected to PostgreSQL and verified schema.\nIngesting state inside atomic transaction...\n[OK] All records ingested. Running validation checks...\n\n=== Migration Verification Matrix ===\n  Players Count:     Expected 169 | DB 169 -> VERIFIED\n  Players Coins Sum: Expected 102822 | DB 102822 -> VERIFIED\n  Ledger Count:      Expected 110 | DB 110 -> VERIFIED\n  Matches Count:     Expected 18 | DB 18 -> VERIFIED\n\n======================================================\nMIGRATION COMPLETED & VERIFIED 100% SUCCESSFULLY\n======================================================\n\n\n[PASS] Migration Pipeline executed and verified successfully on authentic server/data.json!",
+      "error": null
+    },
+    {
+      "index": 16,
+      "file": "test_mobile_and_telegram_audit.cjs",
+      "path": "tests/test_mobile_and_telegram_audit.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.93s",
+      "output": "=== FOOTY vs HOOPS: Stage H.2 Mobile & Telegram Mini App Audit ===\n\nTest 1: Mobile Touch Controls Layout & Geometry (320px - 440px+)...\n  [PASS] 320px compact viewport verified: clearance between joystick and sprint button is 30.4px (no overlap).\n  [PASS] Landscape controls layout verified for wide aspect ratio devices.\n  [PASS] Top HUD elements verified: Pause button (top: 0) and Turbo widget (top: +62px) have zero collision.\n\nTest 2: Input System & Pointer Event Safety...\n  [PASS] Pointer capture, cancel handlers, and non-conflicting input arbitration verified.\n\nTest 3: Telegram Mini App Viewport & Lifecycle Handling...\n  [PASS] Telegram WebApp lifecycle, safe areas, viewport synchronization, and BackButton verified.\n\nTest 4: Haptic Feedback Audit & Fallbacks...\n  [PASS] Telegram HapticFeedback and mobile navigator.vibrate fallbacks verified.\n\nTest 5: Telegram Stars Payment Lifecycle & Security Validations...\n\nTest 6: Mobile Performance & Stability Guardrails...\n  [PASS] Canvas DPR cap (2.5 high / 2.0 low) verified.\n  [PASS] Dynamic DPR degradation and shadow disable verified for low-end mobile devices.\n  [PASS] WebGL context lost recovery hook verified.\n  [PASS] Auto-pause on mobile backgrounding (visibilitychange & blur) verified.\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8299\n  [PASS] Unconfigured Stars product checkout rejected safely.\n  [PASS] Telegram Webhook secret authentication enforced (403 on invalid secret).\n  [PASS] Client payment verify strictly guarded against spoofing.\n\n======================================================\nALL MOBILE & TELEGRAM MINI APP AUDIT CHECKS PASSED!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 17,
+      "file": "test_mobile_ux_and_gameplay_repair.cjs",
+      "path": "tests/test_mobile_ux_and_gameplay_repair.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.20s",
+      "output": "=== FOOTY vs HOOPS: Mobile UX & Gameplay Repair Suite ===\n\n[RUN] Test 1: Scrolling Fix & Touch Interception Guards in js/game.js\n[PASS] Test 1: Scrolling touch guards and telegram.leaveMatch exitFullscreen verified.\n[RUN] Test 2: CSS Main Screen Scrollable & Mobile Viewport Styling\n[PASS] Test 2: CSS scrollable properties verified.\n[RUN] Test 3: Removal of Social-Links Block from Home Screen\n[PASS] Test 3: Social block removed from home screen and preserved in Tasks.\n[RUN] Test 4: Shop Respects Selected Faction\n[PASS] Test 4: Shop faction lock verified.\n[RUN] Test 5: Basketball Complete Simulation & Gameplay Loop\n[PASS] Test 5: Basketball full possession, shot, score, and restart loop verified.\n[RUN] Test 6: Online Football Lag Reduction & Diagnostics\n[PASS] Test 6: Online lag optimization & RTT diagnostics verified.\n[RUN] Test 7: Core Invariants Check\n[PASS] Test 7: Core invariants intact.\n\n=================================================================\nALL MOBILE UX & GAMEPLAY REPAIR TESTS PASSED (7/7)!\n=================================================================",
+      "error": null
+    },
+    {
+      "index": 18,
+      "file": "test_neon_staging_integration.cjs",
+      "path": "tests/test_neon_staging_integration.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.24s",
+      "output": "=== FOOTY vs HOOPS: Neon PostgreSQL Staging Integration Suite ===\n\n======================================================================\n[INTEGRATION STATUS] NOT RUN (SKIPPED)\n======================================================================\nReason: No STAGING_DATABASE_URL environment variable was detected.\n\nPer Stage H project safeguards, live cloud persistence is NOT claimed\nuntil tests physically run against an active PostgreSQL instance.\n\nTo execute this suite against your Neon Free staging database:\n  1. Create a free project on https://neon.tech\n  2. Copy the pooled connection string (with ?sslmode=require)\n  3. In PowerShell, set your environment variable:\n       $env:STAGING_DATABASE_URL = \"postgresql://user:pass@ep-xyz-pooler.region.neon.tech/neondb?sslmode=require\"\n  4. Run this integration test:\n       node tests/test_neon_staging_integration.cjs\n\nAll local unit tests, ACID transactions (via pg-mem), and JSON storage remain 100% verified.",
+      "error": null
+    },
+    {
+      "index": 19,
+      "file": "test_online_basketball_and_menu_polish.cjs",
+      "path": "tests/test_online_basketball_and_menu_polish.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.64s",
+      "output": "=== FOOTY vs HOOPS: Online Basketball & Menu Polish Suite ===\n\n[TEST 1] Syntax Check on Critical Files\n  ✓ js/game.js, js/redesign.js, server/server.js passed syntax check\n\n[TEST 2] Online 1v1 Basketball Movement (NaN Prevention)\n  ✓ Online Basketball Sim stepped 120 frames with perfect movement and 0 NaNs\n\n[TEST 3] Server Matchmaking Queue Isolation (Basketball vs Football)\n  ✓ Server matchmaking isolates Basketball queue from Football queue\n\n[TEST 4] Main Menu: Removal of \"Сменить\" Button & Clean Hero Card\n  ✓ \"Сменить\" button successfully removed from main screen hero card\n\n[TEST 5] Visual Polish Across All Screens (Menu, Shop, Quests, Profile, Leaderboard)\n  ✓ All visual polish rules present and accounted for\n\n=== ALL 5 ONLINE BASKETBALL & MENU POLISH TESTS PASSED! ===",
+      "error": null
+    },
+    {
+      "index": 20,
+      "file": "test_online_pvp_end_to_end.cjs",
+      "path": "tests/test_online_pvp_end_to_end.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "2.41s",
+      "output": "=== FOOTY vs HOOPS: Comprehensive Online PvP Verification Suite ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8765\n--- [1/2] FOOTY ONLINE PvP: Complete Match Lifecycle ---\nStep 1.1: Player 1 (Mobile TMA) joins Footy Matchmaking Queue...\n  ✓ Player 1 queued successfully (ticket: tkt_1794082256438_6kel)\nStep 1.2: Player 2 (Desktop TMA) joins Footy Matchmaking Queue...\n  ✓ Pair matched! Match ID: FVH-M98A068FE\nStep 1.3: Player 1 polls queue status...\n  ✓ Both independent clients confirmed matched session.\nStep 1.4: Testing live packet relay and bidirectional synchronization...\n  ✓ Host -> Guest live packet relay synchronized.\nStep 1.5: Simulating football mechanics and goal scoring event...\n  ✓ Football physics simulation ran 30 synchronized frames without NaNs.\nStep 1.6: Submitting match results to authoritative server...\n  ✓ Match recorded! Winner: Host, Token: mtok_1794082256471_c2e4983f60bd\nStep 1.7: Player 1 claims online match reward with verified token...\n  ✓ Authoritative reward granted: +20 Coins, +30 XP.\nStep 1.8: Verifying duplicate reward prevention...\n  ✓ Duplicate reward attempt strictly blocked (match_already_rewarded).\n\n--- [2/2] HOOPS ONLINE PvP: Complete Match Lifecycle ---\nStep 2.1: Players join Hoops Matchmaking Queue...\n  ✓ Pair matched! Hoops Match ID: FVH-M247B49CB\nStep 2.2: Simulating basketball mechanics, hands-only play & scoring...\n  ✓ Basketball physics simulation ran 30 synchronized frames without NaNs.\nStep 2.3: Testing Hoops live packet relay...\n  ✓ Hoops packet relay synchronized: Score is 3:2.\nStep 2.4: Completing Hoops match on server...\n  ✓ Hoops match completed successfully with rewards.\n\n--- [3/3] Disconnects, Abandonment & Timeout Safety ---\nStep 3.1: Testing abandoned match handling...\nj5: {\n  ok: true,\n  status: 'searching',\n  ticketId: 'tkt_1794082256560_x6wf',\n  playerId: 'tg_p5_1794082256559',\n  elapsedSeconds: 0\n} mRes: {\n  ok: true,\n  status: 'matched',\n  matchId: 'FVH-M8C2AFCBE',\n  role: 'guest',\n  mode: 'footy',\n  minutes: 2,\n  seed: 453562794,\n  arenaId: null,\n  match: {\n    matchId: 'FVH-M8C2AFCBE',\n    roomId: 'FVH-M8C2AFCBE',\n    mode: 'footy',\n    minutes: 2,\n    seed: 453562794,\n    host: { playerId: 'tg_p5_1794082256559', name: 'Quitter', char: 'footy' },\n    guest: { playerId: 'tg_p6_1794082256559', name: 'Stayer', char: 'footy' },\n    status: 'playing',\n    createdAt: 1794082256561,\n    lastActivity: 1794082256561\n  },\n  opponent: { playerId: 'tg_p5_1794082256559', name: 'Quitter', char: 'footy' }\n}\n  ✓ Match forfeiture recorded cleanly.\nStep 3.2: Testing matchmaking queue timeout...\n  ✓ Queue cancellation handled cleanly.\n\n=============================================================\nALL ONLINE PvP CHECKS (FOOTY & HOOPS) PASSED WITH 100% SUCCESS!\n=============================================================",
+      "error": null
+    },
+    {
+      "index": 21,
+      "file": "test_pause_kits_airdrop_polish.cjs",
+      "path": "tests/test_pause_kits_airdrop_polish.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.17s",
+      "output": "=== TEST SUITE: PAUSE MODAL, KITS OVERHAUL & AIRDROP HUB POLISH ===\n\n[Test 1] Testing 3D In-Game Kit Tinting & Visibility in CharactersGLB...\n  ✓ 3D In-game kit material tinting confirmed for jersey, shorts, and boots with 100% visibility.\n\n[Test 2] Testing 2D Jersey Previews Overhaul in getDetailedJerseySvg...\n  ✓ 2D Jersey vector artwork confirmed: anatomical curves, ribbed collars, authentic club crests.\n\n[Test 3] Testing Pause Modal Overhaul & getPauseArtworkSvg...\n  ✓ Pause screen overhaul confirmed: 3D stadium artwork, match score snapshot, and tactile buttons.\n\n[Test 4] Testing Play-to-Airdrop Hub Polish & getAirdropHeroGraphicSvg...\n  ✓ Play-to-Airdrop Hub confirmed: 3D TON crystal coin, token calculation box, and clear earning guide.\n\n[Test 5] Testing Bilingual Consistency for Pause & Airdrop...\n  ✓ Bilingual consistency confirmed across all new features.\n\n===============================================================\n🎉 ALL PAUSE MODAL, KITS & AIRDROP TESTS PASSED SUCCESSFULLY!\n===============================================================",
+      "error": null
+    },
+    {
+      "index": 22,
+      "file": "test_perf_and_topbar_elements.cjs",
+      "path": "tests/test_perf_and_topbar_elements.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.17s",
+      "output": "=== TEST: GAMEPLAY PERFORMANCE & TOPBAR NAVIGATION ELEMENTS ===\n\n[TEST 1] Cache Invalidation in index.html\n  ✓ All assets properly cache-busted with v=2.1.x\n\n[TEST 2] All 5 Topbar Navigation Elements Present in js/redesign.js\n  ✓ Topbar contains Emblem, Coins, Leaderboard, Profile, and Settings with active handlers\n\n[TEST 3] Responsive CSS & Safe Area Non-Circular Definitions\n  ✓ CSS variables clean and responsive styling verified\n\n[TEST 4] Mobile Performance: DPR cap, Shadow Map optimization, Substep guard\n  ✓ Mobile DPR capping, shadow map downscaling, and physics substep guard verified\n\n=============================================================\n🎉 ALL GAMEPLAY PERFORMANCE & TOPBAR TESTS PASSED!\n=============================================================",
+      "error": null
+    },
+    {
+      "index": 23,
+      "file": "test_pitch_and_leaderboard.cjs",
+      "path": "tests/test_pitch_and_leaderboard.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.19s",
+      "output": "=== FOOTY vs HOOPS Football Pitch & Leaderboard Test Suite ===\n\n[Test 1] Testing 3D Football Pitch Visual Overhaul...\n  ✓ 3D Football Pitch emerald turf, mower patterns, and stadium lighting verified.\n\n[Test 2] Testing 2D Stadium Vector Artwork Preview...\n  ✓ 2D Football Stadium vector preview verified.\n\n[Test 3] Testing Prominent Top Personal Standing Card...\n  ✓ Personal standing card with rank, score, record, and quick play CTA verified.\n\n[Test 4] Testing Leaderboard Structure & Accessibility...\n  ✓ Complete Leaderboard structure verified.\n\n[Test 5] Testing Leaderboard CSS Styles...\n  ✓ Leaderboard CSS styling verified.\n\nAll 5 pitch & leaderboard overhaul tests PASSED with 100% success! 🎉",
+      "error": null
+    },
+    {
+      "index": 24,
+      "file": "test_prelaunch_and_audit.cjs",
+      "path": "tests/test_prelaunch_and_audit.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.46s",
+      "output": "=== FOOTY vs HOOPS Pre-Launch & Audit Verification Suite ===\n\nTest 1: Checking server pre-launch state and season configuration...\n  [PASS] Server-controlled pre-launch state verified\nTest 2: Verifying seasonal points rule (0 in pre-launch, AI awards no season points)...\n  [PASS] Pre-launch seasonal point lock and AI description verified\nTest 3: Verifying permanent team selection...\n  [PASS] Permanent team selection enforced on server and client\nTest 4: Verifying elimination of fake sample players from leaderboard...\n  [PASS] Leaderboard fake sample players eliminated and pre-launch handling active\nTest 5: Verifying syntax of server and client scripts...\n  [PASS] Syntax check clean with zero errors\n\nAll Pre-Launch and Audit tests passed successfully!",
+      "error": null
+    },
+    {
+      "index": 25,
+      "file": "test_production_fixes_and_social.cjs",
+      "path": "tests/test_production_fixes_and_social.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.19s",
+      "output": "=== FOOTY vs HOOPS: Production Fixes, Social Integrations & Tasks Test Suite ===\n\n[PASS] Test 1: Item 1: Easy AI reward message banner is absent from match setup UI\n[PASS] Test 2: Item 2: Football pitch camera framing tight on mobile portrait & roof canopies removed\n[PASS] Test 3: Item 3: Visible baseline spectator stands placed behind both basketball hoops\n[PASS] Test 4: Item 4: Leaderboard strictly segregates football and basketball records\n[PASS] Test 5: Item 5: Football goal replay features snapshot interpolation, diveT and broadcast UI\n[PASS] Test 6: Item 6: All 6 official social channels configured with exact URLs and integrated in UI\n[PASS] Test 7: Item 7: /api/tasks/verify-telegram is strictly fail-closed with no mock bypasses\n[PASS] Test 8: Item 8: Economy reward strictly validates Telegram task and rejects unverified third-party tasks\n[PASS] Test 9: Item 9: Production safeguards preserved: 4 Stars packages, no withdrawals, prelaunch, Neon disconnected\n[PASS] Test 10: Item 10: Complete RU/EN localization key parity for social channels and goal replay\n[PASS] Test 11: Item 11: Server /api/leaderboard sport filtering live check\n\n======================================================\nALL PRODUCTION FIXES & SOCIAL INTEGRATIONS PASSED (11/11)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 26,
+      "file": "test_production_polish_and_geometry.cjs",
+      "path": "tests/test_production_polish_and_geometry.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.20s",
+      "output": "=== FOOTY vs HOOPS: Production Polish & Geometry Audit Suite ===\n\n[PASS] Test 1: Item 1: Every kit has a unique SVG definition in getDetailedJerseySvg\n[PASS] Test 2: Item 2: Every ball has a unique SVG definition in getDetailedBallSvg\n[PASS] Test 3: Item 3: Telegram Subscription flow features open -> verify -> claim -> separate completed block\n[PASS] Test 4: Item 4: Basketball court lines geometry has clean continuous 3-point arcs without diagonal crossings\n[PASS] Test 5: Item 5: Matchmaking removes artificial 3s delay and provides smooth 1.2s Opponent Found transition\n[PASS] Test 6: Item 6: Shop includes sport switcher [FOOTY | HOOPS] and filters kits and balls by faction\n[PASS] Test 7: Item 7: Human player retains chosen character model in Rivalry mode\n[PASS] Test 8: Item 8: HUD scoreboard clears safe-area-inset-top + 52px for Telegram overlay\n\n======================================================\nALL PRODUCTION POLISH & GEOMETRY TESTS PASSED (8/8)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 27,
+      "file": "test_pvp_sync_and_locker_room.cjs",
+      "path": "tests/test_pvp_sync_and_locker_room.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.18s",
+      "output": "=== FOOTY vs HOOPS: Online 1v1 Sync & Locker Room Verification Suite ===\n\n[Test 1] Verifying Basketball & Football Snapshot Blending in net/protocol...\n  ✓ Ball y, spin, dribblePhase, agent jumpT, runPhase, and hoop net smoothly interpolated.\n[Test 2] Verifying Dead-Reckoning Extrapolation on Network Buffer Underrun...\n  ✓ Extrapolation safely projects positions, animation phase, and dribble height during packet delays.\n[Test 3] Verifying OnlineSession Adaptive Jitter Buffer & Guest Synchronization...\n  ✓ OnlineSession adaptive buffer safely handles continuous frames and packet jitter.\n[Test 4] Verifying Locker Room Character Sizing & Responsiveness in css/redesign.css...\n  ✓ Wardrobe avatar sizes modestly increased across desktop and mobile, preserving layout and visibility.\n[Test 5] Verifying Diagnostics Overlay in HUD (FPS, Frame Time, Ping, Buf, Role)...\n  ✓ Lightweight diagnostics overlay displays FPS, frame time, ping, role, and buffer depth.\n\n======================================================\nALL ONLINE PvP & LOCKER ROOM TESTS PASSED (5/5)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 28,
+      "file": "test_quick_match_resolution.cjs",
+      "path": "tests/test_quick_match_resolution.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.63s",
+      "output": "=== FOOTY vs HOOPS: Quick Match Mode Resolution Verification Suite ===\n\n[PASS] Test 1: Missing matchInfo defaults safely to valid discipline without crash\n[PASS] Test 2: Malformed or legacy \"clash\" mode cleanly resolves to agreed discipline\n[PASS] Test 3: Missing or out-of-range minutes clamps safely between 1 and 10\n[PASS] Test 4: Both flattened and nested matchInfo structures resolve identically\n[PASS] Test 5: Server Matchmaking: Football vs Football produces agreed \"footy\" mode\n[PASS] Test 6: Server Matchmaking: Basketball vs Basketball produces agreed \"hoops\" mode\n[PASS] Test 7: Server Matchmaking: Cross-Sport Queue Isolation & Matching\n\n======================================================\nALL QUICK MATCH RESOLUTION TESTS PASSED (7/7)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 29,
+      "file": "test_restart_persistence.cjs",
+      "path": "tests/test_restart_persistence.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.62s",
+      "output": "=== FOOTY vs HOOPS: Server Restart Persistence Verification Suite ===\n\n[Step 1/4] Provisioning PostgreSQL database instance...\n  ✓ PostgreSQL schema initialized and ready.\n[Step 2/4] Simulating Active Server Session 1...\n  ✓ Session 1 data committed: athlete registered, team locked, item purchased, match recorded.\n[Step 3/4] Simulating Server Hard Crash & Restart (Ephemeral Disk Wipe)...\n  ✓ Server process terminated. Memory & ephemeral cache wiped.\n[Step 4/4] Starting Clean Server Process (Session 2) & Restoring from PostgreSQL...\n  Checking restored athlete credentials and progress:\n   ✓ Player ID verified: athlete_restart_test_99\n   ✓ Player Name verified: ChampionshipStriker\n   ✓ Permanent Team Lock verified: footy\n   ✓ Currency & Progression verified: 350 Coins, 120 XP\n   ✓ Inventory verified: contains jersey_fire\n   ✓ Equipped Cosmetics verified: jersey = jersey_fire\n   ✓ Quest Progress verified: quest_first_kick claimed\n   ✓ Financial Audit Ledger verified: tx_init_01 intact\n   ✓ Match History verified: match_alpha_01 intact\n\n======================================================\nRESTART PERSISTENCE VERIFIED SUCCESSFULLY (100% PASS)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 30,
+      "file": "test_rollback_tool.cjs",
+      "path": "tests/test_rollback_tool.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "4.98s",
+      "output": "=== FOOTY vs HOOPS: Rollback & Recovery Automated Test ===\n\nStep 1: Migrating initial data...\n=== FOOTY vs HOOPS: PostgreSQL Migration Tool ===\n\nSource File: C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\server\\data.json\n  Athletes:           171\n  Ledger Entries:     112\n  Completed Matches:  21\n  Total Player Coins: 103 562\n\n[BACKUP CREATED] C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\tests\\temp_rollback_test\\data.backup.1794082261114.json (SHA-256: 65f2ca5b95cd4d8b...)\nTarget Database: In-Memory / Injected Pool\n\n[OK] Connected to PostgreSQL and verified schema.\nIngesting state inside atomic transaction...\n[OK] All records ingested. Running validation checks...\n\n=== Migration Verification Matrix ===\n  Players Count:     Expected 171 | DB 171 -> VERIFIED\n  Players Coins Sum: Expected 103562 | DB 103562 -> VERIFIED\n  Ledger Count:      Expected 112 | DB 112 -> VERIFIED\n  Matches Count:     Expected 21 | DB 21 -> VERIFIED\n\n======================================================\nMIGRATION COMPLETED & VERIFIED 100% SUCCESSFULLY\n======================================================\n\n\nStep 2: Exporting DB state via rollback tool...\n=== FOOTY vs HOOPS: PostgreSQL Rollback & Recovery Tool ===\n\nExporting database state to: C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\tests\\temp_rollback_test\\export_test.json\n[OK] Successfully exported 171 players to C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\tests\\temp_rollback_test\\export_test.json\n\nStep 3: Restoring DB state from export via rollback tool...\n=== FOOTY vs HOOPS: PostgreSQL Rollback & Recovery Tool ===\n\nRestoring database state from backup: C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\tests\\temp_rollback_test\\export_test.json\n[OK] Restored state successfully from C:\\Users\\ASUS\\Desktop\\FOOTY vs HOOPS\\tests\\temp_rollback_test\\export_test.json\n\n[PASS] Rollback & Recovery tool verified 100% successfully!",
+      "error": null
+    },
+    {
+      "index": 31,
+      "file": "test_stage1_gameplay_physics.cjs",
+      "path": "tests/test_stage1_gameplay_physics.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.20s",
+      "output": "=== FOOTY vs HOOPS: Stage 1 Gameplay Physics & Animation Test Suite ===\n\n[PASS] Test 1: 1.1: Football - Ball does NOT prematurely reattach after shot when sprinting immediately\n[PASS] Test 2: 1.2: Football - Legitimate ball recovery works after separation or rebound off post/keeper\n[PASS] Test 3: 1.3: Football - Opponent can intercept immediately without waiting for shooter separation\n[PASS] Test 4: 2.1: Basketball - Coordinated dunk sequence: approach, jump, rising elevation, slam and landing\n[PASS] Test 5: 2.2: Basketball - Interrupted dunk (tackle/stun mid-air) cancels slam without free points or state corruption\n[PASS] Test 6: 2.3: Basketball - Jump shot separation prevents immediate reattachment before rim/board/floor contact\n[PASS] Test 7: 3.1: Football - Legitimate goal in correct direction awards exactly 1 goal and locks duplicate scoring\n[PASS] Test 8: 3.2: Football - Rebound from outside the net (wide of posts) is REJECTED\n[PASS] Test 9: 3.3: Football - Backward crossing out of net is REJECTED\n[PASS] Test 10: 4.1: Football - 180-degree turn smoothly orbits player perimeter without torso clipping or teleportation\n[PASS] Test 11: 4.2: Basketball - 180-degree turn smoothly crosses over along perimeter without snapping through hips\n\n======================================================\nALL STAGE 1 GAMEPLAY & PHYSICS CHECKS PASSED (11/11)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 32,
+      "file": "test_stage1_verification.cjs",
+      "path": "tests/test_stage1_verification.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.46s",
+      "output": "=== FOOTY vs HOOPS Stage 1 Automated Verification Suite ===\n\nStep 1: Verifying codebase integrity and core gameplay preservation...\n  [PASS] Project structure verified and core gameplay 100% untouched\nStep 2: Verifying first-launch persistent team selection flow...\n  [PASS] First-launch persistent team selection flow verified\nStep 3: Verifying main menu and 5-tab bottom navigation...\n  [PASS] Main menu navigation and topbar controls verified\nStep 4: Verifying shop categories, exact prices, and purchase behavior...\n  [PASS] Shop categories, exact prices, and purchase flows verified\nStep 5: Verifying Telegram Stars safe flow and unconfigured notice...\n  [PASS] Stars unconfigured safety and crypto separation verified\nStep 6: Verifying inventory 3 categories, equip toggles, and empty state...\n  [PASS] Inventory category filtering, equip toggles, and empty state verified\nStep 7: Verifying verified reward amounts and persistent transaction ledger...\n  [PASS] FvH Coin economy rules and transaction ledger verified\nStep 8: Verifying profile team token, status, exact withdraw copy, and ledger...\n  [PASS] Profile team token balance and exact withdrawal copy verified\nStep 9: Verifying quests screen 2-tab structure and referral/social logic...\n  [PASS] Quests 2-tab structure and referral/social logic verified\nStep 10: Verifying 15-language dictionary, auto-detection, and RTL layout...\n  [PASS] 15 languages, auto-detection, and Arabic RTL layout verified\nStep 11: Verifying mobile responsive CSS (320px–440px+)...\n  [PASS] Mobile responsive styling and layout rules verified\nStep 12: Verifying syntax of all modified files...\n  [PASS] Syntax validation passed with zero errors\n\n=======================================================\nALL STAGE 1 VERIFICATION TESTS PASSED SUCCESSFULLY! (12/12)\n=======================================================",
+      "error": null
+    },
+    {
+      "index": 33,
+      "file": "test_stage2_presentation_replays.cjs",
+      "path": "tests/test_stage2_presentation_replays.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.66s",
+      "output": "=== FOOTY vs HOOPS: Stage 2 Presentation, Sound & Replays Test Suite ===\n\n[PASS] Test 1: 1.1: AudioEngine: Supports distinct dunk, dribble_court, and save audio events\n[PASS] Test 2: 1.2: AudioEngine: Mute and unmute toggling strictly respects user settings\n[PASS] Test 3: 2.1: Replay Buffer: Snapshot recording captures valid spatial data and bounds memory\n[PASS] Test 4: 2.2: Replay Integrity: Playback CANNOT alter match score, trigger rewards, or step live sim\n[PASS] Test 5: 2.3: Replay Safety: Online PvP strictly bypasses replay to prevent network desynchronization\n[PASS] Test 6: 3.1: Football Pitch: Dimensions, regulation markings, boxes, goal nets, and mowing bands\n[PASS] Test 7: 3.2: Basketball Court: Authentic hardwood parquet, key/paint, 3-point arc, and backboard\n[PASS] Test 8: 3.3: 10 Themed Arenas: All 10 unique stadium environments instantiate without errors\n[PASS] Test 9: 4.1: Emblem Asset: Official emblem is preserved as foreground image asset\n[PASS] Test 10: 4.2: Localization: Replay and Mute keys are defined in English, Russian, and redesign dicts\n\n======================================================\nALL STAGE 2 PRESENTATION & REPLAY CHECKS PASSED (10/10)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 34,
+      "file": "test_stage3_network_repro.cjs",
+      "path": "tests/test_stage3_network_repro.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.94s",
+      "output": "=== Stage 3 Network & Matchmaking Vulnerability Reproduction ===\n\nTest Server running on port 8391\n\n[REPRO 1] Checking Stale Match Reuse Bug...\n  Initial match created: FVH-M1ACC3A65\n  Match 1 completed: {\n  ok: true,\n  success: true,\n  matchId: 'FVH-M1ACC3A65',\n  matchToken: 'mtok_1794082268899_9c0c703b6a6c',\n  winner: 0,\n  finalScore: [ 2, 1 ],\n  phase: 'regulation'\n}\n  Player A joined queue for Match 2. Status: searching\n  Player A poll result: { ok: true, status: 'searching', queuePosition: 1, elapsedSeconds: 0 }\n  => Status: searching\n\n[REPRO 2] Checking Instant Fabricated Match Completion Vulnerability...\n  Match 2 created: FVH-M2CDDF158 Status: matched\n  Guest submitted 99-0 win 50ms into match: {\n  ok: false,\n  error: 'host_authority_required',\n  message: 'Host is the authoritative simulation peer for match completion'\n}\n\n[REPRO 3] Checking Forfeit Endpoint Exploitation...\n  Match 3 created: FVH-M9F55E492 Status: matched\n  Immediate forfeit result: {\n  ok: false,\n  error: 'match_starting_grace_period',\n  message: 'Connection establishing'\n}",
+      "error": null
+    },
+    {
+      "index": 35,
+      "file": "test_stage3_networking_stability.cjs",
+      "path": "tests/test_stage3_networking_stability.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "4.67s",
+      "output": "=== FOOTY vs HOOPS: Stage 3 Online PvP & Network Stability Test Suite ===\n\n[PASS] Test 1: 1.1: Matchmaking: Two distinct players match into agreed session without duplicate slots\n[PASS] Test 2: 1.2: Matchmaking: Simultaneous requests from same player cannot create duplicate active rooms\n[PASS] Test 3: 1.3: Matchmaking: Sport and duration are consistent across Footy, Hoops, and cross-discipline\n[PASS] Test 4: 2.1: WebSocket Relay: Connecting to invalid/non-existent room is strictly rejected (404)\n[PASS] Test 5: 2.2: WebSocket Relay: Real-time packet exchange forwards messages between host and guest\n[PASS] Test 6: 2.3: WebSocket Reconnection: Reconnecting socket seamlessly replaces stale socket reference\n[PASS] Test 7: 2.4: Packet Sequencing: OnlineSession drops duplicate and out-of-order input packets\n[PASS] Test 8: 3.1: Anti-Cheat: Premature match completion is rejected\n[PASS] Test 9: 3.2: Anti-Cheat: Guest cannot unilaterally submit completion while Host is actively connected\n[PASS] Test 10: 3.3: Anti-Cheat: Implausible scores (>60) and negative scores are strictly rejected\n[PASS] Test 11: 3.4: Anti-Cheat: Unverified forfeit cannot be exploited while opponent is active\n[PASS] Test 12: 3.5: Match Tokens: Cryptographic matchToken generated, duplicate reward claim rejected\n[PASS] Test 13: 4.1: Clean Rematch: Completed match does NOT pollute subsequent matchmaking search\n\n======================================================\nALL STAGE 3 NETWORKING STABILITY TESTS PASSED (13/13)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 36,
+      "file": "test_stage4_all_rarities_equipped.cjs",
+      "path": "tests/test_stage4_all_rarities_equipped.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.03s",
+      "output": "=== Stage 4: Comprehensive Multi-Rarity Equip & In-Engine Propagation Test ===\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8391\nTest Player ID: test_stage4_collector_1794082274493\n  [PASS] Player initial state synchronized with 50,000 FvH Coins.\n\nTesting Rarity Tier: [Common]...\n  [PASS] Purchased all Common items.\n  [PASS] Football Jersey equipped: skin_plain_white (Common)\n  [PASS] Basketball Jersey equipped: skin_bb_white (Common)\n  [PASS] Football Ball equipped: ball_training (Common)\n  [PASS] Basketball Ball equipped: ball_hoops_rubber (Common)\n\nTesting Rarity Tier: [Rare]...\n  [PASS] Purchased all Rare items.\n  [PASS] Football Jersey equipped: skin_velocity (Rare)\n  [PASS] Basketball Jersey equipped: skin_bb_miami (Rare)\n  [PASS] Football Ball equipped: ball_vortex (Rare)\n  [PASS] Basketball Ball equipped: ball_hoops_lime (Rare)\n\nTesting Rarity Tier: [Epic]...\n  [PASS] Purchased all Epic items.\n  [PASS] Football Jersey equipped: skin_golden (Epic)\n  [PASS] Basketball Jersey equipped: skin_bb_gold (Epic)\n  [PASS] Football Ball equipped: ball_hyperdrive (Epic)\n  [PASS] Basketball Ball equipped: ball_cyber_grid (Epic)\n\nTesting Rarity Tier: [Legendary]...\n  [PASS] Purchased all Legendary items.\n  [PASS] Football Jersey equipped: skin_dragon (Legendary)\n  [PASS] Basketball Jersey equipped: skin_bb_nebula (Legendary)\n  [PASS] Football Ball equipped: ball_sovereign (Legendary)\n  [PASS] Basketball Ball equipped: ball_supernova (Legendary)\n\nTesting procedural 3D texture generation for all equipped items...\n  [VERIFIED] In-memory Game ITEMS: 124 items registered.\n    - Football kits: 39\n    - Basketball jerseys: 20\n    - Football balls: 23\n    - Basketball balls: 24\n\n=== ALL MULTI-RARITY EQUIP & PROPAGATION TESTS PASSED (100%) ===",
+      "error": null
+    },
+    {
+      "index": 37,
+      "file": "test_stage_j_acceptance.cjs",
+      "path": "tests/test_stage_j_acceptance.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.51s",
+      "output": "=== FOOTY vs HOOPS: Stage J Acceptance Verification Suite ===\n\n[PASS] Test 1: J1.1: Featured hero card passes showJerseyTag: false (no Киберпанк pill)\n[PASS] Test 2: J1.2: Solo header badges have balanced, equal flex styling and media query\n[PASS] Test 3: J1.3: Official emblem is preserved as foreground image and never used as page background\n[PASS] Test 4: J1.4: Arena cosmetics removed from shop & wardrobe; stadiums remain selectable for gameplay\n[PASS] Test 5: J1.5: Artwork dispatcher normalizes ball categories and produces authentic 3D SVGs without hex fallbacks\n[PASS] Test 6: J1.6: Leaderboard search input has iOS Done/Return dismissal, touchstart blur, and clean focus\n[PASS] Test 7: J1.7: Leaderboard duplicate prevention: docked player card omitted when user is in top list\n[PASS] Test 8: J1.8: Private match UI and fake P2P Live status badge removed from Mode Selection\n[PASS] Test 9: J2.1: Social tasks have polished vector brand artwork (Telegram, X, Invite Friends)\n[PASS] Test 10: J2.2: Referral registration prevents self-referrals, duplicate claims, and mutual cycles\n[PASS] Test 11: J2.3: Referral commission: exact 5% calculation, floor rounding, ledger entry, and idempotency\n[PASS] Test 12: J3.1: Telegram Stars payment flow strictly server-authoritative (currency XTR, rejection of unconfigured prices)\n[PASS] Test 13: J4.1: TON Wallet link strictly validates public address, rejects seed phrases, and allows clean disconnect\n[PASS] Test 14: J4.2: TON Wallet UI card is wired in Profile screen with safety warnings & abbreviated formatting\n[PASS] Test 15: J5.1: Season 1 remains strictly in prelaunch with zero season points awarded\n\n======================================================\nALL STAGE J ACCEPTANCE CHECKS PASSED (15/15)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 38,
+      "file": "test_stars_payment_flow.cjs",
+      "path": "tests/test_stars_payment_flow.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.64s",
+      "output": "=== FOOTY vs HOOPS: Telegram Stars Complete Purchase Lifecycle Suite ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8520\nTest 1: Verifying in-game Stars product catalog and launch prices...\n  [PASS] Catalog and pricing verified: 25, 100, 220, 500 ⭐ for coins. Battle Pass strictly excluded.\n\nTest 2: Testing invoice creation with Telegram Bot API (XTR currency)...\n  [PASS] Telegram invoice link generated: https://t.me/$stars_invoice_link_stars_0112376f0c5b8c7e\n\nTest 3: Testing security guards against unauthorized/forged payments...\n  [PASS] Anti-spoofing and security rules strictly rejected fraudulent attempts.\n\nTest 4: Simulating authentic Telegram pre_checkout_query approval...\n  [PASS] Pre-checkout query approved and order transitioned to payment_processing.\n\nTest 5: Processing authentic successful_payment and crediting coins...\n  [PASS] Order transitioned to paid. Charge ID verified: tg_ch_1794082276715_xyz\n  [PASS] Authoritative coins credited to player: 850 FvH Coin.\n\nTest 6: Testing duplicate charge protection (idempotency)...\n  [PASS] Duplicate webhook delivery recognized and safely ignored without double-crediting.\n\nTest 7: Verifying complete server-side rejection of Battle Pass purchase & claims...\n  [PASS] All Battle Pass invoice and reward claim attempts strictly rejected by server.\n\nTest 8: Testing bot token whitespace trimming, format validation, and unconfigured states...\n  [PASS] Leading/trailing whitespace, newlines, and carriage returns are safely trimmed.\n  [PASS] Tokens with invalid characters are rejected with bot_token_invalid_format (not silently stripped).\n  [PASS] Tokens missing colon separator are rejected with bot_token_invalid_format.\n  [PASS] Unconfigured/missing token returns bot_token_unconfigured.\n  [PASS] Valid token succeeds cleanly.\n\n======================================================\nALL TELEGRAM STARS PURCHASE & SECURITY CHECKS PASSED (8/8)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 39,
+      "file": "test_storage_adapter.cjs",
+      "path": "tests/test_storage_adapter.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.09s",
+      "output": "=== FOOTY vs HOOPS Storage Adapter Test Suite ===\n\n[UNIT / MOCK MODE] Testing against IN-MEMORY POSTGRESQL ENGINE (pg-mem).\n  -> Verifies exact SQL syntax, ACID transactions, row locks, CHECK constraints, and rollbacks.\n  -> Note: True physical persistence across system reboot requires a live PostgreSQL instance.\n\nTest 1: JSON Storage Adapter - Basic Operations & Backward Compatibility...\n  [PASS] JSON Storage Adapter validated successfully.\n\nTest 2: PostgreSQL Adapter - Schema Creation & Health Check...\n  [PASS] PostgreSQL Adapter initialized and healthy.\n\nTest 3: PostgreSQL Adapter - Transaction Atomicity (Purchase)...\n  [PASS] Purchase transaction atomically debited coins, granted item, and recorded ledger entry.\n\nTest 4: PostgreSQL Adapter - Insufficient Funds & Negative Balance Prevention...\n  [PASS] Insufficient funds rejected; balance never negative (CHECK constraint preserved).\n\nTest 5: PostgreSQL Adapter - Concurrency Serialization (Race Condition Test)...\n  [PASS] 10 concurrent requests cleanly serialized: exactly 3 succeeded, 7 rejected, balance 0.\n\nTest 6: PostgreSQL Adapter - Duplicate Reward Prevention & Anti-Cheat...\n  [PASS] Duplicate match reward and forged token requests strictly rejected.\n\nTest 7: PostgreSQL Adapter - Idempotency Key Caching...\n  [PASS] Idempotency key returned cached response without double charge.\n\nTest 8: PostgreSQL Adapter - Permanent Team Selection & Lock...\n  [PASS] Team selection permanently locked and illegal changes rejected.\n\nTest 9: PostgreSQL Adapter - Interrupted Migration Rollback...\n  [PASS] Interrupted migration automatically and cleanly rolled back without orphan records.\n\nTest 10: PostgreSQL Adapter - Export / Import Round-Trip Consistency...\n  [PASS] State exported and re-imported into fresh adapter with 100% fidelity.\n\n======================================================\nALL STORAGE ADAPTER TESTS PASSED (10/10)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 40,
+      "file": "test_store_wardrobe_improvements.cjs",
+      "path": "tests/test_store_wardrobe_improvements.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.65s",
+      "output": "=== FOOTY vs HOOPS Store & Wardrobe Verification Suite ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8525\nTest 1: Store catalog cleanup and duplicate removal...\n  [PASS] Exactly 30 canonical items configured; all 10 duplicates safely aliased.\n\nTest 2: Verifying English item names rule in Store & Wardrobe...\n  [PASS] Item names remain strictly in English across locales while UI labels remain localized.\n\nTest 3: Purchase & Equip decoupling (Buying adds to inventory & unseenItems without equipping)...\n  [PASS] Purchase correctly credited item to owned and unseenItems without auto-equipping.\n\nTest 4: Duplicate purchase prevention...\n  [PASS] Re-purchasing owned items or their legacy aliases strictly rejected with already_owned.\n\nTest 5: Wardrobe NEW-item indicator and mark-seen persistence...\n  [PASS] Seen/unseen state persists and mark-seen endpoint clears indicator.\n\nTest 6: Equipping cosmetic in Wardrobe and gameplay reflection...\n  [PASS] Equipping item saves authoritative state.\n\nTest 7: Wardrobe rarity filters...\n  [PASS] Every rarity tier (Common, Rare, Epic, Legendary) contains items across all categories.\n\nTest 8: Visual realism and distinct SVG generation for all items...\n  [PASS] All 30 canonical equipment items render rich, distinct vector artwork without errors.\n\n======================================================\nALL STORE & WARDROBE IMPROVEMENT TESTS PASSED (8/8)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 41,
+      "file": "test_telegram_bot_and_analytics.cjs",
+      "path": "tests/test_telegram_bot_and_analytics.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.55s",
+      "output": "=== FOOTY vs HOOPS Telegram Bot & Player Statistics Verification Suite ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8993\n[Test 1] Verifying Telegram Bot Automatic Localization & Message Text...\n  ✓ Automatic language detection and fallback working across ru, en, es, and unknown.\n[Test 2] Verifying removal of outdated feature claims in bot messages...\n  ✓ Outdated claims (boosts, 68 items, 10 stadiums, online friends) eliminated.\n[Test 3] Verifying bot profile setup script separation & dry-run validation...\n=== Configuring Telegram Bot Profile for FOOTY vs HOOPS ===\nMode: DRY-RUN (No Telegram Bot API network requests)\nBot Token: 123456789:...56789\nMini App URL: https://footy-vs-hoops.onrender.com/\n\n[1/7] Bot Identity (@footy_vs_hoops_bot): OK\n[2/7] setMyName: { default: true, en: true, ru: true }\n[3/7] setMyShortDescription: { default: true, en: true, ru: true }\n[4/7] setMyDescription: { default: true, en: true, ru: true }\n[5/7] setChatMenuButton: OK\n[6/7] setMyCommands: { default: true, en: true, ru: true }\n\n[7/7] === Configured Profile Verification ===\nConfigured Name: { name: 'FOOTY vs HOOPS ⚽🏀' }\nConfigured Short Description: {\n  short_description: '1v1 Football & Basketball in Telegram! Quick matches vs AI & online PvP, locker room kits and seasonal leaderboard! ⚽🏀'\n}\nConfigured Description length: 379\nConfigured Menu Button: {\n  type: 'web_app',\n  text: 'Play ⚽🏀',\n  web_app: { url: 'https://footy-vs-hoops.onrender.com/' }\n}\n\n✅ Profile setup completed successfully!\n=== Configuring Telegram Bot Profile for FOOTY vs HOOPS ===\nMode: DRY-RUN (No Telegram Bot API network requests)\nBot Token: 123456789:...56789\nMini App URL: https://footy-vs-hoops.onrender.com/\n\n[1/7] Bot Identity (@footy_vs_hoops_bot): OK\n[2/7] setMyName: { default: true, en: true, ru: true }\n[3/7] setMyShortDescription: { default: true, en: true, ru: true }\n=== Configuring Telegram Bot Profile for FOOTY vs HOOPS ===\nMode: DRY-RUN (No Telegram Bot API network requests)\nBot Token: 123456789:...56789\nMini App URL: https://footy-vs-hoops.onrender.com/\n\n[1/7] Bot Identity (@footy_vs_hoops_bot): OK\n[2/7] setMyName: { default: true, en: true, ru: true }\n[3/7] setMyShortDescription: { default: true, en: true, ru: true }\n[4/7] setMyDescription: { default: true, en: true, ru: true }\n=== Configuring Telegram Bot Profile for FOOTY vs HOOPS ===\nMode: DRY-RUN (No Telegram Bot API network requests)\nBot Token: 123456789:...56789\nMini App URL: https://footy-vs-hoops.onrender.com/\n\n[1/7] Bot Identity (@footy_vs_hoops_bot): OK\n[2/7] setMyName: { default: true, en: true, ru: true }\n[3/7] setMyShortDescription: { default: true, en: true, ru: true }\n[4/7] setMyDescription: { default: true, en: true, ru: true }\n[5/7] setChatMenuButton: OK\n=== Configuring Telegram Bot Profile for FOOTY vs HOOPS ===\nMode: DRY-RUN (No Telegram Bot API network requests)\nBot Token: 123456789:...56789\nMini App URL: https://footy-vs-hoops.onrender.com/\n\n[1/7] Bot Identity (@footy_vs_hoops_bot): OK\n[2/7] setMyName: { default: true, en: true, ru: true }\n[3/7] setMyShortDescription: { default: true, en: true, ru: true }\n[4/7] setMyDescription: { default: true, en: true, ru: true }\n[5/7] setChatMenuButton: OK\n  ✓ Bot profile script verified: 18 planned calls match 1:1 with dry-run, network strictly blocked, failed responses handled, and zero secrets exposed.\n[Test 4] Verifying initData Signature, Freshness, and Fail-Closed Behavior...\n  ✓ Valid HMAC-SHA256 signature accepted.\n  ✓ Stale auth_date (>24h) strictly rejected.\n  ✓ Future auth_date strictly rejected.\n  ✓ Tampered / spoofed initData strictly rejected.\n  ✓ Unauthenticated client-supplied user payload strictly ignored.\n[Test 5] Verifying resolveUserLanguage() with Canonical Player ID format (fvh_...)...\n  ✓ resolveUserLanguage() resolved canonical player ID format (fvh_...) and synchronized language.\n[Test 6] Verifying totalPlayers excludes AI, test, and service profiles...\n  ✓ Public summary: totalPlayers=137, activeToday=5, activeThisWeek=5 (Accurate counts, Zero PII).\n[Test 7] Verifying Admin Statistics Security (Accepts ONLY ADMIN_SECRET)...\n  ✓ Dedicated ADMIN_SECRET strictly enforced; fallbacks to webhook secret or bot token blocked.\n[Test 8] Verifying PostgreSQL telegram_users Persistence & Import Idempotency...\n  ✓ PostgreSQL full-state import is strictly idempotent (miniapp_launch_count does NOT accumulate).\n\n======================================================\nALL TELEGRAM BOT & ANALYTICS CHECKS PASSED (8/8)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 42,
+      "file": "test_telegram_tasks_and_startup.cjs",
+      "path": "tests/test_telegram_tasks_and_startup.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "1.14s",
+      "output": "=== FOOTY vs HOOPS: Telegram Social Tasks & Startup Suite ===\n\nFOOTY vs HOOPS Master Game & Multiplayer Server running on port 8995\n[PASS] Test 1: Telegram Channel (q_sub_tg) verification and reward crediting\n[PASS] Test 2: Telegram Community Chat (q_sub_chat) verification and reward crediting\n[PASS] Test 3: Non-member returns verified: false without crediting rewards\n[PASS] Test 4: Telegram API error returns 502 with clean error description\n[PASS] Test 5: Missing Telegram user ID returns 400\n[PASS] Test 6: Duplicate claim of Telegram task returns 400 quest_already_claimed\n[PASS] Test 7: Server-side verification enforced in /api/tasks/claim-social for Telegram tasks\n[PASS] Test 8: External social tasks (TikTok, YouTube, Twitter, Instagram) claim successfully\n[PASS] Test 9: /api/economy/sync returns claimedQuests for client state hydration\n[PASS] Test 10: Error handler sanitizes bot tokens, hex hashes, and secrets\n[PASS] Test 11: Error handler ignores non-fatal external Script error when app is running\n[PASS] Test 12: core/telegram checks for existing telegram-web-app.js script tag before injection\n[PASS] Test 13: js/redesign.js passes claim: true for Telegram verification and credits reward\n\n========================================\nTests finished: 13/13 passed (0 failed)\n========================================",
+      "error": null
+    },
+    {
+      "index": 43,
+      "file": "test_token_airdrop_feature.cjs",
+      "path": "tests/test_token_airdrop_feature.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.17s",
+      "output": "=== FOOTY vs HOOPS Play-to-Airdrop Token Feature Test Suite ===\n\n[Test 1] Testing calculateAirdropStats Logic & Scoring Engine...\n  ✓ Drop PTS math formula verified with victory, activity, referral, and wallet bonuses.\n\n[Test 2] Testing Main Menu Airdrop Banner Placement & Interaction...\n  ✓ Main Menu Play-to-Airdrop banner verified in hierarchy with faction styling.\n\n[Test 3] Testing buildAirdropPage Component Structure...\n  ✓ buildAirdropPage structure, 4 earning pillars, and wallet management verified.\n\n[Test 4] Testing app.go('airdrop') and app.showAirdrop()...\n  ✓ Navigation routing for airdrop hub verified.\n\n[Test 5] Testing Profile & Leaderboard Cross-Promotion Links...\n  ✓ Profile and Leaderboard cross-promotion links to Airdrop Hub verified.\n\n[Test 6] Testing Security Disclaimers & Telegram Guidelines...\n  ✓ Web3 security notices and Telegram guidelines verified.\n\nAll 6 Play-to-Airdrop token feature tests PASSED with 100% success! 🎉",
+      "error": null
+    },
+    {
+      "index": 44,
+      "file": "test_upgrades_and_packs.cjs",
+      "path": "tests/test_upgrades_and_packs.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.22s",
+      "output": "=== FOOTY vs HOOPS Upgrades, Packs & Gameplay Features Test Suite ===\n\n[Test 1] Testing Player Upgrade Progression Configuration...\n  ✓ 10-tier hard progression verified: 336 600 coins required to fully max.\n  ✓ Level-lock and coin deductions simulated and verified.\n\n[Test 2] Testing Pack-Exclusive Catalog Items & Drop Mechanics...\n  ✓ Pack exclusives are protected from direct shop purchases.\n\n[Test 3] Testing Basketball Directional Aiming & Auto-Aim Removal...\n  ✓ Basketball directional throwing strictly fires along facing direction.\n\n[Test 4] Testing 2D & 3D Jersey Pattern Rendering...\n  ✓ 2D and 3D Jersey pattern engines verified.\n\n[Test 5] Testing Match HUD Controls Under Scoreboard...\n  ✓ HUD controls (pause and mute) verified positioned below scoreboard.\n\n[Test 6] Testing Cinematic Pack Opening Component...\n  ✓ Pack opening cinematic sequence verified.\n\n[Test 7] Testing Shop Modal \"В гардероб\" Navigation...\n  ✓ Shop \"В гардероб\" button navigation verified.\n\nAll 7 new feature verification tests PASSED with 100% success! 🎉",
+      "error": null
+    },
+    {
+      "index": 45,
+      "file": "test_user_fixes_verification.cjs",
+      "path": "tests/test_user_fixes_verification.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.20s",
+      "output": "=== FOOTY vs HOOPS Targeted Verification for User Issues ===\nTest 1: Football Icon (nav_home_footy)...\n  [PASS] nav_home_footy is an authentic 32-panel classic soccer ball SVG.\nTest 2: Rivalry Header Bar Layout & Non-truncation...\n  [PASS] Rivalry Header Bar guarantees FOOTY and HOOPS never truncate with dots.\nTest 3: Stamina Widget Container Width...\n  [PASS] Stamina Widget expands dynamically to comfortably contain \"ВЫНОСЛИВОСТЬ\".\nTest 4: Match Exit Navigation to Main Screen...\n  [PASS] Exiting from match reliably navigates to main menu and cleans up match state.\n\n=== ALL 4 TARGETED TESTS PASSED PERFECTLY (4/4)! ===",
+      "error": null
+    },
+    {
+      "index": 46,
+      "file": "test_victory_taunt_and_rivalry_buttons.cjs",
+      "path": "tests/test_victory_taunt_and_rivalry_buttons.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.16s",
+      "output": "=== FOOTY vs HOOPS Victory Banter, Live Rivalry & Buttons Polish Suite ===\n\n[Test 1] Testing Victory Taunt Localizations...\n  ✓ Bilingual victory taunt and banter strings verified in I18N.\n\n[Test 2] Testing Victory Taunt Card Injection...\n  ✓ Victory Taunt card component and match end injection verified.\n\n[Test 3] Testing Real Live Team War Calculation...\n  ✓ Real-time Live Team War state and calculation logic verified.\n\n[Test 4] Testing Main Menu Ticker & Modal Dynamic War Binding...\n  ✓ Main menu live rivalry ticker and modal dynamic binding verified.\n\n[Test 5] Testing Console-Grade Buttons Polish in CSS...\n  ✓ Console-grade 3D button polish and tactile response verified.\n\nAll 5 Victory Banter, Live Rivalry & Buttons tests PASSED with 100% success! 🎉",
+      "error": null
+    },
+    {
+      "index": 47,
+      "file": "verify.js",
+      "path": "tests/verify.js",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.24s",
+      "output": "=== FOOTY vs HOOPS Automated Verification Suite ===\n\n[PASS] File existence: index.html, style.css, redesign.css, game.js, redesign.js\n[PASS] index.html links redesign.css and redesign.js\n[PASS] Player Progression: Standard XP leveling formula caps at level 30\n[PASS] Battle Pass Removal: battlepass_premium excluded from server catalog and default prices\n[PASS] Battle Pass Rejection: Server rejects battlepass reward claims and invoices\n[PASS] Approved Stars Catalog: Exactly 4 FvH Coin packages configured (100, 500, 1200, 3000)\n[PASS] Store: Transaction deducts currency exactly once and prevents negative balance\n[PASS] Character selection & wardrobe persistence\n[PASS] Character interaction: tapping FOOTY and HOOPS triggers openCharacterLocker\n[PASS] Locker & Inventory: Equipping locked cosmetic is rejected\n[PASS] Quests: Real metric progress and duplicate claim rejection\n[PASS] Rivalry formula calculates proper weighted score\n[PASS] Localization: Russian and English dictionaries have complete key parity\n[PASS] Inventory: strictly filters to owned items only with empty category support\n[PASS] Official Emblem: authentic emblem.png exists and is referenced with 1:1 proportions\n[PASS] Mode Selection: buildModeSelectPage defines Quick Match, Private Match, Practice vs AI\n[PASS] Character Art: FOOTY and HOOPS have layered, detailed SVGs with accurate identities\n[PASS] Previews: renderItemArtwork renders vector SVGs for jerseys, balls, stadiums, packs\n[PASS] Arenas: Coastal Sunset Court and Redwood Forest Arena are configured with scenic visuals\n[PASS] Quests: 3 separated categories (Gameplay, Official Socials, Referral Squad Hub)\n[PASS] Arenas: Exactly 10 unique world environments are configured with detailed SVG visuals\n[PASS] Arena Selection: buildArenaSelectPage renders gallery of 10 worlds with equip/store actions\n[PASS] Online Multiplayer: Automated WebRTC signaling via backend server without manual SDP copy-paste\n[PASS] Dynamic 3D Ad Boards: Configured 10.0s cycle (0.5s in, 6.0s on, 0.5s out, 3.0s off) with sharp textures\n[PASS] Bot Token Security: No hardcoded bot tokens or fallbacks exist in source code and format validation is enforced\n[PASS] Production Webhook Security: TELEGRAM_WEBHOOK_SECRET strictly required in production\n[PASS] Shop Bundles: 7 thematic collections with item breakdowns, discount pills, and multi-currency pricing\n[PASS] Server Payment Endpoints: Product catalog, Stars invoices, TON memos, and Ledger persistence\n\nResults: 28/28 tests passed.",
+      "error": null
+    },
+    {
+      "index": 48,
+      "file": "verify_launch_gameplay_flows.cjs",
+      "path": "tests/verify_launch_gameplay_flows.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.33s",
+      "output": "=== Step 3: Critical Gameplay Flows Automated Verification ===\n\n1. Verifying Team Selection Flow & Persistence...\n   ✓ Team selection flow and persistence verified.\n\n2. Verifying Football (Footy) Arena, Movement, Shooting & Scoring...\n   ✓ Football movement & sprint stamina verified.\n   ✓ Football shot mechanics & ball velocity verified.\n   ✓ Football goal detection & scoring event verified.\n\n3. Verifying Basketball (Hoops) Arena, Hands-Only Play, Dunk & Basket Scoring...\n   ✓ Basketball movement & dribble verified.\n   ✓ Basketball jump shot arc verified.\n   ✓ Basketball slam dunk sequence verified.\n   ✓ Basketball three-pointer basket scoring verified.\n\n4. Verifying Match Timer, Expiration & Results Flow...\n   ✓ Match timer countdown, expiration & winner calculation verified.\n\n5. Verifying Rematch Lifecycle...\n   ✓ Rematch state reset & seamless new match start verified.\n\n======================================================\nALL CRITICAL GAMEPLAY FLOWS VERIFIED SUCCESSFULLY (5/5)!\n======================================================",
+      "error": null
+    },
+    {
+      "index": 49,
+      "file": "verify_telegram_miniapp_flow.cjs",
+      "path": "tests/verify_telegram_miniapp_flow.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.34s",
+      "output": "=== STEP 3: TELEGRAM MINI APP MOBILE FLOW VERIFICATION ===\n\n[1/5] Verifying Telegram Mini App Launch & Viewport Configuration...\n   ✓ TMA Container initialized: 844px mobile viewport, gestures locked, Russian locale set.\n\n[2/5] Verifying Team Selection & Faction Lock Flow...\n   ✓ Team Selection complete: ⚽ FOOTY chosen and permanently locked in storage.\n\n[3/5] Verifying Mobile Match Lifecycle & Mechanics (Football & Basketball)...\n   ✓ Football Match: Touch joystick movement, sprint, power shot, and goal celebration verified.\n   ✓ Basketball Match: Touch control dribble, hands-only jump shot, and basket award verified.\n\n[4/5] Verifying Match Timer Expiration & Results Screen Rewards...\n   ✓ Match Results Screen: Victory confirmed (2-1), +20 Coins, +30 XP credited to athlete.\n\n[5/5] Verifying Seamless Mobile Rematch Flow...\n   ✓ Rematch Flow: Score 0-0 reset, pitch re-aligned, instant transition to live match.\n\n======================================================================\nCOMPLETE TELEGRAM MINI APP MOBILE FLOW VERIFIED (5/5 PASS)!\n======================================================================",
+      "error": null
+    },
+    {
+      "index": 50,
+      "file": "test_stage6_gameplay_repair.cjs",
+      "path": "tests/test_stage6_gameplay_repair.cjs",
+      "exitCode": 0,
+      "status": "PASS",
+      "duration": "0.16s",
+      "output": "=== Stage 6: Gameplay Repair & Full Feature Implementation Test Suite ===\nTest 1: Match HUD Mobile Layout & Zero Overlap Verification...\n  [PASS] Viewport 360px: Stamina (12..166px) vs Pause/Mute (260..348px) -> 94px separation.\n  [PASS] Viewport 390px: Stamina (12..166px) vs Pause/Mute (290..378px) -> 124px separation.\n  [PASS] Viewport 430px: Stamina (12..166px) vs Pause/Mute (330..418px) -> 164px separation.\n  [PASS] Stamina container cannot capture or interfere with Pause button touches.\nTest 2: Character Models & Visibility Invariants...\n  [PASS] Characters are guaranteed visible from frame 1 of kickoff/match start.\nTest 3: Wardrobe Athlete Customization for Both Sports...\n  [PASS] Players can view and equip uniforms across both FOOTY and HOOPS athletes.\nTest 4: Ball Detachment & Shooting Physics Invariants...\n  [PASS] Ball cleanly separates and flies independently upon shooting and dunks.\n\n=== ALL STAGE 6 GAMEPLAY REPAIR TESTS PASSED (4/4)! ===",
+      "error": null
+    }
+  ]
+}

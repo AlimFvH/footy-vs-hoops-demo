@@ -717,9 +717,9 @@
       this.isKeeper = !!options.isKeeper;
       this.customTexture = null;
 
-      // Hide procedural body mesh immediately to prevent old blocky characters from flashing
+      // Keep procedural mesh visible while GLB model is loading/parsing
       if (this.charRef && this.charRef.pivot) {
-        this.charRef.pivot.visible = false;
+        this.charRef.pivot.visible = true;
       }
 
       // Visual Placement & Orientation
@@ -994,9 +994,9 @@
 
       matchView.chars.forEach(c => {
         if (!c.agent) return;
-        // Eliminate old character flash on kickoff
+        // Preserve procedural mesh visibility until GLB instance is fully ready
         if (c.pivot) {
-          c.pivot.visible = false;
+          c.pivot.visible = true;
         }
 
         const role = c.agent.role;
@@ -1085,7 +1085,18 @@
       gl.uniform3fv(glLocations.uGroundColor, gndCol);
 
       list.forEach(inst => {
-        if (!inst.loaded || !inst.model) return;
+        if (!inst.loaded || !inst.model) {
+          // While GLB is loading or parsing, ensure procedural fallback is visible
+          if (inst.charRef && inst.charRef.pivot) {
+            inst.charRef.pivot.visible = true;
+          }
+          return;
+        }
+
+        // Model is fully ready and drawn this frame: safely hide procedural mesh
+        if (inst.charRef && inst.charRef.pivot && inst.charRef.pivot.visible) {
+          inst.charRef.pivot.visible = false;
+        }
 
         // Lazy-generate custom skin texture if equipped with an alternative skin
         if (!inst.customTexture && inst.skin && !inst.isKeeper) {
