@@ -385,9 +385,18 @@ const QUEST_REWARDS = {
   'q_referral': { coins: 100, xp: 100 }
 };
 
-// Standard player level progression: 250 XP per level, capped at level 30
+// Authoritative player level progression formula (strictly matches client levelFor):
+// Level 1: 0-99 XP, Level 2: 100 XP, Level 3: 240 XP, etc.
 function currentLevelForXp(totalXp) {
-  return Math.min(30, 1 + Math.floor((totalXp || 0) / 250));
+  let level = 1;
+  let rest = Math.max(0, totalXp || 0);
+  let need = 100;
+  while (rest >= need && level < 50) {
+    rest -= need;
+    level++;
+    need = Math.round(100 + (level - 1) * 40);
+  }
+  return Math.min(30, level);
 }
 
 // Authoritative Skill Upgrades Configuration (Exponential scaling requiring dedication)
@@ -396,19 +405,19 @@ const UPGRADE_CONFIG = {
     name: 'Power',
     maxLevel: 10,
     costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
-    reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27]
+    reqLevels: [0, 1, 2, 4, 6, 9, 12, 15, 19, 23]
   },
   stamina: {
     name: 'Stamina',
     maxLevel: 10,
     costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
-    reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27]
+    reqLevels: [0, 1, 2, 4, 6, 9, 12, 15, 19, 23]
   },
   keeper: {
     name: 'Goalkeeper',
     maxLevel: 10,
     costs: [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000],
-    reqLevels: [0, 2, 4, 6, 9, 12, 15, 19, 23, 27]
+    reqLevels: [0, 1, 2, 4, 6, 9, 12, 15, 19, 23]
   }
 };
 
@@ -4621,7 +4630,7 @@ const server = http.createServer((req, res) => {
       const nextLvl = curLvl + 1;
       const cost = cfg.costs[curLvl];
       const reqLvl = cfg.reqLevels[curLvl];
-      const playerLvl = currentLevelForXp(player.xp || 0);
+      const playerLvl = Math.max(player.level || 1, currentLevelForXp(player.xp || 0));
 
       if (playerLvl < reqLvl) {
         return sendJson(res, 403, {

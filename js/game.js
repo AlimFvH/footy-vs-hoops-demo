@@ -2969,15 +2969,35 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 }
             }
 
-            // Strictly shoot in the player's facing direction without auto-aim snapping
-            a.vx = 0;
-            a.vz = 0;
+            // Subtle Aim Assistance (accessible mobile scoring without removing player skill):
+            // Gently nudges trajectory toward the rim when the player aims reasonably close (< 25 degrees).
+            const toRimX = dx / (dist || 1);
+            const toRimZ = dz / (dist || 1);
+            const aimDot = fx * toRimX + fz * toRimZ; // Dot product with hoop direction vector
+
+            let assistedFx = fx;
+            let assistedFz = fz;
+
+            // Activate assist only when player aim is within ~25 degrees of hoop (aimDot > 0.90)
+            if (aimDot > 0.90) {
+                // Assist factor scales smoothly with alignment: 0 at 0.90, up to 1.0 at 1.0 (dead center)
+                const alignFactor = (aimDot - 0.90) / 0.10;
+                // Distance damping: closer shots get up to 26% assist, 3-pointers get up to 10% assist
+                const distDamp = dist <= 5.5 ? 0.26 : Math.max(0.08, 0.26 - (dist - 5.5) * 0.035);
+                const assistWeight = alignFactor * distDamp;
+                assistedFx = fx * (1 - assistWeight) + toRimX * assistWeight;
+                assistedFz = fz * (1 - assistWeight) + toRimZ * assistWeight;
+                const aLen = Math.hypot(assistedFx, assistedFz) || 1;
+                assistedFx /= aLen;
+                assistedFz /= aLen;
+            }
 
             const throwDist = Math.max(3.2, dist);
-            const aimX = a.x + fx * throwDist;
-            const aimZ = a.z + fz * throwDist;
+            // Baseline facing compatibility: aimX = a.x + fx * throwDist; aimZ = a.z + fz * throwDist;
+            const aimX = a.x + assistedFx * throwDist;
+            const aimZ = a.z + assistedFz * throwDist;
 
-            // Shot quality timing determines precision spread around facing aim point
+            // Shot quality timing determines precision spread around assisted aim point
             const q = this.shotQuality(Math.max(0.1, charge), a, dist);
             const spread = (1 - q) * 0.38;
             const ang = this.rng.range(0, Math.PI * 2);
@@ -4170,12 +4190,15 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             for (const a of this.agents) {
                 if (a.pickupLock > 0)
                     continue;
-                if (b.y > (a.role === 'keeper' ? 2.4 : 1.7))
+                const isKeeper = a.role === 'keeper';
+                const maxH = isKeeper ? ((a.diveT > 0 || a.jumpT > 0) ? 2.65 : 2.4) : 1.7;
+                if (b.y > maxH)
                     continue;
                 const dx = b.x - a.x;
                 const dz = b.z - a.z;
                 const d = Math.hypot(dx, dz);
-                const min = a.radius + b.r;
+                const extraReach = (isKeeper && (a.diveT > 0 || a.jumpT > 0)) ? 0.75 : 0;
+                const min = a.radius + b.r + extraReach;
                 if (d >= min || d < 1e-5)
                     continue;
                 const nx = dx / d;
@@ -4189,11 +4212,14 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 b.z = a.z + nz * min;
                 b.vx = a.vx + (rvx - 1.55 * vn * nx) * 0.82;
                 b.vz = a.vz + (rvz - 1.55 * vn * nz) * 0.82;
+                if (isKeeper && a.diveDir) {
+                    b.vx += a.diveDir * 2.8;
+                }
                 b.lastTouch = a;
                 a.pickupLock = 0.12;
                 if (this.shotReleaseState)
                     this.shotReleaseState.cleared = true;
-                if (a.role === 'keeper')
+                if (isKeeper)
                     this.emit({ type: 'save', id: a.id, team: a.team, x: b.x, y: b.y, z: b.z });
                 else
                     this.emit({ type: 'bounce', speed: Math.abs(vn), x: b.x, y: b.y, z: b.z });
@@ -4210,11 +4236,12 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 if (this.shotReleaseState && this.shotReleaseState.kickerId === a.id && !this.shotReleaseState.cleared)
                     continue;
                 const keeper = a.role === 'keeper';
-                const reach = keeper ? kr : 1.5;
+                const reach = keeper ? (kr + (a.diveT > 0 ? 0.6 : 0)) : 1.5;
                 const d = (0, math_js_5.dist2)(a.x, a.z, b.x, b.z);
                 if (d > reach)
                     continue;
-                if (b.y > (keeper ? 2.2 : 1.0))
+                const maxY = keeper ? ((a.jumpT > 0 || a.diveT > 0) ? 2.65 : 2.2) : 1.0;
+                if (b.y > maxY)
                     continue;
                 const rel = Math.hypot(b.vx - a.vx, b.vz - a.vz);
                 if (rel > (keeper ? 17 : 13.5))
@@ -4504,15 +4531,26 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             }
             const toward = b.vz * s;
             let tx;
-            if (toward > 2.5) {
+            if (toward > 2.0) {
                 const t = Math.max(0, (lineZ - b.z) / b.vz);
                 const hash = Math.sin(Math.round(b.vx * 0.5) * 12.9898 + Math.round(b.vz * 0.5) * 78.233 + Math.round(b.x * 0.3)) * 43758.5453;
                 const bias = (hash - Math.floor(hash) - 0.5) * 2 * KEEPER_MISJUDGE[this.difficulty];
                 tx = (0, math_js_5.clamp)(b.x + b.vx * t + bias, -exports.FB.GW, exports.FB.GW);
                 const speed = Math.hypot(b.vx, b.vz);
-                if (speed > 11 && t < 0.4 && Math.abs(tx - k.x) < 3.4 && k.diveT <= 0 && k.aiTimer <= 0) {
-                    k.diveT = 0.32;
-                    k.aiTimer = 0.9;
+                const dX = tx - k.x;
+                const ballYAtLine = b.y + b.vy * t - 0.5 * exports.FB.GRAVITY * t * t;
+
+                // High shot detection: goalkeeper jumps with arms overhead for aerial save
+                if (ballYAtLine > 1.25 && ballYAtLine <= 2.65 && k.jumpT <= 0 && k.aiTimer <= 0) {
+                    k.jumpT = 0.5;
+                    k.aiTimer = 0.8;
+                }
+
+                // Lateral dive detection: goalkeeper dives left or right to save shots away from body
+                if (speed > 8.5 && t < 0.65 && Math.abs(dX) > 0.6 && k.diveT <= 0 && k.aiTimer <= 0) {
+                    k.diveDir = dX > 0 ? 1 : -1;
+                    k.diveT = 0.42;
+                    k.aiTimer = 0.85;
                 }
             }
             else {
@@ -5514,133 +5552,42 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const [c, g] = makeCanvas(Math.round(pw * PPM_F), Math.round(pd * PPM_F));
         const X = (x) => (x + pw / 2) * PPM_F;
         const Z = (z) => (z + pd / 2) * PPM_F;
-        const { W, L } = football_js_1.FB;
-
-        // 1. High-precision tournament lawn: 16 alternating velvety roller stripes with light direction gradients
-        const stripes = 16;
+        const stripes = 14;
         const sh = c.height / stripes;
         for (let i = 0; i < stripes; i++) {
-            const y0 = i * sh;
-            const col = hex(i % 2 ? t.pitchA : t.pitchB);
-            g.fillStyle = col;
-            g.fillRect(0, y0, c.width, sh + 1);
-
-            // Velvety directional mower light gradient (realistic turf texture)
-            const stripeGrad = g.createLinearGradient(0, y0, 0, y0 + sh);
-            if (i % 2 === 0) {
-                stripeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
-                stripeGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.03)');
-                stripeGrad.addColorStop(1, 'rgba(0, 0, 0, 0.05)');
-            } else {
-                stripeGrad.addColorStop(0, 'rgba(0, 0, 0, 0.05)');
-                stripeGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0.01)');
-                stripeGrad.addColorStop(1, 'rgba(255, 255, 255, 0.07)');
-            }
-            g.fillStyle = stripeGrad;
-            g.fillRect(0, y0, c.width, sh + 1);
+            g.fillStyle = hex(i % 2 ? t.pitchA : t.pitchB);
+            g.fillRect(0, i * sh, c.width, sh + 1);
         }
-
-        // 2. UEFA/Premier League style Cross-Mowing Checkerboard Sheen
-        // Intersecting vertical roller lanes produce the iconic prestigious checkerboard turf
-        const vLanes = 12;
-        const laneW = c.width / vLanes;
-        for (let j = 0; j < vLanes; j++) {
-            const vGrad = g.createLinearGradient(j * laneW, 0, (j + 1) * laneW, 0);
-            vGrad.addColorStop(0, j % 2 === 0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.03)');
-            vGrad.addColorStop(1, j % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)');
-            g.fillStyle = vGrad;
-            g.fillRect(j * laneW, 0, laneW, c.height);
+        for (let i = 0; i < 9000; i++) {
+            g.fillStyle = `rgba(0,0,0,${Math.random() * 0.05})`;
+            g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 5);
+            g.fillStyle = `rgba(255,255,255,${Math.random() * 0.035})`;
+            g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 4);
         }
-
-        // 2.5 Midfield & Center Pitch Concentric Mower Sheen
-        for (let cr = 1; cr <= 4; cr++) {
-            g.strokeStyle = (cr % 2 === 0) ? 'rgba(255, 255, 255, 0.035)' : 'rgba(0, 0, 0, 0.035)';
-            g.lineWidth = 1.0 * PPM_F;
-            g.beginPath();
-            g.arc(X(0), Z(0), (football_js_1.FB.CIRCLE_R * (cr / 4.2)) * PPM_F, 0, Math.PI * 2);
-            g.stroke();
-        }
-
-        // 3. Sideline & Run-Off Apron Turf: clean synthetic turf runner outside touchlines
-        g.fillStyle = 'rgba(10, 30, 18, 0.22)';
-        g.fillRect(0, 0, c.width, Z(-L));
-        g.fillRect(0, Z(L), c.width, c.height - Z(L));
-        g.fillRect(0, Z(-L), X(-W), Z(L) - Z(-L));
-        g.fillRect(X(W), Z(-L), c.width - X(W), Z(L) - Z(-L));
-
-        // 4. Ultra-fine micro-blade organic turf texture
-        const bladeHues = [
-            'rgba(18, 64, 28, 0.08)',
-            'rgba(40, 115, 48, 0.07)',
-            'rgba(82, 185, 70, 0.06)',
-            'rgba(255, 255, 255, 0.04)'
-        ];
-        for (let i = 0; i < 28000; i++) {
-            const gx = Math.random() * c.width;
-            const gy = Math.random() * c.height;
-            g.fillStyle = bladeHues[i % 4];
-            g.fillRect(gx, gy, 1.3, Math.random() * 3.8 + 1.2);
-        }
-
-        // 5. Subtle goalmouth precision depth (clean, lush, not muddy)
-        for (const s of [-1, 1]) {
-            const gz = Z(s * (L - 2.5));
-            const wearGrad = g.createRadialGradient(X(0), gz, 10, X(0), gz, 120);
-            wearGrad.addColorStop(0, 'rgba(15, 45, 22, 0.08)');
-            wearGrad.addColorStop(0.6, 'rgba(20, 60, 30, 0.04)');
-            wearGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            g.fillStyle = wearGrad;
-            g.fillRect(X(-football_js_1.FB.SIX_W * 1.2), Math.min(gz - 60, gz + 60), football_js_1.FB.SIX_W * 2.4 * PPM_F, 120);
-        }
-
-        // 6. Regulation pristine stadium chalk markings with luminous soft edge
-        const chalk = hex(t.line || 0xfdfefe);
-        g.strokeStyle = chalk;
-        g.fillStyle = chalk;
-        g.lineWidth = 0.115 * PPM_F;
+        g.strokeStyle = hex(t.line);
+        g.fillStyle = hex(t.line);
+        g.lineWidth = 0.13 * PPM_F;
         g.lineJoin = 'miter';
-        g.shadowColor = 'rgba(255, 255, 255, 0.45)';
-        g.shadowBlur = 1.8;
-
         const rect = (x0, z0, x1, z1) => g.strokeRect(X(x0), Z(z0), (x1 - x0) * PPM_F, (z1 - z0) * PPM_F);
-
-        // Touchlines & Goal lines
+        const { W, L } = football_js_1.FB;
         rect(-W, -L, W, L);
-
-        // Halfway line & Center circle
         g.beginPath();
         g.moveTo(X(-W), Z(0));
         g.lineTo(X(W), Z(0));
         g.stroke();
-
-        // Decorative concentric lawn mower ring inside center circle
-        g.save();
-        g.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-        g.lineWidth = 0.5 * PPM_F;
-        g.beginPath();
-        g.arc(X(0), Z(0), (football_js_1.FB.CIRCLE_R - 0.3) * PPM_F, 0, Math.PI * 2);
-        g.stroke();
-        g.restore();
-
-        // Official Center Circle & Center Spot
         g.beginPath();
         g.arc(X(0), Z(0), football_js_1.FB.CIRCLE_R * PPM_F, 0, Math.PI * 2);
         g.stroke();
-
         g.beginPath();
-        g.arc(X(0), Z(0), 0.24 * PPM_F, 0, Math.PI * 2);
+        g.arc(X(0), Z(0), 0.28 * PPM_F, 0, Math.PI * 2);
         g.fill();
-
-        // Penalty boxes (18-yard), 6-yard boxes, penalty spots & penalty arcs
         for (const s of [-1, 1]) {
             rect(-football_js_1.FB.BOX_W, s > 0 ? L - football_js_1.FB.BOX_D : -L, football_js_1.FB.BOX_W, s > 0 ? L : -L + football_js_1.FB.BOX_D);
             rect(-football_js_1.FB.SIX_W, s > 0 ? L - football_js_1.FB.SIX_D : -L, football_js_1.FB.SIX_W, s > 0 ? L : -L + football_js_1.FB.SIX_D);
             const spotZ = s * (L - football_js_1.FB.SPOT);
             g.beginPath();
-            g.arc(X(0), Z(spotZ), 0.22 * PPM_F, 0, Math.PI * 2);
+            g.arc(X(0), Z(spotZ), 0.24 * PPM_F, 0, Math.PI * 2);
             g.fill();
-
-            // Penalty D-Arc
             g.save();
             g.beginPath();
             if (s > 0)
@@ -5653,30 +5600,13 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.stroke();
             g.restore();
         }
-
-        // Corner Quadrant Arcs & Corner Spots
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
                 g.beginPath();
-                g.arc(X(sx * W), Z(sz * L), 1.0 * PPM_F, 0, Math.PI * 2);
+                g.arc(X(sx * W), Z(sz * L), 1 * PPM_F, 0, Math.PI * 2);
                 g.stroke();
-
-                g.beginPath();
-                g.arc(X(sx * W), Z(sz * L), 0.12 * PPM_F, 0, Math.PI * 2);
-                g.fill();
             }
         }
-
-        // Technical Area Dugouts (substitute benches sidelines markings)
-        g.save();
-        g.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-        g.lineWidth = 0.08 * PPM_F;
-        g.setLineDash([0.35 * PPM_F, 0.25 * PPM_F]);
-        g.strokeRect(X(-W - 1.8), Z(-7), 1.2 * PPM_F, 14 * PPM_F);
-        g.strokeRect(X(W + 0.6), Z(-7), 1.2 * PPM_F, 14 * PPM_F);
-        g.restore();
-
-        g.shadowBlur = 0;
         return c;
     }
     exports.COURT_MARGIN = 2.4;

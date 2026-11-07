@@ -4928,6 +4928,7 @@
       { id: 'shop', icon: '🛒', label: tr('tabShop') },
       { id: 'quests', icon: '🎯', label: tr('tabQuests') }
     ];
+    // Secondary navigation endpoints: { id: 'profile' }, { id: 'leaderboard' }, { id: 'airdrop' }, { id: 'settings' }
 
     primaryItems.forEach(function (it) {
       var btn = document.createElement('button');
@@ -5795,7 +5796,18 @@
       var curData = (app.store && app.store.data) || {};
       var coins = curData.coins || 0;
       var curPlayerXp = curData.xp || 0;
-      var curPlayerLvl = (curData.profile && curData.profile.level) || Math.min(30, 1 + Math.floor(curPlayerXp / 250));
+      function calcLevelForXp(xp) {
+        var level = 1;
+        var rest = Math.max(0, xp || 0);
+        var need = 100;
+        while (rest >= need && level < 50) {
+          rest -= need;
+          level++;
+          need = Math.round(100 + (level - 1) * 40);
+        }
+        return Math.min(30, level);
+      }
+      var curPlayerLvl = curData.level || (curData.profile && curData.profile.level) || (app.store && app.store.level) || calcLevelForXp(curPlayerXp);
       var curUp = curData.upgrades || { power: 1, stamina: 1, keeper: 1, speed: 1 };
 
       var pL = Math.max(1, Math.min(10, curUp.power || 1));
@@ -5877,7 +5889,7 @@
       ];
 
       var costs = [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000];
-      var reqLevels = [0, 2, 4, 6, 9, 12, 15, 19, 23, 27];
+      var reqLevels = [0, 1, 2, 4, 6, 9, 12, 15, 19, 23];
 
       skillsConfig.forEach(function (sk) {
         var card = document.createElement('div');
@@ -6933,7 +6945,7 @@
         '</div>' +
         '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">' +
         '  <input type="text" readonly value="' + escapeHtml(directRefLink) + '" class="fvh-ref-input" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#38bdf8;font-size:12px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;">' +
-        '  <button class="btn primary small fvh-btn-copy-ref" style="width:100%;padding:10px 14px;font-weight:800;font-size:13px;border-radius:10px;text-align:center;">' + tr('refCopyBtn') + '</button>' +
+        '  <button class="btn primary small fvh-btn-copy-ref" style="width:100%;box-sizing:border-box;padding:10px 14px;font-weight:800;font-size:13px;border-radius:10px;text-align:center;">' + tr('refCopyBtn') + '</button>' +
         '</div>' +
         '<div style="display:flex;flex-direction:column;gap:8px;">' +
         '  <button class="btn block fvh-btn-share-ref" style="background:linear-gradient(135deg, #229ed9 0%, #0088cc 100%);color:#fff;font-weight:800;border:none;border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(34,158,217,0.35);">' +
@@ -7911,6 +7923,7 @@
           overlay.remove();
           app.audio.play('click');
           var targetSlot = (item.category === 'skins') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
+          // app.showCharacters(curChar, targetSlot)
           app.go('characters', { char: curChar, slot: targetSlot });
         };
         actionsBox.appendChild(openWardrobeBtn);
@@ -9657,6 +9670,24 @@
       '</div>' +
       '</div>';
     body.appendChild(statsCard);
+
+    // 5. Transaction Ledger Card
+    var ledgerCard = document.createElement('div');
+    ledgerCard.className = 'fvh-card-panel fvh-tx-ledger';
+    var txList = (d.transactions && Array.isArray(d.transactions)) ? d.transactions : [];
+    ledgerCard.innerHTML =
+      '<div class="fvh-panel-head">📋 ' + (lang === 'ru' ? 'История операций' : 'Transaction History') + '</div>' +
+      (txList.length === 0
+        ? '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;text-align:center;">' + (lang === 'ru' ? 'Нет записей' : 'No transactions recorded yet') + '</div>'
+        : '<div style="display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;">' +
+          txList.slice(0, 10).map(function (tx) {
+            return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:6px;font-size:11.5px;">' +
+              '<span>' + escapeHtml(tx.desc || tx.type || 'Transaction') + '</span>' +
+              '<b style="color:' + (tx.amount >= 0 ? '#4ade80' : '#f87171') + ';">' + (tx.amount >= 0 ? '+' : '') + tx.amount + '</b>' +
+            '</div>';
+          }).join('') +
+          '</div>');
+    body.appendChild(ledgerCard);
 
     page.appendChild(body);
     page.appendChild(createScrollBottomSpacer());
@@ -12277,7 +12308,7 @@
       '  <div class="fvh-airdrop-banner-text">' +
       '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'ЗАРАБОТАЙ ' + airdropTokenTag : 'EARN ' + airdropTokenTag) + '</div>' +
       '    <div class="fvh-airdrop-banner-sub">' +
-      (lang === 'ru' ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' Drop PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b>' : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' Drop PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b>') +
+      (lang === 'ru' ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b>' : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b>') +
       '    </div>' +
       '  </div>' +
       '</div>' +

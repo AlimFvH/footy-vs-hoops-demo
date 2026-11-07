@@ -802,31 +802,47 @@
       // B. FOOTBALL (SOCCER) MATCH ACTIONS
       // ==========================================
       else {
-        // 1. High-Impact Dynamic Soccer Strike / Shot
-        if (a.kickT > 0 || a.shotT > 0) {
+        // 1. Goalkeeper Dynamic Parrying Dives & Aerial Saves
+        if (a.role === 'keeper' && a.diveT > 0) {
+          const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.42));
+          const diveArc = Math.sin(diveProg * Math.PI);
+          const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : 1);
+          this.roll = -diveDir * (1.15 + 0.3 * diveArc);
+          this.elevationLift = 0.55 * diveArc;
+          this.pitch = 0.15 * diveArc;
+          this.setAnimation('Roll', 1.7);
+        }
+        else if (a.role === 'keeper' && a.jumpT > 0) {
+          const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
+          this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.90;
+          this.pitch = -0.10;
+          this.setAnimation('Punch_Right', 2.0);
+        }
+        // 2. High-Impact Dynamic Soccer Strike / Shot
+        else if (a.kickT > 0 || a.shotT > 0) {
           const timer = a.kickT || a.shotT || 0;
           this.pitch = 0.22 * Math.sin(timer * 12); // Clean torso drive into strike
           this.setAnimation('Kick_Right', 1.9);
         }
-        // 2. Sliding Tackle / Interception Dive
+        // 3. Sliding Tackle / Interception Dive
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
           this.setAnimation('Roll', 1.6);
         }
-        // 3. Celebration Wave
+        // 4. Celebration Wave
         else if (a.celebrateT > 0) {
           this.setAnimation('Wave', 1.2);
         }
-        // 4. Sprinting (Stable upright posture, zero side wobbling)
+        // 5. Sprinting (Stable upright posture, zero side wobbling)
         else if (speed > 1.8) {
           const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
           this.setAnimation('Run', sprintCadence);
         }
-        // 5. Tactical jog / walking
+        // 6. Tactical jog / walking
         else if (speed > 0.25) {
           const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
           this.setAnimation('Walk', walkCadence);
         }
-        // 6. Idle
+        // 7. Idle
         else {
           this.setAnimation('Idle', 1.0);
         }
