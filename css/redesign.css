@@ -1727,8 +1727,8 @@ canvas {
   pointer-events: auto !important;
   display: inline-flex !important;
   align-items: center !important;
-  background: rgba(8, 14, 28, 0.90) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(8, 14, 28, 0.92) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.20) !important;
   border-radius: 14px !important;
   overflow: hidden !important;
   backdrop-filter: blur(10px) !important;
@@ -1749,10 +1749,10 @@ canvas {
 .hud-top-ctrls .hud-pause,
 .hud-top-ctrls .hud-mute {
   position: static !important;
-  width: 36px !important;
+  width: 38px !important;
   height: 32px !important;
   border-radius: 10px !important;
-  background: rgba(8, 14, 28, 0.88) !important;
+  background: rgba(8, 14, 28, 0.90) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   backdrop-filter: blur(8px) !important;
   display: flex !important;
@@ -1775,18 +1775,31 @@ canvas {
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
-  padding: 4px 10px !important;
-  min-width: 60px !important;
+  padding: 5px 12px !important;
+  min-width: 64px !important;
 }
 
 .sb-name {
-  font-size: 11px !important;
+  font-size: 11.5px !important;
   letter-spacing: 0.5px !important;
-  color: #d4def7 !important;
-  max-width: 64px !important;
+  color: #e2e8f0 !important;
+  max-width: 78px !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
+}
+
+.sb-team-inner {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.sb-team-inner svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6)) !important;
 }
 
 .sb-score {
@@ -1796,7 +1809,7 @@ canvas {
 }
 
 .sb-time {
-  padding: 4px 8px !important;
+  padding: 4px 10px !important;
   font-size: 16px !important;
   font-variant-numeric: tabular-nums !important;
   align-self: center !important;
@@ -1808,11 +1821,37 @@ canvas {
   position: absolute !important;
   top: calc(env(safe-area-inset-top, 44px) + 98px) !important;
   left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
-  width: 96px !important;
+  width: 104px !important;
+  padding: 5px 8px !important;
+  border-radius: 12px !important;
+  background: rgba(8, 14, 28, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
   font-size: 9.5px !important;
   font-weight: 800 !important;
   letter-spacing: 0.6px !important;
+  color: #e2e8f0 !important;
   z-index: 35 !important;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+}
+
+.stamina .bar {
+  margin-top: 3px !important;
+}
+
+.tbtn .ico {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: none !important;
+  line-height: 1 !important;
+}
+
+.tbtn .ico svg {
+  display: block !important;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.75)) !important;
 }
 
 .hud-pause,
@@ -1846,19 +1885,44 @@ canvas {
 .page-head {
   width: 100% !important;
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   gap: 12px !important;
   padding: 4px 0 10px 0 !important;
   box-sizing: border-box !important;
 }
 
+.page-head .btn.back {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  color: #fff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 10 !important;
+  position: static !important;
+}
+
+.page-head .btn.back svg {
+  display: block !important;
+}
+
 .page-head h1 {
   font-weight: 900 !important;
   letter-spacing: 0.6px !important;
   color: var(--text-pure) !important;
-  font-size: clamp(20px, 5.2vw, 26px) !important;
+  font-size: clamp(18px, 5.0vw, 24px) !important;
   margin: 0 !important;
-  flex: 1 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -9750,4 +9814,68 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   font-weight: 700 !important;
   margin-top: 3px !important;
   display: block !important;
+}
+/* ========================================================
+   Vector UI Icon Perfection & Visual Realignment Rules
+   ======================================================== */
+.fvh-nav-icon {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin-bottom: 2px !important;
+  transition: transform 0.15s ease !important;
+}
+
+.fvh-nav-icon svg {
+  width: 22px !important;
+  height: 22px !important;
+  display: block !important;
+}
+
+.fvh-topbar-stats button.fvh-pill.icon-only svg,
+#fvh-btn-settings svg,
+#fvh-btn-leaderboard svg {
+  width: 17px !important;
+  height: 17px !important;
+  display: block !important;
+  margin: auto !important;
+}
+
+.fvh-upgrade-icon svg {
+  width: 26px !important;
+  height: 26px !important;
+  display: block !important;
+  margin: auto !important;
+}
+
+.fvh-upgrade-max-badge svg,
+.fvh-upgrade-lock-warn svg {
+  display: inline-block !important;
+  vertical-align: -2px !important;
+  margin-right: 5px !important;
+}
+
+.hud-top-ctrls .hud-pause svg,
+.hud-top-ctrls .hud-mute svg {
+  width: 17px !important;
+  height: 17px !important;
+  display: block !important;
+  margin: auto !important;
+}
+
+.fvh-wardrobe-seg button span svg,
+.fvh-shop-categories button span svg {
+  display: inline-block !important;
+  vertical-align: -2px !important;
+}
+
+/* Perfect alignment for Stamina Bar on HUD */
+.hud-stamina-bar {
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
 }

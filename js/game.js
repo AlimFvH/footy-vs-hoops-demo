@@ -13105,6 +13105,9 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             this.timeEl = (0, dom_js_1.h)('div', { class: 'sb-time' }, '0:00');
             this.onToggleMute = null;
             this.onSkipReplay = null;
+            const SOUND_ON_SVG = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+            const SOUND_OFF_SVG = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+            const PAUSE_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="4" height="16" rx="1.5"/><rect x="15" y="4" width="4" height="16" rx="1.5"/></svg>';
             this.muteBtn = (0, dom_js_1.h)('button', {
                 class: 'hud-mute',
                 type: 'button',
@@ -13113,13 +13116,15 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                     click: () => {
                         if (this.onToggleMute) {
                             const isMuted = this.onToggleMute();
-                            this.muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                            this.muteBtn.innerHTML = isMuted ? SOUND_OFF_SVG : SOUND_ON_SVG;
                             this.muteBtn.setAttribute('aria-label', isMuted ? (0, index_js_1.t)('hud.unmute') : (0, index_js_1.t)('hud.mute'));
                         }
                     }
                 }
-            }, '🔊');
-            this.pauseBtn = (0, dom_js_1.h)('button', { class: 'hud-pause', type: 'button', 'aria-label': (0, index_js_1.t)('hud.pause'), on: { click: () => this.onPause() } }, '❚❚');
+            });
+            this.muteBtn.innerHTML = SOUND_ON_SVG;
+            this.pauseBtn = (0, dom_js_1.h)('button', { class: 'hud-pause', type: 'button', 'aria-label': (0, index_js_1.t)('hud.pause'), on: { click: () => this.onPause() } });
+            this.pauseBtn.innerHTML = PAUSE_SVG;
             this.replayBadge = (0, dom_js_1.h)('span', { class: 'hud-replay-badge' }, (0, index_js_1.t)('hud.replay'));
             this.replaySkipBtn = (0, dom_js_1.h)('button', {
                 class: 'hud-replay-skip',
@@ -13398,8 +13403,18 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             this.root.classList.toggle('swapped', swapped);
         }
         setNames(you, opp) {
-            this.youLbl.textContent = you;
-            this.cpuLbl.textContent = opp;
+            const getBadge = (txt) => {
+                if (typeof txt !== 'string') return txt;
+                const isHoops = txt.includes('🏀') || txt.toUpperCase().includes('HOOPS');
+                const isFooty = txt.includes('⚽') || txt.toUpperCase().includes('FOOTY');
+                const clean = txt.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                const iconSvg = isHoops
+                    ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;margin-right:4px;"><circle cx="12" cy="12" r="9.5" fill="#ea580c" stroke="#fef08a" stroke-width="1.3"/><line x1="2.5" y1="12" x2="21.5" y2="12" stroke="#1c1917" stroke-width="1.3"/><line x1="12" y1="2.5" x2="12" y2="21.5" stroke="#1c1917" stroke-width="1.3"/><path d="M5.5 6 C10 8.5 10 15.5 5.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/><path d="M18.5 6 C14 8.5 14 15.5 18.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/></svg>'
+                    : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;margin-right:4px;"><circle cx="12" cy="12" r="9.5" fill="#0284c7" stroke="#38bdf8" stroke-width="1.3"/><polygon points="12,5 15.5,7.5 14,12 10,12 8.5,7.5" fill="#ffffff"/><path d="M8.5 7.5 L4.5 9 M15.5 7.5 L19.5 9 M14 12 L17 16 M10 12 L7 16 M12 5 L12 2.5" stroke="#38bdf8" stroke-width="1.2"/><circle cx="8" cy="8" r="1.5" fill="#ffffff" opacity="0.6"/></svg>';
+                return `<span class="sb-team-inner" style="display:inline-flex;align-items:center;">${(isHoops || isFooty) ? iconSvg : ''}<span>${clean}</span></span>`;
+            };
+            this.youLbl.innerHTML = getBadge(you);
+            this.cpuLbl.innerHTML = getBadge(opp);
         }
         setMode(mode, keys) {
             this.root.dataset.mode = mode;
@@ -13417,7 +13432,7 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             const sprintIco = this.btnSprint.querySelector('.ico');
             if (sprintIco) sprintIco.innerHTML = getHudActionSvg('sprint', false);
             const stamSpan = this.staminaWrap.querySelector('span');
-            if (stamSpan) stamSpan.textContent = (0, index_js_1.t)('hud.stamina');
+            if (stamSpan) stamSpan.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#22c55e"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>' + (0, index_js_1.t)('hud.stamina') + '</span></span>';
             this.pauseBtn.setAttribute('aria-label', (0, index_js_1.t)('hud.pause'));
             this.youLbl.textContent = (0, index_js_1.t)('hud.you');
             this.cpuLbl.textContent = (0, index_js_1.t)('hud.cpu');
@@ -14987,7 +15002,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const oppTxt = `${oppIcon} ${oppName}`;
                 this.hud.setNames(youTxt, oppTxt);
                 this.hud.resetState();
-                const modeBanner = (cfg.mode === 'footy') ? '⚽ FOOTBALL MATCH ⚽' : '🏀 BASKETBALL MATCH 🏀';
+                const modeBanner = (cfg.mode === 'footy') ? 'FOOTBALL MATCH' : 'BASKETBALL MATCH';
                 this.hud.showBanner(modeBanner, 'big', 1600);
                 this.hud.setBoost(cfg, save);
                 this.hud.onBoostTrigger = () => {

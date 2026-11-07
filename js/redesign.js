@@ -2519,7 +2519,7 @@
 
     var showJerseyTag = opts.showJerseyTag !== undefined ? opts.showJerseyTag : true;
     var tagHtml = showJerseyTag ?
-      '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:10px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span>🎽</span> <span>' + skinLabel + '</span></div>'
+      '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:10px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + skinLabel + '</span></div>'
       : '';
 
     var heroTitle = isFooty ? 'Football Striker #10' : 'Basketball All-Star #23';
@@ -4779,6 +4779,252 @@
   }
 
   // ==========================================
+  // Official High-Fidelity Vector UI Icon Library
+  // Replaces OS-dependent emojis with crisp console-grade SVGs
+  // ==========================================
+  function getUiIconSvg(name, size, opts) {
+    var sz = size || 22;
+    var active = (opts && opts.active) || false;
+
+    switch (name) {
+      case 'nav_home_footy':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_nav_f_bg)" stroke="#00f0ff" stroke-width="1.3"/>' +
+          '<path d="M12 5.5L14.5 8H9.5L12 5.5Z" fill="#00f0ff"/>' +
+          '<path d="M9.5 8L7.5 11.5L8.5 14L11 12.5L9.5 8Z" fill="rgba(255,255,255,0.9)"/>' +
+          '<path d="M14.5 8L16.5 11.5L15.5 14L13 12.5L14.5 8Z" fill="rgba(255,255,255,0.9)"/>' +
+          '<path d="M11 12.5L13 12.5L12 15.5L11 12.5Z" fill="#00f0ff"/>' +
+          '<path d="M8.5 14L10 18.5H14L15.5 14L12 15.5L8.5 14Z" fill="rgba(255,255,255,0.9)"/>' +
+          '<defs><radialGradient id="fvh_nav_f_bg" cx="0.3" cy="0.3" r="0.8"><stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#090d16"/></radialGradient></defs>' +
+          '</svg>';
+
+      case 'nav_home_hoops':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_nav_h_bg)" stroke="#f97316" stroke-width="1.3"/>' +
+          '<path d="M2.5 12H21.5" stroke="#1c1917" stroke-width="1.2"/>' +
+          '<path d="M12 2.5V21.5" stroke="#1c1917" stroke-width="1.2"/>' +
+          '<path d="M5.5 5.5C8 8.5 8 15.5 5.5 18.5" stroke="#1c1917" stroke-width="1.2"/>' +
+          '<path d="M18.5 5.5C16 8.5 16 15.5 18.5 18.5" stroke="#1c1917" stroke-width="1.2"/>' +
+          '<defs><radialGradient id="fvh_nav_h_bg" cx="0.35" cy="0.35" r="0.75"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#ea580c"/></radialGradient></defs>' +
+          '</svg>';
+
+      case 'nav_inventory':
+      case 'inventory':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7" stroke="' + (active ? '#00f0ff' : '#94a3b8') + '" stroke-width="1.5" stroke-linecap="round"/>' +
+          '<rect x="4" y="7" width="16" height="14" rx="3" fill="url(#fvh_nav_inv_bg)" stroke="' + (active ? '#00f0ff' : '#64748b') + '" stroke-width="1.3"/>' +
+          '<path d="M4 11H20" stroke="' + (active ? '#00f0ff' : '#475569') + '" stroke-width="1.2"/>' +
+          '<rect x="10" y="10" width="4" height="4" rx="1" fill="#facc15"/>' +
+          '<defs><linearGradient id="fvh_nav_inv_bg" x1="12" y1="7" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#0f172a"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'nav_upgrades':
+      case 'upgrades':
+      case 'lightning':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M13 2.5L4.5 13H12L11 21.5L19.5 11H12L13 2.5Z" fill="url(#fvh_nav_lt_bg)" stroke="#facc15" stroke-width="1.2" stroke-linejoin="round"/>' +
+          '<defs><linearGradient id="fvh_nav_lt_bg" x1="12" y1="2.5" x2="12" y2="21.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fde047"/><stop offset="60%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'nav_shop':
+      case 'shop':
+      case 'cart':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M3 4H5.5L7.5 15H17.5L19.5 7H6.5" stroke="' + (active ? '#a855f7' : '#94a3b8') + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<circle cx="9" cy="19" r="1.8" fill="' + (active ? '#a855f7' : '#94a3b8') + '"/>' +
+          '<circle cx="16.5" cy="19" r="1.8" fill="' + (active ? '#a855f7' : '#94a3b8') + '"/>' +
+          '<path d="M10 10.5H15M12.5 8V13" stroke="#facc15" stroke-width="1.2" stroke-linecap="round"/>' +
+          '</svg>';
+
+      case 'nav_quests':
+      case 'quests':
+      case 'target':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="12" cy="12" r="9.5" stroke="' + (active ? '#ef4444' : '#94a3b8') + '" stroke-width="1.3"/>' +
+          '<circle cx="12" cy="12" r="6.2" stroke="' + (active ? '#f97316' : '#64748b') + '" stroke-width="1.2"/>' +
+          '<circle cx="12" cy="12" r="3" fill="#ef4444"/>' +
+          '<path d="M12 2V5M12 19V22M2 12H5M19 12H22" stroke="' + (active ? '#ef4444' : '#64748b') + '" stroke-width="1.3" stroke-linecap="round"/>' +
+          '</svg>';
+
+      case 'trophy':
+      case 'topbar_leaderboard':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M6 4H18V10C18 13.3137 15.3137 16 12 16C8.68629 16 6 13.3137 6 10V4Z" fill="url(#fvh_trophy_grad)" stroke="#facc15" stroke-width="1.2"/>' +
+          '<path d="M6 6H3.5C2.67157 6 2 6.67157 2 7.5V8.5C2 10.433 3.567 12 5.5 12H6.2" stroke="#facc15" stroke-width="1.2" stroke-linecap="round"/>' +
+          '<path d="M18 6H20.5C21.3284 6 22 6.67157 22 7.5V8.5C22 10.433 20.433 12 18.5 12H17.8" stroke="#facc15" stroke-width="1.2" stroke-linecap="round"/>' +
+          '<path d="M12 16V19.5M8.5 20.5H15.5" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>' +
+          '<circle cx="12" cy="9.5" r="1.8" fill="#ffffff" fill-opacity="0.9"/>' +
+          '<defs><linearGradient id="fvh_trophy_grad" x1="12" y1="4" x2="12" y2="16" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#eab308"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'settings':
+      case 'topbar_settings':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="#00f0ff" stroke-width="1.4"/>' +
+          '<path d="M19.4 15A1.65 1.65 0 0 0 19.73 16.82L20.07 17.16A2 2 0 1 1 17.24 20L16.9 19.66A1.65 1.65 0 0 0 15.08 19.33A1.65 1.65 0 0 0 14 20.88V21.5A2 2 0 1 1 10 21.5V20.88A1.65 1.65 0 0 0 8.92 19.33A1.65 1.65 0 0 0 7.1 19.66L6.76 20A2 2 0 1 1 3.93 17.17L4.27 16.83A1.65 1.65 0 0 0 4.6 15.01A1.65 1.65 0 0 0 3.05 13.93H2.5A2 2 0 1 1 2.5 9.93H3.05A1.65 1.65 0 0 0 4.6 8.85A1.65 1.65 0 0 0 4.27 7.03L3.93 6.69A2 2 0 1 1 6.76 3.86L7.1 4.2A1.65 1.65 0 0 0 8.92 4.53A1.65 1.65 0 0 0 10 2.98V2.5A2 2 0 1 1 14 2.5V2.98A1.65 1.65 0 0 0 15.08 4.53A1.65 1.65 0 0 0 16.9 4.2L17.24 3.86A2 2 0 1 1 20.07 6.69L19.73 7.03A1.65 1.65 0 0 0 19.4 8.85A1.65 1.65 0 0 0 20.95 9.93H21.5A2 2 0 1 1 21.5 13.93H20.95A1.65 1.65 0 0 0 19.4 15Z" stroke="#94a3b8" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '</svg>';
+
+      case 'crown':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M4 18H20L18 8L13.5 13L12 6L10.5 13L6 8L4 18Z" fill="url(#fvh_crown_grad)" stroke="#facc15" stroke-width="1.2" stroke-linejoin="round"/>' +
+          '<circle cx="4" cy="7" r="1.5" fill="#facc15"/>' +
+          '<circle cx="12" cy="4.5" r="1.8" fill="#00f0ff"/>' +
+          '<circle cx="20" cy="7" r="1.5" fill="#facc15"/>' +
+          '<rect x="4" y="18" width="16" height="2.5" rx="1" fill="#eab308"/>' +
+          '<defs><linearGradient id="fvh_crown_grad" x1="12" y1="6" x2="12" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'lock':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M7.5 10V7C7.5 4.51472 9.51472 2.5 12 2.5C14.4853 2.5 16.5 4.51472 16.5 7V10" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>' +
+          '<rect x="5" y="10" width="14" height="11" rx="2.5" fill="url(#fvh_lock_bg)" stroke="#64748b" stroke-width="1.3"/>' +
+          '<circle cx="12" cy="15" r="1.5" fill="#00f0ff"/>' +
+          '<path d="M12 16.5V18.5" stroke="#00f0ff" stroke-width="1.2" stroke-linecap="round"/>' +
+          '<defs><linearGradient id="fvh_lock_bg" x1="12" y1="10" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'skill_power_footy':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="14" cy="14" r="12" fill="url(#fvh_sk_p1)" stroke="#00f0ff" stroke-width="1.3"/>' +
+          '<path d="M14 6L17 9H11L14 6Z" fill="#00f0ff"/>' +
+          '<path d="M11 9L8.5 13.5L10 16.5L13 14.5L11 9Z" fill="#ffffff"/>' +
+          '<path d="M17 9L19.5 13.5L18 16.5L15 14.5L17 9Z" fill="#ffffff"/>' +
+          '<path d="M13 14.5L15 14.5L14 18L13 14.5Z" fill="#00f0ff"/>' +
+          '<path d="M10 16.5L11.5 21.5H16.5L18 16.5L14 18L10 16.5Z" fill="#ffffff"/>' +
+          '<path d="M22 6L26 2M20 3L23 0" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>' +
+          '<defs><radialGradient id="fvh_sk_p1" cx="0.3" cy="0.3" r="0.8"><stop offset="0%" stop-color="#0369a1"/><stop offset="100%" stop-color="#082f49"/></radialGradient></defs>' +
+          '</svg>';
+
+      case 'skill_power_hoops':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="14" cy="14" r="12" fill="url(#fvh_sk_p2)" stroke="#f97316" stroke-width="1.3"/>' +
+          '<path d="M2 14H26" stroke="#1c1917" stroke-width="1.4"/>' +
+          '<path d="M14 2V26" stroke="#1c1917" stroke-width="1.4"/>' +
+          '<path d="M5.5 5.5C9 9 9 19 5.5 22.5" stroke="#1c1917" stroke-width="1.3"/>' +
+          '<path d="M22.5 5.5C19 9 19 19 22.5 22.5" stroke="#1c1917" stroke-width="1.3"/>' +
+          '<path d="M22 5L26 1M19 2L23 -1" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>' +
+          '<defs><radialGradient id="fvh_sk_p2" cx="0.35" cy="0.35" r="0.75"><stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#c2410c"/></radialGradient></defs>' +
+          '</svg>';
+
+      case 'skill_stamina':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="28" height="28" rx="8" fill="url(#fvh_stam_bg)" stroke="#22c55e" stroke-width="1.2"/>' +
+          '<path d="M14 23.5L12.5 22.1C7.5 17.6 4.5 14.8 4.5 11.2C4.5 8.3 6.8 6 9.7 6C11.3 6 12.9 6.8 14 8C15.1 6.8 16.7 6 18.3 6C21.2 6 23.5 8.3 23.5 11.2C23.5 14.8 20.5 17.6 15.5 22.1L14 23.5Z" fill="#15803d" stroke="#4ade80" stroke-width="1.3"/>' +
+          '<path d="M7.5 12.5H10.5L12 9.5L14.5 16L16.5 11.5L18 12.5H20.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<defs><linearGradient id="fvh_stam_bg" x1="14" y1="0" x2="14" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="100%" stop-color="#021f0e"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'skill_speed':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="28" height="28" rx="8" fill="url(#fvh_spd_bg)" stroke="#38bdf8" stroke-width="1.2"/>' +
+          '<path d="M4 14H18M7 9H22M5 19H15" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round"/>' +
+          '<path d="M15 7L24 14L15 21" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<defs><linearGradient id="fvh_spd_bg" x1="14" y1="0" x2="14" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0c4a6e"/><stop offset="100%" stop-color="#082f49"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'skill_keeper_footy':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="28" height="28" rx="8" fill="url(#fvh_kp_bg)" stroke="#eab308" stroke-width="1.2"/>' +
+          '<path d="M9 19V11.5C9 10.7 9.7 10 10.5 10C11.3 10 12 10.7 12 11.5V16" stroke="#facc15" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<path d="M12 11V8.5C12 7.7 12.7 7 13.5 7C14.3 7 15 7.7 15 8.5V15" stroke="#facc15" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<path d="M15 11.5V9.5C15 8.7 15.7 8 16.5 8C17.3 8 18 8.7 18 9.5V16" stroke="#facc15" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<path d="M18 13.5C18 12.7 18.7 12 19.5 12C20.3 12 21 12.7 21 13.5V18C21 21 18.5 23.5 15.5 23.5H13C10 23.5 8 21.5 8 18.5V16" stroke="#facc15" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<circle cx="21" cy="7" r="2.5" fill="#00f0ff"/>' +
+          '<defs><linearGradient id="fvh_kp_bg" x1="14" y1="0" x2="14" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#422006"/><stop offset="100%" stop-color="#1c1917"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'skill_keeper_hoops':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="28" height="28" rx="8" fill="url(#fvh_def_bg)" stroke="#a855f7" stroke-width="1.2"/>' +
+          '<path d="M14 4L22 8V14C22 19.5 18.5 23.5 14 25C9.5 23.5 6 19.5 6 14V8L14 4Z" fill="#581c87" stroke="#c084fc" stroke-width="1.4"/>' +
+          '<circle cx="14" cy="14" r="4.5" stroke="#facc15" stroke-width="1.2"/>' +
+          '<path d="M14 9.5V18.5M9.5 14H18.5" stroke="#facc15" stroke-width="1.2"/>' +
+          '<defs><linearGradient id="fvh_def_bg" x1="14" y1="0" x2="14" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#3b0764"/><stop offset="100%" stop-color="#1e1b4b"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'cat_skins':
+      case 'jersey':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M8 3L4 7L6.5 10L8 8.5V21H16V8.5L17.5 10L20 7L16 3C15 4.5 13.5 5 12 5C10.5 5 9 4.5 8 3Z" fill="url(#fvh_jers_bg)" stroke="' + (active ? '#00f0ff' : '#94a3b8') + '" stroke-width="1.2" stroke-linejoin="round"/>' +
+          '<path d="M10 11.5H14" stroke="' + (active ? '#00f0ff' : '#64748b') + '" stroke-width="1.2" stroke-linecap="round"/>' +
+          '<defs><linearGradient id="fvh_jers_bg" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'cat_packs':
+      case 'gift':
+      case 'pack':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect x="3" y="9" width="18" height="12" rx="2" fill="url(#fvh_gift_bg)" stroke="#facc15" stroke-width="1.2"/>' +
+          '<rect x="2" y="6" width="20" height="3.5" rx="1" fill="#eab308" stroke="#facc15" stroke-width="1"/>' +
+          '<path d="M12 6V21" stroke="#facc15" stroke-width="1.8"/>' +
+          '<path d="M12 6C10.5 4 8 3.5 7.5 4.5C7 5.5 8.5 6 12 6Z" fill="#fde047" stroke="#facc15" stroke-width="0.8"/>' +
+          '<path d="M12 6C13.5 4 16 3.5 16.5 4.5C17 5.5 15.5 6 12 6Z" fill="#fde047" stroke="#facc15" stroke-width="0.8"/>' +
+          '<defs><linearGradient id="fvh_gift_bg" x1="12" y1="9" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#451a03"/><stop offset="100%" stop-color="#1e1b4b"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'coin':
+      case 'coins':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_coin_grad)" stroke="#ca8a04" stroke-width="1.2"/>' +
+          '<circle cx="12" cy="12" r="7.2" stroke="#fef08a" stroke-width="0.9" stroke-dasharray="2 1.5"/>' +
+          '<text x="12" y="15.5" font-size="10.5" font-weight="900" fill="#713f12" text-anchor="middle" font-family="Montserrat, system-ui, sans-serif">F</text>' +
+          '<defs><linearGradient id="fvh_coin_grad" x1="12" y1="2.5" x2="12" y2="21.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#d97706"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'ton':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M12 2.5L3.5 8L12 21.5L20.5 8L12 2.5Z" fill="url(#fvh_ton_grad)" stroke="#38bdf8" stroke-width="1.2"/>' +
+          '<path d="M12 2.5V21.5M3.5 8L12 13.5L20.5 8" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/>' +
+          '<defs><linearGradient id="fvh_ton_grad" x1="12" y1="2.5" x2="12" y2="21.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'star':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="url(#fvh_star_grad)" stroke="#d97706" stroke-width="1.1" stroke-linejoin="round"/>' +
+          '<defs><linearGradient id="fvh_star_grad" x1="12" y1="2" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fef08a"/><stop offset="60%" stop-color="#facc15"/><stop offset="100%" stop-color="#ea580c"/></linearGradient></defs>' +
+          '</svg>';
+
+      case 'swords':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M19 5L5 19M5 5L19 19" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>' +
+          '<circle cx="5" cy="5" r="1.8" fill="#f43f5e"/>' +
+          '<circle cx="19" cy="5" r="1.8" fill="#00f0ff"/>' +
+          '<path d="M7 3L3 7M17 3L21 7" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round"/>' +
+          '</svg>';
+
+      case 'bot':
+      case 'ai':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect x="4" y="6" width="16" height="13" rx="3.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1.3"/>' +
+          '<line x1="12" y1="2.5" x2="12" y2="6" stroke="#38bdf8" stroke-width="1.5"/>' +
+          '<circle cx="12" cy="2.5" r="1.5" fill="#38bdf8"/>' +
+          '<circle cx="9" cy="11.5" r="1.6" fill="#00f0ff"/>' +
+          '<circle cx="15" cy="11.5" r="1.6" fill="#00f0ff"/>' +
+          '<path d="M8.5 15.5H15.5" stroke="#38bdf8" stroke-width="1.3" stroke-linecap="round"/>' +
+          '</svg>';
+
+      case 'play':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+          '<polygon points="7,4 20,12 7,20"/>' +
+          '</svg>';
+
+      case 'check':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<polyline points="20 6 9 17 4 12"/>' +
+          '</svg>';
+
+      case 'arrow_back':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M19 12H5M12 19l-7-7 7-7"/>' +
+          '</svg>';
+
+      default:
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/></svg>';
+    }
+  }
+  window.getUiIconSvg = getUiIconSvg;
+
+  // ==========================================
   // Shared Bottom Navigation Bar (5 Primary Tabs)
   // ==========================================
 
@@ -4790,11 +5036,11 @@
     var isFooty = (curChar === 'footy');
 
     var primaryItems = [
-      { id: 'menu', icon: isFooty ? '⚽' : '🏀', label: tr('tabHome') },
-      { id: 'characters', icon: '🎒', label: tr('tabInventory') },
-      { id: 'upgrades', icon: '⚡', label: tr('tabUpgrades') },
-      { id: 'shop', icon: '🛒', label: tr('tabShop') },
-      { id: 'quests', icon: '🎯', label: tr('tabQuests') }
+      { id: 'menu', icon: getUiIconSvg(isFooty ? 'nav_home_footy' : 'nav_home_hoops', 22), label: tr('tabHome') },
+      { id: 'characters', icon: getUiIconSvg('nav_inventory', 22), label: tr('tabInventory') },
+      { id: 'upgrades', icon: getUiIconSvg('nav_upgrades', 22), label: tr('tabUpgrades') },
+      { id: 'shop', icon: getUiIconSvg('nav_shop', 22), label: tr('tabShop') },
+      { id: 'quests', icon: getUiIconSvg('nav_quests', 22), label: tr('tabQuests') }
     ];
     // Secondary navigation endpoints: { id: 'profile' }, { id: 'leaderboard' }, { id: 'airdrop' }, { id: 'settings' }
 
@@ -5636,7 +5882,7 @@
     head.className = 'page-head fvh-upgrades-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -5713,7 +5959,7 @@
       heroBanner.innerHTML =
         '<div style="display:flex;align-items:center;gap:14px;">' +
         '  <div class="fvh-upgrades-avatar-badge" style="width:52px;height:52px;border-radius:14px;background:' + (isFooty ? 'rgba(0,240,255,0.15)' : 'rgba(249,115,22,0.15)') + ';border:1.5px solid ' + (isFooty ? '#00f0ff' : '#f97316') + ';display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px ' + (isFooty ? 'rgba(0,240,255,0.3)' : 'rgba(249,115,22,0.3)') + ';">' +
-        '    <span style="font-size:28px;">' + (isFooty ? '⚽' : '🏀') + '</span>' +
+        '    ' + getUiIconSvg(isFooty ? 'nav_home_footy' : 'nav_home_hoops', 32) + '' +
         '  </div>' +
         '  <div style="flex:1;min-width:0;">' +
         '    <div style="font-size:11px;font-weight:900;letter-spacing:1px;color:' + (isFooty ? '#00f0ff' : '#f97316') + ';text-transform:uppercase;">' +
@@ -5740,7 +5986,7 @@
       var skillsConfig = [
         {
           key: 'power',
-          icon: isFooty ? '⚽' : '🏀',
+          icon: isFooty ? getUiIconSvg('skill_power_footy', 26) : getUiIconSvg('skill_power_hoops', 26),
           name: isFooty ? tr('upgradeSkillPowerFooty') : tr('upgradeSkillPowerHoops'),
           desc: isFooty ? tr('upgradeSkillPowerFootyDesc') : tr('upgradeSkillPowerHoopsDesc'),
           level: pL,
@@ -5748,12 +5994,12 @@
           curMetric: isFooty ? (76 + (pL - 1) * 3.8).toFixed(0) + ' км/ч' : (72 + (pL - 1) * 3.4).toFixed(0) + ' км/ч',
           nextMetric: isFooty ? (76 + pL * 3.8).toFixed(0) + ' км/ч' : (72 + pL * 3.4).toFixed(0) + ' км/ч',
           metricLabel: isFooty ? (lang === 'ru' ? 'Скорость удара' : 'Strike Velocity') : (lang === 'ru' ? 'Мощь броска' : 'Shot Arc & Power'),
-          traitLv5: isFooty ? (lang === 'ru' ? '⭐ Lv.5 Трейт: Подкрутка в девятку' : '⭐ Lv.5 Trait: Top Corner Curve') : (lang === 'ru' ? '⭐ Lv.5 Trait: Снайпер трехочковых' : '⭐ Lv.5 Trait: 3-Point Precision'),
-          traitLv10: isFooty ? (lang === 'ru' ? '👑 Lv.10 Трейт: Пушечный выстрел' : '👑 Lv.10 Trait: Golden Cannonball') : (lang === 'ru' ? '👑 Lv.10 Trait: Мощный постер-данк' : '👑 Lv.10 Trait: Thunderous Poster Dunk')
+          traitLv5: isFooty ? (lang === 'ru' ? 'Lv.5 Трейт: Подкрутка в девятку' : 'Lv.5 Trait: Top Corner Curve') : (lang === 'ru' ? 'Lv.5 Trait: Снайпер трехочковых' : 'Lv.5 Trait: 3-Point Precision'),
+          traitLv10: isFooty ? (lang === 'ru' ? 'Lv.10 Трейт: Пушечный выстрел' : 'Lv.10 Trait: Golden Cannonball') : (lang === 'ru' ? 'Lv.10 Trait: Мощный постер-данк' : 'Lv.10 Trait: Thunderous Poster Dunk')
         },
         {
           key: 'stamina',
-          icon: '🏃',
+          icon: getUiIconSvg('skill_stamina', 26),
           name: tr('upgradeSkillStamina'),
           desc: tr('upgradeSkillStaminaDesc'),
           level: sL,
@@ -5761,12 +6007,12 @@
           curMetric: (5.0 + (sL - 1) * 0.7).toFixed(1) + ' с',
           nextMetric: (5.0 + sL * 0.7).toFixed(1) + ' с',
           metricLabel: lang === 'ru' ? 'Длительность спринта' : 'Turbo Sprint Duration',
-          traitLv5: lang === 'ru' ? '⭐ Lv.5 Трейт: Второе дыхание (+25% реген)' : '⭐ Lv.5 Trait: Second Wind (+25% recovery)',
-          traitLv10: lang === 'ru' ? '👑 Lv.10 Трейт: Неутомимый марафонец' : '👑 Lv.10 Trait: Iron Athlete Marathon'
+          traitLv5: lang === 'ru' ? 'Lv.5 Трейт: Второе дыхание (+25% реген)' : 'Lv.5 Trait: Second Wind (+25% recovery)',
+          traitLv10: lang === 'ru' ? 'Lv.10 Трейт: Неутомимый марафонец' : 'Lv.10 Trait: Iron Athlete Marathon'
         },
         {
           key: 'speed',
-          icon: '💨',
+          icon: getUiIconSvg('skill_speed', 26),
           name: tr('upgradeSkillSpeed'),
           desc: tr('upgradeSkillSpeedDesc'),
           level: spL,
@@ -5774,12 +6020,12 @@
           curMetric: (6.0 + (spL - 1) * 0.20).toFixed(2) + ' м/с',
           nextMetric: (6.0 + spL * 0.20).toFixed(2) + ' м/с',
           metricLabel: lang === 'ru' ? 'Максимальная скорость' : 'Top Burst Speed',
-          traitLv5: lang === 'ru' ? '⭐ Lv.5 Трейт: Взрывной первый шаг' : '⭐ Lv.5 Trait: Explosive First Step',
-          traitLv10: lang === 'ru' ? '👑 Lv.10 Трейт: Скорость молнии' : '👑 Lv.10 Trait: Lightning Velocity'
+          traitLv5: lang === 'ru' ? 'Lv.5 Трейт: Взрывной первый шаг' : 'Lv.5 Trait: Explosive First Step',
+          traitLv10: lang === 'ru' ? 'Lv.10 Трейт: Скорость молнии' : 'Lv.10 Trait: Lightning Velocity'
         },
         {
           key: 'keeper',
-          icon: isFooty ? '🧤' : '🛡️',
+          icon: isFooty ? getUiIconSvg('skill_keeper_footy', 26) : getUiIconSvg('skill_keeper_hoops', 26),
           name: isFooty ? tr('upgradeSkillKeeperFooty') : tr('upgradeSkillKeeperHoops'),
           desc: isFooty ? tr('upgradeSkillKeeperFootyDesc') : tr('upgradeSkillKeeperHoopsDesc'),
           level: kL,
@@ -5787,8 +6033,8 @@
           curMetric: Math.round(195 - (kL - 1) * 7.5) + ' мс',
           nextMetric: Math.round(195 - kL * 7.5) + ' мс',
           metricLabel: isFooty ? (lang === 'ru' ? 'Реакция сейва' : 'Save Reflex Time') : (lang === 'ru' ? 'Блок-шот & Защита' : 'Block & Defensive Span'),
-          traitLv5: isFooty ? (lang === 'ru' ? '⭐ Lv.5 Трейт: Кошачий прыжок в угол' : '⭐ Lv.5 Trait: Acrobatic Corner Reach') : (lang === 'ru' ? '⭐ Lv.5 Trait: Железный заслон' : '⭐ Lv.5 Trait: Iron Rim Lockdown'),
-          traitLv10: isFooty ? (lang === 'ru' ? '👑 Lv.10 Трейт: Непробиваемая стена' : '👑 Lv.10 Trait: Immovable Goalkeeper') : (lang === 'ru' ? '👑 Lv.10 Trait: Блок-шот века' : '👑 Lv.10 Trait: Master Shot Blocker')
+          traitLv5: isFooty ? (lang === 'ru' ? 'Lv.5 Трейт: Кошачий прыжок в угол' : 'Lv.5 Trait: Acrobatic Corner Reach') : (lang === 'ru' ? 'Lv.5 Trait: Железный заслон' : 'Lv.5 Trait: Iron Rim Lockdown'),
+          traitLv10: isFooty ? (lang === 'ru' ? 'Lv.10 Трейт: Непробиваемая стена' : 'Lv.10 Trait: Immovable Goalkeeper') : (lang === 'ru' ? 'Lv.10 Trait: Блок-шот века' : 'Lv.10 Trait: Master Shot Blocker')
         }
       ];
       var costs = [0, 500, 1200, 2500, 4500, 7500, 12000, 18000, 26000, 40000];
@@ -5817,10 +6063,10 @@
 
         var actionHtml = '';
         if (isMax) {
-          actionHtml = '<div class="fvh-upgrade-max-badge">👑 ' + (lang === 'ru' ? 'МАКСИМАЛЬНЫЙ УРОВЕНЬ' : 'MAX LEVEL') + '</div>';
+          actionHtml = '<div class="fvh-upgrade-max-badge">' + getUiIconSvg('crown', 16) + ' ' + (lang === 'ru' ? 'МАКСИМАЛЬНЫЙ УРОВЕНЬ' : 'MAX LEVEL') + '</div>';
         } else {
           var lockWarn = !hasLvl
-            ? '<div class="fvh-upgrade-lock-warn">🔒 ' + (lang === 'ru' ? ('Требуется Уровень игрока ' + reqL + ' (у вас Lvl ' + curPlayerLvl + ')') : ('Requires Player Lvl ' + reqL + ' (you have Lvl ' + curPlayerLvl + ')')) + '</div>'
+            ? '<div class="fvh-upgrade-lock-warn">' + getUiIconSvg('lock', 14) + ' ' + (lang === 'ru' ? ('Требуется Уровень игрока ' + reqL + ' (у вас Lvl ' + curPlayerLvl + ')') : ('Requires Player Lvl ' + reqL + ' (you have Lvl ' + curPlayerLvl + ')')) + '</div>'
             : '';
           actionHtml =
             lockWarn +
@@ -5924,7 +6170,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -5954,10 +6200,11 @@
     teamLockBadge.style.background = isFooty ? 'rgba(0, 240, 255, 0.08)' : 'rgba(255, 122, 0, 0.08)';
     teamLockBadge.style.border = isFooty ? '1px solid rgba(0, 240, 255, 0.25)' : '1px solid rgba(255, 122, 0, 0.25)';
     teamLockBadge.innerHTML =
-      '<span style="font-size:20px;">🔒</span>' +
-      '<div>' +
-      '  <div style="font-size:12px;font-weight:900;color:#fff;letter-spacing:0.5px;text-transform:uppercase;">' +
-           (isFooty ? '⚡ КОМАНДА ФУТБОЛА (FOOTY)' : '⚡ КОМАНДА БАСКЕТБОЛА (HOOPS)') +
+      '<span class="fvh-lock-ico" style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + getUiIconSvg('lock', 22) + '</span>' +
+      '<div style="flex:1;min-width:0;">' +
+      '  <div style="font-size:12px;font-weight:900;color:#fff;letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;">' +
+           (isFooty ? getUiIconSvg('nav_home_footy', 14) + ' <span>' + (lang === 'ru' ? 'КОМАНДА ФУТБОЛА (FOOTY)' : 'TEAM FOOTBALL (FOOTY)') + '</span>'
+                    : getUiIconSvg('nav_home_hoops', 14) + ' <span>' + (lang === 'ru' ? 'КОМАНДА БАСКЕТБОЛА (HOOPS)' : 'TEAM BASKETBALL (HOOPS)') + '</span>') +
       '  </div>' +
       '  <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' +
            (lang === 'ru' ? 'Выбор команды сделан навсегда · Доступна экипировка вашего атлета' : 'Team chosen permanently · Equipping your active athlete') +
@@ -6010,12 +6257,12 @@
     slotSeg.className = 'seg fvh-wardrobe-seg';
     slotSeg.style.marginBottom = '8px';
     var slots = [
-      { id: 'skins', label: '👕 ' + (tr('catSkins') || (lang === 'ru' ? 'Форма' : 'Kits')) },
-      { id: ballSlotId, label: (isFooty ? '⚽ ' : '🏀 ') + ballSlotLabel }
+      { id: 'skins', icon: 'cat_skins', label: (tr('catSkins') || (lang === 'ru' ? 'Форма' : 'Kits')) },
+      { id: ballSlotId, icon: isFooty ? 'nav_home_footy' : 'nav_home_hoops', label: ballSlotLabel }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
-      sb.textContent = s.label;
+      sb.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;">' + getUiIconSvg(s.icon, 16) + '<span>' + s.label + '</span></span>';
       if (s.id === curSlot) sb.className = 'on';
       sb.onclick = function () {
         curSlot = s.id;
@@ -6223,12 +6470,12 @@
           if (isSelEquipped) {
             selectBtn.className = 'btn block';
             selectBtn.disabled = true;
-            selectBtn.textContent = '✓ ' + tr('equippedState');
+            selectBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('check', 16) + ' <span>' + tr('equippedState') + '</span></span>';
             selectBtn.onclick = null;
           } else {
             selectBtn.className = 'btn primary block';
             selectBtn.disabled = false;
-            selectBtn.innerHTML = '👕 ' + tr('equipAction') + ': ' + selLocalizedName;
+            selectBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('jersey', 16) + ' <span>' + tr('equipAction') + ': ' + selLocalizedName + '</span></span>';
             selectBtn.onclick = function () {
               app.audio.play('click');
               doEquip(selectedItem, selSlotKey, selLocalizedName);
@@ -6730,7 +6977,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -7654,7 +7901,7 @@
     head.className = 'page-head fvh-shop-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -7693,7 +7940,7 @@
     factionBadge.style.border = (shopSport === 'footy' ? '1.5px solid rgba(0, 240, 255, 0.3)' : '1.5px solid rgba(249, 115, 22, 0.3)');
     factionBadge.innerHTML =
       '<span style="font-size:12px;font-weight:900;letter-spacing:0.5px;color:#fff;text-transform:uppercase;">' +
-      (shopSport === 'footy' ? '⚽ FOOTY BOUTIQUE' : '🏀 HOOPS BOUTIQUE') +
+      (shopSport === 'footy' ? '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY BOUTIQUE</span></span>' : '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS BOUTIQUE</span></span>') +
       '</span>' +
       '<span style="font-size:11px;font-weight:700;color:var(--text-muted);">' +
       (shopSport === 'footy' ? (getActiveLang() === 'ru' ? 'Экипировка для футбола' : 'Football Gear') : (getActiveLang() === 'ru' ? 'Экипировка для баскетбола' : 'Basketball Gear')) +
@@ -7708,19 +7955,20 @@
     function renderCategoryTabs() {
       catSeg.innerHTML = '';
       var categories = (shopSport === 'footy') ? [
-        { id: 'skins', label: '👕 ' + tr('catSkins') },
-        { id: 'balls_footy', label: '⚽ ' + tr('catFootballBalls') },
-        { id: 'bundles', label: '🎁 ' + tr('catBundles') },
-        { id: 'coins', label: '⭐ ' + tr('catCoins') }
+        { id: 'skins', icon: 'cat_skins', label: tr('catSkins') },
+        { id: 'balls_footy', icon: 'nav_home_footy', label: tr('catFootballBalls') },
+        { id: 'bundles', icon: 'cat_packs', label: tr('catBundles') },
+        { id: 'coins', icon: 'coin', label: tr('catCoins') }
       ] : [
-        { id: 'skins', label: '👕 ' + tr('catSkins') },
-        { id: 'balls_hoops', label: '🏀 ' + tr('catBasketballBalls') },
-        { id: 'bundles', label: '🎁 ' + tr('catBundles') },
-        { id: 'coins', label: '⭐ ' + tr('catCoins') }
+        { id: 'skins', icon: 'cat_skins', label: tr('catSkins') },
+        { id: 'balls_hoops', icon: 'nav_home_hoops', label: tr('catBasketballBalls') },
+        { id: 'bundles', icon: 'cat_packs', label: tr('catBundles') },
+        { id: 'coins', icon: 'coin', label: tr('catCoins') }
       ];
       categories.forEach(function (c) {
         var btn = document.createElement('button');
-        btn.textContent = c.label;
+        var cIconHtml = c.icon === 'coin' ? getFvhCoinSvg('inline') : getUiIconSvg(c.icon, 16);
+        btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;">' + cIconHtml + '<span>' + c.label + '</span></span>';
         if (c.id === curCategory || (c.id === 'balls_footy' && curCategory === 'balls') || (c.id === 'balls_hoops' && curCategory === 'balls')) {
           btn.className = 'on';
         }
@@ -9022,7 +9270,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -9204,7 +9452,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -9774,7 +10022,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -9995,7 +10243,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -11383,7 +11631,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showModeSelect();
@@ -11540,7 +11788,7 @@
     head.className = 'page-head';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn icon back';
-    backBtn.textContent = '←';
+    backBtn.innerHTML = getUiIconSvg('arrow_back', 18);
     backBtn.onclick = function () {
       app.audio.play('click');
       app.showMenu();
@@ -11571,8 +11819,8 @@
 
     practiceCard.innerHTML =
       '<div class="fvh-mode-card-header">' +
-        '<span class="fvh-mode-badge practice">🤖 ' + (lang === 'ru' ? 'МАТЧ ПРОТИВ ИИ' : 'MATCH VS AI') + '</span>' +
-        '<span class="fvh-mode-instant-pill">⚡ ' + (lang === 'ru' ? 'ОФФЛАЙН' : 'OFFLINE') + '</span>' +
+        '<span class="fvh-mode-badge practice" style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('bot', 14) + ' <span>' + (lang === 'ru' ? 'МАТЧ ПРОТИВ ИИ' : 'MATCH VS AI') + '</span></span>' +
+        '<span class="fvh-mode-instant-pill" style="display:inline-flex;align-items:center;gap:4px;">' + getUiIconSvg('lightning', 12) + ' <span>' + (lang === 'ru' ? 'ОФФЛАЙН' : 'OFFLINE') + '</span></span>' +
       '</div>' +
       '<div class="fvh-mode-card-body">' +
         '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +
@@ -11581,8 +11829,8 @@
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
             '<div class="seg seg-sport">' +
-              '<button type="button" class="' + (selSport === 'footy' ? 'on' : '') + '" data-sport="footy">⚽ FOOTY</button>' +
-              '<button type="button" class="' + (selSport === 'hoops' ? 'on' : '') + '" data-sport="hoops">🏀 HOOPS</button>' +
+              '<button type="button" class="' + (selSport === 'footy' ? 'on' : '') + '" data-sport="footy"><span style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY</span></span></button>' +
+              '<button type="button" class="' + (selSport === 'hoops' ? 'on' : '') + '" data-sport="hoops"><span style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS</span></span></button>' +
             '</div>' +
           '</div>' +
           '<div class="fvh-practice-matchup" id="fvh-practice-matchup" style="margin-bottom:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:11.5px;font-weight:800;text-align:center;">' +
@@ -11602,7 +11850,7 @@
         '</div>' +
       '</div>' +
       '<div class="fvh-mode-card-actions">' +
-        '<button class="btn primary block fvh-btn-start-practice">▶ ' + (lang === 'ru' ? 'НАЧАТЬ МАТЧ' : 'START MATCH') + '</button>' +
+        '<button class="btn primary block fvh-btn-start-practice"><span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('play', 12) + ' <span>' + (lang === 'ru' ? 'НАЧАТЬ МАТЧ' : 'START MATCH') + '</span></span></button>' +
       '</div>';
 
     // Interactive Sport selector
@@ -11668,7 +11916,7 @@
       var isFooty = (onlineSport === 'footy');
       quickCard.innerHTML =
         '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge online">⚡ ' + tr('quickMatchBadge') + '</span>' +
+          '<span class="fvh-mode-badge online" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('lightning', 13) + ' <span>' + tr('quickMatchBadge') + '</span></span>' +
           '<span class="fvh-mode-server-status"><span class="status-dot live"></span> 1v1 PvP</span>' +
         '</div>' +
         '<div class="fvh-mode-card-body">' +
@@ -11683,7 +11931,7 @@
           '</div>' +
         '</div>' +
         '<div class="fvh-mode-card-actions">' +
-          '<button class="btn primary block fvh-btn-matchmaking">⚡ ' + (isFooty ? (lang === 'ru' ? 'ИСКАТЬ МАТЧ (⚽ ФУТБОЛ)' : 'SEARCH MATCH (⚽ FOOTY)') : (lang === 'ru' ? 'ИСКАТЬ МАТЧ (🏀 БАСКЕТБОЛ)' : 'SEARCH MATCH (🏀 HOOPS)')) + '</button>' +
+          '<button class="btn primary block fvh-btn-matchmaking"><span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('lightning', 14) + ' <span>' + (isFooty ? (lang === 'ru' ? 'ИСКАТЬ МАТЧ (ФУТБОЛ)' : 'SEARCH MATCH (FOOTY)') : (lang === 'ru' ? 'ИСКАТЬ МАТЧ (БАСКЕТБОЛ)' : 'SEARCH MATCH (HOOPS)')) + '</span></span></button>' +
         '</div>';
 
       quickCard.querySelectorAll('.seg-sport-online button').forEach(function (b) {
@@ -12103,8 +12351,8 @@
       '</div>' +
       '<div class="fvh-topbar-stats">' +
       '<button class="fvh-pill gold" id="fvh-btn-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + ' <span>' + (d.coins || 0).toLocaleString() + '</span></button>' +
-      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">🏆</button>' +
-      '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '" style="font-size:16px;">⚙️</button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-leaderboard" title="' + tr('leaderboard') + '">' + getUiIconSvg('trophy', 17) + '</button>' +
+      '<button class="fvh-pill icon-only" id="fvh-btn-settings" title="' + tr('settings') + '">' + getUiIconSvg('settings', 17) + '</button>' +
       '<button class="fvh-pill fvh-btn-topbar-profile" id="fvh-btn-profile" title="' + tr('profile') + '"><span class="fvh-topbar-avatar-mini">' + getPlayerAvatarHtml({ photoUrl: d.photoUrl || (d.telegramUser && d.telegramUser.photoUrl), character: curChar, extraClass: 'mini-avatar' }) + '</span><span class="fvh-profile-name">' + escapeHtml(shortName) + '</span><span class="fvh-profile-lvl" style="font-size:10px;opacity:0.75;margin-left:3px;">Lv.' + playerLevel + '</span></button>' +
       '</div>';
     screen.appendChild(topbar);
@@ -12122,8 +12370,8 @@
     var heroCard = document.createElement('div');
     heroCard.className = 'fvh-hero-card solo-hero-compact ' + curChar;
 
-    var badgeText = isFooty ? '⚽ FOOTY' : '🏀 HOOPS';
-    var rivalText = isFooty ? '⚔️ ' + tr('rivalTeamLabel') + ': HOOPS' : '⚔️ ' + tr('rivalTeamLabel') + ': FOOTY';
+    var badgeText = isFooty ? (getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY</span>') : (getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS</span>');
+    var rivalText = '<span style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('swords', 13) + ' <span>' + tr('rivalTeamLabel') + ': ' + (isFooty ? 'HOOPS' : 'FOOTY') + '</span></span>';
 
     // Equipped cosmetics labels
     var equippedJersey = isFooty
@@ -12150,7 +12398,7 @@
     heroCard.innerHTML =
       '<div class="fvh-solo-compact-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-bottom:6px;">' +
       '  <span class="fvh-hero-badge ' + curChar + '" style="font-size:11px;font-weight:900;padding:5px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%;box-shadow:0 0 14px ' + (isFooty ? 'rgba(0,240,255,0.35)' : 'rgba(249,115,22,0.35)') + ';">' + badgeText + '</span>' +
-      '  <span class="fvh-solo-ovr-pill" style="cursor:pointer;font-size:12px;font-weight:900;color:#00f0ff;background:rgba(0,240,255,0.12);padding:4px 10px;border-radius:20px;border:1px solid rgba(0,240,255,0.35);display:inline-flex;align-items:center;gap:4px;" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">⚡ ' + ovr + ' OVR</span>' +
+      '  <span class="fvh-solo-ovr-pill" style="cursor:pointer;font-size:12px;font-weight:900;color:#00f0ff;background:rgba(0,240,255,0.12);padding:4px 10px;border-radius:20px;border:1px solid rgba(0,240,255,0.35);display:inline-flex;align-items:center;gap:4px;" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">' + getUiIconSvg('lightning', 13) + ' <span>' + ovr + ' OVR</span></span>' +
       '  <span class="fvh-solo-rival-pill" style="font-size:11px;font-weight:800;color:#94a3b8;background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);">' + rivalText + '</span>' +
       '</div>' +
       '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
@@ -12158,15 +12406,15 @@
       '</div>' +
       '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
       '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-      '    <span>' + (isFooty ? '👕' : '🎽') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedJersey) + '</strong>' +
+      '    <span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <strong style="color:#fff;">' + escapeHtml(equippedJersey) + '</strong>' +
       '  </div>' +
       '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-      '    <span>' + (isFooty ? '⚽' : '🏀') + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
+      '    <span style="display:inline-flex;align-items:center;">' + getUiIconSvg(isFooty ? 'nav_home_footy' : 'nav_home_hoops', 14) + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
       '  </div>' +
       '</div>' +
       '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span>👕</span> <span>' + tr('openLocker') + '</span></button>' +
-      '  <button type="button" class="btn fvh-solo-upgrade-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#00f0ff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span>⚡</span> <span>' + (lang === 'ru' ? 'Прокачка' : 'Skills') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('inventory', 15) + '</span> <span>' + tr('openLocker') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-upgrade-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#00f0ff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('lightning', 15) + '</span> <span>' + (lang === 'ru' ? 'Прокачка' : 'Skills') + '</span></button>' +
       '</div>';
 
     heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
@@ -12228,11 +12476,11 @@
     var airdropStats = calculateAirdropStats(d);
     var airdropBanner = document.createElement('div');
     airdropBanner.className = 'fvh-airdrop-banner ' + curChar;
-    var airdropTokenTag = isFooty ? '⚽ $FOOTY' : '🏀 $HOOPS';
+    var airdropTokenTag = isFooty ? (getUiIconSvg('nav_home_footy', 14) + ' <span>$FOOTY</span>') : (getUiIconSvg('nav_home_hoops', 14) + ' <span>$HOOPS</span>');
 
     airdropBanner.innerHTML =
       '<div class="fvh-airdrop-banner-left">' +
-      '  <div class="fvh-airdrop-banner-icon">🪙</div>' +
+      '  <div class="fvh-airdrop-banner-icon">' + getUiIconSvg('coin', 26) + '</div>' +
       '  <div class="fvh-airdrop-banner-text">' +
       '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'ЗАРАБОТАЙ ' + airdropTokenTag : 'EARN ' + airdropTokenTag) + '</div>' +
       '    <div class="fvh-airdrop-banner-sub">' +
@@ -12271,7 +12519,7 @@
       '  <span class="tile-sub" style="color:#facc15;font-weight:800;">' + questsSub + '</span>' +
       '</button>' +
       '<button type="button" class="fvh-hub-tile" id="fvh-hub-leaderboard">' +
-      '  <span class="tile-icon">🏆</span>' +
+      '  <span class="tile-icon">' + getUiIconSvg('trophy', 22) + '</span>' +
       '  <span class="tile-title">' + leadLabel + '</span>' +
       '  <span class="tile-sub">' + leadSub + '</span>' +
       '</button>';
