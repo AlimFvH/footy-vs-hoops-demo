@@ -5317,6 +5317,62 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
     exports.makeSkyTexture = makeSkyTexture;
     exports.makeShadowBlob = makeShadowBlob;
     const hex = (c) => '#' + c.toString(16).padStart(6, '0');
+
+    let cachedOfficialEmblem = null;
+    function getOfficialEmblem() {
+        if (cachedOfficialEmblem && cachedOfficialEmblem.complete && cachedOfficialEmblem.naturalWidth > 0) return cachedOfficialEmblem;
+        if (typeof document !== 'undefined') {
+            cachedOfficialEmblem = document.getElementById('fvh-official-emblem');
+            if (!cachedOfficialEmblem) {
+                cachedOfficialEmblem = new Image();
+                cachedOfficialEmblem.src = 'assets/emblem.png';
+            }
+        }
+        return cachedOfficialEmblem;
+    }
+    function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
+        g.save();
+        // 1. Subtle dark circular backing plate with glowing accent border
+        g.beginPath();
+        g.arc(cx, cy, radius, 0, Math.PI * 2);
+        g.fillStyle = isBasketball ? 'rgba(10, 14, 26, 0.78)' : 'rgba(6, 12, 22, 0.72)';
+        g.fill();
+        g.lineWidth = isBasketball ? 4 : 5;
+        g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
+        g.shadowColor = isBasketball ? '#f97316' : '#00f0ff';
+        g.shadowBlur = 12;
+        g.stroke();
+        g.shadowBlur = 0;
+
+        // 2. Official Emblem Image (Strict 1:1 proportions from assets/emblem.png)
+        const emb = getOfficialEmblem();
+        const emSize = radius * 1.78;
+        if (typeof g.drawImage === 'function' && emb && emb.complete && emb.naturalWidth > 0) {
+            g.drawImage(emb, cx - emSize / 2, cy - emSize / 2, emSize, emSize);
+        } else {
+            // High-fidelity fallback circle matching the official emblem's colors
+            const halfR = radius * 0.82;
+            // Football half (left, white with dark accents)
+            g.fillStyle = '#ffffff';
+            g.beginPath();
+            g.arc(cx, cy, halfR, Math.PI * 0.5, Math.PI * 1.5);
+            g.fill();
+            // Basketball half (right, vibrant orange)
+            g.fillStyle = '#ff6b00';
+            g.beginPath();
+            g.arc(cx, cy, halfR, -Math.PI * 0.5, Math.PI * 0.5);
+            g.fill();
+            // White diagonal dividing line
+            g.strokeStyle = '#ffffff';
+            g.lineWidth = 4;
+            g.beginPath();
+            g.moveTo(cx - 2, cy - halfR);
+            g.lineTo(cx + 6, cy + halfR);
+            g.stroke();
+        }
+        g.restore();
+    }
+
     function makeCanvas(w, h) {
         const c = document.createElement('canvas');
         c.width = w;
@@ -5399,15 +5455,8 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         g.arc(X(0), Z(0), football_js_1.FB.CIRCLE_R * PPM_F, 0, Math.PI * 2);
         g.stroke();
 
-        // Glowing center energy spot
-        g.fillStyle = '#00f0ff';
-        g.beginPath();
-        g.arc(X(0), Z(0), 0.42 * PPM_F, 0, Math.PI * 2);
-        g.fill();
-        g.fillStyle = '#ffffff';
-        g.beginPath();
-        g.arc(X(0), Z(0), 0.22 * PPM_F, 0, Math.PI * 2);
-        g.fill();
+        // Official FOOTY vs HOOPS Center Pitch Emblem
+        drawOfficialCenterEmblem(g, X(0), Z(0), football_js_1.FB.CIRCLE_R * 0.88 * PPM_F, false);
 
         // Penalty boxes and spots
         for (const s of [-1, 1]) {
@@ -5579,15 +5628,8 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         g.lineWidth = 0.05 * PPM_B * 1.4;
         g.stroke();
 
-        // Central Fortnite diamond sports icon
-        g.fillStyle = '#ffffff';
-        g.beginPath();
-        g.moveTo(X(0), Z(-0.6));
-        g.lineTo(X(0.55), Z(0));
-        g.lineTo(X(0), Z(0.6));
-        g.lineTo(X(-0.55), Z(0));
-        g.closePath();
-        g.fill();
+        // Official FOOTY vs HOOPS Center Court Emblem
+        drawOfficialCenterEmblem(g, X(0), Z(0), centerR * 0.82, true);
 
         g.strokeStyle = lineCol;
         g.lineWidth = 0.08 * PPM_B * 1.4;
@@ -8043,22 +8085,117 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
                 tx = 0;
                 tz = 0;
             }
-            const k = this.snap ? 1 : 1 - Math.exp(-dt * 7);
-            this.fx += (tx - this.fx) * k;
-            this.fz += (tz - this.fz) * k;
-            const wantD = this.fitDistance(this.fx, this.fz, forceFull ? Math.min(this.maxHalfX, this.limitX + 2) : hx, forceFull ? this.limitZ + 2 : hz);
-            this.dist += (wantD - this.dist) * (this.snap ? 1 : 1 - Math.exp(-dt * 3));
+
+            // --- MODERN THIRD-PERSON FOLLOW CAMERA ---
+            // Positioned behind and slightly above the controlled human player
+            const isFooty = (this.mode === 'footy');
+            const hxPlayer = (human && typeof human.x === 'number') ? human.x : 0;
+            const hzPlayer = (human && typeof human.z === 'number') ? human.z : 0;
+            const pvx = (human && typeof human.vx === 'number') ? human.vx : 0;
+            const pvz = (human && typeof human.vz === 'number') ? human.vz : 0;
+            const speed = Math.sqrt(pvx * pvx + pvz * pvz);
+
+            // 1. Goal / Target direction (Team 0 attacks toward -Z)
+            const goalZ = -this.limitZ;
+
+            // 2. Ball Tracking & Dynamic Shot Elevation
+            const bx = (ball && typeof ball.x === 'number') ? ball.x : hxPlayer;
+            const by = (ball && typeof ball.y === 'number') ? ball.y : 0;
+            const bz = (ball && typeof ball.z === 'number') ? ball.z : hzPlayer;
+            const isShotOrDunk = (ball && (ball.shot || by > 2.0 || Math.abs(ball.vz || 0) > 11));
+
+            const ballW = isShotOrDunk ? 0.42 : (speed > 4.5 ? 0.16 : 0.28);
+            const leadX = pvx * (isFooty ? 0.25 : 0.18);
+            const leadZ = pvz * (isFooty ? 0.20 : 0.14);
+
+            const focusX = hxPlayer * (1 - ballW) + bx * ballW + leadX;
+            const focusY = 1.15 + (isShotOrDunk ? Math.min(3.2, by * 0.45) : 0);
+            const focusZ = hzPlayer * (1 - ballW) + bz * ballW + leadZ;
+
+            // 3. Smooth Yaw Rotation (Facing towards target goal with gentle sway)
+            const angleToGoal = Math.atan2(focusX, focusZ - goalZ);
+            const moveAngle = speed > 1.2 ? Math.atan2(pvx, pvz) : 0;
+            const bias = isFooty ? 0.72 : 0.65;
+            let targetYaw = angleToGoal * bias + moveAngle * (1 - bias);
+            targetYaw = Math.max(-0.62, Math.min(0.62, targetYaw));
+
+            if (!this.camYaw) this.camYaw = 0;
+            const rotK = this.snap ? 1.0 : 1.0 - Math.exp(-dt * 6.5);
+            this.camYaw += (targetYaw - this.camYaw) * rotK;
+
+            // 4. Follow Distance & Height Behind Player
+            let followDist = isFooty ? 13.5 : 7.2;
+            let followHeight = isFooty ? 5.8 : 3.8;
+
+            if (this.aspect < 0.9) {
+                followDist *= (isFooty ? 1.10 : 1.05);
+                followHeight *= (isFooty ? 1.12 : 1.05);
+                this.cam.fov = (isFooty ? 48 : 46);
+            } else {
+                this.cam.fov = (isFooty ? 46 : 44);
+            }
+
+            const distToGoal = Math.abs(hzPlayer - goalZ);
+            const threshold = isFooty ? 18.0 : 8.5;
+            if (distToGoal < threshold) {
+                const nearK = 1.0 - (distToGoal / threshold);
+                followHeight += nearK * 0.75;
+                followDist -= nearK * 0.45;
+            }
+
+            if (human && (human.sprint || speed > 6.0)) {
+                followDist *= 1.07;
+                followHeight *= 1.04;
+            }
+
+            if (forceFull) {
+                followDist = isFooty ? 12.0 : 8.0;
+                followHeight = 4.2;
+                this.camYaw += dt * 0.5;
+            }
+
+            const sinY = Math.sin(this.camYaw);
+            const cosY = Math.cos(this.camYaw);
+
+            let wantCamX = focusX + sinY * followDist;
+            let wantCamY = focusY + followHeight;
+            let wantCamZ = focusZ + cosY * followDist;
+
+            const maxBoundX = this.limitX + (isFooty ? 3.5 : 2.0);
+            wantCamX = Math.max(-maxBoundX, Math.min(maxBoundX, wantCamX));
+            wantCamY = Math.max(1.85, wantCamY);
+
+            if (!isFooty) {
+                // South basket backboard is at z = 12.6, stanchion post is at z = 13.5
+                // Strictly clamp wantCamZ to 10.8 so the camera never clips through or goes behind the south stanchion pole!
+                wantCamZ = Math.min(10.8, wantCamZ);
+            } else {
+                wantCamZ = Math.min(this.limitZ + 3.0, wantCamZ);
+            }
+
+            if (!this.curCamPos) this.curCamPos = [wantCamX, wantCamY, wantCamZ];
+            if (!this.curTarget) this.curTarget = [focusX, focusY, focusZ];
+
+            const posK = this.snap ? 1.0 : 1.0 - Math.exp(-dt * 9.0);
+            this.curCamPos[0] += (wantCamX - this.curCamPos[0]) * posK;
+            this.curCamPos[1] += (wantCamY - this.curCamPos[1]) * posK;
+            this.curCamPos[2] += (wantCamZ - this.curCamPos[2]) * posK;
+
+            this.curTarget[0] += (focusX - this.curTarget[0]) * posK;
+            this.curTarget[1] += (focusY - this.curTarget[1]) * posK;
+            this.curTarget[2] += (focusZ - this.curTarget[2]) * posK;
+
             this.snap = false;
+
             this.shakeT += dt * 60;
-            const sh = this.shakeAmt * 0.35;
+            const sh = this.shakeAmt * 0.32;
             const ox = Math.sin(this.shakeT * 1.7) * sh;
-            const oy = Math.cos(this.shakeT * 2.3) * sh * 0.7;
+            const oy = Math.cos(this.shakeT * 2.3) * sh * 0.65;
             this.shakeAmt = Math.max(0, this.shakeAmt - dt * 2.2);
+
             const c = this.cam;
-            const dy = Math.sin(this.elev);
-            const dz = Math.cos(this.elev);
-            c.position = [this.fx + ox, dy * this.dist + oy, this.fz + dz * this.dist];
-            c.target = [this.fx + ox * 0.6, 0, this.fz];
+            c.position = [this.curCamPos[0] + ox, this.curCamPos[1] + oy, this.curCamPos[2]];
+            c.target = [this.curTarget[0] + ox * 0.4, this.curTarget[1], this.curTarget[2]];
             c.update();
         }
     }
@@ -8345,11 +8482,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 const hoopCollar = mk(G.cylinder(0.125, 0.138, 0.05, 14), white, { fabric: true, fine: true });
                 this.torso.add(at(hoopCollar, 0, 0.37, 0));
 
-                // Front Collegiate Team Crest Badge for Basketball
-                const hoopsCrest = mk(G.cylinder(0.065, 0.065, 0.02, 10), 0xfb923c, { spec: 0.6, fine: true });
-                const hoopsStar = mk(G.box(0.045, 0.045, 0.025), white, { fine: true });
-                hoopsStar.rotation = [0, 0, Math.PI / 4];
-                this.torso.add(at(hoopsCrest, 0, 0.03, 0.205), at(hoopsStar, 0, 0.03, 0.21));
+                // Front Official FOOTY vs HOOPS Chest Emblem Badge for Basketball
+                const hoopsBadgeBack = mk(G.cylinder(0.068, 0.068, 0.015, 16), 0x0a0f1a, { spec: 0.7, fine: true });
+                const hoopsBadgeRing = mk(G.cylinder(0.071, 0.071, 0.008, 16), 0xf97316, { fine: true, emissive: 0xf97316, emissiveMul: 0.5 });
+                const hoopsHalfWhite = mk(G.cylinder(0.058, 0.058, 0.018, 14), white, { fine: true });
+                const hoopsHalfOrange = mk(G.box(0.058, 0.116, 0.020), 0xff6b00, { fine: true });
+                const hoopsDivider = mk(G.box(0.012, 0.125, 0.024), white, { fine: true });
+                hoopsDivider.rotation = [0, 0, 0.45];
+                this.torso.add(at(hoopsBadgeBack, 0, 0.04, 0.205), at(hoopsBadgeRing, 0, 0.04, 0.206), at(hoopsHalfWhite, 0, 0.04, 0.21), at(hoopsHalfOrange, 0.029, 0.04, 0.212), at(hoopsDivider, 0, 0.04, 0.214));
 
                 // 3D SQUAD NUMBER #23 ON JERSEY BACK (Visible in in-game matches!)
                 const num23Node = build3DNumber('23', trim, skin.secondary, this.fine);
@@ -8374,8 +8514,14 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 const centerStripe = mk(G.box(0.05, 0.26, 0.02), trim, { fabric: true, fine: true });
                 this.torso.add(at(centerStripe, 0, -0.02, 0.205));
 
-                // Golden Club Crest on left chest
-                this.torso.add(at(mk(G.cylinder(0.045, 0.045, 0.02, 10), 0xf6c445, { spec: 0.6, fine: true }), 0.12, 0.16, 0.21));
+                // Front Official FOOTY vs HOOPS Chest Emblem Badge for Football
+                const footyBadgeBack = mk(G.cylinder(0.055, 0.055, 0.015, 16), 0x0a0f1a, { spec: 0.7, fine: true });
+                const footyBadgeRing = mk(G.cylinder(0.058, 0.058, 0.008, 16), 0x00f0ff, { fine: true, emissive: 0x00f0ff, emissiveMul: 0.5 });
+                const footyHalfWhite = mk(G.cylinder(0.046, 0.046, 0.018, 14), white, { fine: true });
+                const footyHalfOrange = mk(G.box(0.046, 0.092, 0.020), 0xff6b00, { fine: true });
+                const footyDivider = mk(G.box(0.010, 0.100, 0.024), white, { fine: true });
+                footyDivider.rotation = [0, 0, 0.45];
+                this.torso.add(at(footyBadgeBack, 0.12, 0.16, 0.205), at(footyBadgeRing, 0.12, 0.16, 0.206), at(footyHalfWhite, 0.12, 0.16, 0.21), at(footyHalfOrange, 0.143, 0.16, 0.212), at(footyDivider, 0.12, 0.16, 0.214));
 
                 // 3D SQUAD NUMBER #10 ON JERSEY BACK (Or #1 for Keeper)
                 const isKeeper = agent && agent.role === 'keeper';

@@ -2756,8 +2756,15 @@
           '<path d="M32 54 Q44 62 52 52 Q48 72 60 62" stroke="' + secondary + '" stroke-width="2.5" fill="none" opacity="0.85"/>';
       }
 
+      // Official FOOTY vs HOOPS Chest Crest Badge for Basketball Tank Top
+      var hoopsEmblem =
+        '<g transform="translate(43, 29)">' +
+        '<circle cx="7" cy="7" r="7.5" fill="rgba(10,15,26,0.75)" stroke="' + trim + '" stroke-width="0.8"/>' +
+        '<image href="assets/emblem.png" x="0" y="0" width="14" height="14" preserveAspectRatio="xMidYMid meet"/>' +
+        '</g>';
+
       // Jock tag on bottom hem
-      var jockTag = '<rect x="30" y="78" width="8" height="5" rx="0.5" fill="#1e293b" stroke="#64748b" stroke-width="0.5"/>' +
+      var jockTag = hoopsEmblem + '<rect x="30" y="78" width="8" height="5" rx="0.5" fill="#1e293b" stroke="#64748b" stroke-width="0.5"/>' +
         '<line x1="31" y1="80" x2="37" y2="80" stroke="' + trim + '" stroke-width="0.8"/>';
 
       // Large Athletic Number
@@ -2880,12 +2887,12 @@
                    '<polygon points="8,-1.5 8.8,0.1 10.5,0.1 9.1,1.1 9.6,2.7 8,1.7 6.4,2.7 6.9,1.1 5.5,0.1 7.2,0.1" fill="#facc15"/>';
     }
 
-    // Official Club Crest Shield on Chest
+    // Official FOOTY vs HOOPS Crest Badge on Chest
     var crest =
-      '<g transform="translate(35, 36)">' +
+      '<g transform="translate(33, 34)">' +
       crestStars +
-      '<path d="M0 0 L8 0 L8 7 C8 11 4 13 4 13 C4 13 0 11 0 7 Z" fill="' + accent + '" stroke="' + primary + '" stroke-width="0.8" filter="url(#drop_' + uid + ')"/>' +
-      '<polygon points="4,2 5,4.5 7.5,4.5 5.5,6 6.3,8.5 4,7 1.7,8.5 2.5,6 0.5,4.5 3,4.5" fill="' + (primary.includes('ca8a') || primary.includes('854d') ? '#d97706' : '#f59e0b') + '"/>' +
+      '<circle cx="6" cy="6" r="6.5" fill="rgba(10,15,26,0.75)" stroke="' + trim + '" stroke-width="0.8"/>' +
+      '<image href="assets/emblem.png" x="0" y="0" width="12" height="12" preserveAspectRatio="xMidYMid meet"/>' +
       '</g>';
 
     // Micro-Mesh Fabric Weave Lines

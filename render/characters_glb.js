@@ -158,6 +158,20 @@
   if (typeof setTimeout === 'function') setTimeout(preloadGLBModels, 50);
  // key -> WebGLTexture
 
+
+  let glbEmblemImg = null;
+  function getGlbOfficialEmblem() {
+    if (glbEmblemImg && glbEmblemImg.complete && glbEmblemImg.naturalWidth > 0) return glbEmblemImg;
+    if (typeof document !== 'undefined') {
+      glbEmblemImg = document.getElementById('fvh-official-emblem');
+      if (!glbEmblemImg) {
+        glbEmblemImg = new Image();
+        glbEmblemImg.src = 'assets/emblem.png';
+      }
+    }
+    return glbEmblemImg;
+  }
+
   function hexToRgb(h) {
     if (typeof h === 'string') {
       if (h.startsWith('#')) h = parseInt(h.slice(1), 16);
@@ -335,16 +349,42 @@
           ctx.stroke();
         }
 
-        // 2. Club Crest & Athlete Number Detailing
+        // 2. Official FOOTY vs HOOPS Crest & Athlete Number Detailing
         if (isFront) {
-          // Official Club Crest on left chest
-          ctx.fillStyle = accCol;
+          // Official Project Emblem Badge on Chest (Strict 1:1 Aspect Ratio)
+          const emb = getGlbOfficialEmblem();
+          const embRadius = W * 0.024;
+          const embSize = embRadius * 2;
+          const embX = isFooty ? (cx - W * 0.052) : (cx - W * 0.048);
+          const embY = topY + hH * 0.27;
+
+          // Subtle dark contrast underlay so emblem pops on both light & dark kits
           ctx.beginPath();
-          ctx.arc(cx - W * 0.052, topY + hH * 0.28, W * 0.016, 0, Math.PI * 2);
+          ctx.arc(embX, embY, embRadius + 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(10, 15, 26, 0.75)';
           ctx.fill();
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = isFooty ? '#00f0ff' : '#f97316';
+          ctx.lineWidth = 1.2;
           ctx.stroke();
+
+          if (emb && emb.complete && emb.naturalWidth > 0) {
+            ctx.drawImage(emb, embX - embRadius, embY - embRadius, embSize, embSize);
+          } else {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(embX, embY, embRadius, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.fill();
+            ctx.fillStyle = '#ff6b00';
+            ctx.beginPath();
+            ctx.arc(embX, embY, embRadius, -Math.PI * 0.5, Math.PI * 0.5);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(embX - 1, embY - embRadius);
+            ctx.lineTo(embX + 2, embY + embRadius);
+            ctx.stroke();
+          }
 
           // High-visibility athlete number (#10 for Footy, #23 for Hoops)
           ctx.fillStyle = '#ffffff';
