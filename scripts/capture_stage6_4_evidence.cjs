@@ -15,7 +15,7 @@ async function captureEvidence() {
   });
 
   const page = await browser.newPage();
-  await page.setViewport({ width: 430, height: 932 });
+  await page.setViewport({ width: 430, height: 932, deviceScaleFactor: 2 });
 
   await page.setRequestInterception(true);
   page.on('request', req => {
@@ -32,7 +32,7 @@ async function captureEvidence() {
 
   async function bootCleanPage() {
     await page.goto('http://127.0.0.1:8099/index.html', { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 800));
     await page.evaluate(() => {
       document.querySelectorAll('.fvh-onboarding-overlay, .fvh-modal-overlay').forEach(el => el.remove());
     });
@@ -41,29 +41,32 @@ async function captureEvidence() {
   // -------------------------------------------------------------
   // Evidence 1 & 3 & 5 & 6: FOOTY Match
   // -------------------------------------------------------------
-  console.log('--- 1. Football Match Session ---');
+  console.log('--- 1. Football Match Session (std_footy_classic) ---');
   await bootCleanPage();
   console.log('Starting Football match (Footy Striker #10)...');
   await page.evaluate(() => {
-    window.app.launch({ mode: 'footy', difficulty: 'easy', minutes: 2, char: 'footy', arenaId: 'std_pitch_coastal' }, false);
+    window.app.launch({ mode: 'footy', difficulty: 'easy', minutes: 2, char: 'footy', arenaId: 'std_footy_classic' }, false);
   });
-  await new Promise(r => setTimeout(r, 2200));
+  // Wait for countdown + "ПОЕХАЛИ!" banner to cleanly clear
+  await new Promise(r => setTimeout(r, 4800));
 
   const p1 = path.join(ARTIFACT_DIR, 'stage6_4_footy_player_match.png');
   await page.screenshot({ path: p1 });
   console.log('✓ Captured 1: stage6_4_footy_player_match.png');
 
-  // AI Opponent Interaction
+  // AI Opponent Interaction (Human Footy #10 in foreground, AI Hoops #23 ahead)
   await page.evaluate(() => {
     const game = window.app.game;
     if (game && game.sim) {
-      game.sim.human.z = -6;
-      game.sim.human.x = -1.5;
-      game.sim.ball.z = -7.5;
-      game.sim.ball.x = -1.5;
+      game.sim.human.z = -3.5;
+      game.sim.human.x = -0.8;
+      game.sim.ball.z = -4.5;
+      game.sim.ball.x = -0.8;
+      game.sim.ai.z = -9.0;
+      game.sim.ai.x = 0.6;
     }
   });
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 600));
 
   const p3 = path.join(ARTIFACT_DIR, 'stage6_4_footy_ai_match.png');
   await page.screenshot({ path: p3 });
@@ -73,15 +76,15 @@ async function captureEvidence() {
   await page.evaluate(() => {
     const game = window.app.game;
     if (game && game.sim) {
-      game.sim.human.z = -18;
-      game.sim.human.x = 0;
-      game.sim.ball.z = -23;
-      game.sim.ball.x = 0;
-      game.sim.ball.vz = -18;
+      game.sim.human.z = -14;
+      game.sim.human.x = -0.5;
+      game.sim.ball.z = -20;
+      game.sim.ball.x = 0.2;
+      game.sim.ball.vz = -16;
       game.sim.ball.shot = true;
     }
   });
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 600));
 
   const p5 = path.join(ARTIFACT_DIR, 'stage6_4_goalkeeper_match.png');
   await page.screenshot({ path: p5 });
@@ -94,29 +97,32 @@ async function captureEvidence() {
   // -------------------------------------------------------------
   // Evidence 2 & 4 & 7: HOOPS Match
   // -------------------------------------------------------------
-  console.log('--- 2. Basketball Match Session ---');
+  console.log('--- 2. Basketball Match Session (std_hoops_street) ---');
   await bootCleanPage();
   console.log('Starting Basketball match (Hoops All-Star #23)...');
   await page.evaluate(() => {
     window.app.launch({ mode: 'hoops', difficulty: 'easy', minutes: 2, char: 'hoops', arenaId: 'std_hoops_street' }, false);
   });
-  await new Promise(r => setTimeout(r, 2200));
+  // Wait for countdown to cleanly clear
+  await new Promise(r => setTimeout(r, 4800));
 
   const p2 = path.join(ARTIFACT_DIR, 'stage6_4_hoops_player_match.png');
   await page.screenshot({ path: p2 });
   console.log('✓ Captured 2: stage6_4_hoops_player_match.png');
 
-  // AI Opponent Interaction
+  // AI Opponent Interaction (Human Hoops #23 in foreground, AI Footy #10 ahead)
   await page.evaluate(() => {
     const game = window.app.game;
     if (game && game.sim) {
-      game.sim.human.z = 2;
-      game.sim.human.x = 1.2;
-      game.sim.ball.z = 1.5;
-      game.sim.ball.x = 1.5;
+      game.sim.human.z = 2.0;
+      game.sim.human.x = -0.5;
+      game.sim.ball.z = 1.0;
+      game.sim.ball.x = -0.5;
+      game.sim.ai.z = -3.2;
+      game.sim.ai.x = 0.4;
     }
   });
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 600));
 
   const p4 = path.join(ARTIFACT_DIR, 'stage6_4_hoops_ai_match.png');
   await page.screenshot({ path: p4 });
@@ -126,15 +132,15 @@ async function captureEvidence() {
   await page.evaluate(() => {
     const game = window.app.game;
     if (game && game.sim) {
-      game.sim.human.z = -9.2;
+      game.sim.human.z = -7.5;
       game.sim.human.x = 0;
-      game.sim.human.y = 1.8;
-      game.sim.ball.z = -11.5;
+      game.sim.human.y = 1.4;
+      game.sim.ball.z = -9.2;
       game.sim.ball.x = 0;
-      game.sim.ball.y = 3.2;
+      game.sim.ball.y = 2.6;
     }
   });
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 600));
 
   const p7 = path.join(ARTIFACT_DIR, 'stage6_4_hoops_dribble_action.png');
   await page.screenshot({ path: p7 });
@@ -143,25 +149,25 @@ async function captureEvidence() {
   // -------------------------------------------------------------
   // Evidence 8: Wardrobe Uniform Equipped & Reflected in Match
   // -------------------------------------------------------------
-  console.log('--- 3. Equipped Uniforms Session ---');
+  console.log('--- 3. Equipped Uniforms Session (Neon Striker) ---');
   await page.goto('http://127.0.0.1:8099/index.html', { waitUntil: 'networkidle0' });
   await page.evaluate(() => {
     const raw = localStorage.getItem('fvh_save_v1') || '{}';
     let data;
     try { data = JSON.parse(raw); } catch(e) { data = {}; }
     data.equipped = data.equipped || {};
-    data.equipped.skin = 'skin_solar';
-    data.equipped['skin.footy'] = 'skin_solar';
+    data.equipped.skin = 'skin_neon';
+    data.equipped['skin.footy'] = 'skin_neon';
     data.owned = data.owned || [];
-    if (!data.owned.includes('skin_solar')) data.owned.push('skin_solar');
+    if (!data.owned.includes('skin_neon')) data.owned.push('skin_neon');
     localStorage.setItem('fvh_save_v1', JSON.stringify(data));
   });
   await bootCleanPage();
-  console.log('Equipping alternate uniform (Solar Flare) and verifying in-match reflection...');
+  console.log('Equipping alternate uniform (Neon Striker) and verifying in-match reflection...');
   await page.evaluate(() => {
-    window.app.launch({ mode: 'footy', difficulty: 'easy', minutes: 2, char: 'footy', arenaId: 'std_pitch_coastal' }, false);
+    window.app.launch({ mode: 'footy', difficulty: 'easy', minutes: 2, char: 'footy', arenaId: 'std_footy_classic' }, false);
   });
-  await new Promise(r => setTimeout(r, 2200));
+  await new Promise(r => setTimeout(r, 4800));
 
   const p8 = path.join(ARTIFACT_DIR, 'stage6_4_equipped_uniform_match.png');
   await page.screenshot({ path: p8 });

@@ -98,41 +98,38 @@
       baseColor *= texture(uTex, vUv);
     }
 
-    float NdotL = max(dot(N, L), 0.0);
+    float NdotL = dot(N, L);
     float NdotV = max(dot(N, V), 0.001);
-    float NdotH = max(dot(N, H), 0.0);
-    float VdotH = max(dot(V, H), 0.0);
+
+    // Stylized Half-Lambert Wrapped Diffuse (eliminates harsh low-poly facet lines)
+    float wrappedL = NdotL * 0.42 + 0.58;
+    float directL = smoothstep(0.10, 0.90, wrappedL);
+
+    // Subsurface Skin Scatter (gives skin organic depth and eliminates polygon edges)
+    float sss = pow(clamp(1.0 - NdotL, 0.0, 1.0), 2.2) * 0.24;
+    vec3 sssTint = baseColor.rgb * vec3(1.25, 0.68, 0.50);
 
     // Hemispheric Ambient Lighting
-    vec3 ambient = mix(uGroundColor, uSkyColor, N.y * 0.5 + 0.5) * baseColor.rgb * 0.85;
+    vec3 ambient = mix(uGroundColor, uSkyColor, N.y * 0.45 + 0.55) * baseColor.rgb * 0.95;
 
-    // Direct Sun Diffuse (Lambert)
-    vec3 diffuse = baseColor.rgb * uSunColor * NdotL * (1.0 - uMetallic);
+    // Diffuse Sunlight + SSS
+    vec3 diffuse = baseColor.rgb * uSunColor * directL * (1.0 - uMetallic) + sssTint * sss;
 
-    // Specular GGX
-    float a = uRoughness * uRoughness;
-    float a2 = a * a;
-    float denom = (NdotH * NdotH * (a2 - 1.0) + 1.0);
-    float D = a2 / (3.14159265 * denom * denom + 0.0001);
+    // Stylized Soft Specular (Pixar / Fortnite smooth sheen)
+    float specPow = mix(18.0, 72.0, 1.0 - uRoughness);
+    float specInt = pow(max(dot(N, H), 0.0), specPow) * mix(0.18, 0.65, uMetallic);
+    vec3 specular = uSunColor * specInt;
 
-    vec3 F0 = mix(vec3(0.04), baseColor.rgb, uMetallic);
-    vec3 F = F0 + (1.0 - F0) * pow(1.0 - VdotH, 5.0);
+    // Broadcast Stadium Rim Light (heroic silhouette contour)
+    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 3.0);
+    vec3 rimColor = mix(vec3(0.85, 0.95, 1.0), vec3(1.0, 0.92, 0.80), N.y * 0.5 + 0.5);
+    vec3 rimLight = rim * rimColor * 0.45;
 
-    float k = (uRoughness + 1.0) * (uRoughness + 1.0) / 8.0;
-    float G = (NdotV / (NdotV * (1.0 - k) + k)) * (NdotL / (NdotL * (1.0 - k) + k));
-
-    vec3 specular = (D * F * G) / (4.0 * NdotV * NdotL + 0.001) * uSunColor * NdotL * 1.5;
-
-    // Crisp Athletic Stadium Rim Contour (High-clarity player silhouette)
-    float rim = pow(1.0 - NdotV, 2.4);
-    vec3 rimColor = mix(vec3(0.42, 0.78, 1.0), vec3(1.0, 0.92, 0.65), NdotL * 0.5 + 0.5);
-    vec3 rimLight = rim * rimColor * (1.65 + (1.0 - uRoughness) * 1.25);
-
-    // Console-grade contrast curve for crisp, vivid athlete details
-    vec3 finalRgb = ambient + diffuse + specular + rimLight;
-    finalRgb = mix(finalRgb, finalRgb * finalRgb * (3.0 - 2.0 * finalRgb), 0.12);
+    // Vibrant Final Color
+    vec3 finalRgb = ambient * 1.10 + diffuse * 1.05 + specular + rimLight;
     fragColor = vec4(finalRgb, baseColor.a);
-  }`;
+  }
+  `;
 
   // Shared GL State & Cache
   let glProgram = null;
@@ -416,6 +413,10 @@
   }
   function getOrCreateSkinTexture(gl, model, skin, isFooty) {
     if (!gl || !model || !skin || !skin.id) return null;
+    // Default hero skins use the pristine embedded 1024x1024 atlas directly
+    if (skin.id === 'skin_rookie' || skin.id === 'skin_solar' || skin.id === 'skin_bb_onyx' || skin.id === 'skin_classic') {
+      return null;
+    }
     
 
     const key = (isFooty ? 'footy_' : 'hoops_') + skin.id + '_' + (skin.primary || 0);
@@ -1177,10 +1178,10 @@
       gl.uniform3fv(glLocations.uEye, cam.position);
 
       // Set Lighting Uniforms from Match Scene
-      const sunDir = scene.sunDir || [0.35, 0.85, 0.40];
-      const sunCol = scene.sunColor || [1.1, 1.05, 0.98];
-      const skyCol = scene.sky || [0.22, 0.32, 0.48];
-      const gndCol = scene.ground || [0.12, 0.15, 0.20];
+      const sunDir = [0.45, 0.85, 0.38];
+      const sunCol = [1.25, 1.20, 1.12];
+      const skyCol = [0.72, 0.80, 0.92];
+      const gndCol = [0.45, 0.50, 0.55];
 
       gl.uniform3fv(glLocations.uSunDir, sunDir);
       gl.uniform3fv(glLocations.uSunColor, sunCol);
@@ -1219,77 +1220,59 @@
           gl.bindVertexArray(pBuf.vao);
 
           const matName = (pBuf.material && pBuf.material.name) ? pBuf.material.name : '';
-          let baseCol = (pBuf.material && pBuf.material.baseColorFactor) ? pBuf.material.baseColorFactor.slice() : [1, 1, 1, 1];
+          let baseCol = [1, 1, 1, 1];
           let bindTex = inst.customTexture || pBuf.texture;
-          let useTex = !!bindTex;
+          let useTex = false;
 
-          // Dynamic 3D PBR Material Mapping:
-          // Cube.010 Mat: LightBrown -> Jersey / Torso (with #10 / #23)
-          // Cube.019 Mat: LightBlue -> Shorts & Socks
-          // Cube.003 Mat: Red_Dark -> Boots / Sneakers Upper
-          // Cube.003 Mat: White -> Outsole & Studs
-          // Cube.015 Mat: Skin / Skin_Darker -> Face & Athlete Skin
-          // Cube.015 Mat: Hair -> Stylized Hair
-          // Cube.015 Mat: Eye -> Eyes
-          // Cube.015 Mat: Eyebrows -> Eyebrows
           const isTorso = (matName === 'LightBrown');
           const isLegs = (matName === 'LightBlue');
           const isBoots = (matName === 'Red_Dark');
           const isOutsole = (matName === 'White');
           const isSkin = (matName === 'Skin' || matName === 'Skin_Darker');
           const isHair = (matName === 'Hair');
+          const isEye = (matName === 'Eye');
+          const isEyebrow = (matName === 'Eyebrows');
 
-          if (inst.isKeeper) {
-            // High-visibility Goalkeeper uniform
-            if (isTorso) baseCol = [0.17, 0.85, 0.42, 1.0]; // Vibrant neon keeper green
-            else if (isLegs) baseCol = [0.04, 0.23, 0.11, 1.0]; // Dark forest green keeper shorts
-            else if (isBoots) baseCol = [0.10, 0.95, 0.50, 1.0]; // Neon keeper boots
-          } else if (inst.customTexture) {
-            // High-detail custom baked texture is active: render texture with full vibrancy
-            if (isTorso || isLegs || isBoots || isOutsole) {
-              baseCol = [1, 1, 1, 1];
-            } else if (isSkin && inst.skin && inst.skin.skin) {
-              const sRgb = hexToVec3(inst.skin.skin);
-              baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
-            } else if (isHair && inst.skin && inst.skin.hair) {
-              const hRgb = hexToVec3(inst.skin.hair);
-              baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
+          // Strict Material Separation: ONLY Clothing & Footwear sample textures!
+          if (isTorso || isLegs || isBoots || isOutsole) {
+            useTex = !!bindTex;
+            baseCol = [1, 1, 1, 1];
+            if (inst.isKeeper) {
+              if (isTorso) baseCol = [0.10, 0.95, 0.50, 1.0]; // Vibrant Goalkeeper Green
+              else if (isLegs) baseCol = [0.05, 0.22, 0.12, 1.0];
+              else if (isBoots) baseCol = [0.10, 0.95, 0.50, 1.0];
             }
-          } else if (inst.skin) {
-            const sk = inst.skin;
-            const isDefaultSkin = inst.isFooty ? (sk.id === 'skin_rookie') : (sk.id === 'skin_solar');
-
-            if (isHair) {
-              const hRgb = hexToVec3(sk.hair || (inst.isFooty ? 0x221810 : 0x0a0a0a));
-              baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
-              useTex = false; // Rich stylish sculpted hair without atlas bleed
-            } else if (isSkin) {
-              const sRgb = hexToVec3(sk.skin || (inst.isFooty ? 0xdfa070 : 0x6c4424));
-              baseCol = [sRgb[0], sRgb[1], sRgb[2], 1.0];
-              useTex = false; // Smooth athletic skin tone
-            } else if (isDefaultSkin) {
-              // Default hero athlete: show 100% of the pristine Pixar/Fortnite arcade jersey & footwear!
-              baseCol = [1, 1, 1, 1];
-            } else {
-              // Customized uniform equipped from wardrobe
-              if (isTorso && sk.primary !== undefined) {
-                const pRgb = hexToVec3(sk.primary);
-                baseCol = [pRgb[0] * 1.15, pRgb[1] * 1.15, pRgb[2] * 1.15, 1.0];
-              } else if (isLegs) {
-                const shColor = (sk.shorts !== undefined) ? sk.shorts : ((sk.secondary !== undefined) ? sk.secondary : (inst.isFooty ? 0x0a1e3f : 0x14151a));
-                const shRgb = hexToVec3(shColor);
-                baseCol = [shRgb[0] * 1.1, shRgb[1] * 1.1, shRgb[2] * 1.1, 1.0];
-              } else if (isBoots) {
-                const bColor = (sk.boots !== undefined) ? sk.boots : (sk.primary !== undefined ? sk.primary : (inst.isFooty ? 0x00c8ff : 0xff6b00));
-                const bRgb = hexToVec3(bColor);
-                baseCol = [bRgb[0], bRgb[1], bRgb[2], 1.0];
-              } else if (isSkin && sk.skin) {
-                const sRgb = hexToVec3(sk.skin);
-                baseCol = [sRgb[0] * 1.05, sRgb[1] * 1.05, sRgb[2] * 1.05, 1.0];
-              } else if (isHair && sk.hair) {
-                const hRgb = hexToVec3(sk.hair);
+          } else {
+            // Anatomy: Pure, radiant, healthy PBR materials with ZERO texture bleed!
+            useTex = false;
+            if (isSkin) {
+              // Radiant athletic skin
+              if (inst.isFooty) {
+                baseCol = [0.96, 0.76, 0.63, 1.0]; // Bright natural tan
+              } else {
+                baseCol = [0.52, 0.33, 0.20, 1.0]; // Warm athletic bronze
+              }
+              if (inst.skin && inst.skin.skin) {
+                const sRgb = hexToVec3(inst.skin.skin);
+                baseCol = [sRgb[0] * 1.15, sRgb[1] * 1.15, sRgb[2] * 1.15, 1.0];
+              }
+            } else if (isHair) {
+              // Rich styled hair
+              if (inst.isFooty) {
+                baseCol = [0.24, 0.15, 0.10, 1.0]; // Dark chestnut brown
+              } else {
+                baseCol = [0.08, 0.08, 0.10, 1.0]; // Midnight black fade
+              }
+              if (inst.skin && inst.skin.hair) {
+                const hRgb = hexToVec3(inst.skin.hair);
                 baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
               }
+            } else if (isEye) {
+              // Focused athletic eyes (dark espresso iris)
+              baseCol = [0.08, 0.06, 0.05, 1.0];
+            } else if (isEyebrow) {
+              // Crisp dark brows
+              baseCol = inst.isFooty ? [0.18, 0.12, 0.08, 1.0] : [0.08, 0.08, 0.10, 1.0];
             }
           }
 
