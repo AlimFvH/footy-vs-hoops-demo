@@ -4624,13 +4624,13 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     exports.RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
     const FOOTY_BASE = {
         line: 0xfdfefe,
-        skyTop: 0x091428,
-        skyBottom: 0x1e3656,
-        fog: 0x0c1a2e,
-        sunColor: [1.25, 1.20, 1.14],
+        skyTop: 0x100e2e,
+        skyBottom: 0x2e1065,
+        fog: 0x120d26,
+        sunColor: [1.32, 1.25, 1.15],
         sunDir: [0.35, 0.85, 0.4],
-        hemiSky: 0x90bcfc,
-        hemiGround: 0x1e5028,
+        hemiSky: 0xdbeafe,
+        hemiGround: 0x14532d,
         lights: [0xfff7e8, 0xfff7e8, 0xfff7e8, 0xfff7e8],
         lightIntensity: 0.82,
         stand: 0x222a3a,
@@ -4646,13 +4646,13 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         paint: 0xd946ef,
         centerPaint: 0x06b6d4,
         floor: 0x060810,
-        skyTop: 0x060814,
-        skyBottom: 0x181030,
-        fog: 0x0c0f1c,
-        sunColor: [0.85, 0.82, 1.05],
+        skyTop: 0x100e2e,
+        skyBottom: 0x2e1065,
+        fog: 0x140e2a,
+        sunColor: [1.22, 1.14, 1.02],
         sunDir: [0.25, 0.88, 0.38],
-        hemiSky: 0x00e5ff,
-        hemiGround: 0x2e1065,
+        hemiSky: 0xffedd5,
+        hemiGround: 0x3b1d11,
         lights: [0x00e5ff, 0xff2bd6, 0x00e5ff, 0xff2bd6],
         lightIntensity: 0.75,
         stand: 0x0f1422,
@@ -6585,14 +6585,23 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.closePath();
             g.fill();
         } else {
-            // 10. DEFAULT & INTERNATIONAL STADIUM (Night / Classic / Street):
-            // Multi-tiered stadium floodlight halos, sweeping grandstand upper tiers & atmospheric glow!
-            // Upper stadium roof canopy silhouette across top horizon
-            g.fillStyle = '#0f1422';
+            // 10. FORTNITE CHAMPIONSHIP ARENA SKY (Vibrant Twilight / Dusk / Stadium Glow):
+            // Multi-color twilight gradient spanning horizon to zenith
+            const skyGrad = g.createLinearGradient(0, 0, 0, 360);
+            skyGrad.addColorStop(0, '#100e2e'); // Deep cosmic indigo zenith
+            skyGrad.addColorStop(0.35, '#2e1065'); // Electric violet
+            skyGrad.addColorStop(0.65, '#701a75'); // Rich magenta dusk
+            skyGrad.addColorStop(0.85, '#ea580c'); // Warm sunset coral
+            skyGrad.addColorStop(1.0, '#facc15'); // Golden horizon glow
+            g.fillStyle = skyGrad;
+            g.fillRect(0, 0, 1024, 380);
+
+            // Stadium canopy architecture profile & glowing floodlights
+            g.fillStyle = '#0a0d18';
             g.beginPath();
-            g.moveTo(0, 280);
-            for (let x = 0; x <= 1024; x += 64) {
-                const sy = 220 + Math.sin(x * 0.006) * 30 + Math.cos(x * 0.02) * 15;
+            g.moveTo(0, 260);
+            for (let x = 0; x <= 1024; x += 32) {
+                const sy = 230 + Math.sin(x * 0.008) * 22 + Math.cos(x * 0.025) * 10;
                 g.lineTo(x, sy);
             }
             g.lineTo(1024, 512);
@@ -6600,53 +6609,63 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             g.closePath();
             g.fill();
 
-            // Floodlights & Arena Illumination
-            if (isFooty) {
-                // Multi-tiered outdoor football stadium floodlight glare halos
-                const floodLights = [
-                    { x: 380, y: 190 }, // North-West floodlight bank
-                    { x: 644, y: 190 }, // North-East floodlight bank
-                    { x: 160, y: 220 }, // Far-West
-                    { x: 864, y: 220 }  // Far-East
-                ];
-                for (const fl of floodLights) {
-                    const flare = g.createRadialGradient(fl.x, fl.y, 6, fl.x, fl.y, 140);
-                    flare.addColorStop(0, '#ffffff');
-                    flare.addColorStop(0.2, 'rgba(254,240,138,0.7)');
-                    flare.addColorStop(0.5, 'rgba(56,189,248,0.28)');
-                    flare.addColorStop(1, 'rgba(0,0,0,0)');
-                    g.fillStyle = flare;
-                    g.beginPath();
-                    g.arc(fl.x, fl.y, 140, 0, Math.PI * 2);
-                    g.fill();
-                    // Floodlight head bank
-                    g.fillStyle = '#ffffff';
-                    g.fillRect(fl.x - 18, fl.y - 7, 36, 14);
-                }
-            } else {
-                // INDOOR BASKETBALL ARENA:
-                // Completely spotlight-free, glare-free dark sleek dome with uniform ambient roof illumination
-                // Clean architectural ceiling profile without blinding projectors or flares
-                g.fillStyle = 'rgba(15, 23, 42, 0.6)';
-                g.fillRect(0, 140, 1024, 80);
+            // Soaring Stadium Floodlight banks with heroic lens flares
+            const floodLights = [
+                { x: 280, y: 170, color: '#00f0ff' }, // North-West cyan floodlight
+                { x: 512, y: 145, color: '#ffffff' }, // North Center White floodlight
+                { x: 744, y: 170, color: '#f97316' }, // North-East orange floodlight
+                { x: 120, y: 200, color: '#a855f7' }, // West violet
+                { x: 904, y: 200, color: '#38bdf8' }  // East sky blue
+            ];
+            for (const fl of floodLights) {
+                const flare = g.createRadialGradient(fl.x, fl.y, 4, fl.x, fl.y, 160);
+                flare.addColorStop(0, '#ffffff');
+                flare.addColorStop(0.18, fl.color);
+                flare.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+                flare.addColorStop(1, 'rgba(0,0,0,0)');
+                g.fillStyle = flare;
+                g.beginPath();
+                g.arc(fl.x, fl.y, 160, 0, Math.PI * 2);
+                g.fill();
+
+                // Structural floodlight truss
+                g.fillStyle = '#ffffff';
+                g.fillRect(fl.x - 22, fl.y - 8, 44, 16);
+                g.fillStyle = fl.color;
+                g.fillRect(fl.x - 18, fl.y - 5, 36, 10);
             }
 
-            // Spectator tier lights (sparkling crowd camera flashes & stadium lights)
-            for (let i = 0; i < 350; i++) {
-                const cx = (i * 2.9 + Math.sin(i * 4) * 8) % 1024;
-                const cy = 250 + Math.random() * 80;
-                const col = i % 4 === 0 ? '#fef08a' : i % 4 === 1 ? '#38bdf8' : i % 4 === 2 ? '#f43f5e' : '#ffffff';
+            // Floating spectator blimp with glowing neon sponsor logo
+            g.save();
+            const blimpX = 360, blimpY = 90;
+            g.fillStyle = '#1e1b4b';
+            g.beginPath();
+            g.ellipse(blimpX, blimpY, 75, 24, -0.08, 0, Math.PI * 2);
+            g.fill();
+            g.strokeStyle = '#00f0ff';
+            g.lineWidth = 2;
+            g.stroke();
+            g.fillStyle = '#00f0ff';
+            g.font = '900 12px sans-serif';
+            g.fillText('⚡ FOOTY vs HOOPS ⚡', blimpX - 58, blimpY + 4);
+            g.restore();
+
+            // Crowd sparkles / stadium flashbulbs
+            for (let i = 0; i < 450; i++) {
+                const cx = (i * 2.3 + Math.sin(i * 5) * 12) % 1024;
+                const cy = 255 + Math.random() * 85;
+                const col = i % 5 === 0 ? '#00f0ff' : i % 5 === 1 ? '#f97316' : i % 5 === 2 ? '#facc15' : i % 5 === 3 ? '#ec4899' : '#ffffff';
                 g.fillStyle = col;
                 g.fillRect(cx, cy, 2, 2);
             }
 
-            // Atmospheric pitch light wash
-            const wash = g.createLinearGradient(0, 220, 0, 480);
+            // Warm atmospheric pitch light wash
+            const wash = g.createLinearGradient(0, 200, 0, 480);
             wash.addColorStop(0, 'rgba(255,255,255,0)');
-            wash.addColorStop(0.6, 'rgba(254,240,138,0.18)');
-            wash.addColorStop(1, 'rgba(15,20,34,0.7)');
+            wash.addColorStop(0.5, 'rgba(250,204,21,0.14)');
+            wash.addColorStop(1, 'rgba(10,13,24,0.75)');
             g.fillStyle = wash;
-            g.fillRect(0, 220, 1024, 260);
+            g.fillRect(0, 200, 1024, 280);
         }
 
         return c;
@@ -6894,26 +6913,38 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             }
         }
     }
-    function makeSkyDomeGeometry(radius, height, seg = 32) {
-        const hh = height / 2;
+    function makeSkyDomeGeometry(radius, height, seg = 36) {
         const pos = [], nor = [], uv = [], idx = [];
-        for (let j = 0; j <= seg; j++) {
-            const a = (j / seg) * Math.PI * 2;
-            const s = Math.sin(a);
-            const c = Math.cos(a);
-            pos.push(radius * s, -hh, radius * c);
-            nor.push(-s, 0, -c);
-            uv.push(j / seg, 0.0);
-            pos.push(radius * s, hh, radius * c);
-            nor.push(-s, 0, -c);
-            uv.push(j / seg, 1.0);
+        // True vaulted 3D dome profile spanning from horizon to zenith cap (Zero black void!)
+        const rings = [
+            { r: radius, y: -12, v: 0.0 },
+            { r: radius * 0.98, y: 12, v: 0.22 },
+            { r: radius * 0.92, y: 32, v: 0.44 },
+            { r: radius * 0.78, y: 52, v: 0.65 },
+            { r: radius * 0.52, y: 68, v: 0.84 },
+            { r: 0.5, y: 78, v: 1.0 }
+        ];
+        const numRings = rings.length;
+        for (let i = 0; i < numRings; i++) {
+            const ring = rings[i];
+            for (let j = 0; j <= seg; j++) {
+                const a = (j / seg) * Math.PI * 2;
+                const s = Math.sin(a);
+                const c = Math.cos(a);
+                pos.push(ring.r * s, ring.y, ring.r * c);
+                nor.push(-s, 0, -c);
+                uv.push(j / seg, ring.v);
+            }
         }
-        for (let j = 0; j < seg; j++) {
-            const b0 = j * 2;
-            const t0 = j * 2 + 1;
-            const b1 = (j + 1) * 2;
-            const t1 = (j + 1) * 2 + 1;
-            idx.push(b0, b1, t0, t0, b1, t1);
+        const row = seg + 1;
+        for (let i = 0; i < numRings - 1; i++) {
+            for (let j = 0; j < seg; j++) {
+                const a = i * row + j;
+                const b = a + 1;
+                const c = a + row;
+                const d = c + 1;
+                idx.push(a, b, c, b, d, c);
+            }
         }
         return new G.Geometry(new Float32Array(pos), new Float32Array(nor), new Float32Array(uv), new Uint16Array(idx));
     }
@@ -8125,28 +8156,29 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
 
             // 4. Heroic Follow Distance & Height Behind Player
             // Close enough to clearly see the hero athlete and uniform, elevated to see the goal/hoop ahead
-            let followDist = isFooty ? 5.2 : 4.2;
-            let followHeight = isFooty ? 2.2 : 1.9;
+            let followDist = isFooty ? 6.2 : 5.0;
+            let followHeight = isFooty ? 2.5 : 2.05;
 
             if (this.aspect < 0.9) {
-                followDist *= (isFooty ? 1.04 : 1.06);
-                followHeight *= (isFooty ? 1.05 : 1.06);
-                this.cam.fov = 50;
+                // Portrait mobile framing: hero athlete occupies golden 36-38% screen height
+                followDist *= 1.05;
+                followHeight *= 1.05;
+                this.cam.fov = 54;
             } else {
-                this.cam.fov = 46;
+                this.cam.fov = 48;
             }
 
             const distToGoal = Math.abs(hzPlayer - goalZ);
             const threshold = isFooty ? 16.0 : 8.0;
             if (distToGoal < threshold) {
                 const nearK = 1.0 - (distToGoal / threshold);
-                followHeight += nearK * 0.55;
-                followDist -= nearK * 0.35;
+                followHeight += nearK * 0.45;
+                followDist -= nearK * 0.25;
             }
 
             if (human && (human.sprint || speed > 6.0)) {
-                followDist *= 1.06;
-                followHeight *= 1.03;
+                followDist *= 1.05;
+                followHeight *= 1.02;
             }
 
             if (forceFull) {
@@ -8158,7 +8190,11 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             const sinY = Math.sin(this.camYaw);
             const cosY = Math.cos(this.camYaw);
 
-            let wantCamX = focusX + sinY * followDist;
+            // Fortnite over-the-shoulder tactical framing:
+            // Camera is offset slightly to the right (+0.42m), placing the athlete's athletic back
+            // on the left-center, leaving the center of the pitch completely open for ball control & shooting sightlines!
+            const shoulderOffset = (this.aspect < 0.9) ? 0.38 : 0.50;
+            let wantCamX = focusX + sinY * followDist + shoulderOffset;
             let wantCamY = focusY + followHeight;
             let wantCamZ = focusZ + cosY * followDist;
 
@@ -8167,21 +8203,19 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             wantCamY = Math.max(1.85, wantCamY);
 
             if (!isFooty) {
-                // South basket backboard is at z = 12.6, stanchion post is at z = 13.5
-                // Clamp wantCamZ to 11.6 so camera stays safely in front of backboard and never clips
-                if (wantCamZ > 11.6) {
-                    const extra = wantCamZ - 11.6;
-                    wantCamY += extra * 0.35; // Lift up slightly when backed up
-                    wantCamZ = 11.6;
+                if (wantCamZ > 11.8) {
+                    const extra = wantCamZ - 11.8;
+                    wantCamY += extra * 0.35;
+                    wantCamZ = 11.8;
                 }
             } else {
                 wantCamZ = Math.min(this.limitZ + 2.5, wantCamZ);
             }
 
             // Look forward towards the opponent's goal/hoop (at -Z) with comfortable pitch!
-            const lookAheadZ = isFooty ? 2.0 : 1.6;
-            const targetPosX = focusX * 0.70;
-            const targetPosY = 1.30 + (isShotOrDunk ? Math.min(2.8, by * 0.40) : 0);
+            const lookAheadZ = isFooty ? 3.5 : 2.8;
+            const targetPosX = focusX * 0.35;
+            const targetPosY = 1.10 + (isShotOrDunk ? Math.min(2.8, by * 0.40) : 0);
             const targetPosZ = focusZ - lookAheadZ;
 
             if (!this.curCamPos) this.curCamPos = [wantCamX, wantCamY, wantCamZ];
