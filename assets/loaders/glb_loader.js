@@ -432,6 +432,23 @@
     return null;
   }
 
+  const PRELOAD_URLS = [
+    'assets/characters/footy10.glb',
+    'assets/characters/hoops23.glb',
+    'assets/characters/keeper1.glb'
+  ];
+
+  function preloadAll() {
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      PRELOAD_URLS.forEach(u => {
+        loadGLB(u).catch(e => console.warn('[GLBLoader] Preload error for', u, e));
+      });
+    }
+  }
+
+  // Auto-preload core character models on script execution
+  preloadAll();
+
   // --- Main Loader Function ---
 
   async function loadGLB(arrayBufferOrUrl) {
@@ -751,6 +768,7 @@
   // Export public API
   exports.loadGLB = loadGLB;
   exports.getCachedModel = getCachedModel;
+  exports.preloadAll = preloadAll;
   exports.parseGLBContainer = parseGLBContainer;
   exports.GLBModel = GLBModel;
 });

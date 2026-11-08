@@ -416,8 +416,7 @@
   }
   function getOrCreateSkinTexture(gl, model, skin, isFooty) {
     if (!gl || !model || !skin || !skin.id) return null;
-    const defSkin = isFooty ? 'skin_rookie' : 'skin_solar';
-    if (skin.id === defSkin) return null; // Default texture matches default athlete uniform
+    
 
     const key = (isFooty ? 'footy_' : 'hoops_') + skin.id + '_' + (skin.primary || 0);
     if (skinTextureCache.has(key)) {
@@ -826,6 +825,10 @@
         if (cached) {
           this.model = cached;
           this.loaded = true;
+          // Model is fully ready and drawn this frame: safely hide procedural mesh
+          if (this.charRef && this.charRef.pivot) {
+            this.charRef.pivot.visible = false;
+          }
         }
       }
 
@@ -1109,7 +1112,7 @@
         // 1. Goalkeeper in goal (Goalkeeper #1) - scale 1.82 (athletic keeper, fits perfectly in 2.5m goal)
         if (isKeeper) {
           const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 2.22,
+            scale: 1.88,
             skin: c.skin,
             isFooty: true,
             isKeeper: true,
@@ -1120,7 +1123,7 @@
         // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
         else if (charSport === 'footy') {
           const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 2.25,
+            scale: 1.82,
             skin: c.skin,
             isFooty: true,
             isKeeper: false,
@@ -1131,7 +1134,7 @@
         // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
         else {
           const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 2.35,
+            scale: 1.86,
             skin: c.skin,
             isFooty: false,
             isKeeper: false,
@@ -1355,6 +1358,8 @@
       const matchviewMod = window.require('render/matchview');
       if (matchviewMod && matchviewMod.MatchView) {
         const MV = matchviewMod.MatchView;
+        if (MV.__glbHooked) return true;
+        MV.__glbHooked = true;
 
         // Wrap MatchView.render: auto-setup on first frame, then render GLB characters
         const origRender = MV.prototype.render;
@@ -1384,6 +1389,7 @@
         };
 
         console.log('[CharactersGLB] Seamless MatchView hooks installed successfully.');
+        return true;
       }
     } catch (err) {
       console.warn('[CharactersGLB] MatchView hook deferred:', err.message);
@@ -1392,10 +1398,14 @@
 
   if (typeof window !== 'undefined') {
     window.CharactersGLB = CharactersGLB;
+    let hookTries = 0;
+    function tryHook() {
+      if (installHook()) return;
+      if (++hookTries < 25) setTimeout(tryHook, 40);
+    }
+    tryHook();
     if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', () => setTimeout(installHook, 50));
-    } else {
-      setTimeout(installHook, 50);
+      window.addEventListener('DOMContentLoaded', tryHook);
     }
   }
 

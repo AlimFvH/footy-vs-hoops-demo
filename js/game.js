@@ -8124,13 +8124,13 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.camYaw += (targetYaw - this.camYaw) * rotK;
 
             // 4. Follow Distance & Height Behind Player
-            let followDist = isFooty ? 13.5 : 7.2;
-            let followHeight = isFooty ? 5.8 : 3.8;
+            let followDist = isFooty ? 13.5 : 12.0;
+            let followHeight = isFooty ? 5.8 : 5.4;
 
             if (this.aspect < 0.9) {
-                followDist *= (isFooty ? 1.10 : 1.05);
-                followHeight *= (isFooty ? 1.12 : 1.05);
-                this.cam.fov = (isFooty ? 48 : 46);
+                followDist *= (isFooty ? 1.08 : 1.12);
+                followHeight *= (isFooty ? 1.10 : 1.14);
+                this.cam.fov = (isFooty ? 48 : 48);
             } else {
                 this.cam.fov = (isFooty ? 46 : 44);
             }
@@ -9410,6 +9410,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.rig = new camera_js_1.CameraRig(mode, aspect, this.arena.bounds.halfW, this.arena.bounds.halfL);
             this.scene.shadow = { center: [0, 0, 0], radius: mode === 'footy' ? 20 : 15, distance: 50, strength: 0.55 };
             this.rig.update(1, sim.ball, sim.human);
+            if (typeof window !== 'undefined' && window.CharactersGLB) {
+                try { window.CharactersGLB.setupMatch(this); } catch (e) {}
+            }
         }
         setAspect(aspect) {
             this.rig.setAspect(aspect);
@@ -9519,6 +9522,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const s = this.scene.shadow;
             s.center = [this.rig.cam.target[0], 0, this.rig.cam.target[2]];
             this.renderer.render(this.scene, this.rig.cam);
+            if (typeof window !== 'undefined' && window.CharactersGLB) {
+                try { window.CharactersGLB.renderMatch(this, dt); } catch (e) {}
+            }
         }
         applySnapshot(snap) {
             if (!snap) return;
@@ -9621,6 +9627,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             return this.rig.cam.worldToScreen(x, y, z, w, h);
         }
         dispose() {
+            if (typeof window !== 'undefined' && window.CharactersGLB) {
+                try { window.CharactersGLB.disposeMatch(this); } catch (e) {}
+            }
             this.disposed = true;
             this.scene.clouds.length = 0;
             this.scene.root.children.length = 0;
