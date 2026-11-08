@@ -8169,11 +8169,14 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             }
 
             const distToGoal = Math.abs(hzPlayer - goalZ);
-            const threshold = isFooty ? 16.0 : 8.0;
+            const threshold = isFooty ? 16.0 : 9.0;
+            let nearK = 0;
             if (distToGoal < threshold) {
-                const nearK = 1.0 - (distToGoal / threshold);
-                followHeight += nearK * 0.45;
-                followDist -= nearK * 0.25;
+                nearK = 1.0 - (distToGoal / threshold);
+                // Epic cinematic goal/basket approach: lift up and pull back
+                // so the player never covers the rim/net, and dunks/shots are framed majestically!
+                followHeight += nearK * 1.15;
+                followDist += nearK * 0.95;
             }
 
             if (human && (human.sprint || speed > 6.0)) {
@@ -8215,8 +8218,8 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             // Look forward towards the opponent's goal/hoop (at -Z) with comfortable pitch!
             const lookAheadZ = isFooty ? 3.5 : 2.8;
             const targetPosX = focusX * 0.35;
-            const targetPosY = 1.10 + (isShotOrDunk ? Math.min(2.8, by * 0.40) : 0);
-            const targetPosZ = focusZ - lookAheadZ;
+            const targetPosY = 1.10 + (nearK * 0.65) + (isShotOrDunk ? Math.min(2.8, by * 0.40) : 0);
+            const targetPosZ = focusZ - (lookAheadZ + nearK * 1.2);
 
             if (!this.curCamPos) this.curCamPos = [wantCamX, wantCamY, wantCamZ];
             if (!this.curTarget) this.curTarget = [targetPosX, targetPosY, targetPosZ];
