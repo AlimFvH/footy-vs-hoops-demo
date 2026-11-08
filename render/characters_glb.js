@@ -555,33 +555,7 @@
 
       ctx.putImageData(imgData, 0, 0);
 
-      // Explicitly paint genuine Fortnite stylized Hair, Face Skin, and Facial Features onto Atlas
-      const hColor = isFooty ? (skin.hair ? hexToRgb(skin.hair) : [34, 24, 16]) : (skin.hair ? hexToRgb(skin.hair) : [10, 10, 10]);
-      const sColor = isFooty ? (skin.skin ? hexToRgb(skin.skin) : [223, 160, 112]) : (skin.skin ? hexToRgb(skin.skin) : [108, 68, 36]);
-
-      // 1. Stylized Hair (U: 0.78 to 0.98, V: 0.51 to 0.63)
-      ctx.fillStyle = `rgb(${hColor[0]}, ${hColor[1]}, ${hColor[2]})`;
-      ctx.fillRect(W * 0.78, H * 0.51, W * 0.20, H * 0.12);
-      // Subtle hair highlight gradient for Pixar/Fortnite look
-      const hairGrad = ctx.createLinearGradient(W * 0.78, H * 0.51, W * 0.98, H * 0.63);
-      hairGrad.addColorStop(0, `rgba(${Math.min(255, hColor[0] + 35)}, ${Math.min(255, hColor[1] + 35)}, ${Math.min(255, hColor[2] + 45)}, 0.45)`);
-      hairGrad.addColorStop(0.5, 'rgba(255,255,255,0)');
-      ctx.fillStyle = hairGrad;
-      ctx.fillRect(W * 0.78, H * 0.51, W * 0.20, H * 0.12);
-
-      // 2. Face & Neck Skin (U: 0.54 to 0.74, V: 0.53 to 0.74)
-      ctx.fillStyle = `rgb(${sColor[0]}, ${sColor[1]}, ${sColor[2]})`;
-      ctx.fillRect(W * 0.54, H * 0.53, W * 0.20, H * 0.21);
-      // Warm Pixar cheek blush
-      const blushGrad = ctx.createRadialGradient(W * 0.64, H * 0.64, 4, W * 0.64, H * 0.64, W * 0.08);
-      blushGrad.addColorStop(0, `rgba(${Math.min(255, sColor[0] + 40)}, ${Math.max(0, sColor[1] - 20)}, ${Math.max(0, sColor[2] - 20)}, 0.35)`);
-      blushGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = blushGrad;
-      ctx.fillRect(W * 0.54, H * 0.53, W * 0.20, H * 0.21);
-
-      // 3. Eyebrows (U: 0.90 to 0.98, V: 0.65 to 0.72)
-      ctx.fillStyle = `rgb(${Math.max(0, hColor[0] - 10)}, ${Math.max(0, hColor[1] - 10)}, ${Math.max(0, hColor[2] - 10)})`;
-      ctx.fillRect(W * 0.90, H * 0.65, W * 0.08, H * 0.07);
+      // Preserve pristine baked Fortnite face, neck skin, hair, and facial features from the embedded atlas!
 
       // 4. Eyes (U: 0.78 to 0.86, V: 0.65 to 0.72)
       ctx.fillStyle = '#ffffff';
@@ -884,7 +858,7 @@
       } else if (lower === 'walk') {
         targetClip = 'Walk';
       } else if (lower === 'idle') {
-        targetClip = 'Idle';
+        targetClip = 'Idle_Neutral';
       }
 
       if (this.currentAnim !== targetClip) {
@@ -1062,7 +1036,7 @@
         }
       }
 
-      // 3. Step skeletal bones
+      // 3. Step skeletal bones with procedural athletic animation blending
       this.model.update(dt);
 
       // 4. Update world transform matrix with 3D lean, jump elevation, and athletic width
@@ -1170,7 +1144,10 @@
       // Draw all loaded GLB characters
       gl.useProgram(glProgram);
       gl.enable(gl.DEPTH_TEST);
+      gl.depthMask(true);
       gl.depthFunc(gl.LEQUAL);
+      gl.enable(gl.CULL_FACE);
+      gl.cullFace(gl.BACK);
 
       // Set Camera Uniforms
       gl.uniformMatrix4fv(glLocations.uProj, false, cam.proj);
@@ -1233,47 +1210,15 @@
           const isEye = (matName === 'Eye');
           const isEyebrow = (matName === 'Eyebrows');
 
-          // Strict Material Separation: ONLY Clothing & Footwear sample textures!
-          if (isTorso || isLegs || isBoots || isOutsole) {
-            useTex = !!bindTex;
-            baseCol = [1, 1, 1, 1];
-            if (inst.isKeeper) {
-              if (isTorso) baseCol = [0.10, 0.95, 0.50, 1.0]; // Vibrant Goalkeeper Green
-              else if (isLegs) baseCol = [0.05, 0.22, 0.12, 1.0];
-              else if (isBoots) baseCol = [0.10, 0.95, 0.50, 1.0];
-            }
-          } else {
-            // Anatomy: Pure, radiant, healthy PBR materials with ZERO texture bleed!
-            useTex = false;
-            if (isSkin) {
-              // Radiant athletic skin
-              if (inst.isFooty) {
-                baseCol = [0.96, 0.76, 0.63, 1.0]; // Bright natural tan
-              } else {
-                baseCol = [0.52, 0.33, 0.20, 1.0]; // Warm athletic bronze
-              }
-              if (inst.skin && inst.skin.skin) {
-                const sRgb = hexToVec3(inst.skin.skin);
-                baseCol = [sRgb[0] * 1.15, sRgb[1] * 1.15, sRgb[2] * 1.15, 1.0];
-              }
-            } else if (isHair) {
-              // Rich styled hair
-              if (inst.isFooty) {
-                baseCol = [0.24, 0.15, 0.10, 1.0]; // Dark chestnut brown
-              } else {
-                baseCol = [0.08, 0.08, 0.10, 1.0]; // Midnight black fade
-              }
-              if (inst.skin && inst.skin.hair) {
-                const hRgb = hexToVec3(inst.skin.hair);
-                baseCol = [hRgb[0], hRgb[1], hRgb[2], 1.0];
-              }
-            } else if (isEye) {
-              // Focused athletic eyes (dark espresso iris)
-              baseCol = [0.08, 0.06, 0.05, 1.0];
-            } else if (isEyebrow) {
-              // Crisp dark brows
-              baseCol = inst.isFooty ? [0.18, 0.12, 0.08, 1.0] : [0.08, 0.08, 0.10, 1.0];
-            }
+          // All Hero athlete primitives (Torso, Legs, Boots, Skin, Hair, Eye, Brows)
+          // sample the baked high-definition Fortnite atlas for photorealistic stylized fidelity!
+          useTex = !!bindTex;
+          baseCol = [1, 1, 1, 1];
+
+          if (inst.isKeeper) {
+            if (isTorso) baseCol = [0.10, 0.95, 0.50, 1.0]; // Vibrant Goalkeeper Green
+            else if (isLegs) baseCol = [0.05, 0.22, 0.12, 1.0];
+            else if (isBoots) baseCol = [0.10, 0.95, 0.50, 1.0];
           }
 
           gl.uniform1i(glLocations.uHasTex, useTex ? 1 : 0);

@@ -313,8 +313,9 @@
       this.primitives = data.primitives;
       this.skin = data.skin;
       this.animations = data.animations;
-      // Default to 'idle' animation if present, otherwise 0
-      const idleIdx = this.animations.findIndex(a => a.name.toLowerCase().includes('idle'));
+      // Default to 'idle_neutral' animation if present, otherwise 'idle'
+      let idleIdx = this.animations.findIndex(a => a.name.toLowerCase() === 'idle_neutral');
+      if (idleIdx === -1) idleIdx = this.animations.findIndex(a => a.name.toLowerCase().includes('idle'));
       this.activeAnimIndex = idleIdx !== -1 ? idleIdx : 0;
       this.playbackTime = 0;
       this.playing = true;
@@ -334,7 +335,10 @@
           this.activeAnimIndex = clipIndexOrName;
         }
       } else {
-        const idx = this.animations.findIndex(a => a.name.toLowerCase() === String(clipIndexOrName).toLowerCase());
+        let idx = this.animations.findIndex(a => a.name.toLowerCase() === String(clipIndexOrName).toLowerCase());
+        if (idx === -1 && String(clipIndexOrName).toLowerCase() === 'idle_neutral') {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('idle'));
+        }
         if (idx !== -1) this.activeAnimIndex = idx;
       }
     }
@@ -346,6 +350,10 @@
         if (currentAnim) {
           currentAnim.apply(this.playbackTime, this.nodes);
         }
+      }
+
+      if (this.onPostAnimate) {
+        this.onPostAnimate(this.nodes, this.playbackTime);
       }
 
       this.updateNodeMatrices();

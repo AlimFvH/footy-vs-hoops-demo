@@ -6,8 +6,8 @@ const glbLoader = require('../assets/loaders/glb_loader.js');
 const CHROME_PATH = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 const ROOT = path.resolve(__dirname, '..');
 
-async function generatePristineAtlases() {
-  console.log('=== Step 1: Generating Pristine 1024x1024 Fortnite Sports Kit Atlases ===');
+async function generateHeroicAtlases() {
+  console.log('=== Step 1: Baking Heroic Fortnite Atlases with Detailed Anatomy & Faces ===');
   const browser = await puppeteer.launch({ executablePath: CHROME_PATH, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
 
@@ -38,7 +38,7 @@ async function generatePristineAtlases() {
     }
 
     // -----------------------------------------------------------------
-    // 1. FOOTY #10 ATLAS
+    // 1. FOOTY #10 ATLAS (Turquoise & White, Exposed Legs, Shin Guards, Cleats)
     // -----------------------------------------------------------------
     function makeFootyAtlas() {
       const cvs = document.createElement('canvas');
@@ -121,7 +121,7 @@ async function generatePristineAtlases() {
       ctx.fillStyle = '#ffffff';
       ctx.fillText('10', 768, 284);
 
-      // SHORTS
+      // SHORTS (Dark Navy with Turquoise/White speed trims)
       ctx.fillStyle = '#0a1e3f';
       ctx.fillRect(0, 512, 512, 256);
       ctx.fillStyle = '#00e5ff';
@@ -136,19 +136,62 @@ async function generatePristineAtlases() {
       ctx.fillText('10', 140, 680);
       drawEmblem(ctx, 375, 680, 24, '#00e5ff');
 
-      // SKIN & HEAD
-      ctx.fillStyle = '#f4c29e';
+      // BARE ATHLETIC SKIN & FACE (Radiant Tan)
+      const skinGrad = ctx.createLinearGradient(512, 512, 512, 768);
+      skinGrad.addColorStop(0, '#f9cbb0');
+      skinGrad.addColorStop(0.5, '#f0b892');
+      skinGrad.addColorStop(1, '#df9e76');
+      ctx.fillStyle = skinGrad;
       ctx.fillRect(512, 512, 512, 256);
 
-      // SOCKS
+      // Stylized Face Features (Eyes, Eyebrows, Confident Smile)
+      ctx.save();
+      // Eyes (Left & Right)
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.ellipse(680, 590, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(850, 590, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#3e2723';
+      ctx.beginPath(); ctx.arc(682, 590, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(852, 590, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(684, 588, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(854, 588, 3, 0, Math.PI * 2); ctx.fill();
+
+      // Eyebrows
+      ctx.strokeStyle = '#2d1810';
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(660, 572); ctx.lineTo(700, 576); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(870, 572); ctx.lineTo(830, 576); ctx.stroke();
+
+      // Confident Smile with White Teeth
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(765, 650, 26, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#991b1b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+
+      // SOCKS & SHIN GUARDS
       ctx.fillStyle = '#00c8ff';
       ctx.fillRect(0, 768, 512, 256);
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 768, 512, 45);
+      ctx.fillRect(0, 768, 512, 45); // Sock top turn-down
       ctx.fillStyle = '#0a1e3f';
       ctx.fillRect(0, 813, 512, 16);
 
-      // SOCCER CLEATS
+      // Aerodynamic Molded Shin Guard Face Plate
+      ctx.fillStyle = '#0099dd';
+      ctx.beginPath();
+      ctx.roundRect(140, 840, 230, 160, 20);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // SOCCER CLEATS (Turquoise speed boots with white racing swoosh & studs)
       ctx.fillStyle = '#00a4e4';
       ctx.fillRect(512, 768, 512, 256);
       ctx.fillStyle = '#ffffff';
@@ -158,13 +201,13 @@ async function generatePristineAtlases() {
       ctx.bezierCurveTo(800, 880, 700, 875, 560, 870);
       ctx.fill();
       ctx.fillStyle = '#0a1e3f';
-      ctx.fillRect(512, 970, 512, 54);
+      ctx.fillRect(512, 970, 512, 54); // Sole plate
 
       return cvs.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
     }
 
     // -----------------------------------------------------------------
-    // 2. HOOPS #23 ATLAS
+    // 2. HOOPS #23 ATLAS (Sleeveless Tank, Bronze Skin, Beard, Gold Kicks)
     // -----------------------------------------------------------------
     function makeHoopsAtlas() {
       const cvs = document.createElement('canvas');
@@ -175,7 +218,7 @@ async function generatePristineAtlases() {
       ctx.fillStyle = '#14151a';
       ctx.fillRect(0, 0, 1024, 1024);
 
-      // FRONT JERSEY
+      // FRONT JERSEY (Sleeveless Tank Top, Stealth Obsidian & Gold Ribbing)
       const fGrad = ctx.createLinearGradient(0, 0, 0, 512);
       fGrad.addColorStop(0, '#262832');
       fGrad.addColorStop(0.35, '#17181f');
@@ -183,6 +226,7 @@ async function generatePristineAtlases() {
       ctx.fillStyle = fGrad;
       ctx.fillRect(0, 0, 512, 512);
 
+      // Gold Armhole & Neckline Ribbing
       ctx.fillStyle = '#fbbf24';
       ctx.fillRect(0, 0, 48, 512);
       ctx.fillRect(464, 0, 48, 512);
@@ -190,6 +234,7 @@ async function generatePristineAtlases() {
       ctx.fillRect(36, 0, 12, 512);
       ctx.fillRect(464, 0, 12, 512);
 
+      // Deep V-Neck Collar
       ctx.fillStyle = '#fbbf24';
       ctx.beginPath();
       ctx.moveTo(160, 0); ctx.lineTo(352, 0); ctx.lineTo(256, 100); ctx.closePath(); ctx.fill();
@@ -213,16 +258,13 @@ async function generatePristineAtlases() {
       ctx.fillStyle = '#fbbf24';
       ctx.fillText('23', 256, 330);
 
-      // BACK JERSEY
+      // BACK JERSEY (Tank Top)
       ctx.fillStyle = fGrad;
       ctx.fillRect(512, 0, 512, 512);
 
       ctx.fillStyle = '#fbbf24';
       ctx.fillRect(512, 0, 48, 512);
       ctx.fillRect(976, 0, 48, 512);
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(548, 0, 12, 512);
-      ctx.fillRect(976, 0, 12, 512);
 
       ctx.font = '900 52px "Arial Black", "Montserrat", sans-serif';
       ctx.fillStyle = '#92400e';
@@ -236,52 +278,94 @@ async function generatePristineAtlases() {
       ctx.fillStyle = '#fbbf24';
       ctx.fillText('23', 768, 284);
 
-      // SHORTS
-      ctx.fillStyle = '#14151a';
+      // LOOSE BASKETBALL SHORTS (With bold gold chevron piping)
+      ctx.fillStyle = '#121318';
       ctx.fillRect(0, 512, 512, 256);
-
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 14;
-      ctx.beginPath();
-      ctx.moveTo(35, 530); ctx.lineTo(75, 615); ctx.lineTo(35, 700);
-      ctx.moveTo(477, 530); ctx.lineTo(437, 615); ctx.lineTo(477, 700);
-      ctx.stroke();
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(50, 530); ctx.lineTo(90, 615); ctx.lineTo(50, 700);
-      ctx.moveTo(462, 530); ctx.lineTo(422, 615); ctx.lineTo(462, 700);
-      ctx.stroke();
-
       ctx.fillStyle = '#fbbf24';
-      ctx.fillRect(0, 746, 512, 22);
+      // Left chevron
+      ctx.beginPath();
+      ctx.moveTo(12, 512); ctx.lineTo(44, 640); ctx.lineTo(12, 768);
+      ctx.lineTo(28, 768); ctx.lineTo(60, 640); ctx.lineTo(28, 512);
+      ctx.closePath(); ctx.fill();
+      // Right chevron
+      ctx.beginPath();
+      ctx.moveTo(500, 512); ctx.lineTo(468, 640); ctx.lineTo(500, 768);
+      ctx.lineTo(484, 768); ctx.lineTo(452, 640); ctx.lineTo(484, 512);
+      ctx.closePath(); ctx.fill();
 
-      ctx.font = '900 68px "Arial Black", sans-serif';
+      ctx.font = '900 72px "Arial Black", sans-serif';
       ctx.fillStyle = '#fbbf24';
-      ctx.fillText('23', 145, 675);
-      drawEmblem(ctx, 370, 675, 24, '#fbbf24');
+      ctx.fillText('23', 140, 680);
+      drawEmblem(ctx, 375, 680, 26, '#fbbf24');
 
-      // SKIN & SLEEVE
-      ctx.fillStyle = '#804d2e';
+      // BARE ATHLETIC BRONZE SKIN & FACE (With Beard & Mustache!)
+      const bronzeGrad = ctx.createLinearGradient(512, 512, 512, 768);
+      bronzeGrad.addColorStop(0, '#5a3825');
+      bronzeGrad.addColorStop(0.5, '#4a2c1b');
+      bronzeGrad.addColorStop(1, '#3a2012');
+      ctx.fillStyle = bronzeGrad;
       ctx.fillRect(512, 512, 512, 256);
 
-      ctx.fillStyle = '#14151a';
-      ctx.fillRect(0, 768, 512, 256);
-      ctx.fillStyle = '#fbbf24';
-      ctx.fillRect(0, 830, 512, 45);
+      // Stylized Face Features (Espresso eyes, Beard, Mustache, Confident Smile)
+      ctx.save();
+      // Eyes
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 846, 512, 12);
+      ctx.beginPath(); ctx.ellipse(680, 585, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(850, 585, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1c1917';
+      ctx.beginPath(); ctx.arc(682, 585, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(852, 585, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(684, 583, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(854, 583, 3, 0, Math.PI * 2); ctx.fill();
 
-      // HIGH-TOP SHOES
-      ctx.fillStyle = '#14151a';
-      ctx.fillRect(512, 768, 512, 256);
-      ctx.fillStyle = '#fbbf24';
+      // Dark Brows
+      ctx.strokeStyle = '#0c0a09';
+      ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(658, 568); ctx.lineTo(702, 572); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(872, 568); ctx.lineTo(828, 572); ctx.stroke();
+
+      // Styled Beard & Goatee Contour
+      ctx.fillStyle = '#0c0a09';
       ctx.beginPath();
-      ctx.moveTo(540, 940); ctx.bezierCurveTo(620, 880, 720, 880, 800, 940); ctx.closePath(); ctx.fill();
-      ctx.fillRect(820, 780, 160, 65);
-      ctx.fillStyle = '#f8fafc';
-      ctx.fillRect(512, 975, 512, 49);
+      // Mustache
+      ctx.ellipse(765, 630, 36, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Jawline Beard
+      ctx.beginPath();
+      ctx.moveTo(690, 620);
+      ctx.quadraticCurveTo(765, 710, 840, 620);
+      ctx.quadraticCurveTo(765, 690, 690, 620);
+      ctx.fill();
+
+      // Confident Smile with White Teeth
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(765, 642, 22, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // COMPRESSION SLEEVE & GOLD WRISTBAND
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(0, 768, 512, 256);
+      ctx.fillStyle = '#fbbf24'; // Gold wristband
+      ctx.fillRect(0, 768, 512, 40);
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(0, 808, 512, 10);
+
+      // HIGH-TOP BASKETBALL SNEAKERS (Black & Metallic Gold)
+      ctx.fillStyle = '#171717';
+      ctx.fillRect(512, 768, 512, 256);
+      ctx.fillStyle = '#fbbf24'; // Gold heel counter & collar
+      ctx.fillRect(512, 768, 512, 50);
+      ctx.beginPath();
+      ctx.moveTo(560, 860); ctx.lineTo(720, 820); ctx.lineTo(880, 860);
+      ctx.lineTo(880, 920); ctx.lineTo(560, 920);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(512, 960, 512, 64); // Outsole
 
       return cvs.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
     }
@@ -298,20 +382,12 @@ async function generatePristineAtlases() {
       ctx.fillStyle = '#10b981';
       ctx.fillRect(0, 0, 1024, 1024);
 
+      // FRONT JERSEY (Vibrant Goalkeeper Emerald)
       const fGrad = ctx.createLinearGradient(0, 0, 0, 512);
       fGrad.addColorStop(0, '#34d399');
       fGrad.addColorStop(1, '#059669');
       ctx.fillStyle = fGrad;
       ctx.fillRect(0, 0, 512, 512);
-
-      ctx.fillStyle = 'rgba(6, 78, 59, 0.35)';
-      for (let y = 60; y < 480; y += 70) {
-        for (let x = 40; x < 480; x += 80) {
-          ctx.beginPath();
-          ctx.arc(x, y, 22, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
 
       drawEmblem(ctx, 135, 175, 38, '#ffffff');
 
@@ -323,42 +399,44 @@ async function generatePristineAtlases() {
       ctx.fillStyle = '#ffffff';
       ctx.fillText('KEEPER', 256, 214);
 
-      ctx.font = '900 148px "Arial Black", sans-serif';
+      ctx.font = '900 136px "Arial Black", sans-serif';
       ctx.fillStyle = '#064e3b';
       ctx.fillText('1', 256, 335);
       ctx.fillStyle = '#ffffff';
       ctx.fillText('1', 256, 330);
 
+      // BACK JERSEY
       ctx.fillStyle = fGrad;
       ctx.fillRect(512, 0, 512, 512);
+
       ctx.font = '900 52px "Arial Black", sans-serif';
       ctx.fillStyle = '#064e3b';
       ctx.fillText('KEEPER', 768, 140);
       ctx.fillStyle = '#ffffff';
       ctx.fillText('KEEPER', 768, 136);
 
-      ctx.font = '900 188px "Arial Black", sans-serif';
+      ctx.font = '900 178px "Arial Black", sans-serif';
       ctx.fillStyle = '#064e3b';
       ctx.fillText('1', 768, 290);
       ctx.fillStyle = '#ffffff';
       ctx.fillText('1', 768, 284);
 
-      ctx.fillStyle = '#0f172a';
+      // SHORTS (Dark Forest Green)
+      ctx.fillStyle = '#064e3b';
       ctx.fillRect(0, 512, 512, 256);
-      ctx.fillStyle = '#10b981';
-      ctx.fillRect(20, 512, 24, 256);
-      ctx.fillRect(468, 512, 24, 256);
+      drawEmblem(ctx, 375, 680, 24, '#34d399');
 
-      ctx.fillStyle = '#f4c29e';
+      // SKIN & PADDED GLOVES
+      ctx.fillStyle = '#f0b892';
       ctx.fillRect(512, 512, 512, 256);
 
-      ctx.fillStyle = '#10b981';
+      // SOCKS & SHIN PADS
+      ctx.fillStyle = '#059669';
       ctx.fillRect(0, 768, 512, 256);
 
-      ctx.fillStyle = '#0f172a';
+      // BOOTS
+      ctx.fillStyle = '#047857';
       ctx.fillRect(512, 768, 512, 256);
-      ctx.fillStyle = '#10b981';
-      ctx.fillRect(512, 970, 512, 54);
 
       return cvs.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
     }
@@ -370,168 +448,154 @@ async function generatePristineAtlases() {
     };
   }, emblemBase64);
 
-  fs.writeFileSync(path.join(ROOT, 'assets/characters/footy10_atlas.png'), Buffer.from(footyAtlas, 'base64'));
-  fs.writeFileSync(path.join(ROOT, 'assets/characters/hoops23_atlas.png'), Buffer.from(hoopsAtlas, 'base64'));
-  fs.writeFileSync(path.join(ROOT, 'assets/characters/keeper1_atlas.png'), Buffer.from(keeperAtlas, 'base64'));
-  console.log('✓ Successfully baked all 1024x1024 sports kit atlases!');
-
   await browser.close();
+  console.log('✓ All 3 Heroic Atlases generated successfully.');
+  return { footyAtlas, hoopsAtlas, keeperAtlas };
 }
 
-function processModel(srcGlbPath, dstGlbPath, atlasPath, charType) {
-  console.log(`\n=== Step 2: Processing & Sculpting: ${path.basename(dstGlbPath)} (Type: ${charType}) ===`);
-  const glbBuf = fs.readFileSync(srcGlbPath);
-  const atlasBuf = fs.readFileSync(atlasPath);
-  const ab = glbBuf.buffer.slice(glbBuf.byteOffset, glbBuf.byteOffset + glbBuf.byteLength);
+function processHeroAthlete(inGlbPath, outGlbPath, atlasBase64, charType) {
+  console.log(`\n--- Sculpting & Rigging Hero Athlete: ${charType} -> ${path.basename(outGlbPath)} ---`);
+  const buf = fs.readFileSync(inGlbPath);
+  const jsonLen = buf.readUInt32LE(12);
+  const gltf = JSON.parse(buf.subarray(20, 20 + jsonLen).toString('utf8'));
+  const bin = buf.subarray(20 + jsonLen + 8);
 
-  const { gltf, bin } = glbLoader.parseGLBContainer(ab);
-
-  const isFooty = (charType === 'footy');
   const isHoops = (charType === 'hoops');
+  const isFooty = (charType === 'footy');
   const isKeeper = (charType === 'keeper');
 
   const headMesh = gltf.meshes.find(m => m.name === 'Cube.015');
+  const torsoMesh = gltf.meshes.find(m => m.name === 'Cube.010');
+  const legsMesh = gltf.meshes.find(m => m.name === 'Cube.019');
+  const feetMesh = gltf.meshes.find(m => m.name === 'Cube.003');
 
   // -------------------------------------------------------------
-  // A1. TUCK BACK-OF-SKULL SKIN VERTICES TO PREVENT HAIR CLIPPING
-  // Deep tuck: any skull vertex at the back (z < 0.02, y > 1.56) is safely drawn inside the hair dome!
+  // 1. TUCK BACK-OF-SKULL SKIN (Prevent any hair clipping)
   // -------------------------------------------------------------
   if (headMesh && headMesh.primitives[0]) {
     const skinPrim = headMesh.primitives[0];
     const acc = gltf.accessors[skinPrim.attributes.POSITION];
     const bv = gltf.bufferViews[acc.bufferView];
-    const byteOffset = (bv.byteOffset || 0) + (acc.byteOffset || 0);
-    const skinFloats = new Float32Array(bin, byteOffset, acc.count * 3);
+    const skinFloats = new Float32Array(bin, (bv.byteOffset || 0) + (acc.byteOffset || 0), acc.count * 3);
 
-    let tucked = 0;
     for (let i = 0; i < acc.count; i++) {
       const x = skinFloats[i * 3];
       const y = skinFloats[i * 3 + 1];
       const z = skinFloats[i * 3 + 2];
       if (y > 1.56 && z < 0.02) {
-        // Tucks skull safely inside hair dome (forward and slightly narrowed)
         skinFloats[i * 3] = x * 0.90;
         skinFloats[i * 3 + 2] = Math.max(-0.026, z * 0.50);
-        tucked++;
       }
     }
-    console.log(`  ✓ Skull: Tucked ${tucked} back-of-skull vertices inside hair envelope.`);
   }
 
   // -------------------------------------------------------------
-  // A2. HAIR SCULPTING (Cube.015, Prim 3)
-  // Clean neckline, zero ponytail, zero bald spots, 100% full coverage!
+  // 2. HEROIC HAIRSTYLES (FLAT-TOP FOR HOOPS, TAPER FADE FOR FOOTY)
+  // ZERO PONYTAIL / ZERO BUN!
   // -------------------------------------------------------------
   if (headMesh && headMesh.primitives[3]) {
     const hairPrim = headMesh.primitives[3];
     const posAcc = gltf.accessors[hairPrim.attributes.POSITION];
     const bv = gltf.bufferViews[posAcc.bufferView];
-    const byteOffset = (bv.byteOffset || 0) + (posAcc.byteOffset || 0);
-    const hairFloats = new Float32Array(bin, byteOffset, posAcc.count * 3);
-
-    let ponytailFixed = 0;
-    let fadeSculpted = 0;
+    const hairFloats = new Float32Array(bin, (bv.byteOffset || 0) + (posAcc.byteOffset || 0), posAcc.count * 3);
 
     for (let i = 0; i < posAcc.count; i++) {
       let x = hairFloats[i * 3];
       let y = hairFloats[i * 3 + 1];
       let z = hairFloats[i * 3 + 2];
 
-      // 1. Ponytail Eradication: tuck any dangling ponytail vertices into natural nape line
-      if (y < 1.595) {
-        hairFloats[i * 3 + 1] = 1.600;
-        hairFloats[i * 3 + 2] = Math.max(-0.065, z);
-        ponytailFixed++;
-      } else if (z < -0.076) {
-        hairFloats[i * 3 + 2] = -0.070 + (z + 0.076) * 0.05;
-        ponytailFixed++;
+      // Eradicate any ponytail/bun at the back of neck (z < -0.02)
+      if (z < -0.02) {
+        hairFloats[i * 3 + 2] = -0.018; // Flush to neck fade
+      }
+      if (y < 1.62) {
+        hairFloats[i * 3 + 1] = 1.62;
       }
 
-      // 2. Guarantee full hair envelope over the back of skull (z <= -0.052)
-      if (y > 1.58 && y < 1.76 && z < -0.02 && z > -0.055 && Math.abs(x) < 0.05) {
-        hairFloats[i * 3 + 2] = -0.058;
-        ponytailFixed++;
-      }
-
-      // 3. Specific Hairstyles
       if (isHoops) {
-        // High-Top Fade:
-        // Top of hair (Y > 1.78) forms a crisp, clean flat-top box
-        if (y > 1.78) {
-          hairFloats[i * 3] = Math.max(-0.082, Math.min(0.082, x));
-          hairFloats[i * 3 + 2] = Math.max(-0.058, Math.min(0.070, hairFloats[i * 3 + 2]));
-          fadeSculpted++;
+        // High Flat-Top Fade: Crisp flat-topped box
+        if (y > 1.70) {
+          hairFloats[i * 3 + 1] = Math.min(1.78, Math.max(1.74, y + 0.03));
+          hairFloats[i * 3] = x * 1.05; // Square sides
         }
-        // Fade sides neatly to the skull contour
-        if (y < 1.76 && Math.abs(x) > 0.080) {
-          hairFloats[i * 3] = (x > 0 ? 1 : -1) * (0.078 + (Math.abs(x) - 0.080) * 0.20);
-          fadeSculpted++;
-        }
-      } else if (isFooty || isKeeper) {
-        // Tapered Modern Swept Hair:
-        if (y > 1.76) {
-          hairFloats[i * 3 + 2] = hairFloats[i * 3 + 2] + 0.008;
-        }
-        if (y < 1.75 && Math.abs(x) > 0.084) {
-          hairFloats[i * 3] = x * 0.95;
+      } else {
+        // Tapered Swept Pompadour Fade: Swept slightly back and up
+        if (y > 1.70) {
+          hairFloats[i * 3 + 1] = Math.min(1.76, y + 0.02);
+          hairFloats[i * 3 + 2] = z + 0.015;
         }
       }
     }
-    console.log(`  ✓ Hair: Eradicated ${ponytailFixed} ponytail/recess vertices, sculpted ${fadeSculpted} fade vertices.`);
+    console.log(`  ✓ Hair: Sculpted authentic ${isHoops ? 'Flat-Top Fade' : 'Taper Fade'} (Zero ponytail/bun).`);
   }
 
   // -------------------------------------------------------------
-  // B. ATHLETIC BODY SCULPTING (Cube.010 & Cube.019)
-  const torsoMesh = gltf.meshes.find(m => m.name === 'Cube.010');
-  // B0. ATHLETIC ARM MUSCULATURE (Cube.010 Prim 0 - Skin/Arms)
-  if (torsoMesh && torsoMesh.primitives[0]) {
-    const armPrim = torsoMesh.primitives[0];
-    const posAcc = gltf.accessors[armPrim.attributes.POSITION];
-    const bv = gltf.bufferViews[posAcc.bufferView];
-    const armFloats = new Float32Array(bin, (bv.byteOffset || 0) + (posAcc.byteOffset || 0), posAcc.count * 3);
-    for (let i = 0; i < posAcc.count; i++) {
-      let x = armFloats[i * 3];
-      let y = armFloats[i * 3 + 1];
-      let z = armFloats[i * 3 + 2];
-      if (Math.abs(x) > 0.18 && y > 0.90 && y < 1.45) {
-        armFloats[i * 3] = x * 1.08;
-        armFloats[i * 3 + 2] = z * 1.08;
-      }
-    }
-    console.log('  ✓ Arms: Sculpted athletic deltoids and biceps.');
-  }
-
+  // 3. SLEEVELESS TANK TOP FOR HOOPS #23 (CUT SLEEVES & EXPOSE ARMS)
   // -------------------------------------------------------------
   if (torsoMesh && torsoMesh.primitives[1]) {
     const shirtPrim = torsoMesh.primitives[1];
     const posAcc = gltf.accessors[shirtPrim.attributes.POSITION];
     const bv = gltf.bufferViews[posAcc.bufferView];
-    const byteOffset = (bv.byteOffset || 0) + (posAcc.byteOffset || 0);
-    const posFloats = new Float32Array(bin, byteOffset, posAcc.count * 3);
+    const posFloats = new Float32Array(bin, (bv.byteOffset || 0) + (posAcc.byteOffset || 0), posAcc.count * 3);
 
+    let sleevesCut = 0;
     for (let i = 0; i < posAcc.count; i++) {
       let x = posFloats[i * 3];
       let y = posFloats[i * 3 + 1];
       let z = posFloats[i * 3 + 2];
 
-      // Broaden athletic deltoid shoulders
-      if (y > 1.34) {
-        posFloats[i * 3] = x * 1.07;
-      }
-      // Expand athletic chest
-      if (y > 1.25 && y < 1.48 && z > 0.04) {
-        posFloats[i * 3 + 2] = z + 0.012;
-      }
-      // Taper athletic waist
-      if (y < 1.22) {
-        posFloats[i * 3] = x * 0.95;
+      if (isHoops) {
+        // Cut sleeves to create authentic sleeveless basketball tank top!
+        if (Math.abs(x) > 0.165 && y > 1.20 && y < 1.48) {
+          posFloats[i * 3] = Math.sign(x) * 0.155; // Tucked flush into armhole
+          sleevesCut++;
+        }
+        // Broaden muscular shoulders
+        if (y > 1.34) {
+          posFloats[i * 3] = x * 1.10;
+        }
+        // Muscular chest definition
+        if (y > 1.25 && y < 1.48 && z > 0.04) {
+          posFloats[i * 3 + 2] = z + 0.016;
+        }
+        // Athletic V-taper waist
+        if (y < 1.22) {
+          posFloats[i * 3] = x * 0.94;
+        }
+      } else {
+        // Footy football forward build
+        if (y > 1.34) posFloats[i * 3] = x * 1.06;
+        if (y > 1.25 && y < 1.48 && z > 0.04) posFloats[i * 3 + 2] = z + 0.012;
+        if (y < 1.22) posFloats[i * 3] = x * 0.95;
       }
     }
-    console.log('  ✓ Body: Sculpted heroic athletic V-taper on torso.');
+    console.log(`  ✓ Torso: Sculpted V-taper.${isHoops ? ` Cut ${sleevesCut} sleeve vertices for sleeveless tank.` : ''}`);
   }
 
   // -------------------------------------------------------------
-  // C. PLANAR UV RE-PROJECTION FOR 1:1 PERFECT UNIFORM ALIGNMENT
+  // 4. SCULPT BARE ARMS & DELTOIDS (Cube.010 Prim 0)
+  // -------------------------------------------------------------
+  if (torsoMesh && torsoMesh.primitives[0]) {
+    const armPrim = torsoMesh.primitives[0];
+    const posAcc = gltf.accessors[armPrim.attributes.POSITION];
+    const bv = gltf.bufferViews[posAcc.bufferView];
+    const armFloats = new Float32Array(bin, (bv.byteOffset || 0) + (posAcc.byteOffset || 0), posAcc.count * 3);
+
+    for (let i = 0; i < posAcc.count; i++) {
+      let x = armFloats[i * 3];
+      let y = armFloats[i * 3 + 1];
+      let z = armFloats[i * 3 + 2];
+      // Expand muscular biceps and deltoids
+      if (Math.abs(x) > 0.18 && y > 0.90 && y < 1.45) {
+        armFloats[i * 3] = x * (isHoops ? 1.14 : 1.08);
+        armFloats[i * 3 + 2] = z * (isHoops ? 1.14 : 1.08);
+      }
+    }
+    console.log(`  ✓ Arms: Sculpted athletic ${isHoops ? 'muscular NBA deltoids/biceps' : 'toned soccer arms'}.`);
+  }
+
+  // -------------------------------------------------------------
+  // 5. PLANAR UV RE-PROJECTION FOR TORSO SHIRT
   // -------------------------------------------------------------
   if (torsoMesh && torsoMesh.primitives[1]) {
     const p = torsoMesh.primitives[1];
@@ -559,10 +623,12 @@ function processModel(srcGlbPath, dstGlbPath, atlasPath, charType) {
         uvs[i * 2 + 1] = 0.05 + normY * 0.40;
       }
     }
-    console.log('  ✓ UV: Re-projected Torso shirt Front & Back planar UV coordinates.');
   }
 
-  const legsMesh = gltf.meshes.find(m => m.name === 'Cube.019');
+  // -------------------------------------------------------------
+  // 6. EXPOSE BARE KNEES & THIGHS (Cube.019 Prim 0)
+  // Shorts at top, BARE SKIN at middle, Socks/Kicks at bottom!
+  // -------------------------------------------------------------
   if (legsMesh && legsMesh.primitives[0]) {
     const p = legsMesh.primitives[0];
     const uvAcc = gltf.accessors[p.attributes.TEXCOORD_0];
@@ -577,26 +643,35 @@ function processModel(srcGlbPath, dstGlbPath, atlasPath, charType) {
       const y = pos[i * 3 + 1];
       const z = pos[i * 3 + 2];
 
-      if (y >= 0.55) {
-        const normY = Math.max(0, Math.min(1, (1.036 - y) / 0.486));
+      // A. SHORTS (y >= 0.52)
+      if (y >= 0.52) {
+        const normY = Math.max(0, Math.min(1, (1.036 - y) / 0.516));
         const normX = Math.max(-1, Math.min(1, x / 0.176));
-        if (z >= 0.05) {
-          uvs[i * 2] = 0.25 + normX * 0.20;
-        } else {
-          uvs[i * 2] = 0.25 - normX * 0.20;
-        }
+        uvs[i * 2] = 0.25 + (z >= 0.05 ? normX : -normX) * 0.20;
         uvs[i * 2 + 1] = 0.52 + normY * 0.22;
-      } else {
-        const normY = Math.max(0, Math.min(1, (0.550 - y) / 0.417));
+      }
+      // B. BARE KNEES & ATHLETIC THIGHS (0.36 <= y < 0.52)
+      else if (y >= 0.36) {
+        // Maps directly into the Bare Skin texture zone!
+        const normY = (0.52 - y) / 0.16;
+        const normX = Math.max(-1, Math.min(1, x / 0.16));
+        uvs[i * 2] = 0.65 + normX * 0.12;
+        uvs[i * 2 + 1] = 0.55 + normY * 0.15;
+      }
+      // C. SOCKS & SHIN GUARDS / COMPRESSION (y < 0.36)
+      else {
+        const normY = Math.max(0, Math.min(1, (0.36 - y) / 0.36));
         const normX = Math.max(-1, Math.min(1, x / 0.176));
         uvs[i * 2] = 0.25 + normX * 0.20;
         uvs[i * 2 + 1] = 0.76 + normY * 0.22;
       }
     }
-    console.log('  ✓ UV: Re-projected Shorts & Socks UV coordinates.');
+    console.log('  ✓ Legs: Exposed authentic bare knees/thighs between shorts and socks.');
   }
 
-  const feetMesh = gltf.meshes.find(m => m.name === 'Cube.003');
+  // -------------------------------------------------------------
+  // 7. BOOTS & SNEAKERS (Cube.003 Prim 0)
+  // -------------------------------------------------------------
   if (feetMesh && feetMesh.primitives[0]) {
     const p = feetMesh.primitives[0];
     const uvAcc = gltf.accessors[p.attributes.TEXCOORD_0];
@@ -614,115 +689,109 @@ function processModel(srcGlbPath, dstGlbPath, atlasPath, charType) {
       uvs[i * 2] = 0.75 + normX * 0.20;
       uvs[i * 2 + 1] = 0.76 + normY * 0.22;
     }
-    console.log('  ✓ UV: Re-projected Boots/Shoes UV coordinates.');
+    console.log(`  ✓ Feet: Re-projected ${isHoops ? 'high-top basketball sneaker' : 'soccer cleat'} UVs.`);
   }
 
   // -------------------------------------------------------------
-  // D. EMBED PRISTINE TEXTURE ATLAS INTO GLB CONTAINER
+  // 8. EMBED ATLAS INTO GLB CONTAINER
   // -------------------------------------------------------------
+  const atlasBuf = Buffer.from(atlasBase64, 'base64');
   const atlasLength = atlasBuf.length;
   const padLength = (4 - (atlasLength % 4)) % 4;
   const totalAtlasLength = atlasLength + padLength;
 
-  const newBinBuffer = new ArrayBuffer(bin.byteLength + totalAtlasLength);
-  const newBinUint8 = new Uint8Array(newBinBuffer);
-
-  newBinUint8.set(new Uint8Array(bin), 0);
-  const imageOffset = bin.byteLength;
-  newBinUint8.set(new Uint8Array(atlasBuf), imageOffset);
-
-  const imgBvIdx = gltf.bufferViews.length;
-  gltf.bufferViews.push({
-    buffer: 0,
-    byteOffset: imageOffset,
-    byteLength: atlasLength
-  });
-
-  gltf.images = [{
-    bufferView: imgBvIdx,
-    mimeType: 'image/png',
-    name: 'HeroKitAtlas'
-  }];
-
-  gltf.samplers = [{
-    magFilter: 9729,
-    minFilter: 9987,
-    wrapS: 10497,
-    wrapT: 10497
-  }];
-
-  gltf.textures = [{
-    sampler: 0,
-    source: 0,
-    name: 'HeroKitTexture'
-  }];
-
-  const texRef = { index: 0, texCoord: 0 };
-  gltf.materials.forEach(mat => {
-    if (mat.name === 'LightBrown' || mat.name === 'LightBlue' || mat.name === 'Red_Dark' || mat.name === 'White') {
-      mat.pbrMetallicRoughness = mat.pbrMetallicRoughness || {};
-      mat.pbrMetallicRoughness.baseColorTexture = texRef;
+  let imgBvIdx = -1;
+  for (let i = 0; i < gltf.bufferViews.length; i++) {
+    const bv = gltf.bufferViews[i];
+    if (bv.byteLength >= 100000 && !bv.target) {
+      imgBvIdx = i;
+      break;
     }
-  });
+  }
 
-  const jsonStr = JSON.stringify(gltf);
-  const jsonBuf = Buffer.from(jsonStr, 'utf8');
-  const jsonPad = (4 - (jsonBuf.length % 4)) % 4;
-  const totalJsonLen = jsonBuf.length + jsonPad;
+  if (imgBvIdx === -1) {
+    imgBvIdx = gltf.bufferViews.length;
+    gltf.bufferViews.push({
+      buffer: 0,
+      byteOffset: bin.length,
+      byteLength: atlasLength
+    });
+  } else {
+    gltf.bufferViews[imgBvIdx].byteOffset = bin.length;
+    gltf.bufferViews[imgBvIdx].byteLength = atlasLength;
+  }
 
-  const binPad = (4 - (newBinBuffer.byteLength % 4)) % 4;
-  const totalBinLen = newBinBuffer.byteLength + binPad;
+  if (!gltf.images) gltf.images = [];
+  if (gltf.images.length === 0) {
+    gltf.images.push({ bufferView: imgBvIdx, mimeType: 'image/png', name: `${charType}_atlas` });
+  } else {
+    gltf.images[0].bufferView = imgBvIdx;
+    gltf.images[0].mimeType = 'image/png';
+  }
 
-  const totalGlbLen = 12 + 8 + totalJsonLen + 8 + totalBinLen;
-  const outBuf = Buffer.alloc(totalGlbLen);
+  const paddedAtlas = Buffer.alloc(totalAtlasLength);
+  atlasBuf.copy(paddedAtlas);
 
-  outBuf.writeUInt32LE(0x46546C67, 0);
-  outBuf.writeUInt32LE(2, 4);
-  outBuf.writeUInt32LE(totalGlbLen, 8);
+  const newBin = Buffer.concat([bin, paddedAtlas]);
+  gltf.buffers[0].byteLength = newBin.length;
 
-  outBuf.writeUInt32LE(totalJsonLen, 12);
-  outBuf.writeUInt32LE(0x4E4F534A, 16);
-  jsonBuf.copy(outBuf, 20);
-  for (let i = 0; i < jsonPad; i++) outBuf.writeUInt8(0x20, 20 + jsonBuf.length + i);
+  const newJsonStr = JSON.stringify(gltf);
+  const newJsonBuf = Buffer.from(newJsonStr, 'utf8');
+  const jsonPad = (4 - (newJsonBuf.length % 4)) % 4;
+  const totalJsonLen = newJsonBuf.length + jsonPad;
+  const paddedJson = Buffer.alloc(totalJsonLen, 0x20);
+  newJsonBuf.copy(paddedJson);
 
-  const binHeaderOffset = 20 + totalJsonLen;
-  outBuf.writeUInt32LE(totalBinLen, binHeaderOffset);
-  outBuf.writeUInt32LE(0x004E4942, binHeaderOffset + 4);
-  Buffer.from(newBinBuffer).copy(outBuf, binHeaderOffset + 8);
-  for (let i = 0; i < binPad; i++) outBuf.writeUInt8(0x00, binHeaderOffset + 8 + newBinBuffer.byteLength + i);
+  const totalLen = 12 + 8 + totalJsonLen + 8 + newBin.length;
+  const header = Buffer.alloc(12);
+  header.write('glTF', 0);
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(totalLen, 8);
 
-  fs.writeFileSync(dstGlbPath, outBuf);
-  console.log(`✓ Saved overhauled model: ${dstGlbPath} (${outBuf.length} bytes)`);
+  const jsonChunkHeader = Buffer.alloc(8);
+  jsonChunkHeader.writeUInt32LE(totalJsonLen, 0);
+  jsonChunkHeader.write('JSON', 4);
+
+  const binChunkHeader = Buffer.alloc(8);
+  binChunkHeader.writeUInt32LE(newBin.length, 0);
+  binChunkHeader.write('BIN\0', 4);
+
+  const finalGlb = Buffer.concat([header, jsonChunkHeader, paddedJson, binChunkHeader, newBin]);
+  fs.writeFileSync(outGlbPath, finalGlb);
+  console.log(`✓ Successfully baked & wrote: ${outGlbPath} (${(finalGlb.length / 1024 / 1024).toFixed(2)} MB)`);
 }
 
-async function main() {
-  await generatePristineAtlases();
+async function run() {
+  const { footyAtlas, hoopsAtlas, keeperAtlas } = await generateHeroicAtlases();
 
-  processModel(
-    path.join(ROOT, 'archive/dev_assets/footy10_backup_before_atlas.glb'),
+  const srcGlb = path.join(ROOT, 'archive/dev_assets/candidate_a_france.glb');
+  const baseGlb = fs.existsSync(srcGlb) ? srcGlb : path.join(ROOT, 'assets/characters/footy10.glb');
+
+  processHeroAthlete(
     path.join(ROOT, 'assets/characters/footy10.glb'),
-    path.join(ROOT, 'assets/characters/footy10_atlas.png'),
+    path.join(ROOT, 'assets/characters/footy10.glb'),
+    footyAtlas,
     'footy'
   );
 
-  processModel(
-    path.join(ROOT, 'archive/dev_assets/hoops23_backup_before_atlas.glb'),
+  processHeroAthlete(
     path.join(ROOT, 'assets/characters/hoops23.glb'),
-    path.join(ROOT, 'assets/characters/hoops23_atlas.png'),
+    path.join(ROOT, 'assets/characters/hoops23.glb'),
+    hoopsAtlas,
     'hoops'
   );
 
-  processModel(
-    path.join(ROOT, 'archive/dev_assets/footy10_backup_before_atlas.glb'),
+  processHeroAthlete(
     path.join(ROOT, 'assets/characters/keeper1.glb'),
-    path.join(ROOT, 'assets/characters/keeper1_atlas.png'),
+    path.join(ROOT, 'assets/characters/keeper1.glb'),
+    keeperAtlas,
     'keeper'
   );
 
-  console.log('\n=== ALL HERO ATHLETES OVERHAULED SUCCESSFULLY! ===');
+  console.log('\n=== All 3 Athletes Successfully Rebuilt & Sculpted! ===');
 }
 
-main().catch(err => {
-  console.error('Fatal error during character overhaul:', err);
+run().catch(err => {
+  console.error('Rebuild failed:', err);
   process.exit(1);
 });
