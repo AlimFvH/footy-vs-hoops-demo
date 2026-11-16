@@ -131,7 +131,7 @@
       openLocker: 'INVENTORY',
       openLockerShort: 'INVENTORY',
       switchSideShort: 'SWITCH TEAM',
-      tapToInspect: 'Tap player to customize wardrobe, balls & stadiums',
+      tapToInspect: 'Tap player to customize wardrobe, balls & gear',
       practiceTitle: 'Practice Match vs AI',
       selectDifficulty: 'Choose match rules and difficulty',
       playMatch: 'START MATCH',
@@ -141,7 +141,7 @@
       hard: 'Hard',
       football: 'Football',
       basketball: 'Basketball',
-      stadiumStore: 'STADIUM STORE',
+      stadiumStore: 'PRO STORE',
       storeSub: 'VIRTUAL SPORTS BOUTIQUE · SEASON 1',
       featuredTitle: 'FEATURED DROP OF THE DAY',
       catAll: 'All Items',
@@ -262,7 +262,7 @@
       inCollection: 'In Locker',
       seasonBannerTitle: 'SEASON 1 ARENA CLASH',
       seasonBannerSub: 'Compete, earn XP, and unlock all 30 milestone tiers',
-      q_prime_title: 'Score 5 Points Across All Arenas',
+      q_prime_title: 'Score 5 Points in Matches',
       q_prime_desc: 'Score in football goals or hoops to unlock',
       q_play1_title: 'First Step on Pitch',
       q_play1_desc: 'Play 1 complete match in any discipline',
@@ -472,7 +472,7 @@
       bundleCyberNeonName: 'Cyber Neon Collection',
       bundleCyberNeonDesc: 'Neo Tokyo Megacity rooftop, Cyber Neon ball, Neon Striker kit and Laser Trail.',
       bundleLegendaryChampsName: 'Legendary Champions Bundle',
-      bundleLegendaryChampsDesc: 'All 4 signature jerseys, 4 premium balls, 3 scenic arenas, 5,000 coins and 5 Clash Packs.',
+      bundleLegendaryChampsDesc: 'All 4 signature jerseys, 4 premium balls, 5,000 coins and 5 Clash Packs.',
       payWithTelegramStars: 'Telegram Stars',
       payWithTonCrypto: 'TON Cryptocurrency',
       paymentProcessing: 'Processing payment...',
@@ -728,7 +728,7 @@
       hard: 'Сложная',
       football: 'Футбол',
       basketball: 'Баскетбол',
-      stadiumStore: 'СТАДИОННЫЙ МАГАЗИН',
+      stadiumStore: 'МАГАЗИН',
       storeSub: 'СПОРТИВНЫЙ БУТИК · СЕЗОН 1',
       featuredTitle: 'ГЛАВНЫЙ ЭКСКЛЮЗИВ ДНЯ',
       catAll: 'Все товары',
@@ -850,7 +850,7 @@
       itemLockedToast: 'Предмет заблокирован! Купите его в магазине.',
       seasonBannerTitle: 'СЕЗОН 1: БИТВА АРЕН',
       seasonBannerSub: 'Соревнуйтесь, получайте XP и откройте все 30 уровней наград',
-      q_prime_title: 'Забейте 5 очков на любых аренах',
+      q_prime_title: 'Забейте 5 очков в матчах',
       q_prime_desc: 'Забивайте в ворота или забрасывайте в кольцо',
       q_play1_title: 'Первый шаг на поле',
       q_play1_desc: 'Сыграйте 1 полный матч в любой дисциплине',
@@ -1059,7 +1059,7 @@
       bundleCyberNeonName: 'Кибернеон коллекция',
       bundleCyberNeonDesc: 'Крыша Нео-Токио, кибернеоновый мяч, форма Неон Страйкер и лазерный след.',
       bundleLegendaryChampsName: 'Набор легендарных чемпионов',
-      bundleLegendaryChampsDesc: 'Все 4 фирменные формы, 4 мяча, 3 атмосферные арены, 5000 монет и 5 супер-наборов.',
+      bundleLegendaryChampsDesc: 'Все 4 фирменные формы, 4 мяча, 5000 монет и 5 супер-наборов.',
       payWithTelegramStars: 'Telegram Stars',
       payWithTonCrypto: 'Криптовалюта TON',
       paymentProcessing: 'Обработка платежа...',
@@ -4848,57 +4848,90 @@
       case 'nav_home_footy':
       case 'ball_footy':
       case 'football_ball':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_nav_f_ball)" stroke="#00f0ff" stroke-width="1.2"/>' +
-          '<g clip-path="url(#fvh_nav_f_clip)">' +
-          '  <polygon points="12,8.6 15.2,10.9 14.0,14.7 10.0,14.7 8.8,10.9" fill="#0f172a"/>' +
-          '  <polygon points="12,2.5 9.4,4.2 8.4,1.0 15.6,1.0 14.6,4.2" fill="#0f172a"/>' +
-          '  <polygon points="21.0,8.1 19.1,5.2 23.0,3.5 24.5,10.0 21.0,12.0" fill="#0f172a"/>' +
-          '  <polygon points="18.2,19.6 16.4,16.8 19.5,14.2 23.5,17.5 21.2,21.8" fill="#0f172a"/>' +
-          '  <polygon points="5.8,19.6 7.6,16.8 4.5,14.2 0.5,17.5 2.8,21.8" fill="#0f172a"/>' +
-          '  <polygon points="3.0,8.1 4.9,5.2 1.0,3.5 -0.5,10.0 3.0,12.0" fill="#0f172a"/>' +
-          '  <line x1="12" y1="8.6" x2="12" y2="4.2" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
-          '  <line x1="15.2" y1="10.9" x2="19.1" y2="8.1" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
-          '  <line x1="14.0" y1="14.7" x2="16.4" y2="17.9" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
-          '  <line x1="10.0" y1="14.7" x2="7.6" y2="17.9" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
-          '  <line x1="8.8" y1="10.9" x2="4.9" y2="8.1" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/>' +
-          '  <line x1="9.4" y1="4.2" x2="4.9" y2="5.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
-          '  <line x1="14.6" y1="4.2" x2="19.1" y2="5.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
-          '  <line x1="21.0" y1="12.0" x2="19.5" y2="14.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
-          '  <line x1="16.4" y1="16.8" x2="7.6" y2="16.8" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
-          '  <line x1="3.0" y1="12.0" x2="4.5" y2="14.2" stroke="#0f172a" stroke-width="0.75" stroke-linecap="round"/>' +
-          '</g>' +
-          '<path d="M5.5 6.5C7.5 4.5 9.8 3.5 12 3.5" stroke="#ffffff" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
           '<defs>' +
-          '  <radialGradient id="fvh_nav_f_ball" cx="35%" cy="30%" r="68%">' +
-          '    <stop offset="0%" stop-color="#ffffff"/>' +
-          '    <stop offset="70%" stop-color="#e2e8f0"/>' +
-          '    <stop offset="100%" stop-color="#94a3b8"/>' +
-          '  </radialGradient>' +
-          '  <clipPath id="fvh_nav_f_clip">' +
-          '    <circle cx="12" cy="12" r="9.5"/>' +
-          '  </clipPath>' +
+          '  <radialGradient id="fvh_soc_base" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#f8fafc"/><stop offset="65%" stop-color="#cbd5e1"/><stop offset="90%" stop-color="#64748b"/><stop offset="100%" stop-color="#1e293b"/></radialGradient>' +
+          '  <radialGradient id="fvh_soc_blue" cx="36%" cy="32%" r="68%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="35%" stop-color="#2563eb"/><stop offset="75%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#172554"/></radialGradient>' +
+          '  <radialGradient id="fvh_soc_blue_dark" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="50%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#0f172a"/></radialGradient>' +
+          '  <linearGradient id="fvh_soc_gloss" x1="0%" y1="0%" x2="50%" y2="80%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/><stop offset="35%" stop-color="#ffffff" stop-opacity="0.3"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
+          '  <clipPath id="fvh_soc_clip"><circle cx="24" cy="24" r="22"/></clipPath>' +
+          '  <radialGradient id="fvh_soc_inner_shadow" cx="35%" cy="30%" r="65%"><stop offset="60%" stop-color="#000000" stop-opacity="0"/><stop offset="88%" stop-color="#0f172a" stop-opacity="0.35"/><stop offset="100%" stop-color="#020617" stop-opacity="0.75"/></radialGradient>' +
           '</defs>' +
+          '<circle cx="24" cy="24" r="22.5" fill="#090d16"/>' +
+          '<circle cx="24" cy="24" r="22" fill="url(#fvh_soc_base)"/>' +
+          '<g clip-path="url(#fvh_soc_clip)">' +
+          '  <path d="M22 17 L29 18 L32 25 L27 31 L18 29 L17 22 Z" fill="#ffffff" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M22 17 L17 22 L11 19 L11 12 L18 10 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M29 18 L36 14 L42 18 L40 25 L32 25 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M18 29 L27 31 L26 38 L18 41 L14 36 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M11 19 L17 22 L18 29 L14 36 L7 33 L6 25 Z" fill="#e2e8f0" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M6 25 L7 33 L2 35 L0 27 L2 20 Z" fill="url(#fvh_soc_blue_dark)" stroke="#1e293b" stroke-width="0.8"/>' +
+          '  <path d="M32 25 L40 25 L44 32 L39 39 L27 31 Z" fill="#cbd5e1" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M40 25 L48 24 L48 33 L44 32 Z" fill="url(#fvh_soc_blue_dark)" stroke="#1e293b" stroke-width="0.8"/>' +
+          '  <path d="M39 39 L44 32 L48 37 L43 44 L35 43 Z" fill="url(#fvh_soc_blue_dark)" stroke="#1e293b" stroke-width="0.8"/>' +
+          '  <path d="M18 10 L26 7 L34 10 L36 14 L29 18 L22 17 Z" fill="#ffffff" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
+          '  <path d="M26 7 L25 1 L35 2 L34 10 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8"/>' +
+          '  <path d="M2 24 A22 22 0 1 0 46 24 A22 22 0 1 0 2 24 Z" fill="none" stroke="#0f172a" stroke-width="2.5" opacity="0.6"/>' +
+          '  <circle cx="24" cy="24" r="22" fill="url(#fvh_soc_inner_shadow)"/>' +
+          '  <ellipse cx="16" cy="13" rx="9" ry="4.5" transform="rotate(-35 16 13)" fill="url(#fvh_soc_gloss)"/>' +
+          '  <circle cx="13" cy="11" r="2" fill="#ffffff" opacity="0.75"/>' +
+          '</g>' +
+          '<circle cx="24" cy="24" r="22" fill="none" stroke="#38bdf8" stroke-width="0.8" opacity="0.7"/>' +
           '</svg>';
 
       case 'nav_home_hoops':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<circle cx="12" cy="12" r="9.5" fill="url(#fvh_nav_h_bg)" stroke="#f97316" stroke-width="1.3"/>' +
-          '<path d="M2.5 12H21.5" stroke="#1c1917" stroke-width="1.2"/>' +
-          '<path d="M12 2.5V21.5" stroke="#1c1917" stroke-width="1.2"/>' +
-          '<path d="M5.5 5.5C8 8.5 8 15.5 5.5 18.5" stroke="#1c1917" stroke-width="1.2"/>' +
-          '<path d="M18.5 5.5C16 8.5 16 15.5 18.5 18.5" stroke="#1c1917" stroke-width="1.2"/>' +
-          '<defs><radialGradient id="fvh_nav_h_bg" cx="0.35" cy="0.35" r="0.75"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#ea580c"/></radialGradient></defs>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <radialGradient id="fvh_bb_base" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#fb923c"/><stop offset="40%" stop-color="#ea580c"/><stop offset="75%" stop-color="#c2410c"/><stop offset="95%" stop-color="#9a3412"/><stop offset="100%" stop-color="#431407"/></radialGradient>' +
+          '  <linearGradient id="fvh_bb_gloss" x1="0%" y1="0%" x2="60%" y2="80%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/><stop offset="45%" stop-color="#ffffff" stop-opacity="0.2"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
+          '  <clipPath id="fvh_bb_clip"><circle cx="24" cy="24" r="22"/></clipPath>' +
+          '  <radialGradient id="fvh_bb_inner_shadow" cx="35%" cy="30%" r="65%"><stop offset="55%" stop-color="#000000" stop-opacity="0"/><stop offset="90%" stop-color="#431407" stop-opacity="0.45"/><stop offset="100%" stop-color="#1c1917" stop-opacity="0.8"/></radialGradient>' +
+          '</defs>' +
+          '<circle cx="24" cy="24" r="22.5" fill="#090d16"/>' +
+          '<circle cx="24" cy="24" r="22" fill="url(#fvh_bb_base)"/>' +
+          '<g clip-path="url(#fvh_bb_clip)">' +
+          '  <path d="M2 24 Q24 25.5 46 24" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round"/>' +
+          '  <path d="M2 24.8 Q24 26.3 46 24.8" stroke="#fdba74" stroke-width="0.6" opacity="0.4"/>' +
+          '  <path d="M24 2 Q25.5 24 24 46" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round"/>' +
+          '  <path d="M24.8 2 Q26.3 24 24.8 46" stroke="#fdba74" stroke-width="0.6" opacity="0.4"/>' +
+          '  <path d="M9 7 C18 14 18 34 9 41" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
+          '  <path d="M9.8 7.5 C18.8 14.5 18.8 33.5 9.8 40.5" stroke="#fdba74" stroke-width="0.6" opacity="0.4" fill="none"/>' +
+          '  <path d="M39 7 C30 14 30 34 39 41" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
+          '  <path d="M38.2 7.5 C29.2 14.5 29.2 33.5 38.2 40.5" stroke="#fdba74" stroke-width="0.6" opacity="0.4" fill="none"/>' +
+          '  <circle cx="24" cy="24" r="22" fill="url(#fvh_bb_inner_shadow)"/>' +
+          '  <ellipse cx="16" cy="13" rx="8" ry="4" transform="rotate(-30 16 13)" fill="url(#fvh_bb_gloss)"/>' +
+          '  <circle cx="13" cy="11" r="1.8" fill="#ffffff" opacity="0.7"/>' +
+          '</g>' +
+          '<circle cx="24" cy="24" r="22" fill="none" stroke="#fb923c" stroke-width="0.8" opacity="0.7"/>' +
           '</svg>';
 
       case 'nav_inventory':
       case 'inventory':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<path d="M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7" stroke="' + (active ? '#00f0ff' : '#94a3b8') + '" stroke-width="1.5" stroke-linecap="round"/>' +
-          '<rect x="4" y="7" width="16" height="14" rx="3" fill="url(#fvh_nav_inv_bg)" stroke="' + (active ? '#00f0ff' : '#64748b') + '" stroke-width="1.3"/>' +
-          '<path d="M4 11H20" stroke="' + (active ? '#00f0ff' : '#475569') + '" stroke-width="1.2"/>' +
-          '<rect x="10" y="10" width="4" height="4" rx="1" fill="#facc15"/>' +
-          '<defs><linearGradient id="fvh_nav_inv_bg" x1="12" y1="7" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1e293b"/><stop offset="100%" stop-color="#0f172a"/></linearGradient></defs>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <linearGradient id="fvh_bag_body" x1="0%" y1="10%" x2="100%" y2="90%"><stop offset="0%" stop-color="#38bdf8"/><stop offset="25%" stop-color="#0284c7"/><stop offset="65%" stop-color="#0369a1"/><stop offset="100%" stop-color="#0c4a6e"/></linearGradient>' +
+          '  <linearGradient id="fvh_bag_metal" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#e2e8f0"/><stop offset="70%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#64748b"/></linearGradient>' +
+          '  <linearGradient id="fvh_bag_strap" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/></linearGradient>' +
+          '</defs>' +
+          '<ellipse cx="24" cy="43" rx="19" ry="3.5" fill="#000000" opacity="0.6"/>' +
+          '<path d="M15 21 C15 9 33 9 33 21" stroke="#0f172a" stroke-width="5" stroke-linecap="round" fill="none"/>' +
+          '<path d="M15 21 C15 9 33 9 33 21" stroke="url(#fvh_bag_strap)" stroke-width="3.5" stroke-linecap="round" fill="none"/>' +
+          '<path d="M19 11 L29 11" stroke="#38bdf8" stroke-width="1.2" stroke-linecap="round"/>' +
+          '<rect x="4" y="19" width="40" height="22" rx="11" fill="url(#fvh_bag_body)" stroke="#7dd3fc" stroke-width="0.9"/>' +
+          '<path d="M15 19 C9 19 4 24 4 30 C4 36 9 41 15 41 Z" fill="#0369a1" stroke="#0284c7" stroke-width="0.8"/>' +
+          '<ellipse cx="14" cy="30" rx="3.5" ry="9" fill="#38bdf8" opacity="0.9"/>' +
+          '<ellipse cx="14" cy="30" rx="1.8" ry="6" fill="#075985"/>' +
+          '<path d="M33 19 C39 19 44 24 44 30 C44 36 39 41 33 41" stroke="#38bdf8" stroke-width="2" fill="none"/>' +
+          '<path d="M17 21 C17 11 31 11 31 21" stroke="#0f172a" stroke-width="4.5" stroke-linecap="round" fill="none"/>' +
+          '<path d="M17 21 C17 11 31 11 31 21" stroke="#0284c7" stroke-width="2.6" stroke-linecap="round" fill="none"/>' +
+          '<rect x="15.5" y="21" width="3.2" height="3.2" rx="1" fill="url(#fvh_bag_metal)"/>' +
+          '<rect x="29.3" y="21" width="3.2" height="3.2" rx="1" fill="url(#fvh_bag_metal)"/>' +
+          '<path d="M11 26 L37 26" stroke="#ffffff" stroke-width="2" stroke-dasharray="1.8 1.2" stroke-linecap="round"/>' +
+          '<circle cx="28" cy="26" r="2.2" fill="url(#fvh_bag_metal)"/>' +
+          '<path d="M28 27 L26.5 33 L29.5 33 Z" fill="url(#fvh_bag_metal)" stroke="#475569" stroke-width="0.5"/>' +
+          '<circle cx="28" cy="31" r="0.8" fill="#0f172a"/>' +
+          '<path d="M20 32 L24 35 L28 32" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="M6 22 C12 20 36 20 42 22" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>' +
           '</svg>';
 
       case 'nav_upgrades':
@@ -4912,32 +4945,83 @@
       case 'nav_shop':
       case 'shop':
       case 'cart':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<path d="M3 4H5.5L7.5 15H17.5L19.5 7H6.5" stroke="' + (active ? '#a855f7' : '#94a3b8') + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
-          '<circle cx="9" cy="19" r="1.8" fill="' + (active ? '#a855f7' : '#94a3b8') + '"/>' +
-          '<circle cx="16.5" cy="19" r="1.8" fill="' + (active ? '#a855f7' : '#94a3b8') + '"/>' +
-          '<path d="M10 10.5H15M12.5 8V13" stroke="#facc15" stroke-width="1.2" stroke-linecap="round"/>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <linearGradient id="fvh_cart_chrome" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#e2e8f0"/><stop offset="70%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#475569"/></linearGradient>' +
+          '  <linearGradient id="fvh_cart_handle" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#7e22ce"/></linearGradient>' +
+          '  <linearGradient id="fvh_cart_gold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#facc15"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient>' +
+          '</defs>' +
+          '<ellipse cx="25" cy="44" rx="15" ry="2.5" fill="#000000" opacity="0.55"/>' +
+          '<g transform="translate(19, 13)">' +
+          '  <polygon points="6,0 7.8,4.2 12,6 7.8,7.8 6,12 4.2,7.8 0,6 4.2,4.2" fill="url(#fvh_cart_gold)" stroke="#eab308" stroke-width="0.7"/>' +
+          '  <circle cx="6" cy="6" r="2" fill="#ffffff" opacity="0.8"/>' +
+          '</g>' +
+          '<polygon points="10,14 40,14 36,29 14,29" fill="rgba(255,255,255,0.06)" stroke="url(#fvh_cart_chrome)" stroke-width="2" stroke-linejoin="round"/>' +
+          '<line x1="16" y1="14" x2="18" y2="29" stroke="url(#fvh_cart_chrome)" stroke-width="1.1"/>' +
+          '<line x1="23" y1="14" x2="24" y2="29" stroke="url(#fvh_cart_chrome)" stroke-width="1.1"/>' +
+          '<line x1="30" y1="14" x2="29" y2="29" stroke="url(#fvh_cart_chrome)" stroke-width="1.1"/>' +
+          '<line x1="36" y1="14" x2="33" y2="29" stroke="url(#fvh_cart_chrome)" stroke-width="1.1"/>' +
+          '<line x1="12" y1="19" x2="38.5" y2="19" stroke="url(#fvh_cart_chrome)" stroke-width="1"/>' +
+          '<line x1="13" y1="24" x2="37" y2="24" stroke="url(#fvh_cart_chrome)" stroke-width="1"/>' +
+          '<path d="M5 12 L10 14" stroke="url(#fvh_cart_chrome)" stroke-width="2.5" stroke-linecap="round"/>' +
+          '<rect x="3" y="10" width="5" height="3.5" rx="1.5" fill="url(#fvh_cart_handle)" stroke="#a855f7" stroke-width="0.8"/>' +
+          '<path d="M14 29 L16 38 L34 38 L36 29" stroke="url(#fvh_cart_chrome)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<line x1="16" y1="38" x2="14" y2="41" stroke="url(#fvh_cart_chrome)" stroke-width="2"/>' +
+          '<line x1="34" y1="38" x2="34" y2="41" stroke="url(#fvh_cart_chrome)" stroke-width="2"/>' +
+          '<circle cx="14" cy="41" r="3.5" fill="#0f172a" stroke="#475569" stroke-width="0.8"/>' +
+          '<circle cx="14" cy="41" r="1.5" fill="url(#fvh_cart_chrome)"/>' +
+          '<circle cx="34" cy="41" r="3.5" fill="#0f172a" stroke="#475569" stroke-width="0.8"/>' +
+          '<circle cx="34" cy="41" r="1.5" fill="url(#fvh_cart_chrome)"/>' +
           '</svg>';
 
       case 'nav_quests':
       case 'quests':
       case 'target':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<circle cx="12" cy="12" r="9.5" stroke="' + (active ? '#ef4444' : '#94a3b8') + '" stroke-width="1.3"/>' +
-          '<circle cx="12" cy="12" r="6.2" stroke="' + (active ? '#f97316' : '#64748b') + '" stroke-width="1.2"/>' +
-          '<circle cx="12" cy="12" r="3" fill="#ef4444"/>' +
-          '<path d="M12 2V5M12 19V22M2 12H5M19 12H22" stroke="' + (active ? '#ef4444' : '#64748b') + '" stroke-width="1.3" stroke-linecap="round"/>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <linearGradient id="fvh_med_ribbon_red" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ef4444"/><stop offset="50%" stop-color="#dc2626"/><stop offset="100%" stop-color="#991b1b"/></linearGradient>' +
+          '  <linearGradient id="fvh_med_ribbon_blue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/></linearGradient>' +
+          '  <radialGradient id="fvh_med_gold" cx="35%" cy="30%" r="68%"><stop offset="0%" stop-color="#fef08a"/><stop offset="35%" stop-color="#facc15"/><stop offset="70%" stop-color="#ca8a04"/><stop offset="95%" stop-color="#854d0e"/><stop offset="100%" stop-color="#451a03"/></radialGradient>' +
+          '  <linearGradient id="fvh_med_rim" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="40%" stop-color="#fef08a"/><stop offset="80%" stop-color="#ca8a04"/><stop offset="100%" stop-color="#78350f"/></linearGradient>' +
+          '</defs>' +
+          '<ellipse cx="24" cy="45" rx="11" ry="2.5" fill="#000000" opacity="0.6"/>' +
+          '<polygon points="16,3 24,19 19,20 11,3" fill="url(#fvh_med_ribbon_red)" stroke="#7f1d1d" stroke-width="0.6"/>' +
+          '<polygon points="13,3 19,16 17,17 11,3" fill="url(#fvh_med_ribbon_blue)" opacity="0.9"/>' +
+          '<polygon points="32,3 24,19 29,20 37,3" fill="url(#fvh_med_ribbon_red)" stroke="#7f1d1d" stroke-width="0.6"/>' +
+          '<polygon points="35,3 29,16 31,17 37,3" fill="url(#fvh_med_ribbon_blue)" opacity="0.9"/>' +
+          '<circle cx="24" cy="20" r="3.5" fill="none" stroke="url(#fvh_med_rim)" stroke-width="2"/>' +
+          '<circle cx="24" cy="31" r="14" fill="url(#fvh_med_gold)" stroke="url(#fvh_med_rim)" stroke-width="1.8"/>' +
+          '<circle cx="24" cy="31" r="11" fill="none" stroke="#fef08a" stroke-width="0.8" stroke-dasharray="2 1" opacity="0.8"/>' +
+          '<g transform="translate(17, 24)">' +
+          '  <polygon points="7,0 9.2,4.8 14,5.4 10.4,8.8 11.4,14 7,11.4 2.6,14 3.6,8.8 0,5.4 4.8,4.8" fill="#fef08a" stroke="#ca8a04" stroke-width="0.6"/>' +
+          '  <circle cx="7" cy="7" r="2.2" fill="#ffffff" opacity="0.75"/>' +
+          '</g>' +
+          '<path d="M14 26 C17 21 27 21 31 24" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>' +
           '</svg>';
 
       case 'trophy':
       case 'topbar_leaderboard':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<path d="M6 4H18V10C18 13.3137 15.3137 16 12 16C8.68629 16 6 13.3137 6 10V4Z" fill="url(#fvh_trophy_grad)" stroke="#facc15" stroke-width="1.2"/>' +
-          '<path d="M6 6H3.5C2.67157 6 2 6.67157 2 7.5V8.5C2 10.433 3.567 12 5.5 12H6.2" stroke="#facc15" stroke-width="1.2" stroke-linecap="round"/>' +
-          '<path d="M18 6H20.5C21.3284 6 22 6.67157 22 7.5V8.5C22 10.433 20.433 12 18.5 12H17.8" stroke="#facc15" stroke-width="1.2" stroke-linecap="round"/>' +
-          '<path d="M12 16V19.5M8.5 20.5H15.5" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>' +
-          '<circle cx="12" cy="9.5" r="1.8" fill="#ffffff" fill-opacity="0.9"/>' +
-          '<defs><linearGradient id="fvh_trophy_grad" x1="12" y1="4" x2="12" y2="16" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#eab308"/></linearGradient></defs>' +
+      case 'crown':
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <linearGradient id="fvh_tro_gold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fffbeb"/><stop offset="25%" stop-color="#fde047"/><stop offset="55%" stop-color="#eab308"/><stop offset="85%" stop-color="#ca8a04"/><stop offset="100%" stop-color="#854d0e"/></linearGradient>' +
+          '  <linearGradient id="fvh_tro_base" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#334155"/><stop offset="50%" stop-color="#1e293b"/><stop offset="100%" stop-color="#090d16"/></linearGradient>' +
+          '</defs>' +
+          '<ellipse cx="24" cy="45" rx="14" ry="2.5" fill="#000000" opacity="0.6"/>' +
+          '<path d="M14 13 C5 13 4 25 14 27 L16 25 C9 23 10 16 16 15 Z" fill="url(#fvh_tro_gold)" stroke="#a16207" stroke-width="0.8"/>' +
+          '<path d="M34 13 C43 13 44 25 34 27 L32 25 C39 23 38 16 32 15 Z" fill="url(#fvh_tro_gold)" stroke="#a16207" stroke-width="0.8"/>' +
+          '<path d="M13 8 L35 8 L33 24 C33 30 28 34 24 34 C20 34 15 30 15 24 Z" fill="url(#fvh_tro_gold)" stroke="#a16207" stroke-width="1"/>' +
+          '<ellipse cx="24" cy="8" rx="11" ry="3.2" fill="url(#fvh_tro_gold)" stroke="#fef08a" stroke-width="1.2"/>' +
+          '<ellipse cx="24" cy="8" rx="9" ry="2.2" fill="#854d0e"/>' +
+          '<path d="M21 33 L27 33 L26 38 L22 38 Z" fill="url(#fvh_tro_gold)" stroke="#a16207" stroke-width="0.7"/>' +
+          '<ellipse cx="24" cy="38" rx="6" ry="1.8" fill="url(#fvh_tro_gold)"/>' +
+          '<path d="M15 39 L33 39 L35 44 L13 44 Z" fill="url(#fvh_tro_base)" stroke="#475569" stroke-width="0.8"/>' +
+          '<rect x="18" y="40.5" width="12" height="2.5" rx="0.5" fill="#facc15" stroke="#a16207" stroke-width="0.5"/>' +
+          '<path d="M17 12 Q20 28 23 32" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>' +
+          '<g transform="translate(14, 6)">' +
+          '  <polygon points="4,0 5.2,2.8 8,4 5.2,5.2 4,8 2.8,5.2 0,4 2.8,2.8" fill="#ffffff"/>' +
+          '  <circle cx="4" cy="4" r="1.2" fill="#fef08a"/>' +
+          '</g>' +
           '</svg>';
 
       case 'settings':
@@ -7917,7 +8001,7 @@
       category: 'bundles',
       badge: 'ALL-STAR MEGA',
       name: 'Legendary Champions Bundle',
-      desc: 'All 4 signature jerseys, 4 premium balls, 3 scenic arenas, 5,000 coins and 5 Clash Packs.',
+      desc: 'All 4 signature jerseys, 4 premium balls, 5,000 coins and 5 Clash Packs.',
       originalValue: 15240,
       coinsPrice: 8500,
       discount: 44,
@@ -11438,11 +11522,6 @@
           '</button>' +
         '</div>' +
         (!isHost ? '<div style="font-size:10.5px;color:#94a3b8;margin:-8px 0 10px 0;text-align:center;">' + (lang === 'ru' ? '💡 Режим спорта выбирает создатель комнаты' : '💡 Sport mode is selected by host') + '</div>' : '') +
-        // Arena Display
-        '<div class="fvh-lobby-arena-row">' +
-          '<span>🏟️ ' + (lang === 'ru' ? 'Арена' : 'Arena') + ':</span>' +
-          '<b>' + arenaName + '</b>' +
-        '</div>' +
         // Actions
         '<div class="fvh-lobby-actions" style="display:flex;flex-direction:column;gap:8px;">' +
           '<button class="btn ' + (myReady ? 'fvh-btn-unready' : 'primary') + ' block fvh-btn-toggle-ready"' + (!guestObj ? ' disabled style="opacity:0.6;"' : '') + '>' +
@@ -11669,7 +11748,7 @@
     var playerName = (app.store.data.profile && app.store.data.profile.nickname) || ('Athlete #' + basePid.slice(-4));
     var lang = getActiveLang();
 
-    showToast(lang === 'ru' ? 'Создание приватной арены...' : 'Creating private arena...');
+    showToast(lang === 'ru' ? 'Создание приватной дуэли...' : 'Creating private duel...');
 
     fetch(getApiUrl('/api/room/create'), {
       method: 'POST',
@@ -12966,9 +13045,9 @@
         }
       } catch (e) {}
 
-      var arenaName = isHoopsMode
-        ? (lang === 'ru' ? '🏀 Стрит-Корт Арена' : '🏀 Hardwood Street Court')
-        : (lang === 'ru' ? '⚽ Центральный Стадион' : '⚽ Football Stadium Arena');
+      var matchBadge = isHoopsMode
+        ? (lang === 'ru' ? '🏀 МАТЧ ПО БАСКЕТБОЛУ' : '🏀 BASKETBALL MATCH')
+        : (lang === 'ru' ? '⚽ МАТЧ ПО ФУТБОЛУ' : '⚽ FOOTBALL MATCH');
 
       var overlay = document.createElement('div');
       overlay.className = 'screen dim fvh-pause-overlay';
@@ -12981,7 +13060,7 @@
       var statusBox = document.createElement('div');
       statusBox.className = 'fvh-pause-match-status';
       statusBox.innerHTML =
-        '<div class="fvh-pause-arena-tag">' + arenaName + '</div>' +
+        '<div class="fvh-pause-arena-tag">' + matchBadge + '</div>' +
         '<div class="fvh-pause-score-row">' +
         '  <span class="fvh-pause-team-badge" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>' + (isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span></span>' +
         '  <span class="fvh-pause-score-nums">' + scoreText + '</span>' +

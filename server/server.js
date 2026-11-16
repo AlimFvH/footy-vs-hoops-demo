@@ -1067,8 +1067,7 @@ const BOT_LOCALIZATION = {
       `A fast-paced 1v1 arcade sports game on Telegram!\n\n` +
       `⚽ Football mode\n` +
       `🏀 Basketball mode\n` +
-      `🤖 Play against AI\n` +
-      `🏟️ 2 standard arenas\n\n` +
+      `🤖 Play against AI\n\n` +
       `🤝 Business & Partnerships: footyvshoops@gmail.com\n\n` +
       `Choose your sport and jump into the game!\n\n` +
       `👇 Tap below to play!`,
@@ -1084,8 +1083,7 @@ const BOT_LOCALIZATION = {
       `• TURBO — Sprint burst and pressure defense\n\n` +
       `🏆 *Game Modes:*\n` +
       `• ⚽ Football mode — 1v1 arcade football vs AI\n` +
-      `• 🏀 Basketball mode — 1v1 arcade basketball vs AI\n` +
-      `• 🏟️ 2 Standard Arenas — Classic Grass & Street Court\n\n` +
+      `• 🏀 Basketball mode — 1v1 arcade basketball vs AI\n\n` +
       `👕 *Locker Room:*\n` +
       `• Customize team kits and match balls in the Wardrobe!\n\n` +
       `🤝 *Business & Partnerships:*\n` +
@@ -1098,8 +1096,7 @@ const BOT_LOCALIZATION = {
       `Быстрая 1v1 спортивная аркада в Telegram!\n\n` +
       `⚽ Режим футбола\n` +
       `🏀 Режим баскетбола\n` +
-      `🤖 Игра против ИИ\n` +
-      `🏟️ 2 стандартные арены\n\n` +
+      `🤖 Игра против ИИ\n\n` +
       `🤝 По вопросам сотрудничества и рекламы: footyvshoops@gmail.com\n\n` +
       `Выбирай свой спорт и заходи в игру!\n\n` +
       `👇 Нажми кнопку ниже, чтобы играть!`,
@@ -1115,8 +1112,7 @@ const BOT_LOCALIZATION = {
       `• TURBO — рывок и защита\n\n` +
       `🏆 *Режимы:*\n` +
       `• ⚽ Режим футбола — 1v1 аркадный футбол против ИИ\n` +
-      `• 🏀 Режим баскетбола — 1v1 аркадный баскетбол против ИИ\n` +
-      `• 🏟️ 2 стандартные арены — Классический газон и Уличная площадка\n\n` +
+      `• 🏀 Режим баскетбола — 1v1 аркадный баскетбол против ИИ\n\n` +
       `👕 *Гардероб:*\n` +
       `• Выбирайте форму и мячи в гардеробе!\n\n` +
       `🤝 *Сотрудничество и реклама:*\n` +
@@ -1129,8 +1125,7 @@ const BOT_LOCALIZATION = {
       `¡Un emocionante juego arcade deportivo 1v1 en Telegram!\n\n` +
       `⚽ Modo Fútbol\n` +
       `🏀 Modo Baloncesto\n` +
-      `🤖 Juega contra la IA\n` +
-      `🏟️ 2 arenas estándar\n\n` +
+      `🤖 Juega contra la IA\n\n` +
       `🤝 Negocios y colaboraciones: footyvshoops@gmail.com\n\n` +
       `¡Elige tu deporte y entra al partido!\n\n` +
       `👇 ¡Toca abajo para jugar!`,
