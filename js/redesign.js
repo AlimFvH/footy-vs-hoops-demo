@@ -11448,8 +11448,13 @@
           '<button class="btn ' + (myReady ? 'fvh-btn-unready' : 'primary') + ' block fvh-btn-toggle-ready"' + (!guestObj ? ' disabled style="opacity:0.6;"' : '') + '>' +
             (myReady ? (lang === 'ru' ? '✕ ОТМЕНИТЬ ГОТОВНОСТЬ' : '✕ CANCEL READY') : (!guestObj ? (lang === 'ru' ? '⏳ ОЖИДАНИЕ СОПЕРНИКА...' : '⏳ WAITING FOR OPPONENT...') : (lang === 'ru' ? '✓ ГОТОВ К МАТЧУ' : '✓ READY TO PLAY'))) +
           '</button>' +
+          (isHost ? (
+            '<button class="btn primary small block fvh-btn-share-tg" style="background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;border:1.5px solid #38bdf8 !important;box-shadow:0 0 16px rgba(56,189,248,0.35) !important;font-weight:900;letter-spacing:0.5px;">' +
+              '✈️ ' + (lang === 'ru' ? 'ВЫЗВАТЬ ДРУГА В TELEGRAM' : 'CHALLENGE FRIEND ON TELEGRAM') +
+            '</button>'
+          ) : '') +
           '<div style="display:flex;gap:8px;">' +
-            '<button class="btn small block fvh-btn-copy-link" style="flex:1;">📋 ' + (lang === 'ru' ? 'Копировать ссылку' : 'Copy link') + '</button>' +
+            '<button class="btn small block fvh-btn-copy-link" style="flex:1;">📋 ' + (lang === 'ru' ? 'Копировать дуэль-ссылку' : 'Copy duel link') + '</button>' +
             '<button class="btn small block fvh-btn-leave-lobby" style="flex:1;">✕ ' + (lang === 'ru' ? 'Покинуть лобби' : 'Leave lobby') + '</button>' +
           '</div>' +
         '</div>';
@@ -11504,11 +11509,46 @@
         };
       }
 
+      function getDuelInviteLink() {
+        var botUser = 'FootyVsHoopsBot';
+        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.bot) {
+          botUser = window.Telegram.WebApp.initDataUnsafe.bot.username || botUser;
+        }
+        return 'https://t.me/' + botUser + '?startapp=duel_' + encodeURIComponent(roomCode);
+      }
+
+      function getDuelShareText() {
+        var sportTitle = (room.mode === 'hoops') ? (lang === 'ru' ? 'Баскетбол 🏀' : 'Basketball 🏀') : (lang === 'ru' ? 'Футбол ⚽' : 'Football ⚽');
+        return (lang === 'ru'
+          ? '🔥 Я выбрал ' + sportTitle + ' и вызываю тебя на дуэль 1 на 1! Заходи и докажи силу своей команды! ⚽ vs 🏀'
+          : '🔥 I challenge you to an epic 1v1 ' + sportTitle + ' duel! Join now and prove your squad is superior: ⚽ vs 🏀');
+      }
+
+      // Telegram Share Duel Button
+      var shareTgBtn = modal.querySelector('.fvh-btn-share-tg');
+      if (shareTgBtn) {
+        shareTgBtn.onclick = function () {
+          app.audio.play('click');
+          var link = getDuelInviteLink();
+          var text = getDuelShareText();
+          var tgUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(link);
+          }
+          showToast(lang === 'ru' ? 'Ссылка скопирована! Открываем Telegram...' : 'Link copied! Opening Telegram...');
+          if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+            window.Telegram.WebApp.openTelegramLink(tgUrl);
+          } else {
+            window.open(tgUrl, '_blank');
+          }
+        };
+      }
+
       // Copy Link Button
       var copyBtn = modal.querySelector('.fvh-btn-copy-link');
       if (copyBtn) {
         copyBtn.onclick = function () {
-          var joinLink = window.location.origin + window.location.pathname + '?room=' + roomCode;
+          var joinLink = getDuelInviteLink();
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(joinLink);
           }
@@ -11516,7 +11556,7 @@
           showToast(tr('inviteLinkCopied') + ' (' + roomCode + ')');
           copyBtn.textContent = '✓ ' + (lang === 'ru' ? 'Скопировано!' : 'Copied!');
           setTimeout(function () {
-            copyBtn.textContent = '📋 ' + (lang === 'ru' ? 'Копировать ссылку' : 'Copy link');
+            copyBtn.textContent = '📋 ' + (lang === 'ru' ? 'Копировать дуэль-ссылку' : 'Copy duel link');
           }, 1800);
         };
       }
@@ -11653,7 +11693,7 @@
   }
 
   // Private Match: Join Room Modal (Server-side validation & transitions into Lobby)
-  function showJoinRoomModal(app, curChar) {
+  function showJoinRoomModal(app, curChar, prefilledCode) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-back';
     var modal = document.createElement('div');
@@ -11690,9 +11730,16 @@
     var statusEl = modal.querySelector('#fvh-join-status');
     var confirmBtn = modal.querySelector('.fvh-btn-confirm-join');
 
-    var urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('room')) {
-      inputEl.value = urlParams.get('room').toUpperCase();
+    if (prefilledCode) {
+      inputEl.value = String(prefilledCode).toUpperCase();
+      setTimeout(function () {
+        if (confirmBtn) confirmBtn.click();
+      }, 80);
+    } else {
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('room') || urlParams.has('duel')) {
+        inputEl.value = (urlParams.get('room') || urlParams.get('duel')).toUpperCase();
+      }
     }
 
     confirmBtn.onclick = function () {
@@ -12103,6 +12150,63 @@
     }
     renderQuickCard();
     grid.appendChild(quickCard);
+
+    // -------------------------------------------------------------
+    // CARD 3: Friend Duel (Вызов друга на дуэль 1v1)
+    // -------------------------------------------------------------
+    var duelCard = document.createElement('div');
+    duelCard.className = 'fvh-mode-card duel-card';
+    var duelSport = curChar;
+
+    function renderDuelCard() {
+      var isFooty = (duelSport === 'footy');
+      duelCard.innerHTML =
+        '<div class="fvh-mode-card-header">' +
+          '<span class="fvh-mode-badge duel" style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.22);border:1.5px solid #ef4444;color:#fca5a5;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:900;">⚔️ <span>' + (lang === 'ru' ? 'ДУЭЛЬ С ДРУГОМ' : 'FRIEND DUEL') + '</span></span>' +
+          '<span class="fvh-mode-server-status"><span class="status-dot live"></span> Telegram 1v1</span>' +
+        '</div>' +
+        '<div class="fvh-mode-card-body">' +
+          '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Вызов на дуэль 1 на 1' : '1v1 Friend Duel') + '</div>' +
+          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Создайте закрытый матч, отправьте персональный вызов другу в Telegram и решите, кто сильнее — Футбол или Баскетбол!' : 'Create a private match, challenge a friend directly via Telegram, and prove which sport reigns supreme!') + '</div>' +
+          '<div class="fvh-ctrl-row" style="margin:10px 0 12px 0;">' +
+            '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
+            '<div class="seg seg-sport-duel">' +
+              '<button type="button" class="' + (isFooty ? 'on' : '') + '" data-sport="footy">⚽ FOOTY</button>' +
+              '<button type="button" class="' + (!isFooty ? 'on' : '') + '" data-sport="hoops">🏀 HOOPS</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="fvh-mode-card-actions" style="display:flex;flex-direction:column;gap:8px;">' +
+          '<button class="btn primary block fvh-btn-create-duel" style="background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;border:1.5px solid #f87171 !important;box-shadow:0 0 16px rgba(239,68,68,0.4) !important;">' +
+            '<span style="display:inline-flex;align-items:center;gap:6px;">⚔️ <span>' + (lang === 'ru' ? 'СОЗДАТЬ ДУЭЛЬ И ВЫЗВАТЬ ДРУГА' : 'CREATE DUEL & CHALLENGE FRIEND') + '</span></span>' +
+          '</button>' +
+          '<button class="btn small block fvh-btn-join-duel">' +
+            '<span style="display:inline-flex;align-items:center;gap:6px;">🔑 <span>' + (lang === 'ru' ? 'Войти по коду дуэли' : 'Join with Duel Code') + '</span></span>' +
+          '</button>' +
+        '</div>';
+
+      duelCard.querySelectorAll('.seg-sport-duel button').forEach(function (b) {
+        b.onclick = function () {
+          var sp = b.dataset.sport;
+          if (sp === duelSport) return;
+          duelSport = sp;
+          app.audio.play('click');
+          renderDuelCard();
+        };
+      });
+
+      duelCard.querySelector('.fvh-btn-create-duel').onclick = function () {
+        app.audio.play('click');
+        showCreateRoomModal(app, duelSport);
+      };
+
+      duelCard.querySelector('.fvh-btn-join-duel').onclick = function () {
+        app.audio.play('click');
+        showJoinRoomModal(app, duelSport);
+      };
+    }
+    renderDuelCard();
+    grid.appendChild(duelCard);
 
     body.appendChild(grid);
     page.appendChild(body);
@@ -13577,6 +13681,15 @@
 
     var privateroom = params ? params.get('privateroom') : null;
 
+    var duelCode = null;
+    if (startParam && typeof startParam === 'string') {
+      if (startParam.startsWith('duel_')) duelCode = startParam.slice(5).trim();
+      else if (startParam.startsWith('room_')) duelCode = startParam.slice(5).trim();
+    }
+    if (!duelCode && params && (params.get('room') || params.get('duel') || params.get('joinroom'))) {
+      duelCode = params.get('room') || params.get('duel') || params.get('joinroom');
+    }
+
     var targetLaunch = (params ? params.get('launch') : null) ||
       (startParam === 'launch_footy' || startParam === 'footy' ? 'footy' : null) ||
       (startParam === 'launch_hoops' || startParam === 'hoops' ? 'hoops' : null);
@@ -13585,7 +13698,11 @@
       privateroom = startParam.slice(5).trim();
     }
 
-    if (targetLaunch) {
+    if (duelCode) {
+      setTimeout(function () {
+        showJoinRoomModal(app, targetChar || 'footy', duelCode);
+      }, 350);
+    } else if (targetLaunch) {
       setTimeout(function () {
         app.launch({
           mode: targetLaunch,
