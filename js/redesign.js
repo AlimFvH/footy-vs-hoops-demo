@@ -2562,7 +2562,6 @@
     var skinId = specificSkinId || charSpecificSkin || defaultSkin;
     if (isFooty && skinId === 'skin_solar') skinId = 'skin_rookie';
     if (!isFooty && skinId === 'skin_rookie') skinId = 'skin_solar';
-    var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
     var skinLabel = (lang === 'ru') ? pal.ru : pal.name;
@@ -2572,12 +2571,12 @@
       '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:10px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + skinLabel + '</span></div>'
       : '';
 
-    var heroTitle = isFooty ? 'Football Striker #10' : 'Basketball All-Star #23';
+    var heroSvg = isFooty ? getFootyAvatarSvg() : getHoopsAvatarSvg();
     var figureMaxH = showJerseyTag ? 'calc(100% - 36px)' : '100%';
 
     return '<div class="fvh-hero-portrait-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;">' +
       '<div class="fvh-hero-figure-container" style="display:flex;align-items:center;justify-content:center;height:100%;max-height:' + figureMaxH + ';width:100%;">' +
-      '<img class="fvh-hero-real-img fvh-hero-cutout-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + imgSrc + '" alt="' + heroTitle + '">' +
+      heroSvg +
       '</div>' +
       tagHtml +
       '</div>';
@@ -5122,7 +5121,7 @@
     var primaryItems = [
       { id: 'menu', icon: getUiIconSvg(isFooty ? 'nav_home_footy' : 'nav_home_hoops', 22), label: tr('tabHome') },
       { id: 'characters', icon: getUiIconSvg('nav_inventory', 22), label: tr('tabInventory') },
-      { id: 'upgrades', icon: getUiIconSvg('nav_upgrades', 22), label: tr('tabUpgrades') },
+      { id: 'leaderboard', icon: getUiIconSvg('crown', 22), label: (getActiveLang() === 'ru' ? 'ТОП' : 'RANK') },
       { id: 'shop', icon: getUiIconSvg('nav_shop', 22), label: tr('tabShop') },
       { id: 'quests', icon: getUiIconSvg('nav_quests', 22), label: tr('tabQuests') }
     ];
@@ -10951,13 +10950,13 @@
         // Fast-track WebRTC negotiation or fall back to Server RelayLink smoothly within 1.2s
         relayFallbackTimer = setTimeout(function () {
           if (!isStarted) {
-            console.log('WebRTC negotiation fallback (2.8s), fast-tracking Server Relay Link');
+            console.log('WebRTC negotiation fallback (1.2s), fast-tracking Server Relay Link');
             if (link) {
               try { link.close(); } catch (e) {}
             }
             startWithRelay();
           }
-        }, 2800);
+        }, 1200);
 
         link.h.onClose = function () {
           if (!isStarted) startWithRelay();
@@ -12615,7 +12614,7 @@
       '</div>' +
       '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
       '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('inventory', 15) + '</span> <span>' + tr('openLocker') + '</span></button>' +
-      '  <button type="button" class="btn fvh-solo-upgrade-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(0,240,255,0.12);border:1.5px solid rgba(0,240,255,0.35);color:#00f0ff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('lightning', 15) + '</span> <span>' + (lang === 'ru' ? 'Прокачка' : 'Skills') + '</span></button>' +
+      '  <button type="button" class="btn fvh-solo-rank-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(251, 191, 36, 0.10));border:1.5px solid rgba(245, 158, 11, 0.45);color:#fbbf24;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('crown', 15) + '</span> <span>' + (lang === 'ru' ? 'Лидеры' : 'Rankings') + '</span></button>' +
       '</div>';
 
     heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
@@ -12624,16 +12623,22 @@
       app.go('characters', { char: curChar, slot: 'skins' });
     };
 
-    var openUpgrades = function (e) {
+    var openLockerAction = function (e) {
       if (e) e.stopPropagation();
       app.audio.play('click');
-      app.go('upgrades');
+      app.go('characters', { char: curChar, slot: 'skins' });
     };
     heroCard.querySelectorAll('.fvh-rival-ovr-capsule').forEach(function (pill) {
-      pill.onclick = openUpgrades;
+      pill.onclick = openLockerAction;
     });
-    var upgBtn = heroCard.querySelector('.fvh-solo-upgrade-pill');
-    if (upgBtn) upgBtn.onclick = openUpgrades;
+    var rankBtn = heroCard.querySelector('.fvh-solo-rank-pill');
+    if (rankBtn) {
+      rankBtn.onclick = function (e) {
+        if (e) e.stopPropagation();
+        app.audio.play('click');
+        app.go('leaderboard');
+      };
+    }
 
     heroCard.querySelectorAll('.fvh-rival-side').forEach(function (sideEl) {
       sideEl.onclick = function (e) {

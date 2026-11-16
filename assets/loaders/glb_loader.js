@@ -322,9 +322,9 @@
       this.playbackSpeed = 1.0;
       this.stats = data.stats;
 
-      // Up to 64 bones supported in vertex uniform array (256 uniform vectors, standard in WebGL2)
-      this.boneMatrices = new Float32Array(64 * 16);
-      for (let b = 0; b < 64; b++) {
+      // Up to 96 bones supported in vertex uniform array (standard in WebGL2)
+      this.boneMatrices = new Float32Array(96 * 16);
+      for (let b = 0; b < 96; b++) {
         mat4Identity(this.boneMatrices.subarray(b * 16, (b + 1) * 16));
       }
     }
@@ -389,7 +389,7 @@
     updateBoneMatrices() {
       if (!this.skin) return;
 
-      const numJoints = Math.min(this.skin.joints.length, 64);
+      const numJoints = Math.min(this.skin.joints.length, 96);
       const ibm = this.skin.inverseBindMatrices;
 
       for (let j = 0; j < numJoints; j++) {
@@ -672,12 +672,45 @@
           for (let k = 0; k < vCount; k++) indexData[k] = k;
         }
 
-        // Default normals if missing
+        // Compute smooth vertex normals if missing
         let finalNormals = normData;
         if (!finalNormals) {
           finalNormals = new Float32Array(posData.length);
-          for (let i = 0; i < finalNormals.length; i += 3) {
-            finalNormals[i + 1] = 1.0;
+          const numTris = indexData.length / 3;
+          for (let t = 0; t < numTris; t++) {
+            const i0 = indexData[t * 3];
+            const i1 = indexData[t * 3 + 1];
+            const i2 = indexData[t * 3 + 2];
+
+            const p0x = posData[i0 * 3], p0y = posData[i0 * 3 + 1], p0z = posData[i0 * 3 + 2];
+            const p1x = posData[i1 * 3], p1y = posData[i1 * 3 + 1], p1z = posData[i1 * 3 + 2];
+            const p2x = posData[i2 * 3], p2y = posData[i2 * 3 + 1], p2z = posData[i2 * 3 + 2];
+
+            const e1x = p1x - p0x, e1y = p1y - p0y, e1z = p1z - p0z;
+            const e2x = p2x - p0x, e2y = p2y - p0y, e2z = p2z - p0z;
+
+            // Cross product: e1 x e2
+            const nx = e1y * e2z - e1z * e2y;
+            const ny = e1z * e2x - e1x * e2z;
+            const nz = e1x * e2y - e1y * e2x;
+
+            finalNormals[i0 * 3] += nx; finalNormals[i0 * 3 + 1] += ny; finalNormals[i0 * 3 + 2] += nz;
+            finalNormals[i1 * 3] += nx; finalNormals[i1 * 3 + 1] += ny; finalNormals[i1 * 3 + 2] += nz;
+            finalNormals[i2 * 3] += nx; finalNormals[i2 * 3 + 1] += ny; finalNormals[i2 * 3 + 2] += nz;
+          }
+          // Normalize
+          const vCount = posData.length / 3;
+          for (let v = 0; v < vCount; v++) {
+            const nx = finalNormals[v * 3], ny = finalNormals[v * 3 + 1], nz = finalNormals[v * 3 + 2];
+            const len = Math.hypot(nx, ny, nz);
+            if (len > 0.00001) {
+              const inv = 1.0 / len;
+              finalNormals[v * 3] = nx * inv;
+              finalNormals[v * 3 + 1] = ny * inv;
+              finalNormals[v * 3 + 2] = nz * inv;
+            } else {
+              finalNormals[v * 3 + 1] = 1.0;
+            }
           }
         }
 

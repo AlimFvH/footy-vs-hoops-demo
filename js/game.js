@@ -1385,8 +1385,28 @@ void main(){
         }
         geoGL(g) {
             let r = this.geos.get(g);
-            if (r)
+            if (r) {
+                if (g.dirty) {
+                    const gl = this.gl;
+                    const n = g.vertexCount;
+                    if (!r.inter || r.inter.length !== n * 8) r.inter = new Float32Array(n * 8);
+                    const inter = r.inter;
+                    for (let i = 0; i < n; i++) {
+                        inter[i * 8] = g.positions[i * 3];
+                        inter[i * 8 + 1] = g.positions[i * 3 + 1];
+                        inter[i * 8 + 2] = g.positions[i * 3 + 2];
+                        inter[i * 8 + 3] = g.normals[i * 3];
+                        inter[i * 8 + 4] = g.normals[i * 3 + 1];
+                        inter[i * 8 + 5] = g.normals[i * 3 + 2];
+                        inter[i * 8 + 6] = g.uvs[i * 2];
+                        inter[i * 8 + 7] = g.uvs[i * 2 + 1];
+                    }
+                    gl.bindBuffer(gl.ARRAY_BUFFER, r.vbo);
+                    gl.bufferSubData(gl.ARRAY_BUFFER, 0, inter);
+                    g.dirty = false;
+                }
                 return r;
+            }
             const gl = this.gl;
             const n = g.vertexCount;
             const inter = new Float32Array(n * 8);
@@ -1404,7 +1424,7 @@ void main(){
             gl.bindVertexArray(vao);
             const vbo = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-            gl.bufferData(gl.ARRAY_BUFFER, inter, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, inter, g.dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
             gl.enableVertexAttribArray(0);
             gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 32, 0);
             gl.enableVertexAttribArray(1);
@@ -1415,7 +1435,7 @@ void main(){
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g.indices, gl.STATIC_DRAW);
             gl.bindVertexArray(null);
-            r = { vao, vbo, ibo, count: g.indices.length, type: g.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT };
+            r = { vao, vbo, ibo, inter, count: g.indices.length, type: g.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT };
             this.geos.set(g, r);
             return r;
         }
@@ -2627,6 +2647,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             if (prev === a)
                 return;
             this.ball.owner = a;
+            this.ball.orbitAngle = undefined;
             if (a) {
                 this.ball.lastTouch = a;
                 this.emit({ type: 'possession', id: a.id, team: a.team });
@@ -2959,18 +2980,18 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const fx = a.fx / fLen;
             const fz = a.fz / fLen;
 
-            if (dist < 2.0 && charge > 0.15) {
+            if (dist < 3.2 && charge > 0.12) {
                 const toRimX = dx / (dist || 1);
                 const toRimZ = dz / (dist || 1);
                 const dunkDot = fx * toRimX + fz * toRimZ;
-                if (dunkDot > 0.5) {
+                if (dunkDot > 0.40) {
                     this.launchShot(a, 0, 0, true);
                     return;
                 }
             }
 
-            // Subtle Aim Assistance (accessible mobile scoring without removing player skill):
-            // Gently nudges trajectory toward the rim when the player aims reasonably close (< 25 degrees).
+            // Generous Basketball Aim Assistance:
+            // Smoothly magnetizes trajectory toward the hoop rim when player shoots towards offensive end (~50 degree cone).
             const toRimX = dx / (dist || 1);
             const toRimZ = dz / (dist || 1);
             const aimDot = fx * toRimX + fz * toRimZ; // Dot product with hoop direction vector
@@ -2978,12 +2999,12 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             let assistedFx = fx;
             let assistedFz = fz;
 
-            // Activate assist only when player aim is within ~25 degrees of hoop (aimDot > 0.90)
-            if (aimDot > 0.90) {
-                // Assist factor scales smoothly with alignment: 0 at 0.90, up to 1.0 at 1.0 (dead center)
-                const alignFactor = (aimDot - 0.90) / 0.10;
-                // Distance damping: closer shots get up to 26% assist, 3-pointers get up to 10% assist
-                const distDamp = dist <= 5.5 ? 0.26 : Math.max(0.08, 0.26 - (dist - 5.5) * 0.035);
+            // Activate assist when player aim is within ~50 degrees of hoop (aimDot > 0.65)
+            if (aimDot > 0.65) {
+                // Assist factor scales smoothly with alignment: 0 at 0.65, up to 1.0 at 1.0 (dead center)
+                const alignFactor = (aimDot - 0.65) / 0.35;
+                // Generous distance damping: close shots get up to 58% rim pull, 3-pointers get up to 32% assist
+                const distDamp = dist <= 5.5 ? 0.58 : Math.max(0.32, 0.58 - (dist - 5.5) * 0.04);
                 const assistWeight = alignFactor * distDamp;
                 assistedFx = fx * (1 - assistWeight) + toRimX * assistWeight;
                 assistedFz = fz * (1 - assistWeight) + toRimZ * assistWeight;
@@ -2993,17 +3014,16 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             }
 
             const throwDist = Math.max(3.2, dist);
-            // Baseline facing compatibility: aimX = a.x + fx * throwDist; aimZ = a.z + fz * throwDist;
             const aimX = a.x + assistedFx * throwDist;
             const aimZ = a.z + assistedFz * throwDist;
 
             // Shot quality timing determines precision spread around assisted aim point
             const q = this.shotQuality(Math.max(0.1, charge), a, dist);
-            const spread = (1 - q) * 0.38;
+            const spread = (1 - q) * 0.18;
             const ang = this.rng.range(0, Math.PI * 2);
-            const errDist = spread * this.rng.range(0.15, 0.85);
+            const errDist = spread * this.rng.range(0.10, 0.70);
             const finalAimX = aimX + Math.cos(ang) * errDist;
-            const finalAimZ = aimZ + Math.sin(ang) * errDist * 0.6;
+            const finalAimZ = aimZ + Math.sin(ang) * errDist * 0.5;
 
             const errX = finalAimX - 0;
             const errZ = finalAimZ - hoop.z;
@@ -3079,6 +3099,21 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 h.armed = false;
                 h.tainted = false;
             }
+            const b = this.ball;
+            if (a.dribbleSide === undefined) a.dribbleSide = 1;
+            const side = 0.42 * a.dribbleSide;
+            const rx = a.fz;
+            const rz = -a.fx;
+            const fwd = a.radius + b.r + 0.15;
+            // Directly align ball straight to dribble hand on collection — ZERO circular looping!
+            b.x = a.x + a.fx * fwd + rx * side * -1;
+            b.z = a.z + a.fz * fwd + rz * side * -1;
+            b.y = b.r + 0.75;
+            b.vx = a.vx;
+            b.vz = a.vz;
+            b.vy = 0;
+            b.dribblePhase = 0;
+            b.orbitAngle = undefined;
         }
         updateDunkSequence(h, a) {
             const dk = a.dunk;
@@ -3109,9 +3144,9 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 a.fx = fdx / fhyp;
                 a.fz = fdz / fhyp;
                 const lift = Math.sin(norm * Math.PI * 0.5);
-                b.y = 1.6 + lift * (exports.BB.RIM_H + 0.42 - 1.6);
-                b.x = a.x + a.fx * 0.25;
-                b.z = a.z + a.fz * 0.25;
+                b.y = 1.6 + lift * (exports.BB.RIM_H + 0.58 - 1.6);
+                b.x = a.x + a.fx * 0.28;
+                b.z = a.z + a.fz * 0.28;
                 b.vx = 0;
                 b.vz = 0;
                 b.vy = 0;
@@ -3121,12 +3156,12 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 this.setOwner(null);
                 b.x = 0;
                 b.z = hoop.z;
-                b.y = exports.BB.RIM_H + 0.28;
+                b.y = exports.BB.RIM_H + 0.35;
                 b.vx = 0;
-                b.vz = -hoop.dir * 0.25;
-                b.vy = -6.5;
+                b.vz = -hoop.dir * 0.30;
+                b.vy = -16.5;
                 b.lastTouch = a;
-                a.pickupLock = 0.75;
+                a.pickupLock = 0.80;
                 this.shotReleaseState = {
                     shooterId: a.id,
                     cleared: false,
@@ -3134,8 +3169,9 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                     time: 0,
                     maxLockTime: 1.5
                 };
-                this.emit({ type: 'rim', speed: 6.5, x: b.x, y: b.y, z: b.z });
-                hoop.net = 1.0;
+                this.emit({ type: 'rim', speed: 16.5, x: b.x, y: b.y, z: b.z });
+                this.emit({ type: 'dunk', id: a.id, speed: 16.5, x: b.x, y: b.y, z: b.z });
+                hoop.net = 2.2;
                 hoop.armed = true;
                 hoop.tainted = false;
                 hoop.prevY = b.y;
@@ -3221,24 +3257,17 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const fwd = o.radius + b.r + 0.12 + 0.22 * (speed > 1 ? Math.sin(b.dribblePhase) * 0.5 + 0.5 : 0);
             const targetRelX = o.fx * fwd + rx * side * -1;
             const targetRelZ = o.fz * fwd + rz * side * -1;
-            const targetAngle = Math.atan2(targetRelX, targetRelZ);
-            if (b.orbitAngle === undefined) {
-                b.orbitAngle = targetAngle;
-            }
-            let dAngle = targetAngle - b.orbitAngle;
-            while (dAngle > Math.PI) dAngle -= Math.PI * 2;
-            while (dAngle < -Math.PI) dAngle += Math.PI * 2;
-            const maxTurnSpeed = 16 * h;
-            b.orbitAngle += (0, math_js_4.clamp)(dAngle, -maxTurnSpeed, maxTurnSpeed);
-            const distFromPlayer = o.radius + b.r + 0.12 + 0.18 * (speed > 1 ? Math.sin(b.dribblePhase) * 0.5 + 0.5 : 0);
-            const nx = o.x + Math.sin(b.orbitAngle) * distFromPlayer;
-            const nz = o.z + Math.cos(b.orbitAngle) * distFromPlayer;
+            // Direct straight-line convergence to dribble hand — ZERO circular orbiting!
+            const targetX = o.x + targetRelX;
+            const targetZ = o.z + targetRelZ;
+            const smoothK = 1.0 - Math.exp(-h * 32);
+            b.x += (targetX - b.x) * smoothK;
+            b.z += (targetZ - b.z) * smoothK;
             const safeH = Math.max(0.0001, h);
-            b.vx = (nx - b.x) / safeH;
-            b.vz = (nz - b.z) / safeH;
-            b.x = nx;
-            b.z = nz;
+            b.vx = (targetX - b.x) / safeH;
+            b.vz = (targetZ - b.z) / safeH;
             b.vy = 0;
+            b.orbitAngle = undefined;
             if (Math.floor(prev / Math.PI) !== Math.floor(b.dribblePhase / Math.PI)) {
                 this.emit({ type: 'dribble', id: o.id, x: b.x, z: b.z });
             }
@@ -3975,6 +4004,17 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         onBallPossessed(a) {
             a.aiTimer = 0.35 + this.rng.range(0, 0.25);
             a.holdTimer = 0;
+            const b = this.ball;
+            const off = a.radius + b.r + 0.14;
+            // Directly align ball straight to player feet on collection — ZERO circular looping!
+            b.x = a.x + a.fx * off;
+            b.z = a.z + a.fz * off;
+            b.y = b.r;
+            b.vx = a.vx;
+            b.vz = a.vz;
+            b.vy = 0;
+            b.dribblePhase = 0;
+            b.orbitAngle = undefined;
         }
         simulateBall(h, live) {
             const b = this.ball;
@@ -4045,24 +4085,18 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             b.dribblePhase += speed * h * 0.9;
             const touch = speed > 1 ? 0.5 + 0.5 * Math.sin(b.dribblePhase * 3.1) : 0;
             const off = o.radius + b.r + 0.12 + 0.35 * touch;
-            const targetAngle = Math.atan2(o.fx, o.fz);
-            if (b.orbitAngle === undefined) {
-                b.orbitAngle = targetAngle;
-            }
-            let dAngle = targetAngle - b.orbitAngle;
-            while (dAngle > Math.PI) dAngle -= Math.PI * 2;
-            while (dAngle < -Math.PI) dAngle += Math.PI * 2;
-            const maxTurnSpeed = 16 * h;
-            b.orbitAngle += (0, math_js_5.clamp)(dAngle, -maxTurnSpeed, maxTurnSpeed);
-            const nx = o.x + Math.sin(b.orbitAngle) * off;
-            const nz = o.z + Math.cos(b.orbitAngle) * off;
+            // Direct straight-line positioning to player feet — ZERO circular orbiting!
+            const targetX = o.x + o.fx * off;
+            const targetZ = o.z + o.fz * off;
+            const smoothK = 1.0 - Math.exp(-h * 32);
+            b.x += (targetX - b.x) * smoothK;
+            b.z += (targetZ - b.z) * smoothK;
             const safeH = Math.max(0.0001, h);
-            b.vx = (nx - b.x) / safeH;
-            b.vz = (nz - b.z) / safeH;
-            b.x = nx;
-            b.z = nz;
+            b.vx = (targetX - b.x) / safeH;
+            b.vz = (targetZ - b.z) / safeH;
             b.y = b.r;
             b.vy = 0;
+            b.orbitAngle = undefined;
             this.onGround = true;
             this.clampStatic();
             b.spinX = b.vz / b.r;
@@ -4643,8 +4677,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     const COURT_BASE = {
         apron: 0x0a0c16,
         line: 0x00f0ff,
-        paint: 0xd946ef,
-        centerPaint: 0x06b6d4,
+        paint: 0x0f172a, centerPaint: 0x0f172a,
         floor: 0x060810,
         skyTop: 0x100e2e,
         skyBottom: 0x2e1065,
@@ -5243,12 +5276,12 @@ define("data/shop", ["require", "exports"], function (require, exports) {
                 eq[i.slot] = i.id;
         }
         eq['skin.footy'] = 'skin_rookie';
-        eq['skin.hoops'] = 'skin_solar';
+        eq['skin.hoops'] = 'skin_bb_onyx';
         return eq;
     }
     function defaultOwned() {
         const owned = exports.ITEMS.filter((i) => i.isDefault).map((i) => i.id);
-        if (!owned.includes('skin_solar')) owned.push('skin_solar');
+        if (!owned.includes('skin_bb_onyx')) owned.push('skin_bb_onyx');
         return owned;
     }
     function boostEffectsOf(id) {
@@ -5330,46 +5363,432 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         }
         return cachedOfficialEmblem;
     }
-    function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
+    const preloadedJerseyImages = new Map();
+    function getJerseyImage(sport, isBack) {
+        const s = (sport === 'footy' || sport === 'keeper' || sport === 'hoops') ? sport : (sport === 'hoops' ? 'hoops' : 'footy');
+        const key = s + (isBack ? '_back' : '_front');
+        if (preloadedJerseyImages.has(key)) return preloadedJerseyImages.get(key);
+        if (typeof document !== 'undefined') {
+            const img = new Image();
+            img.src = `assets/characters/${s}_jersey${isBack ? 'Back' : 'Front'}.png`;
+            preloadedJerseyImages.set(key, img);
+            return img;
+        }
+        return null;
+    }
+    exports.getJerseyImage = getJerseyImage;
+
+    const preloadedFaceImages = new Map();
+    function getFaceImage(sport) {
+        const s = (sport === 'footy' || sport === 'keeper' || sport === 'hoops') ? sport : (sport === 'hoops' ? 'hoops' : 'footy');
+        if (preloadedFaceImages.has(s)) return preloadedFaceImages.get(s);
+        if (typeof document !== 'undefined') {
+            const img = new Image();
+            img.src = `assets/characters/${s}_face.png`;
+            preloadedFaceImages.set(s, img);
+            return img;
+        }
+        return null;
+    }
+    exports.getFaceImage = getFaceImage;
+
+    // Immediately preload all turnaround textures
+    if (typeof document !== 'undefined') {
+        ['footy', 'keeper', 'hoops'].forEach(sp => {
+            getJerseyImage(sp, false);
+            getJerseyImage(sp, true);
+            getFaceImage(sp);
+        });
+    }
+
+    const jerseyTexCache = new Map();
+    function getJerseyTexture(sport, squadNum, isBack, primaryColor, secondaryColor, accentColor) {
+        const cacheKey = sport + '_' + squadNum + '_' + (isBack ? 'back' : 'front') + '_' + primaryColor + '_' + secondaryColor;
+        if (jerseyTexCache.has(cacheKey)) return jerseyTexCache.get(cacheKey);
+
+        const [c, g] = makeCanvas(512, 512);
+        const isFooty = (sport === 'footy');
+        const isHoops = (sport === 'hoops');
+        const isKeeper = (sport === 'keeper');
+
+        const jImg = getJerseyImage(sport, isBack);
+        if (jImg && jImg.complete && jImg.naturalWidth > 0) {
+            g.drawImage(jImg, 0, 0, 512, 512);
+            jerseyTexCache.set(cacheKey, c);
+            return c;
+        }
+        if (jImg && !jImg.complete) {
+            jImg.addEventListener('load', () => {
+                jerseyTexCache.delete(cacheKey);
+            }, { once: true });
+        }
+
+        // Base Jersey Color
+        const pCol = hex(primaryColor);
+        const sCol = hex(secondaryColor);
+        const aCol = hex(accentColor);
+
+        // Gradient & Mesh Fabric Texture
+        const grad = g.createLinearGradient(0, 0, 0, 512);
+        if (isFooty) {
+            grad.addColorStop(0, '#00d2f0');
+            grad.addColorStop(0.5, '#00b4d8');
+            grad.addColorStop(1, '#0077b6');
+        } else if (isHoops) {
+            grad.addColorStop(0, '#1c1e24');
+            grad.addColorStop(0.5, '#111318');
+            grad.addColorStop(1, '#0b0c10');
+        } else {
+            grad.addColorStop(0, '#10b981');
+            grad.addColorStop(0.5, '#059669');
+            grad.addColorStop(1, '#047857');
+        }
+        g.fillStyle = grad;
+        g.fillRect(0, 0, 512, 512);
+
+        // Subtle fabric mesh perforation grid
+        g.fillStyle = 'rgba(0, 0, 0, 0.06)';
+        for (let y = 8; y < 512; y += 12) {
+            for (let x = (y % 24 === 0 ? 6 : 0); x < 512; x += 12) {
+                g.fillRect(x, y, 2.5, 2.5);
+            }
+        }
+
+        if (isFooty) {
+            // White raglan shoulder curves
+            g.fillStyle = '#ffffff';
+            g.beginPath();
+            g.moveTo(0, 0);
+            g.quadraticCurveTo(120, 40, 160, 0);
+            g.lineTo(0, 0);
+            g.fill();
+
+            g.beginPath();
+            g.moveTo(512, 0);
+            g.quadraticCurveTo(392, 40, 352, 0);
+            g.lineTo(512, 0);
+            g.fill();
+
+            // Navy V-neck collar trim at top
+            g.fillStyle = '#0f172a';
+            g.beginPath();
+            g.moveTo(210, 0);
+            g.lineTo(256, 75);
+            g.lineTo(302, 0);
+            g.closePath();
+            g.fill();
+        } else if (isHoops) {
+            // Metallic Gold collar trim
+            g.fillStyle = '#f59e0b';
+            g.fillRect(180, 0, 152, 28);
+            g.fillStyle = '#facc15';
+            g.fillRect(180, 24, 152, 6);
+
+            // Gold armhole trims
+            g.fillStyle = '#f59e0b';
+            g.fillRect(0, 0, 22, 512);
+            g.fillRect(490, 0, 22, 512);
+            g.fillStyle = '#facc15';
+            g.fillRect(20, 0, 6, 512);
+            g.fillRect(486, 0, 6, 512);
+        }
+
+        // Official Emblem & Typography
+        const emb = getOfficialEmblem();
+
+        if (isBack) {
+            // --- BACK OF JERSEY ---
+            // Wordmark arched across shoulder blades
+            g.save();
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            g.font = '900 48px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+            if (isFooty) {
+                g.fillStyle = '#0f172a';
+                g.fillText('FOOTY', 256 + 2, 90 + 3);
+                g.fillStyle = '#ffffff';
+                g.fillText('FOOTY', 256, 90);
+            } else if (isHoops) {
+                g.fillStyle = '#0a0a0a';
+                g.fillText('HOOPS', 256 + 2, 90 + 3);
+                g.fillStyle = '#f59e0b';
+                g.fillText('HOOPS', 256, 90);
+            }
+
+            // Big Bold Squad Number
+            g.font = '900 210px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            if (isFooty) {
+                // Navy drop shadow
+                g.fillStyle = '#0f172a';
+                g.fillText(squadNum, 256 + 6, 305 + 6);
+                // Crisp white number
+                g.fillStyle = '#ffffff';
+                g.fillText(squadNum, 256, 305);
+            } else if (isHoops) {
+                // Dark shadow
+                g.fillStyle = '#000000';
+                g.fillText(squadNum, 256 + 6, 305 + 6);
+                // Metallic gold gradient fill
+                const goldGrad = g.createLinearGradient(0, 190, 0, 410);
+                goldGrad.addColorStop(0, '#fef08a');
+                goldGrad.addColorStop(0.5, '#f59e0b');
+                goldGrad.addColorStop(1, '#d97706');
+                g.fillStyle = goldGrad;
+                g.fillText(squadNum, 256, 305);
+                g.strokeStyle = '#fef08a';
+                g.lineWidth = 4;
+                g.strokeText(squadNum, 256, 305);
+            } else {
+                g.fillStyle = '#064e3b';
+                g.fillText(squadNum, 256 + 6, 305 + 6);
+                g.fillStyle = '#ffffff';
+                g.fillText(squadNum, 256, 305);
+            }
+            g.restore();
+
+        } else {
+            // --- FRONT OF JERSEY ---
+            // 1. Official Emblem on Left Chest
+            if (emb && emb.complete && emb.naturalWidth > 0) {
+                g.save();
+                const ex = 120, ey = 140, er = 54;
+                g.beginPath();
+                g.arc(ex, ey, er + 4, 0, Math.PI * 2);
+                g.fillStyle = '#0a0f1a';
+                g.fill();
+                g.strokeStyle = isHoops ? '#f59e0b' : '#00f0ff';
+                g.lineWidth = 4;
+                g.stroke();
+                g.drawImage(emb, ex - er, ey - er, er * 2, er * 2);
+                g.restore();
+            }
+
+            // 2. Wordmark across chest
+            g.save();
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            g.font = '900 64px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+            if (isFooty) {
+                g.fillStyle = '#0f172a';
+                g.fillText('FOOTY', 256 + 3, 230 + 3);
+                g.fillStyle = '#ffffff';
+                g.fillText('FOOTY', 256, 230);
+
+                // Squad number on front chest
+                g.font = '900 125px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                g.fillStyle = '#0f172a';
+                g.fillText(squadNum, 256 + 4, 355 + 4);
+                g.fillStyle = '#ffffff';
+                g.fillText(squadNum, 256, 355);
+            } else if (isHoops) {
+                g.fillStyle = '#000000';
+                g.fillText('HOOPS', 256 + 3, 220 + 3);
+                const goldGrad = g.createLinearGradient(0, 180, 0, 260);
+                goldGrad.addColorStop(0, '#fef08a');
+                goldGrad.addColorStop(0.5, '#f59e0b');
+                goldGrad.addColorStop(1, '#d97706');
+                g.fillStyle = goldGrad;
+                g.fillText('HOOPS', 256, 220);
+
+                // Squad number 23 on front chest
+                g.font = '900 135px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                g.fillStyle = '#000000';
+                g.fillText(squadNum, 256 + 4, 355 + 4);
+                g.fillStyle = goldGrad;
+                g.fillText(squadNum, 256, 355);
+                g.strokeStyle = '#fef08a';
+                g.lineWidth = 3;
+                g.strokeText(squadNum, 256, 355);
+            } else {
+                g.font = '900 140px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                g.fillStyle = '#064e3b';
+                g.fillText(squadNum, 256 + 4, 340 + 4);
+                g.fillStyle = '#ffffff';
+                g.fillText(squadNum, 256, 340);
+            }
+            g.restore();
+        }
+
+        jerseyTexCache.set(cacheKey, c);
+        return c;
+    }
+    exports.getJerseyTexture = getJerseyTexture;
+
+
+function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.save();
-        // 1. Subtle dark circular backing plate with glowing accent border
+        // 1. Dark circular backing plate with glowing neon accent rim
         g.beginPath();
         g.arc(cx, cy, radius, 0, Math.PI * 2);
-        g.fillStyle = isBasketball ? 'rgba(10, 14, 26, 0.78)' : 'rgba(6, 12, 22, 0.72)';
+        g.fillStyle = isBasketball ? 'rgba(8, 12, 24, 0.88)' : 'rgba(5, 10, 20, 0.85)';
         g.fill();
-        g.lineWidth = isBasketball ? 4 : 5;
+        g.lineWidth = isBasketball ? 5 : 6;
         g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
         g.shadowColor = isBasketball ? '#f97316' : '#00f0ff';
-        g.shadowBlur = 12;
+        g.shadowBlur = 14;
         g.stroke();
         g.shadowBlur = 0;
 
-        // 2. Official Emblem Image (Strict 1:1 proportions from assets/emblem.png)
-        const emb = getOfficialEmblem();
-        const emSize = radius * 1.78;
-        if (typeof g.drawImage === 'function' && emb && emb.complete && emb.naturalWidth > 0) {
-            g.drawImage(emb, cx - emSize / 2, cy - emSize / 2, emSize, emSize);
-        } else {
-            // High-fidelity fallback circle matching the official emblem's colors
-            const halfR = radius * 0.82;
-            // Football half (left, white with dark accents)
-            g.fillStyle = '#ffffff';
+        // Inner glowing border ring
+        g.beginPath();
+        g.arc(cx, cy, radius * 0.94, 0, Math.PI * 2);
+        g.lineWidth = 2;
+        g.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        g.stroke();
+
+        // 2. High-Fidelity Dual-Sport Vector Crest (Soccer on Left, Basketball on Right)
+        const embR = radius * 0.78;
+
+        // Left Half: Authentic 3D Soccer Ball Dome
+        g.save();
+        g.beginPath();
+        g.arc(cx, cy, embR, Math.PI * 0.5, Math.PI * 1.5);
+        g.closePath();
+        g.clip();
+
+        const soccerGrad = g.createRadialGradient(cx - embR * 0.35, cy - embR * 0.3, embR * 0.1, cx, cy, embR);
+        soccerGrad.addColorStop(0, '#ffffff');
+        soccerGrad.addColorStop(0.5, '#e2e8f0');
+        soccerGrad.addColorStop(0.85, '#94a3b8');
+        soccerGrad.addColorStop(1, '#475569');
+        g.fillStyle = soccerGrad;
+        g.fill();
+
+        // Soccer Ball Pentagons & Seams
+        g.fillStyle = '#0f172a';
+        g.strokeStyle = '#334155';
+        g.lineWidth = embR * 0.035;
+
+        // Center-left pentagon
+        const px = cx - embR * 0.42, py = cy, pr = embR * 0.28;
+        g.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+            const x = px + Math.cos(a) * pr;
+            const y = py + Math.sin(a) * pr;
+            if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+        }
+        g.closePath();
+        g.fill();
+        g.stroke();
+
+        // Radiating seam lines
+        for (let i = 0; i < 5; i++) {
+            const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
             g.beginPath();
-            g.arc(cx, cy, halfR, Math.PI * 0.5, Math.PI * 1.5);
-            g.fill();
-            // Basketball half (right, vibrant orange)
-            g.fillStyle = '#ff6b00';
-            g.beginPath();
-            g.arc(cx, cy, halfR, -Math.PI * 0.5, Math.PI * 0.5);
-            g.fill();
-            // White diagonal dividing line
-            g.strokeStyle = '#ffffff';
-            g.lineWidth = 4;
-            g.beginPath();
-            g.moveTo(cx - 2, cy - halfR);
-            g.lineTo(cx + 6, cy + halfR);
+            g.moveTo(px + Math.cos(a) * pr, py + Math.sin(a) * pr);
+            g.lineTo(px + Math.cos(a) * pr * 1.8, py + Math.sin(a) * pr * 1.8);
             g.stroke();
         }
+        g.restore();
+
+        // Right Half: Authentic 3D Basketball Dome
+        g.save();
+        g.beginPath();
+        g.arc(cx, cy, embR, -Math.PI * 0.5, Math.PI * 0.5);
+        g.closePath();
+        g.clip();
+
+        const bballGrad = g.createRadialGradient(cx + embR * 0.3, cy - embR * 0.3, embR * 0.1, cx, cy, embR);
+        bballGrad.addColorStop(0, '#ff9a3c');
+        bballGrad.addColorStop(0.45, '#f97316');
+        bballGrad.addColorStop(0.82, '#c2410c');
+        bballGrad.addColorStop(1, '#6c2208');
+        g.fillStyle = bballGrad;
+        g.fill();
+
+        // Basketball Black Rubber Seams
+        g.strokeStyle = '#1c1917';
+        g.lineWidth = embR * 0.055;
+        g.lineCap = 'round';
+
+        // Horizontal equator seam
+        g.beginPath();
+        g.moveTo(cx, cy);
+        g.lineTo(cx + embR, cy);
+        g.stroke();
+
+        // Curved lateral arc seam
+        g.beginPath();
+        g.arc(cx + embR * 0.6, cy, embR * 0.65, -Math.PI * 0.45, Math.PI * 0.45);
+        g.stroke();
+        g.restore();
+
+        // 3. Central Dynamic Lightning Bolt / Divider
+        g.beginPath();
+        const topY = cy - embR * 1.05;
+        const botY = cy + embR * 1.05;
+        const midY1 = cy - embR * 0.15;
+        const midY2 = cy + embR * 0.15;
+        g.moveTo(cx - embR * 0.04, topY);
+        g.lineTo(cx + embR * 0.12, midY1);
+        g.lineTo(cx - embR * 0.08, midY2);
+        g.lineTo(cx + embR * 0.05, botY);
+        g.lineTo(cx - embR * 0.05, botY);
+        g.lineTo(cx + embR * 0.08, midY2);
+        g.lineTo(cx - embR * 0.12, midY1);
+        g.closePath();
+        g.fillStyle = '#ffffff';
+        g.shadowColor = '#00f0ff';
+        g.shadowBlur = 10;
+        g.fill();
+        g.shadowBlur = 0;
+
+        // 4. Central "VS" Golden Badge
+        const vsW = embR * 0.52;
+        const vsH = embR * 0.34;
+        g.beginPath();
+        g.roundRect ? g.roundRect(cx - vsW / 2, cy - vsH / 2, vsW, vsH, 8) : g.rect(cx - vsW / 2, cy - vsH / 2, vsW, vsH);
+        g.fillStyle = '#070c18';
+        g.fill();
+        g.lineWidth = 2.5;
+        g.strokeStyle = '#f59e0b';
+        g.stroke();
+
+        g.font = `900 ${Math.round(embR * 0.26)}px system-ui, -apple-system, sans-serif`;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillStyle = '#fbbf24';
+        g.fillText('VS', cx, cy + 1);
+
+        // 5. Arched "FOOTY" & "HOOPS" Championship Typography
+        const fs = Math.round(radius * 0.19);
+        g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
+        g.textBaseline = 'middle';
+
+        // Top Banner Text: "FOOTY"
+        g.save();
+        g.fillStyle = '#00f0ff';
+        g.shadowColor = '#000000';
+        g.shadowBlur = 6;
+        g.strokeStyle = '#000000';
+        g.lineWidth = 4;
+        g.strokeText('⚡ FOOTY ⚡', cx, cy - radius * 0.76);
+        g.fillText('⚡ FOOTY ⚡', cx, cy - radius * 0.76);
+        g.restore();
+
+        // Bottom Banner Text: "HOOPS"
+        g.save();
+        g.fillStyle = '#fb923c';
+        g.shadowColor = '#000000';
+        g.shadowBlur = 6;
+        g.strokeStyle = '#000000';
+        g.lineWidth = 4;
+        g.strokeText('🏀 HOOPS 🏀', cx, cy + radius * 0.76);
+        g.fillText('🏀 HOOPS 🏀', cx, cy + radius * 0.76);
+        g.restore();
+
+        // 6. Draw high-res official emblem image if already preloaded
+        const emb = getOfficialEmblem();
+        if (typeof g.drawImage === 'function' && emb && emb.complete && emb.naturalWidth > 0) {
+            const emSize = radius * 1.5;
+            g.globalAlpha = 0.85;
+            g.drawImage(emb, cx - emSize / 2, cy - emSize / 2, emSize, emSize);
+            g.globalAlpha = 1.0;
+        }
+
         g.restore();
     }
 
@@ -5647,7 +6066,7 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
             // Painted Free Throw Lane (Hot Neon Magenta / Ultraviolet)
             const keyTop = Math.min(Z(ftz), Z(s * L));
             const keyH = Math.abs(Z(ftz) - Z(s * L));
-            g.fillStyle = hex(t.paint || 0xd946ef);
+            g.fillStyle = hex(t.paint || 0x0f172a);
             g.globalAlpha = 0.88;
             g.fillRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, keyH);
             g.globalAlpha = 1.0;
@@ -5790,82 +6209,96 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
         const W = 2048;
         const H = 160;
         const [c, g] = makeCanvas(W, H);
-        g.fillStyle = hex(bg || 0x070c14);
+        g.fillStyle = hex(bg || 0x050a14);
         g.fillRect(0, 0, W, H);
         const list = Array.isArray(slides) ? slides : [slides];
         const n = Math.max(1, list.length);
         const pw = W / n;
-        const curLang = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) ||
-                        (typeof window !== 'undefined' && window.app && window.app.store && window.app.store.data && window.app.store.data.settings && window.app.store.data.settings.lang) ||
-                        'ru';
-        const isEnglish = curLang.startsWith('en');
         list.forEach((s, i) => {
             var _a;
             const x0 = i * pw;
             const grad = g.createLinearGradient(0, 0, 0, H);
-            grad.addColorStop(0, 'rgba(255,255,255,0.06)');
-            grad.addColorStop(0.5, 'rgba(0,0,0,0.15)');
-            grad.addColorStop(1, 'rgba(0,0,0,0.4)');
+            grad.addColorStop(0, 'rgba(15, 25, 45, 0.95)');
+            grad.addColorStop(0.5, 'rgba(8, 14, 28, 0.98)');
+            grad.addColorStop(1, 'rgba(4, 8, 18, 1.0)');
             g.fillStyle = grad;
-            g.fillRect(x0 + 4, 4, pw - 8, H - 8);
+            g.fillRect(x0 + 2, 2, pw - 4, H - 4);
             
-            // Neon accent bars (top and bottom)
+            // Ultra-vibrant Neon accent bars (top and bottom double rails)
             const accentHex = hex(s.accent || 0x00f0ff);
             g.fillStyle = accentHex;
             g.shadowColor = accentHex;
-            g.shadowBlur = 8;
-            g.fillRect(x0 + 10, 8, pw - 20, 6);
-            g.fillRect(x0 + 10, H - 14, pw - 20, 6);
+            g.shadowBlur = 14;
+            g.fillRect(x0 + 8, 6, pw - 16, 7);
+            g.fillRect(x0 + 8, H - 13, pw - 16, 7);
+
+            // Inner pin-stripe rail
+            g.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            g.fillRect(x0 + 12, 8, pw - 24, 2);
+            g.fillRect(x0 + 12, H - 10, pw - 24, 2);
             g.shadowBlur = 0;
 
-            // Localize ad board text dynamically
-            let slideText = s.text || '';
-            if (false) {
-                slideText = '⚡ FOOTY vs HOOPS ⚡';
-            }
+            let slideText = s.text || '⚡ FOOTY vs HOOPS ⚡';
 
-            // Main Text (Bold, crisp, proportional with Fortnite esports chevrons)
-            let fs = s.sub ? 64 : 76;
+            // Main Text (Bold, ultra-crisp, high contrast with deep drop shadow & neon glow)
+            let fs = s.sub ? 66 : 80;
             g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
-            while (g.measureText(slideText).width > pw - 240 && fs > 26) {
+            while (g.measureText(slideText).width > pw - 260 && fs > 26) {
                 fs -= 2;
                 g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
             }
             g.textAlign = 'center';
             g.textBaseline = 'middle';
-            g.shadowColor = accentHex;
-            g.shadowBlur = 16;
-            g.fillStyle = hex((_a = s.color) !== null && _a !== void 0 ? _a : 0xffffff);
             const textY = s.sub ? 58 : H / 2;
+
+            // Deep background outline for extreme legibility from all camera distances
+            g.lineWidth = 8;
+            g.strokeStyle = '#020610';
+            g.strokeText(slideText, x0 + pw / 2, textY);
+
+            // Neon outer bloom
+            g.shadowColor = accentHex;
+            g.shadowBlur = 24;
+            g.fillStyle = hex((_a = s.color) !== null && _a !== void 0 ? _a : 0xffffff);
+            g.fillText(slideText, x0 + pw / 2, textY);
+
+            // Crisp inner text pass for 100% sharp readability
+            g.shadowBlur = 0;
             g.fillText(slideText, x0 + pw / 2, textY);
 
             // Fortnite esports chevron speed wings flanking the text
             const textHalfW = g.measureText(slideText).width / 2;
             g.fillStyle = accentHex;
-            g.font = '900 42px system-ui, -apple-system, sans-serif';
-            g.shadowBlur = 12;
-            const leftWingX = Math.max(x0 + 40, (x0 + pw / 2) - textHalfW - 55);
-            const rightWingX = Math.min(x0 + pw - 40, (x0 + pw / 2) + textHalfW + 55);
+            g.font = '900 44px system-ui, -apple-system, sans-serif';
+            g.shadowColor = accentHex;
+            g.shadowBlur = 16;
+            const leftWingX = Math.max(x0 + 44, (x0 + pw / 2) - textHalfW - 60);
+            const rightWingX = Math.min(x0 + pw - 44, (x0 + pw / 2) + textHalfW + 60);
             g.fillText('««', leftWingX, textY);
             g.fillText('»»', rightWingX, textY);
             g.shadowBlur = 0;
 
-            // Subtitle
+            // Subtitle / Slogan
             if (s.sub) {
-                g.shadowBlur = 6;
-                g.font = '800 28px system-ui, -apple-system, sans-serif';
+                g.shadowColor = accentHex;
+                g.shadowBlur = 10;
+                g.font = '800 30px system-ui, -apple-system, sans-serif';
+                g.lineWidth = 5;
+                g.strokeStyle = '#020610';
+                g.strokeText(s.sub, x0 + pw / 2, 116);
                 g.fillStyle = accentHex;
-                g.fillText(s.sub, x0 + pw / 2, 114);
+                g.fillText(s.sub, x0 + pw / 2, 116);
+                g.shadowBlur = 0;
             }
-            g.shadowBlur = 0;
         });
 
-        // Subtle LED diode grid for authentic stadium board look without blurring
-        g.globalCompositeOperation = 'multiply';
-        g.fillStyle = 'rgba(0,0,0,0.35)';
-        for (let x = 0; x < W; x += 4) g.fillRect(x + 3, 0, 1, H);
-        for (let y = 0; y < H; y += 4) g.fillRect(0, y + 3, W, 1);
-        g.globalCompositeOperation = 'source-over';
+        // Crisp emissive LED micro-diode matrix (brightens without dimming or blurring)
+        g.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        for (let x = 0; x < W; x += 6) {
+            for (let y = 0; y < H; y += 6) {
+                g.fillRect(x, y, 1.5, 1.5);
+            }
+        }
         g.textAlign = 'left';
         return c;
     }
@@ -6750,7 +7183,13 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 wall.setPos(st.center, (lastH + 3.2) / 2, st.sign * (lastOut + 1.1));
             else
                 wall.setPos(st.sign * (lastOut + 1.1), (lastH + 3.2) / 2, st.center);
-            if (!st.noWall) slabs.add(wall);
+            const rimMat = (0, scene_js_1.material)({ color: pal[0], emissive: [pal[0][0]*1.2, pal[0][1]*1.2, pal[0][2]*1.2], unlit: true });
+            const rim = new scene_js_1.Node(st.alongX ? G.box(st.length + 2, 0.22, 0.68) : G.box(0.68, 0.22, st.length + 2), rimMat);
+            if (st.alongX)
+                rim.setPos(st.center, lastH + 3.2 + 0.11, st.sign * (lastOut + 1.1));
+            else
+                rim.setPos(st.sign * (lastOut + 1.1), lastH + 3.2 + 0.11, st.center);
+            if (!st.noWall) slabs.add(wall, rim);
             for (let r = 0; r < st.rows; r++) {
                 const out = st.offset + r * 0.95;
                 const h = 0.7 + r * 0.75;
@@ -6820,16 +7259,23 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             node.instances = { matrices: new Float32Array(o.m), colors: new Float32Array(o.c), count: o.m.length / 16, dirty: true };
             return node;
         };
-        // Polished, curved stadium crowd geometry (Smooth athletic torsos, rounded arms, natural caps)
-        const supporterTorso = G.cylinder(0.36, 0.44, 1.0, 8, true);
-        const supporterArm = G.capsule(0.16, 0.82, 6, 2);
-        const supporterHead = G.sphere(0.5, 10, 8);
-        const supporterCap = G.sphere(0.54, 10, 8);
+        // Modern Tiered Stadium Architecture with LED ribbons and Alive Cheering Fans!
         const supporterSeat = G.box(0.92, 0.22, 0.88);
+        const supporterTorso = G.cylinder(0.24, 0.28, 0.52, 8, true);
+        const supporterHead = G.sphere(0.18, 8, 6);
+        const supporterHair = G.sphere(0.19, 8, 6);
+        const supporterArm = G.capsule(0.08, 0.42, 6, 2);
+        const supporterLightstick = G.cylinder(0.06, 0.06, 0.75, 6);
         const crowd = new scene_js_1.Node();
-        for (const n of [mkBatch(S, supporterSeat, 0, false), mkBatch(B, supporterTorso), mkBatch(H, supporterHead), mkBatch(R, supporterCap), mkBatch(A, supporterArm, 1)])
-            if (n)
-                crowd.add(n);
+        for (const n of [
+            mkBatch(S, supporterSeat, 0, false),
+            mkBatch(B, supporterTorso, 0.15, true),
+            mkBatch(H, supporterHead, 0.15, true),
+            mkBatch(R, supporterHair, 0.15, true),
+            mkBatch(A, supporterArm, 0.35, true)
+        ]) {
+            if (n) crowd.add(n);
+        }
         root.add(slabs, crowd);
         return crowd;
     }
@@ -7119,7 +7565,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         
         for (const s of [-1, 1]) {
             const jumbo = new scene_js_1.Node();
-            jumbo.setPos(0, 7.6, s * (L + GD + 5.5));
+            jumbo.setPos(0, 16.5, s * (L + GD + 8.5));
             jumbo.rotation = [s * 0.12, s < 0 ? 0 : Math.PI, 0];
             
             // Screen display quad
@@ -7197,26 +7643,31 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             root.add(wall, rail);
         }
 
-        // 2. High-Visibility Floating Holographic Jumbotron directly behind North Hoop (-Z)
+        // 2. Modern Center-Hung Arena Cube Scoreboard (Suspended high above center court at y = 15.0m)
         const hoopsJumboTex = new scene_js_1.Texture(makeJumbotronTexture('★ HOOPS #23 ALL-STAR ★', 'CYBER HARDWOOD ARENA', '#f97316', 'hoops'), { srgb: true, mipmap: true });
         const hoopsJumboMat = (0, scene_js_1.material)({ texture: hoopsJumboTex, unlit: true, doubleSided: true });
 
-        for (const s of [-1]) {
-            const jumbo = new scene_js_1.Node();
-            jumbo.setPos(0, 5.8, -(L + APRON + 1.8));
-            jumbo.rotation = [s * 0.12, s < 0 ? 0 : Math.PI, 0];
+        // Center-hung 4-sided mega jumbotron high above center court
+        const jumbo = new scene_js_1.Node();
+        jumbo.setPos(0, 15.0, 0);
 
-            const screen = new scene_js_1.Node(G.plane(13.5, 5.0), hoopsJumboMat);
+        for (const s of [-1, 1]) {
+            const sideNode = new scene_js_1.Node();
+            sideNode.setPos(0, 0, s * 4.8);
+            sideNode.rotation = [s * 0.22, s < 0 ? 0 : Math.PI, 0];
+
+            const screen = new scene_js_1.Node(G.plane(10.5, 4.0), hoopsJumboMat);
             screen.rotation = [Math.PI / 2, 0, 0];
 
-            const caseNode = new scene_js_1.Node(G.box(14.0, 5.5, 0.8), barrierMat);
-            caseNode.setPos(0, 0, -0.42);
-            const trimNode = new scene_js_1.Node(G.box(14.2, 5.7, 0.08), s < 0 ? neonOrangeMat : neonMagentaMat);
+            const caseNode = new scene_js_1.Node(G.box(11.0, 4.4, 0.6), barrierMat);
+            caseNode.setPos(0, 0, -0.32);
+            const trimNode = new scene_js_1.Node(G.box(11.2, 4.6, 0.08), s < 0 ? neonOrangeMat : neonCyanMat);
             trimNode.setPos(0, 0, -0.04);
 
-            jumbo.add(caseNode, trimNode, screen);
-            root.add(jumbo);
+            sideNode.add(caseNode, trimNode, screen);
+            jumbo.add(sideNode);
         }
+        root.add(jumbo);
 
         // 3. Cyber Stadium Floodlight Pylons (4 corners of basketball court)
         const pylonMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.6, shininess: 55 });
@@ -7969,6 +8420,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
 
             stanchion.add(pole, arm, base, safetyPad);
             hoop.add(board, rim, mount, springBox, net, stanchion);
+            if (s > 0) hoop.visible = false; // Hide foreground south hoop so it never blocks portrait camera
             root.add(hoop);
             hoopRoots.push(hoop);
         }
@@ -8139,141 +8591,31 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         update(dt, ball, human, forceFull = false) {
             const [hx, hz] = this.halfExtents();
             let tx = ball.x * 0.65 + human.x * 0.35;
-            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 4.5 : 2.0);
+            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 3.0 : 2.0);
             const maxX = Math.max(0, this.limitX - hx * 0.55);
             tx = Math.max(-maxX, Math.min(maxX, tx));
-            const maxZ = this.limitZ - hz * 0.65;
+            const maxZ = this.limitZ - hz * 0.6;
             tz = Math.max(-maxZ, Math.min(maxZ, tz));
             if (forceFull) {
                 tx = 0;
                 tz = 0;
             }
-
-            // --- MODERN THIRD-PERSON FOLLOW CAMERA ---
-            // Positioned behind and slightly above the controlled human player
-            const isFooty = (this.mode === 'footy');
-            const hxPlayer = (human && typeof human.x === 'number') ? human.x : 0;
-            const hzPlayer = (human && typeof human.z === 'number') ? human.z : 0;
-            const pvx = (human && typeof human.vx === 'number') ? human.vx : 0;
-            const pvz = (human && typeof human.vz === 'number') ? human.vz : 0;
-            const speed = Math.sqrt(pvx * pvx + pvz * pvz);
-
-            // 1. Goal / Target direction (Team 0 attacks toward -Z)
-            const goalZ = -this.limitZ;
-
-            // 2. Ball Tracking & Dynamic Shot Elevation
-            const bx = (ball && typeof ball.x === 'number') ? ball.x : hxPlayer;
-            const by = (ball && typeof ball.y === 'number') ? ball.y : 0;
-            const bz = (ball && typeof ball.z === 'number') ? ball.z : hzPlayer;
-            const isShotOrDunk = (ball && (ball.shot || by > 2.0 || Math.abs(ball.vz || 0) > 11));
-
-            const ballW = isShotOrDunk ? 0.35 : (speed > 4.5 ? 0.12 : 0.22);
-            const leadX = pvx * (isFooty ? 0.20 : 0.14);
-            const leadZ = pvz * (isFooty ? 0.18 : 0.12);
-
-            const focusX = hxPlayer * (1 - ballW) + bx * ballW + leadX;
-            const focusY = 1.35 + (isShotOrDunk ? Math.min(3.0, by * 0.40) : 0);
-            const focusZ = hzPlayer * (1 - ballW) + bz * ballW + leadZ;
-
-            // 3. Smooth Yaw Rotation (Facing towards target goal with gentle sway)
-            const angleToGoal = Math.atan2(focusX, focusZ - goalZ);
-            const moveAngle = speed > 1.2 ? Math.atan2(pvx, pvz) : 0;
-            const bias = isFooty ? 0.78 : 0.72;
-            let targetYaw = angleToGoal * bias + moveAngle * (1 - bias);
-            targetYaw = Math.max(-0.45, Math.min(0.45, targetYaw));
-
-            if (!this.camYaw) this.camYaw = 0;
-            const rotK = this.snap ? 1.0 : 1.0 - Math.exp(-dt * 6.5);
-            this.camYaw += (targetYaw - this.camYaw) * rotK;
-
-            // 4. Tight Fortnite Third-Person Hero Follow Camera ("жесткая посадка за спину")
-            // Perfectly frames the hero athlete's muscular back, squad number, and boots in the lower view
-            // while giving a clear, unobstructed sightline to the goal, ball, and entire arena!
-            let followDist = isFooty ? 4.5 : 3.8;
-            let followHeight = isFooty ? 2.00 : 1.70;
-
-            if (this.aspect < 0.9) {
-                // Portrait mobile framing: hero athlete fills a commanding ~44% of screen height
-                followDist *= 1.02;
-                followHeight *= 1.02;
-                this.cam.fov = 52;
-            } else {
-                this.cam.fov = 46;
-            }
-
-            const distToGoal = Math.abs(hzPlayer - goalZ);
-            const threshold = isFooty ? 15.0 : 8.5;
-            let nearK = 0;
-            if (distToGoal < threshold) {
-                nearK = 1.0 - (distToGoal / threshold);
-                followHeight += nearK * 0.90;
-                followDist += nearK * 0.70;
-            }
-
-            if (human && (human.sprint || speed > 6.0)) {
-                followDist *= 1.04;
-                followHeight *= 1.02;
-            }
-
-            if (forceFull) {
-                followDist = isFooty ? 7.2 : 5.8;
-                followHeight = 3.0;
-                this.camYaw += dt * 0.5;
-            }
-
-            const sinY = Math.sin(this.camYaw);
-            const cosY = Math.cos(this.camYaw);
-
-            // Tight over-the-shoulder tactical offset (+0.30m)
-            const shoulderOffset = (this.aspect < 0.9) ? 0.30 : 0.38;
-            let wantCamX = focusX + sinY * followDist + shoulderOffset;
-            let wantCamY = focusY + followHeight;
-            let wantCamZ = focusZ + cosY * followDist;
-
-            const maxBoundX = this.limitX + (isFooty ? 2.5 : 1.5);
-            wantCamX = Math.max(-maxBoundX, Math.min(maxBoundX, wantCamX));
-            wantCamY = Math.max(1.65, wantCamY);
-
-            if (!isFooty) {
-                if (wantCamZ > 11.8) {
-                    const extra = wantCamZ - 11.8;
-                    wantCamY += extra * 0.35;
-                    wantCamZ = 11.8;
-                }
-            } else {
-                wantCamZ = Math.min(this.limitZ + 2.5, wantCamZ);
-            }
-
-            // Look forward towards the opponent's goal/hoop (at -Z) with heroic horizon elevation!
-            const lookAheadZ = isFooty ? 4.2 : 3.2;
-            const targetPosX = focusX * 0.35;
-            const targetPosY = 1.32 + (nearK * 0.55) + (isShotOrDunk ? Math.min(2.8, by * 0.40) : 0);
-            const targetPosZ = focusZ - (lookAheadZ + nearK * 1.0);
-
-            if (!this.curCamPos) this.curCamPos = [wantCamX, wantCamY, wantCamZ];
-            if (!this.curTarget) this.curTarget = [targetPosX, targetPosY, targetPosZ];
-
-            // Ultra-responsive, crisp camera lock
-            const posK = this.snap ? 1.0 : 1.0 - Math.exp(-dt * 12.0);
-            this.curCamPos[0] += (wantCamX - this.curCamPos[0]) * posK;
-            this.curCamPos[1] += (wantCamY - this.curCamPos[1]) * posK;
-            this.curCamPos[2] += (wantCamZ - this.curCamPos[2]) * posK;
-
-            this.curTarget[0] += (targetPosX - this.curTarget[0]) * posK;
-            this.curTarget[1] += (targetPosY - this.curTarget[1]) * posK;
-            this.curTarget[2] += (targetPosZ - this.curTarget[2]) * posK;
-
+            const k = this.snap ? 1 : 1 - Math.exp(-dt * 7);
+            this.fx += (tx - this.fx) * k;
+            this.fz += (tz - this.fz) * k;
+            const wantD = this.fitDistance(this.fx, this.fz, forceFull ? Math.min(this.maxHalfX, this.limitX + 2) : hx, forceFull ? this.limitZ + 2 : hz);
+            this.dist += (wantD - this.dist) * (this.snap ? 1 : 1 - Math.exp(-dt * 3));
             this.snap = false;
-
             this.shakeT += dt * 60;
-            const sh = this.shakeAmt * 0.32;
+            const sh = this.shakeAmt * 0.35;
             const ox = Math.sin(this.shakeT * 1.7) * sh;
-            const oy = Math.cos(this.shakeT * 2.3) * sh * 0.65;
+            const oy = Math.cos(this.shakeT * 2.3) * sh * 0.7;
             this.shakeAmt = Math.max(0, this.shakeAmt - dt * 2.2);
-
             const c = this.cam;
-            c.position = [this.curCamPos[0] + ox, this.curCamPos[1] + oy, this.curCamPos[2]];
-            c.target = [this.curTarget[0] + ox * 0.4, this.curTarget[1], this.curTarget[2]];
+            const dy = Math.sin(this.elev);
+            const dz = Math.cos(this.elev);
+            c.position = [this.fx + ox, dy * this.dist + oy, this.fz + dz * this.dist];
+            c.target = [this.fx + ox * 0.6, 0.75, this.fz];
             c.update();
         }
     }
@@ -8293,7 +8635,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
     function shadowBlobTexture() {
         return (blobTex !== null && blobTex !== void 0 ? blobTex : (blobTex = new scene_js_3.Texture((0, textures_js_2.makeShadowBlob)(), { srgb: false })));
     }
-    exports.KEEPER_SKIN = { primary: 0xf6c445, secondary: 0x101010, shorts: 0x101010, skin: 0xd2a07c, hair: 0x1a1008, boots: 0x111111, accent: 0xffffff, style: 'plain' };
+    exports.KEEPER_SKIN = { primary: 0x10b981, secondary: 0x0f172a, shorts: 0x10b981, skin: 0xf0be9b, hair: 0x241812, boots: 0xffffff, accent: 0x0070f3, style: 'keeper' };
     exports.OPP_SKINS = [
         { primary: 0xd93a3a, secondary: 0x2a0f0f, shorts: 0x2a0f0f, skin: 0xc68642, hair: 0x101010, boots: 0x111111, accent: 0xffffff, style: 'plain' },
         { primary: 0x23232b, secondary: 0xff5a1f, shorts: 0x15151a, skin: 0xe0ac86, hair: 0x3a2412, boots: 0xff5a1f, accent: 0xff5a1f, style: 'stripes' },
@@ -8437,7 +8779,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 if (foot) {
                     // Football: Athletic shorts with lateral lightning stripe and bottom white hem piping
                     leg.add(at(mk(G.cylinder(0.14, 0.158, 0.36, 14), skin.shorts, { fabric: true }), 0, -0.13, 0));
-                    leg.add(at(mk(G.box(0.035, 0.34, 0.16), skin.secondary, { fabric: true }), sx < 0 ? -0.145 : 0.145, -0.13, 0));
+                    // Clean athletic shorts contour
                     leg.add(at(mk(G.cylinder(0.162, 0.162, 0.035, 14), white, { fine: true, fabric: true }), 0, -0.295, 0));
 
                     // Knee-high football compression socks with double white hoop rings
@@ -8478,10 +8820,10 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 }
                 else {
                     // Basketball: Loose long basketball shorts with prominent dual side stripes and split hem
+                    // Basketball: Sleek black basketball shorts with metallic gold chevron side stripes
                     leg.add(at(mk(G.cylinder(0.165, 0.195, 0.58, 14), skin.shorts, { fabric: true }), 0, -0.2, 0));
-                    leg.add(at(mk(G.box(0.045, 0.56, 0.22), skin.secondary, { fabric: true }), sx < 0 ? -0.17 : 0.17, -0.2, 0));
-                    leg.add(at(mk(G.box(0.018, 0.54, 0.225), trim, { fine: true, fabric: true }), sx < 0 ? -0.18 : 0.18, -0.2, 0));
-                    leg.add(at(mk(G.cylinder(0.198, 0.198, 0.04, 14), white, { fine: true, fabric: true }), 0, -0.47, 0));
+                    // Clean basketball shorts contour
+                    leg.add(at(mk(G.cylinder(0.198, 0.198, 0.035, 14), 0xf59e0b, { spec: 0.7, fine: true, fabric: true }), 0, -0.47, 0));
 
                     // Ribbed crew socks with collegiate dual stripes
                     knee.add(at(mk(G.cylinder(0.096, 0.090, 0.24, 12), white, { fabric: true }), 0, -0.32, 0));
@@ -8520,260 +8862,234 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             waist.scale = [1, 1, 0.72];
             this.pivot.add(at(waist, 0, 1.12, 0));
 
-            // 3. High-Definition Torso & Pro Athletic Jersey (#10 Striker / #23 All-Star)
+            // 3. Flawless Athletic Torso with High-Definition Uniform Branding
             this.torso = new scene_js_3.Node();
             this.torso.setPos(0, 1.41, 0);
-            const chest = mk(G.cylinder(0.315, 0.218, 0.74, 16), skin.primary, { fabric: true, rim: 0.42 });
-            chest.scale = [1, 1, 0.63];
+
+            // Sculpted anatomical chest core (Athletic V-taper)
+            const chest = mk(G.cylinder(0.295, 0.220, 0.72, 16), skin.primary, { fabric: true, rim: 0.40 });
+            chest.scale = [1, 1, 0.65];
             this.torso.add(chest);
 
-            // Anatomical Pectoral Muscle Shelf (Left & Right pectorals with sternum division)
+            // Contoured Pectoral muscle shelves
             for (const sx of [-1, 1]) {
-                const pec = mk(G.box(0.123, 0.15, 0.038), skin.primary, { fabric: true, rim: 0.35 });
+                const pec = mk(G.box(0.115, 0.145, 0.038), skin.primary, { fabric: true, rim: 0.35 });
                 pec.rotation = [0.12, sx < 0 ? -0.12 : 0.12, 0];
-                this.torso.add(at(pec, sx * 0.12, 0.19, 0.195));
-                
-                // Latissimus Dorsi flank V-taper
-                const lat = mk(G.box(0.038, 0.40, 0.17), skin.primary, { fabric: true });
+                this.torso.add(at(pec, sx * 0.11, 0.19, 0.180));
+
+                // Latissimus dorsi V-taper flank contours & dynamic ventilation stripes
+                const lat = mk(G.box(0.038, 0.38, 0.15), skin.primary, { fabric: true });
                 lat.rotation = [0, 0, sx < 0 ? 0.12 : -0.12];
-                this.torso.add(at(lat, sx * 0.265, -0.04, -0.02));
+                this.torso.add(at(lat, sx * 0.245, -0.03, -0.02));
 
-                // Posterior Scapular contours on back yoke
-                const scap = mk(G.box(0.11, 0.16, 0.03), skin.primary, { fabric: true });
-                scap.rotation = [-0.1, sx < 0 ? 0.14 : -0.14, 0];
-                this.torso.add(at(scap, sx * 0.12, 0.18, -0.195));
+                const flankStripe = mk(G.box(0.024, 0.52, 0.13), foot ? white : 0xf59e0b, { fabric: true, fine: true });
+                this.torso.add(at(flankStripe, sx * 0.235, -0.02, 0));
             }
 
-            // Muscular Deltoid Shoulders
-            for (const sx of [-1, 1])
-                this.torso.add(at(mk(G.sphere(0.13, 12, 8), foot ? skin.primary : skin.skin, { fabric: foot, skin: !foot }), sx * 0.318, 0.29, 0));
+            // High-Definition Official Uniform Front & Back Plates with Official Emblem & Crisp Typography
+            const charType = (agent && agent.role === 'keeper') ? 'keeper' : (foot ? 'footy' : 'hoops');
+            const squadNum = (charType === 'keeper') ? '1' : (foot ? '10' : '23');
+            const num3d = (!foot && squadNum === '23') ? build3DNumber('23', skin.secondary, skin.accent, this.fine) : build3DNumber(squadNum, skin.secondary, skin.accent, this.fine);
+            void num3d;
 
-            if (!foot) {
-                // Basketball Tank Top: Contrasting side flank stripes and ribbed scoop neckline
-                for (const sx of [-1, 1]) {
-                    this.torso.add(at(mk(G.box(0.045, 0.62, 0.24), skin.secondary, { fabric: true, rim: 0.38 }), sx * 0.26, -0.02, 0));
-                    this.torso.add(at(mk(G.box(0.018, 0.60, 0.245), trim, { fine: true }), sx * 0.275, -0.02, 0));
-                }
-                const hem = at(mk(G.cylinder(0.228, 0.228, 0.05, 16), skin.secondary, { fine: true, fabric: true }), 0, -0.34, 0);
-                hem.scale = [1, 1, 0.64];
-                this.torso.add(hem);
-                const hoopCollar = mk(G.cylinder(0.125, 0.138, 0.05, 14), white, { fabric: true, fine: true });
-                this.torso.add(at(hoopCollar, 0, 0.37, 0));
+            const frontCanvas = (0, textures_js_2.getJerseyTexture)(charType, squadNum, false, skin.primary, skin.secondary, skin.accent);
+            const backCanvas = (0, textures_js_2.getJerseyTexture)(charType, squadNum, true, skin.primary, skin.secondary, skin.accent);
+            const frontTex = new scene_js_3.Texture(frontCanvas);
+            const backTex = new scene_js_3.Texture(backCanvas);
 
-                // Front Official FOOTY vs HOOPS Chest Emblem Badge for Basketball
-                const hoopsBadgeBack = mk(G.cylinder(0.068, 0.068, 0.015, 16), 0x0a0f1a, { spec: 0.7, fine: true });
-                const hoopsBadgeRing = mk(G.cylinder(0.071, 0.071, 0.008, 16), 0xf97316, { fine: true, emissive: 0xf97316, emissiveMul: 0.5 });
-                const hoopsHalfWhite = mk(G.cylinder(0.058, 0.058, 0.018, 14), white, { fine: true });
-                const hoopsHalfOrange = mk(G.box(0.058, 0.116, 0.020), 0xff6b00, { fine: true });
-                const hoopsDivider = mk(G.box(0.012, 0.125, 0.024), white, { fine: true });
-                hoopsDivider.rotation = [0, 0, 0.45];
-                this.torso.add(at(hoopsBadgeBack, 0, 0.04, 0.205), at(hoopsBadgeRing, 0, 0.04, 0.206), at(hoopsHalfWhite, 0, 0.04, 0.21), at(hoopsHalfOrange, 0.029, 0.04, 0.212), at(hoopsDivider, 0, 0.04, 0.214));
+            // Front Jersey Plate (Displays Official Emblem & Team Wordmark & Number)
+            const frontPlate = new scene_js_3.Node(G.quad(0.34, 0.54), (0, scene_js_3.material)({
+                texture: frontTex,
+                color: [1, 1, 1],
+                spec: 0.35,
+                shininess: 32,
+                rim: 0.25,
+                depthWrite: true,
+                receiveShadow: true
+            }));
+            this.torso.add(at(frontPlate, 0, 0.025, 0.185));
 
-                // 3D SQUAD NUMBER #23 ON JERSEY BACK (Visible in in-game matches!)
-                const num23Node = build3DNumber('23', trim, skin.secondary, this.fine);
-                num23Node.rotation = [0, Math.PI, 0];
-                this.torso.add(at(num23Node, 0, 0.05, -0.21));
-            }
-            else {
-                // Football: Ribbed V-neck collar, dynamic kit accents, and Golden Club Shield
-                const collar = mk(G.cylinder(0.11, 0.125, 0.06, 14), skin.secondary, { fabric: true, fine: true });
+            // Back Jersey Plate (Displays Squad Number #10 / #23 & Name)
+            const backPlate = new scene_js_3.Node(G.quad(0.34, 0.54), (0, scene_js_3.material)({
+                texture: backTex,
+                color: [1, 1, 1],
+                spec: 0.35,
+                shininess: 32,
+                rim: 0.25,
+                depthWrite: true,
+                receiveShadow: true
+            }));
+            backPlate.rotation = [0, Math.PI, 0];
+            this.torso.add(at(backPlate, 0, 0.025, -0.185));
+
+            // Collar Styling
+            if (foot) {
+                // Football: Navy ribbed V-neck collar
+                const collar = mk(G.cylinder(0.115, 0.130, 0.06, 16), 0x0f172a, { fabric: true, fine: true });
                 this.torso.add(at(collar, 0, 0.375, 0));
-                const collarTrim = mk(G.cylinder(0.114, 0.128, 0.02, 14), trim, { fabric: true, fine: true });
-                this.torso.add(at(collarTrim, 0, 0.39, 0));
-
-                // Dynamic V-Chevron Kit Accent across chest
-                const chevL = mk(G.box(0.13, 0.045, 0.03), skin.secondary, { fabric: true });
-                chevL.rotation = [0, 0, 0.36];
-                const chevR = mk(G.box(0.13, 0.045, 0.03), skin.secondary, { fabric: true });
-                chevR.rotation = [0, 0, -0.36];
-                this.torso.add(at(chevL, -0.062, 0.15, 0.205), at(chevR, 0.062, 0.15, 0.205));
-
-                // Dynamic front aerodynamic kit stripe
-                const centerStripe = mk(G.box(0.05, 0.26, 0.02), trim, { fabric: true, fine: true });
-                this.torso.add(at(centerStripe, 0, -0.02, 0.205));
-
-                // Front Official FOOTY vs HOOPS Chest Emblem Badge for Football
-                const footyBadgeBack = mk(G.cylinder(0.055, 0.055, 0.015, 16), 0x0a0f1a, { spec: 0.7, fine: true });
-                const footyBadgeRing = mk(G.cylinder(0.058, 0.058, 0.008, 16), 0x00f0ff, { fine: true, emissive: 0x00f0ff, emissiveMul: 0.5 });
-                const footyHalfWhite = mk(G.cylinder(0.046, 0.046, 0.018, 14), white, { fine: true });
-                const footyHalfOrange = mk(G.box(0.046, 0.092, 0.020), 0xff6b00, { fine: true });
-                const footyDivider = mk(G.box(0.010, 0.100, 0.024), white, { fine: true });
-                footyDivider.rotation = [0, 0, 0.45];
-                this.torso.add(at(footyBadgeBack, 0.12, 0.16, 0.205), at(footyBadgeRing, 0.12, 0.16, 0.206), at(footyHalfWhite, 0.12, 0.16, 0.21), at(footyHalfOrange, 0.143, 0.16, 0.212), at(footyDivider, 0.12, 0.16, 0.214));
-
-                // 3D SQUAD NUMBER #10 ON JERSEY BACK (Or #1 for Keeper)
-                const isKeeper = agent && agent.role === 'keeper';
-                const squadNum = isKeeper ? '1' : '10';
-                const numNode = build3DNumber(squadNum, trim, skin.secondary, this.fine);
-                numNode.rotation = [0, Math.PI, 0];
-                this.torso.add(at(numNode, 0, 0.05, -0.21));
+            } else {
+                // Basketball: Metallic Gold ribbed scoop collar
+                const collar = mk(G.cylinder(0.125, 0.140, 0.05, 16), 0xf59e0b, { spec: 0.7, fine: true });
+                this.torso.add(at(collar, 0, 0.375, 0));
             }
 
             // Defined Athletic Neck
             this.torso.add(at(mk(G.cylinder(0.068, 0.076, 0.13, 12), skin.skin, { skin: true }), 0, 0.42, 0));
 
-            // Clean Athletic Back Yoke and Aerodynamic Trim
-            this.torso.add(at(mk(G.box(0.24, 0.055, 0.02), trim, { fine: true, fabric: true }), 0, 0.24, -0.195));
-            this.torso.add(at(mk(G.box(0.05, 0.42, 0.02), skin.secondary, { fine: true, fabric: true }), 0, 0.02, -0.20));
-
-            // Custom pattern rendering for equipped skin styles
-            if (skin.style !== 'plain') {
-                const band = (y, rz = 0) => {
-                    const bd = mk(G.cylinder(0.265, 0.255, 0.11, 14), skin.secondary, { fabric: true });
-                    bd.scale = [1, 1, 0.65];
-                    bd.setPos(0, y, 0);
-                    bd.rotation = [0, 0, rz];
-                    return bd;
-                };
-                if (skin.style === 'stripes') {
-                    // Triple vertical pro racing stripes down chest
-                    for (const sx of [-0.09, 0, 0.09]) {
-                        const strp = mk(G.box(0.04, 0.68, 0.022), skin.secondary, { fabric: true });
-                        this.torso.add(at(strp, sx, 0, 0.202));
-                    }
-                }
-                else if (skin.style === 'hoops') {
-                    this.torso.add(band(0.1), band(-0.14));
-                }
-                else if (skin.style === 'sash') {
-                    // Bold diagonal athletic sash across torso
-                    const sashFront = mk(G.box(0.38, 0.08, 0.022), skin.secondary, { fabric: true });
-                    sashFront.rotation = [0, 0, -0.65];
-                    this.torso.add(at(sashFront, 0, 0.02, 0.204));
-                    const sashBack = mk(G.box(0.38, 0.08, 0.022), skin.secondary, { fabric: true });
-                    sashBack.rotation = [0, 0, 0.65];
-                    this.torso.add(at(sashBack, 0, 0.02, -0.204));
-                }
-                else {
-                    this.torso.add(band(0.0, 0.55));
-                }
-            }
             this.pivot.add(this.torso);
 
-            // 4. Athletic Arms: Short Sleeves with Cuffs, Elbow Saddle Caps & Forearms
-            for (const [arm, elbow, sx] of [[this.armL, this.elbowL, -0.38], [this.armR, this.elbowR, 0.38]]) {
+            // 4. Pro Athletic Arms with Unified Deltoids, Raglan Sleeves & Gold Wristbands
+            for (const [arm, elbow, sx] of [[this.armL, this.elbowL, -0.28], [this.armR, this.elbowR, 0.28]]) {
                 arm.setPos(sx, 1.66, 0);
-                arm.add(at(mk(G.capsule(0.072, 0.41, 12, 4), skin.skin, { skin: true }), 0, -0.17, 0));
-                
-                // Continuous Spherical Elbow Saddle Cap at joint pivot
-                arm.add(at(mk(G.sphere(0.068, 10, 8), skin.skin, { skin: true }), 0, -0.34, 0));
+
+                // Anatomical Deltoid Shoulder attached directly to ARM root (rotates naturally with arm motion!)
+                const deltMat = foot ? white : (charType === 'keeper' ? 0x22c55e : skin.skin);
+                const delt = mk(G.sphere(0.108, 14, 10), deltMat, { fabric: foot || charType === 'keeper', skin: (!foot && charType !== 'keeper') });
+                delt.scale = [0.94, 1.08, 0.94];
+                arm.add(delt);
+
+                arm.add(at(mk(G.capsule(0.070, 0.38, 12, 4), skin.skin, { skin: true }), 0, -0.16, 0));
 
                 if (foot) {
-                    // Football: Sleeves with contrasting cuffs
-                    arm.add(at(mk(G.cylinder(0.102, 0.090, 0.27, 12), skin.primary, { fabric: true }), 0, -0.1, 0));
-                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.035, 12), white, { fine: true }), 0, -0.23, 0));
-                    arm.add(at(mk(G.cylinder(0.094, 0.094, 0.025, 12), skin.secondary, { fine: true }), 0, -0.25, 0));
-                    // Captain's Armband on left arm
+                    // Football: White raglan sleeves with turquoise cuffs
+                    arm.add(at(mk(G.cylinder(0.096, 0.084, 0.24, 14), white, { fabric: true }), 0, -0.09, 0));
+                    arm.add(at(mk(G.cylinder(0.086, 0.086, 0.035, 14), skin.primary, { fine: true }), 0, -0.20, 0));
+                    // Captain's Gold Armband on left arm
                     if (sx < 0) {
-                        arm.add(at(mk(G.cylinder(0.096, 0.096, 0.055, 12), 0xf6c445, { spec: 0.5, fine: true }), 0, -0.15, 0));
+                        arm.add(at(mk(G.cylinder(0.088, 0.088, 0.055, 14), 0xf59e0b, { spec: 0.85, shininess: 85, fine: true }), 0, -0.14, 0));
+                    }
+                } else {
+                    // Basketball: Metallic Gold armhole trim
+                    arm.add(at(mk(G.cylinder(0.098, 0.090, 0.035, 14), 0xf59e0b, { spec: 0.7, fine: true }), 0, -0.02, 0));
+                    // Matte Black Compression Sleeve on left shooting arm
+                    if (sx < 0) {
+                        arm.add(at(mk(G.cylinder(0.076, 0.068, 0.34, 14), 0x111318, { spec: 0.3 }), 0, -0.15, 0));
                     }
                 }
-                else {
-                    // Basketball: Sleeveless armhole trim
-                    arm.add(at(mk(G.cylinder(0.098, 0.098, 0.04, 12), white, { fine: true }), 0, -0.04, 0));
-                    // Compression shooting sleeve on right arm
-                    if (sx > 0) {
-                        arm.add(at(mk(G.cylinder(0.078, 0.072, 0.30, 12), dark, { spec: 0.35 }), 0, -0.16, 0));
-                    }
+
+                // Spherical Elbow joint
+                elbow.setPos(0, -0.30, 0);
+                elbow.add(at(mk(G.sphere(0.065, 10, 8), skin.skin, { skin: true }), 0, 0, 0));
+
+                const forearmSkin = (sx < 0 && !foot) ? 0x111318 : skin.skin;
+                elbow.add(at(mk(G.capsule(0.062, 0.34, 12, 4), forearmSkin, { skin: (sx >= 0 || foot) }), 0, -0.14, 0));
+
+                // Hands / Wrists: Metallic Gold wristbands on both wrists for Hoops
+                if (!foot) {
+                    elbow.add(at(mk(G.cylinder(0.072, 0.072, 0.045, 14), 0xf59e0b, { spec: 0.85, shininess: 80, fine: true }), 0, -0.26, 0));
                 }
-                elbow.setPos(0, -0.34, 0);
-                elbow.add(at(mk(G.capsule(0.064, 0.43, 12, 4), skin.skin, { skin: true }), 0, -0.17, 0));
-                
-                // Olecranon posterior elbow contour
-                elbow.add(at(mk(G.sphere(0.055, 8, 6), skin.skin, { fine: true, skin: true }), 0, 0.015, -0.065));
-                elbow.add(at(mk(G.sphere(0.072, 9, 6), skin.skin, { fine: true, skin: true }), 0, -0.4, 0.01));
-                if (!foot)
-                    elbow.add(at(mk(G.cylinder(0.072, 0.072, 0.055, 12), skin.secondary, { fine: true }), 0, -0.32, 0));
+                const hand = mk(G.box(0.058, 0.095, 0.042), skin.skin, { skin: true });
+                elbow.add(at(hand, 0, -0.32, 0.01));
+
                 arm.add(elbow);
                 this.pivot.add(arm);
             }
 
-            // 5. Stylized 3D Human Athlete: Expressive Eyes, Athletic Features & Hair
+            // 5. Stylized 3D Human Hero Athlete: Authentic Pixar/Fortnite Turnaround Proportions
             this.head = new scene_js_3.Node();
-            this.head.setPos(0, 2.02, 0);
+            this.head.setPos(0, 1.95, 0);
+            this.head.scale = [0.88, 0.90, 0.88];
 
-            // Sculpted cranium and athletic tapered jaw
-            const skullR = 0.178;
+            const faceImg = (0, textures_js_2.getFaceImage)(charType);
+            const faceTex = (faceImg && faceImg.complete && faceImg.naturalWidth > 0) ? new scene_js_3.Texture(faceImg) : null;
+
+            // Sculpted cranium with defined athletic jawline
+            const skullR = 0.175;
             const skull = mk(G.sphere(skullR, 16, 12), skin.skin, { skin: true });
             skull.scale = [0.94, 1.05, 0.98];
             this.head.add(skull);
 
-            const jawR = 0.122;
+            const jawR = 0.120;
             const jaw = mk(G.sphere(jawR, 12, 8), skin.skin, { skin: true });
-            this.head.add(at(jaw, 0, -0.085, 0.052));
+            this.head.add(at(jaw, 0, -0.080, 0.048));
 
-            // Athletic Cheeks and Ears
+            // Athletic Ears
             for (const sx of [-1, 1]) {
-                // Cheeks
-                this.head.add(at(mk(G.sphere(0.063, 8, 6), skin.skin, { fine: true, skin: true }), sx * 0.098, -0.04, 0.108));
-                // Ears
-                this.head.add(at(mk(G.sphere(0.039, 8, 6), skin.skin, { fine: true, skin: true }), sx * 0.175, 0.0, 0.0));
-                this.head.add(at(mk(G.sphere(0.023, 6, 5), dark, { fine: true }), sx * 0.179, 0.0, 0.0));
-
-                // Sculpted Zygomatic Arch & Athletic Mandible Contour
-                const zygoma = mk(G.box(0.040, 0.024, 0.026), skin.skin, { fine: true, skin: true });
-                zygoma.rotation = [0, sx < 0 ? 0.22 : -0.22, sx < 0 ? -0.15 : 0.15];
-                this.head.add(at(zygoma, sx * 0.116, -0.02, 0.120));
+                this.head.add(at(mk(G.sphere(0.038, 8, 6), skin.skin, { fine: true, skin: true }), sx * 0.165, 0.0, 0.0));
             }
 
-            // Expressive 3D Athlete Eyes
-            const irisCol = foot ? 0x00b4d8 : 0x78350f;
-            const eyeX = 0.068;
-            const eyeY = 0.022;
-            const eyeZ = 0.165;
-            const eyeScale = 0.92;
-            for (const sx of [-1, 1]) {
-                // 1. White Eye Sclera
-                this.head.add(at(mk(G.sphere(0.045 * eyeScale, 10, 8), white, { fine: true }), sx * eyeX, eyeY, eyeZ));
-                // 2. Vibrant Colored Iris
-                this.head.add(at(mk(G.sphere(0.027 * eyeScale, 10, 8), irisCol, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.020 * eyeScale));
-                // 3. Deep Black Pupil
-                this.head.add(at(mk(G.sphere(0.016 * eyeScale, 8, 6), 0x0a0a0a, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.032 * eyeScale));
-                // 4. Specular Highlight Glint
-                this.head.add(at(mk(G.sphere(0.007 * eyeScale, 6, 6), white, { emissive: white, fine: true }), sx * eyeX + 0.009 * eyeScale, eyeY + 0.010 * eyeScale, eyeZ + 0.039 * eyeScale));
-
-                // Determined Athletic Eyebrows
-                const brow = mk(G.box(0.052 * eyeScale, 0.016 * eyeScale, 0.022 * eyeScale), skin.hair, { fine: true });
-                brow.rotation = [0, 0, sx < 0 ? -0.16 : 0.16];
-                this.head.add(at(brow, sx * eyeX, eyeY + 0.044 * eyeScale, eyeZ + 0.010 * eyeScale));
-            }
-
-            // Sculpted Athletic Nose
-            this.head.add(at(mk(G.box(0.022, 0.048, 0.024), skin.skin, { fine: true, skin: true }), 0, -0.01, 0.194));
-            this.head.add(at(mk(G.sphere(0.024, 8, 6), skin.skin, { fine: true, skin: true }), 0, -0.036, 0.204));
-
-            // Confident Athletic Smile / Mouth
-            this.head.add(at(mk(G.box(0.062, 0.014, 0.020), 0x8b3a3a, { fine: true }), 0, -0.082, 0.174));
-
-            // Stylized 3D Hair and Authentic Sports Headwear
-            if (foot) {
-                // Football: Modern athletic crop fade with 3D swept fringe and sideburns
-                const hairBase = mk(G.sphere(0.192, 14, 10), skin.hair, { spec: 0.22 });
-                hairBase.scale = [0.96, 0.90, 1.02];
-                this.head.add(at(hairBase, 0, 0.055, -0.025));
-                const hairTop = mk(G.sphere(0.165, 12, 8), skin.hair, { spec: 0.22 });
-                this.head.add(at(hairTop, 0, 0.095, 0.01));
-                const hairFringe = mk(G.box(0.155, 0.055, 0.048), skin.hair, { spec: 0.25, fine: true });
-                hairFringe.rotation = [0.15, 0, 0];
-                this.head.add(at(hairFringe, 0, 0.076, 0.145));
+            if (faceTex) {
+                // High-Resolution Pixar/Fortnite Stylized Face mapped directly from User Turnaround Art!
+                const facePlate = new scene_js_3.Node(G.quad(0.25, 0.26), (0, scene_js_3.material)({
+                    texture: faceTex,
+                    color: [1, 1, 1],
+                    transparent: true,
+                    alpha: 1.0,
+                    depthWrite: true,
+                    receiveShadow: true,
+                    spec: 0.18,
+                    shininess: 24
+                }));
+                this.head.add(at(facePlate, 0, 0.015, 0.168));
+            } else {
+                // Fallback athletic facial features
+                const irisCol = foot ? 0x00c4e2 : 0xb45309;
+                const eyeX = 0.064, eyeY = 0.024, eyeZ = 0.158, eyeScale = 0.85;
                 for (const sx of [-1, 1]) {
-                    this.head.add(at(mk(G.box(0.022, 0.052, 0.035), skin.hair, { fine: true }), sx * 0.152, 0.012, 0.05));
+                    this.head.add(at(mk(G.sphere(0.038 * eyeScale, 10, 8), white, { fine: true }), sx * eyeX, eyeY, eyeZ));
+                    this.head.add(at(mk(G.sphere(0.024 * eyeScale, 10, 8), irisCol, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.018 * eyeScale));
+                    this.head.add(at(mk(G.sphere(0.014 * eyeScale, 8, 6), 0x0a0a0a, { fine: true }), sx * eyeX, eyeY, eyeZ + 0.028 * eyeScale));
+                    const brow = mk(G.box(0.048 * eyeScale, 0.015 * eyeScale, 0.018 * eyeScale), skin.hair, { fine: true });
+                    brow.rotation = [0, 0, sx < 0 ? -0.16 : 0.16];
+                    this.head.add(at(brow, sx * eyeX, eyeY + 0.040 * eyeScale, eyeZ + 0.010 * eyeScale));
                 }
+                this.head.add(at(mk(G.box(0.020, 0.044, 0.024), skin.skin, { fine: true, skin: true }), 0, -0.010, 0.185));
+                this.head.add(at(mk(G.box(0.060, 0.013, 0.018), 0x7c2d2d, { fine: true }), 0, -0.078, 0.168));
             }
-            else {
-                // Basketball: Authentic high-fade taper and sports cotton headband
-                const hairBase = mk(G.sphere(0.198, 14, 10), skin.hair, { spec: 0.18 });
-                hairBase.scale = [0.96, 0.95, 1.0];
-                this.head.add(at(hairBase, 0, 0.075, -0.02));
-                const hairTop = mk(G.box(0.20, 0.085, 0.24), skin.hair, { spec: 0.18 });
-                this.head.add(at(hairTop, 0, 0.130, 0.01));
 
-                // Authentic cotton athletic headband with embroidered logo patch
-                const hb = mk(G.cylinder(0.208, 0.208, 0.062, 16), 0xff6b00, { spec: 0.15, fine: true });
-                const hbLogo = mk(G.box(0.052, 0.036, 0.022), white, { fine: true });
-                this.head.add(at(hb, 0, 0.078, 0), at(hbLogo, 0, 0.078, 0.208));
+            // Hairstyles matching Turnaround Art 100%
+            if (foot) {
+                // FOOTY Striker #10: Auburn copper wavy quiff with clean side taper fade
+                const hairCol = 0x9e431a;
+                const hairBase = mk(G.sphere(0.186, 16, 12), hairCol, { spec: 0.25 });
+                hairBase.scale = [0.98, 1.05, 1.08];
+                this.head.add(at(hairBase, 0, 0.020, -0.025));
+
+                const napeLow = mk(G.cylinder(0.175, 0.125, 0.16, 14), hairCol, { spec: 0.20 });
+                this.head.add(at(napeLow, 0, -0.060, -0.035));
+
+                const quiff = mk(G.sphere(0.165, 12, 8), hairCol, { spec: 0.25 });
+                quiff.scale = [0.92, 1.15, 1.25];
+                this.head.add(at(quiff, 0, 0.115, 0.035));
+
+                const fringe = mk(G.box(0.145, 0.052, 0.06), hairCol, { spec: 0.25, fine: true });
+                fringe.rotation = [0.25, 0, 0];
+                this.head.add(at(fringe, 0, 0.095, 0.148));
+
+                for (const sx of [-1, 1]) {
+                    this.head.add(at(mk(G.box(0.020, 0.050, 0.032), hairCol, { fine: true }), sx * 0.148, 0.010, 0.045));
+                }
+            } else if (charType === 'keeper') {
+                // KEEPER #1: Dark espresso brown wavy crop
+                const hairCol = 0x241812;
+                const hairBase = mk(G.sphere(0.188, 16, 12), hairCol, { spec: 0.22 });
+                hairBase.scale = [0.98, 1.05, 1.08];
+                this.head.add(at(hairBase, 0, 0.020, -0.025));
+
+                const napeLow = mk(G.cylinder(0.178, 0.128, 0.16, 14), hairCol, { spec: 0.20 });
+                this.head.add(at(napeLow, 0, -0.060, -0.035));
+
+                const crown = mk(G.sphere(0.162, 12, 8), hairCol, { spec: 0.22 });
+                crown.scale = [0.94, 1.12, 1.20];
+                this.head.add(at(crown, 0, 0.105, 0.025));
+            } else {
+                // HOOPS All-Star #10: Crisp Textured High-Top Fade with Smooth Dome Crown
+                const hairCol = 0x181412;
+                const hairBase = mk(G.sphere(0.192, 16, 12), hairCol, { spec: 0.18 });
+                hairBase.scale = [0.96, 0.98, 1.02];
+                this.head.add(at(hairBase, 0, 0.070, -0.02));
+
+                const napeLow = mk(G.cylinder(0.180, 0.130, 0.16, 14), hairCol, { spec: 0.18 });
+                this.head.add(at(napeLow, 0, -0.055, -0.030));
+
+                // Solid Rounded Dome Crown (eliminates hollow cylinder effect completely)
+                const domeCrown = mk(G.sphere(0.182, 16, 12), hairCol, { spec: 0.18 });
+                domeCrown.scale = [0.95, 0.70, 0.95];
+                this.head.add(at(domeCrown, 0, 0.165, 0));
             }
+
             this.pivot.add(this.head);
+
             this.shadowBlob = new scene_js_3.Node(G.plane(1.5 * this.vs, 1.5 * this.vs), (0, scene_js_3.material)({ color: [1, 1, 1], texture: shadowBlobTexture(), unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.shadowBlob.setPos(0, 0.015, 0);
             this.ring = new scene_js_3.Node(geo.ring, this.ringMat);
@@ -8863,8 +9179,8 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             if (this.mode === 'hoops' && a.dunk && a.dunk.active) {
                 const dk = a.dunk;
                 const norm = Math.min(1, Math.max(0, dk.t / Math.max(0.01, dk.apexT)));
-                lift = Math.sin(norm * Math.PI * 0.72) * 1.55;
-                lean = 0.22 + norm * 0.18;
+                lift = Math.sin(norm * Math.PI * 0.75) * 2.25;
+                lean = 0.22 + norm * 0.25;
                 armUp = 2.85;
             } else if (a.shotT > 0 || a.jumpT > 0) {
                 const jt = a.jumpT > 0 ? 1 - a.jumpT / 0.55 : 0;
@@ -8888,15 +9204,28 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const tk = a.tackle;
             let slide = 0;
             if (tk.phase === 'charging') {
-                lean = 0.38 + tk.charge * 0.22;
+                lean = foot ? 0.38 + tk.charge * 0.22 : 0.25 + tk.charge * 0.15;
             }
             else if (tk.phase === 'lunge') {
                 slide = 1;
-                lean = 1.15;
+                if (foot) {
+                    lean = -0.25; // Football slide tackle: torso leans slightly back as hips drop to pitch!
+                    roll = -0.35; // Body banks into the lateral grass slide (NO somersault!)
+                } else {
+                    lean = 0.28;  // Basketball: low athletic chest push stance on feet (NO somersault!)
+                    roll = 0.0;
+                }
             }
             else if (tk.phase === 'recover') {
-                slide = Math.max(0, 1 - tk.t / Math.max(0.01, tk.recoverDur)) * 0.8;
-                lean = 0.5 * slide;
+                const recK = Math.max(0, 1 - tk.t / Math.max(0.01, tk.recoverDur));
+                slide = recK * 0.85;
+                if (foot) {
+                    lean = -0.15 * recK;
+                    roll = -0.22 * recK;
+                } else {
+                    lean = 0.18 * recK;
+                    roll = 0.0;
+                }
             }
             if (a.diveT > 0) {
                 const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.45));
@@ -8923,7 +9252,8 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const bob = Math.abs(sp) * amp * 0.08;
             const bank = this.ease('bank', -Math.max(-0.3, Math.min(0.3, yawRate * 0.028)) * Math.min(1, speed / 4), 9, dt);
             const pelvicTilt = Math.min(0.12, speed * (foot ? 0.022 : 0.020));
-            this.pivot.position[1] = lift - slide * (foot ? 0.52 : 0.42) - crouch - land + bob;
+            const slideDrop = foot ? 0.72 : 0.08;
+            this.pivot.position[1] = lift - slide * slideDrop - crouch - land + bob;
             this.pivot.rotation[0] = lean + land * 0.8 + pelvicTilt;
             this.pivot.rotation[2] = roll + sp * amp * 0.04 + bank;
             let kickLeg = 0;
@@ -8998,13 +9328,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                     this.kneeR.rotation[0] = this.kneeR.rotation[0] * (1 - slide) + 0.08 * slide;
                 }
                 else {
-                    // Basketball: Athletic low defensive slide stance with wide lateral base
-                    this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) - 0.45 * slide;
-                    this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 0.45 * slide;
-                    this.legL.rotation[2] = -0.26 * slide;
-                    this.legR.rotation[2] = 0.26 * slide;
-                    this.kneeL.rotation[0] = this.kneeL.rotation[0] * (1 - slide) + 0.85 * slide;
-                    this.kneeR.rotation[0] = this.kneeR.rotation[0] * (1 - slide) + 0.85 * slide;
+                    // Basketball: Athletic low defensive push/steal stance on feet with wide lateral base (NO tumble/somersault)
+                    this.legL.rotation[0] = this.legL.rotation[0] * (1 - slide) - 0.35 * slide;
+                    this.legR.rotation[0] = this.legR.rotation[0] * (1 - slide) - 0.35 * slide;
+                    this.legL.rotation[2] = -0.32 * slide;
+                    this.legR.rotation[2] = 0.32 * slide;
+                    this.kneeL.rotation[0] = this.kneeL.rotation[0] * (1 - slide) + 0.75 * slide;
+                    this.kneeR.rotation[0] = this.kneeR.rotation[0] * (1 - slide) + 0.75 * slide;
                 }
             }
             if (land > 0.01) {
@@ -9019,29 +9349,56 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const sprintElbow = isSprinting ? 0.32 * amp : 0;
             this.elbowL.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, sp)) - sprintElbow;
             this.elbowR.rotation[0] = -baseBend * (1 - raised) * (0.75 + 0.25 * Math.max(0, -sp)) - sprintElbow;
+            if (slide > 0.02) {
+                if (foot) {
+                    // Football grass slide tackle:
+                    // Left arm braces backward against turf for sliding support
+                    this.armL.rotation[0] = this.armL.rotation[0] * (1 - slide) + 0.72 * slide;
+                    this.armL.rotation[2] = this.armL.rotation[2] * (1 - slide) - 0.52 * slide;
+                    this.elbowL.rotation[0] = this.elbowL.rotation[0] * (1 - slide) - 0.40 * slide;
+                    // Right arm extends forward/upward for dynamic athletic balance
+                    this.armR.rotation[0] = this.armR.rotation[0] * (1 - slide) - 1.25 * slide;
+                    this.armR.rotation[2] = this.armR.rotation[2] * (1 - slide) + 0.38 * slide;
+                    this.elbowR.rotation[0] = this.elbowR.rotation[0] * (1 - slide) - 0.45 * slide;
+                } else {
+                    // Basketball defensive chest push / steal thrust:
+                    // Powerful double arm thrust forward at chest height to strip the ball (stays on feet!)
+                    this.armL.rotation[0] = this.armL.rotation[0] * (1 - slide) - 1.58 * slide;
+                    this.armL.rotation[2] = this.armL.rotation[2] * (1 - slide) + 0.18 * slide;
+                    this.elbowL.rotation[0] = this.elbowL.rotation[0] * (1 - slide) - 0.22 * slide;
+                    this.armR.rotation[0] = this.armR.rotation[0] * (1 - slide) - 1.58 * slide;
+                    this.armR.rotation[2] = this.armR.rotation[2] * (1 - slide) - 0.18 * slide;
+                    this.elbowR.rotation[0] = this.elbowR.rotation[0] * (1 - slide) - 0.22 * slide;
+                }
+            }
             if (this.mode === 'hoops') {
                 if (a.dunk && a.dunk.active) {
                     const dk = a.dunk;
                     const norm = Math.min(1, Math.max(0, dk.t / Math.max(0.01, dk.apexT)));
-                    if (norm < 0.82) {
-                        this.armR.rotation[0] = -2.95 - (1 - norm) * 0.35;
-                        this.elbowR.rotation[0] = -1.65 * (1 - norm * 0.5);
-                        this.armR.rotation[2] = 0.32;
-                        this.armL.rotation[0] = -1.45;
-                        this.armL.rotation[2] = -0.75;
+                    if (norm < 0.78) {
+                        // Soaring glide: ball cocked high above head, off-hand balancing, lead knee driving up high
+                        this.armR.rotation[0] = -3.05 - (1 - norm) * 0.35;
+                        this.elbowR.rotation[0] = -1.55 * (1 - norm * 0.5);
+                        this.armR.rotation[2] = 0.28;
+                        this.armL.rotation[0] = -1.65;
+                        this.armL.rotation[2] = -0.65;
+                        this.legR.rotation[0] = -1.15; // Lead knee driving high
+                        this.kneeR.rotation[0] = 1.65;
+                        this.legL.rotation[0] = 0.45;  // Trailing leg extended
+                        this.kneeL.rotation[0] = 0.55;
                     } else {
-                        const slamProg = (norm - 0.82) / 0.18;
-                        this.armR.rotation[0] = -2.95 + slamProg * 0.85;
-                        this.elbowR.rotation[0] = -0.35;
-                        this.armR.rotation[2] = 0.15;
-                        this.armL.rotation[0] = -1.1;
+                        // Hammer slam & rim hang: explosive downward stroke through the rim!
+                        const slamProg = (norm - 0.78) / 0.22;
+                        this.armR.rotation[0] = -3.05 + slamProg * 1.15;
+                        this.elbowR.rotation[0] = -0.25;
+                        this.armR.rotation[2] = 0.12;
+                        this.armL.rotation[0] = -1.45 + slamProg * 0.55;
+                        this.armL.rotation[2] = -0.25;
+                        this.legL.rotation[0] = -0.45;
+                        this.kneeL.rotation[0] = 1.15;
+                        this.legR.rotation[0] = -0.55;
+                        this.kneeR.rotation[0] = 1.25;
                     }
-                    this.legL.rotation[0] = 0.55;
-                    this.kneeL.rotation[0] = 1.35;
-                    this.legL.rotation[2] = -0.30;
-                    this.legR.rotation[0] = -0.62;
-                    this.kneeR.rotation[0] = 0.38;
-                    this.legR.rotation[2] = 0.25;
                 }
                 else if (a.shootCharging) {
                     // Cocking ball above forehead: right shooting elbow tucked underneath, left guide hand up
@@ -9117,9 +9474,17 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
             if (a.shotT > 0 && foot)
                 this.elbowR.rotation[0] *= 0.15;
-            const spread = this.ease('spread', a.celebrateT > 0 ? 0.5 : (foot && carrying ? 0.28 : (armUp > 1 ? 0.15 : 0.12)), 14, dt);
-            this.armL.rotation[2] = (this.armL.rotation[2] || 0) - spread + sp * amp * 0.05 + (foot && kickP >= 0 ? -0.32 * kick : 0);
-            this.armR.rotation[2] = (this.armR.rotation[2] || 0) + spread - sp * amp * 0.05 + (foot && kickP >= 0 ? 0.32 * kick : 0);
+            const spread = this.ease('spread', a.celebrateT > 0 ? 0.45 : (foot && carrying ? 0.22 : (armUp > 1 ? 0.15 : 0.10)), 14, dt);
+            let armOffsetZ_L = 0;
+            let armOffsetZ_R = 0;
+            if (this.mode === 'hoops' && carrying && armUp < 0.05) {
+                const targetHand = a.dribbleSide !== undefined ? a.dribbleSide : (a.mx < -0.15 ? -1 : (a.mx > 0.15 ? 1 : 1));
+                const hand = this.ease('dribbleHand', targetHand, 14, dt);
+                if (hand >= 0) { armOffsetZ_R += 0.14; armOffsetZ_L -= 0.32; }
+                else { armOffsetZ_L -= 0.14; armOffsetZ_R += 0.32; }
+            }
+            this.armL.rotation[2] = -spread + armOffsetZ_L + sp * amp * 0.04 + (foot && kickP >= 0 ? -0.28 * kick : 0);
+            this.armR.rotation[2] = spread + armOffsetZ_R - sp * amp * 0.04 + (foot && kickP >= 0 ? 0.28 * kick : 0);
             this.torso.rotation[1] = torsoTwist - sp * amp * (foot ? 0.32 : 0.26) + (kickP >= 0 ? kick * (foot ? 0.44 : 0.35) : 0);
             this.torso.rotation[2] = Math.sin(ph) * amp * (foot ? 0.075 : 0.065) + (kickP >= 0 ? (foot ? -0.28 : -0.22) * kick : 0);
             this.head.position[1] = (foot ? 2.05 : 1.99) + Math.abs(sp) * amp * 0.035;
@@ -9314,7 +9679,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 if (fallback && KNOWN_SKIN_VISUALS[fallback]) {
                     return Object.assign({ id: fallback }, KNOWN_SKIN_VISUALS[fallback]);
                 }
-                return Object.assign({ primary: isHoops ? 0xff6b00 : 0x2f6bff, secondary: 0xffffff, shorts: isHoops ? 0x14151a : 0x15204a, skin: 0xe0ac86, hair: 0x2a1a10, boots: isHoops ? 0xff6b00 : 0x111111, accent: 0xffffff, style: isHoops ? 'hoops' : 'plain' }, { id: fallback || id || (isHoops ? 'skin_solar' : 'skin_rookie') });
+                return Object.assign({ primary: isHoops ? 0xff6b00 : 0x2f6bff, secondary: 0xffffff, shorts: isHoops ? 0x14151a : 0x15204a, skin: 0xe0ac86, hair: 0x2a1a10, boots: isHoops ? 0xff6b00 : 0x111111, accent: 0xffffff, style: isHoops ? 'hoops' : 'plain' }, { id: fallback || id || (isHoops ? 'skin_bb_onyx' : 'skin_rookie') });
             }
             if (id === 'ball_hoops_classic_pro' || fallback === 'ball_hoops_classic_pro') {
                 return { mode: 'hoops', base: 0x8b3a1a, accent: 0xf59e0b, style: 'classic', id: 'ball_hoops_classic_pro' };
@@ -9366,66 +9731,66 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.arena.apply(this.scene);
             renderer.clearColor = (0, math_js_10.rgb)(stadium.fog);
             this.frame = visualOf(eq.frame, 'frame_default');
-            const playerChar = (opts && opts.char) ? opts.char : 'footy';
+            const playerChar = (opts && opts.char) ? opts.char : ((mode === 'hoops') ? 'hoops' : 'footy');
             const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
             this.playerChar = playerChar;
             this.oppChar = oppChar;
             const charSkinId = playerChar === 'hoops'
-                ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_solar'))
-                : (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie'));
-            let skin = Object.assign({}, visualOf(charSkinId, playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie'));
-            skin.id = charSkinId || (playerChar === 'hoops' ? 'skin_solar' : 'skin_rookie');
+                ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_bb_onyx'))
+                : (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_bb_onyx' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie'));
+            let skin = Object.assign({}, visualOf(charSkinId, playerChar === 'hoops' ? 'skin_bb_onyx' : 'skin_rookie'));
+            skin.id = charSkinId || (playerChar === 'hoops' ? 'skin_bb_onyx' : 'skin_rookie');
 
             // Ensure player character strictly mirrors their wardrobe athlete identity
             if (playerChar === 'hoops') {
-                if (!charSkinId || charSkinId === 'skin_solar') {
-                    skin.primary = 0xff6b00;
-                    skin.secondary = 0x14151a;
-                    skin.shorts = 0x14151a;
-                    skin.boots = 0xff6b00;
-                    skin.accent = 0xffffff;
-                    skin.style = 'hoops';
+                if (!charSkinId || charSkinId === 'skin_bb_onyx') {
+                    skin.primary = 0x111318; // Matte carbon black
+                    skin.secondary = 0xf59e0b; // Metallic gold
+                    skin.shorts = 0x111318; // Matte black shorts with gold chevrons
+                    skin.boots = 0x111318; // Black & gold high-top sneakers
+                    skin.accent = 0xfbbf24; // Metallic gold accent
+                    skin.style = 'allstar';
                 }
-                skin.skin = 0x6c4424; // Rich athletic dark skin matching wardrobe
-                skin.hair = 0x0a0a0a; // Deep black cropped fade hair
+                skin.skin = 0x6c4424; // Rich dark skin tone from turnaround sheet
+                skin.hair = 0x181412; // Textured curl fade from turnaround sheet
             } else {
                 if (!charSkinId || charSkinId === 'skin_rookie') {
-                    skin.primary = 0x00c8ff;
-                    skin.secondary = 0x0a1e3f;
-                    skin.shorts = 0x0a1e3f;
-                    skin.boots = 0x00c8ff;
-                    skin.accent = 0xffffff;
-                    skin.style = 'plain';
+                    skin.primary = 0xffffff; // Clean white jersey from turnaround sheet
+                    skin.secondary = 0x0070f3; // Electric blue brush streaks
+                    skin.shorts = 0xf8fafc; // White athletic shorts with #10
+                    skin.boots = 0xffffff; // White speed cleats with orange accents
+                    skin.accent = 0xff6b00; // Vibrant orange brush streaks
+                    skin.style = 'raglan';
                 }
-                skin.skin = 0xdfa070; // Athletic European skin tone matching wardrobe
-                skin.hair = 0x221810; // Dark brown swept fringe hair
+                skin.skin = 0xf5cbb0; // Youthful athletic skin tone from turnaround sheet
+                skin.hair = 0x9e431a; // Auburn copper wavy quiff from turnaround sheet
             }
 
             // Signature Cross-Sport Kits for Football vs Basketball Rivalry
             const hoopsOppKit = {
-                id: 'skin_solar',
-                primary: 0xff6b00,
-                secondary: 0x14151a,
-                shorts: 0x14151a,
+                id: 'skin_bb_onyx',
+                primary: 0x0b0c10, // Matte black sleeveless
+                secondary: 0xff6b00, // Vibrant orange brush streaks
+                shorts: 0x0b0c10,
                 skin: 0x6c4424,
-                hair: 0x0a0a0a,
-                boots: 0xff6b00,
-                accent: 0xffffff,
-                style: 'hoops'
+                hair: 0x181412,
+                boots: 0x0b0c10,
+                accent: 0x0070f3,
+                style: 'allstar'
             };
             const footyOppKit = {
                 id: 'skin_rookie',
-                primary: 0x00c8ff,
-                secondary: 0x0a1e3f,
-                shorts: 0x0a1e3f,
-                skin: 0xdfa070,
-                hair: 0x221810,
-                boots: 0x00c8ff,
-                accent: 0xffffff,
-                style: 'plain'
+                primary: 0xffffff, // White
+                secondary: 0x0070f3, // Electric blue
+                shorts: 0xf8fafc, // White
+                skin: 0xf5cbb0,
+                hair: 0x9e431a,
+                boots: 0xffffff,
+                accent: 0xff6b00,
+                style: 'raglan'
             };
             const oppSkin = (oppChar === 'hoops') ? hoopsOppKit : footyOppKit;
-            const keeperHome = Object.assign(Object.assign({}, characters_js_1.KEEPER_SKIN), { id: 'keeper_home', primary: 0x2bd96b, secondary: 0x0a3a1c });
+            const keeperHome = Object.assign(Object.assign({}, characters_js_1.KEEPER_SKIN), { id: 'keeper_home', primary: 0x10b981, secondary: 0x064e3b, shorts: 0x10b981, boots: 0xffffff, skin: 0xf0be9b, hair: 0x241812, style: 'keeper' });
             for (const a of sim.agents) {
                 const isTeam0 = (a.team === 0);
                 const charSport = a.role === 'keeper' ? 'footy' : (isTeam0 ? playerChar : oppChar);
@@ -11143,7 +11508,7 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
         'mode.difficulty': 'Сложность', 'mode.duration': 'Длительность матча', 'mode.minutes': '{n} мин', 'mode.start': 'Начать матч', 'mode.start.hoops': 'Начать матч',
         'diff.easy': 'Лёгкая', 'diff.normal': 'Обычная', 'diff.hard': 'Сложная', 'mode.boost': 'Буст на этот матч', 'mode.noBoost': 'Буст не активирован',
         'hud.you': 'ТЫ', 'hud.cpu': 'ПК', 'hud.pause': 'Пауза', 'hud.stamina': 'Выносливость', 'hud.shoot': 'УДАР', 'hud.shootHoops': 'БРОСОК', 'hud.pass': 'ПАС', 'hud.sprint': 'РЫВОК',
-        'hud.tackle': 'ОТБОР', 'hud.steal': 'ПЕРЕХВАТ', 'hud.ready': 'Приготовься', 'hud.replay': 'ПОВТОР ГОЛА', 'hud.skipReplay': 'ПРОПУСТИТЬ', 'hud.mute': 'Без звука', 'hud.unmute': 'Включить звук', 'hud.go': 'ПОЕХАЛИ!', 'hud.goal': 'ГОЛ!', 'hud.score': 'ОЧКИ!', 'hud.three': 'ТРЁХОЧКОВЫЙ!',
+        'hud.tackle': 'ПОДКАТ', 'hud.steal': 'ПЕРЕХВАТ', 'hud.ready': 'Приготовься', 'hud.replay': 'ПОВТОР ГОЛА', 'hud.skipReplay': 'ПРОПУСТИТЬ', 'hud.mute': 'Без звука', 'hud.unmute': 'Включить звук', 'hud.go': 'ПОЕХАЛИ!', 'hud.goal': 'ГОЛ!', 'hud.score': 'ОЧКИ!', 'hud.three': 'ТРЁХОЧКОВЫЙ!',
         'hud.dunk': 'ДАНК!', 'hud.ownGoal': 'Автогол', 'hud.noStamina': 'Нет выносливости', 'hud.fullTime': 'Конец матча', 'hud.overtime': 'ОВЕРТАЙМ', 'hud.suddenDeath': 'ВНЕЗАПНАЯ СМЕРТЬ', 'hud.win': 'Ты победил!', 'hud.lose': 'Ты проиграл',
         'hud.draw': 'Ничья', 'hud.possession': 'Мяч', 'hud.mini.footy': 'Гол {a}:{b}',
         'pause.title': 'Пауза', 'pause.resume': 'Продолжить', 'pause.restart': 'Начать заново', 'pause.settings': 'Настройки', 'pause.quit': 'Выйти в меню',
@@ -13372,18 +13737,118 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
     function getHudActionSvg(action, isHoops) {
         if (action === 'shoot') {
             if (isHoops) {
-                return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" fill="#ea580c" stroke="#fef08a" stroke-width="1.2"/><line x1="2.5" y1="12" x2="21.5" y2="12" stroke="#1c1917" stroke-width="1.3"/><line x1="12" y1="2.5" x2="12" y2="21.5" stroke="#1c1917" stroke-width="1.3"/><path d="M5.5 6 C10 8.5 10 15.5 5.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/><path d="M18.5 6 C14 8.5 14 15.5 18.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/><circle cx="9" cy="8" r="1.5" fill="#ffffff" opacity="0.6"/></svg>';
+                // Pro Competition Basketball Rim Swish
+                return '<svg width="42" height="42" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '  <radialGradient id="bbProShade" cx="38%" cy="30%" r="66%">' +
+                    '    <stop offset="0%" stop-color="#ff881a"/>' +
+                    '    <stop offset="50%" stop-color="#ea580c"/>' +
+                    '    <stop offset="85%" stop-color="#9a3412"/>' +
+                    '    <stop offset="100%" stop-color="#431407"/>' +
+                    '  </radialGradient>' +
+                    '</defs>' +
+                    '<path d="M9 25 L13 38 L18 25 L23 38 L27 25 M13 25 L18 38 L23 25 L27 38 L31 25" stroke="#e2e8f0" stroke-width="1.3" opacity="0.85" stroke-linecap="round"/>' +
+                    '<path d="M10 29 Q20 33 30 29 M12 34 Q20 37 28 34" stroke="#cbd5e1" stroke-width="1.2" opacity="0.7" fill="none"/>' +
+                    '<ellipse cx="20" cy="25" rx="12" ry="3.5" fill="none" stroke="#ea580c" stroke-width="3"/>' +
+                    '<ellipse cx="20" cy="25" rx="12" ry="3.5" fill="none" stroke="#fdba74" stroke-width="1"/>' +
+                    '<rect x="31" y="23" width="5" height="3.5" rx="1" fill="#7c2d12"/>' +
+                    '<circle cx="22" cy="13" r="10" fill="url(#bbProShade)" stroke="#fed7aa" stroke-width="0.8"/>' +
+                    '<path d="M12.2 13 Q22 14 31.8 13" stroke="#1c1917" stroke-width="1.3" stroke-linecap="round"/>' +
+                    '<path d="M22 3.2 Q22.8 13 22 22.8" stroke="#1c1917" stroke-width="1.3" stroke-linecap="round"/>' +
+                    '<path d="M15 5.5 C19.5 8.5 19.5 17.5 15 20.5" stroke="#1c1917" stroke-width="1.2" stroke-linecap="round"/>' +
+                    '<path d="M29 5.5 C24.5 8.5 24.5 17.5 29 20.5" stroke="#1c1917" stroke-width="1.2" stroke-linecap="round"/>' +
+                    '<ellipse cx="19" cy="8.5" rx="2.5" ry="1.2" transform="rotate(-30 19 8.5)" fill="#ffffff" opacity="0.5"/>' +
+                    '</svg>';
             }
-            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/><polygon points="12,8.6 15.2,10.9 14.0,14.7 10.0,14.7 8.8,10.9" fill="#0f172a"/><polygon points="12,2.5 9.4,4.2 8.4,1.0 15.6,1.0 14.6,4.2" fill="#0f172a"/><polygon points="21.0,8.1 19.1,5.2 23.0,3.5 24.5,10.0 21.0,12.0" fill="#0f172a"/><polygon points="18.2,19.6 16.4,16.8 19.5,14.2 23.5,17.5 21.2,21.8" fill="#0f172a"/><polygon points="5.8,19.6 7.6,16.8 4.5,14.2 0.5,17.5 2.8,21.8" fill="#0f172a"/><polygon points="3.0,8.1 4.9,5.2 1.0,3.5 -0.5,10.0 3.0,12.0" fill="#0f172a"/><line x1="12" y1="8.6" x2="12" y2="4.2" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/><line x1="15.2" y1="10.9" x2="19.1" y2="8.1" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/><line x1="14.0" y1="14.7" x2="16.4" y2="17.9" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/><line x1="10.0" y1="14.7" x2="7.6" y2="17.9" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/><line x1="8.8" y1="10.9" x2="4.9" y2="8.1" stroke="#0f172a" stroke-width="0.85" stroke-linecap="round"/><path d="M5.5 6.5C7.5 4.5 9.8 3.5 12 3.5" stroke="#ffffff" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/></svg>';
+            // Pro Kinetic Ballistic Strike - Football
+            return '<svg width="42" height="42" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '  <linearGradient id="strikeBeam" x1="0%" y1="100%" x2="100%" y2="0%">' +
+                '    <stop offset="0%" stop-color="#ff3b00" stop-opacity="0"/>' +
+                '    <stop offset="60%" stop-color="#ff8800" stop-opacity="0.6"/>' +
+                '    <stop offset="100%" stop-color="#ffc83b"/>' +
+                '  </linearGradient>' +
+                '  <radialGradient id="ballProShade" cx="38%" cy="32%" r="65%">' +
+                '    <stop offset="0%" stop-color="#ffffff"/>' +
+                '    <stop offset="55%" stop-color="#d1d5db"/>' +
+                '    <stop offset="85%" stop-color="#4b5563"/>' +
+                '    <stop offset="100%" stop-color="#1f2937"/>' +
+                '  </radialGradient>' +
+                '</defs>' +
+                '<path d="M4 38 L14 28" stroke="url(#strikeBeam)" stroke-width="3" stroke-linecap="round"/>' +
+                '<path d="M2 30 L9 23" stroke="#ff7700" stroke-width="2" stroke-linecap="round" opacity="0.7"/>' +
+                '<path d="M12 40 L19 33" stroke="#ffaa00" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
+                '<path d="M12 30 L22 20 M22 20 L16 19 M22 20 L21 26" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<circle cx="26" cy="18" r="13" fill="url(#ballProShade)" stroke="#9ca3af" stroke-width="1"/>' +
+                '<polygon points="26,13 30,16 28.5,21 23.5,21 22,16" fill="#111827" stroke="#374151" stroke-width="0.7"/>' +
+                '<polygon points="26,5.5 28.5,7.5 27.5,10 24.5,10 23.5,7.5" fill="#111827"/>' +
+                '<polygon points="36,11 37.5,14 35,16 33,14 33.5,11.5" fill="#111827"/>' +
+                '<polygon points="35.5,24 32.5,26 31,23.5 32,21 35,21" fill="#111827"/>' +
+                '<polygon points="16.5,24 19.5,26 21,23.5 20,21 17,21" fill="#111827"/>' +
+                '<polygon points="16,11 18.5,11.5 19,14 17,16 14.5,14" fill="#111827"/>' +
+                '<circle cx="22" cy="13" r="1.8" fill="#ffffff" opacity="0.9"/>' +
+                '</svg>';
         }
         if (action === 'tackle') {
             if (isHoops) {
-                return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 13 L6 8 C6 6.8 6.8 6 8 6 C9.2 6 10 6.8 10 8 L10 12 M10 9 C10 7.8 10.8 7 12 7 C13.2 7 14 7.8 14 9 L14 12 M14 9.5 C14 8.3 14.8 7.5 16 7.5 C17.2 7.5 18 8.3 18 9.5 L18 14 C18 17.5 15.5 20.5 12 20.5 C8.5 20.5 6 17.5 6 14 Z" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/></svg>';
+                // Pro Basketball Interception Steal
+                return '<svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '  <radialGradient id="stealCoreGrad" cx="35%" cy="30%" r="68%">' +
+                    '    <stop offset="0%" stop-color="#ff881a"/>' +
+                    '    <stop offset="65%" stop-color="#ea580c"/>' +
+                    '    <stop offset="100%" stop-color="#7c2d12"/>' +
+                    '  </radialGradient>' +
+                    '</defs>' +
+                    '<path d="M20 5 L20 9 M20 31 L20 35 M7 20 L11 20 M29 20 L33 20" stroke="#f43f5e" stroke-width="2" stroke-linecap="round"/>' +
+                    '<circle cx="20" cy="20" r="8.5" fill="url(#stealCoreGrad)" stroke="#fca5a5" stroke-width="0.8"/>' +
+                    '<path d="M11.8 20 Q20 21 28.2 20" stroke="#1c1917" stroke-width="1.2"/>' +
+                    '<path d="M20 11.8 Q20.5 20 20 28.2" stroke="#1c1917" stroke-width="1.2"/>' +
+                    '<path d="M3 14 C6 14 9 16 12 17 L16 16 C17 16 17.5 17.5 16.5 18.5 L13 20 L16 21 C17 21.5 16.5 23 15.5 23 L12 22 L11 25 C10.5 26 9 25.5 9 24.5 L8 21 L3 20 Z" fill="#e11d48" stroke="#ffe4e6" stroke-width="1.2" stroke-linejoin="round"/>' +
+                    '<rect x="3" y="14" width="3.5" height="6.5" rx="1" fill="#881337"/>' +
+                    '<path d="M37 14 C34 14 31 16 28 17 L24 16 C23 16 22.5 17.5 23.5 18.5 L27 20 L24 21 C23 21.5 23.5 23 24.5 23 L28 22 L29 25 C29.5 26 31 25.5 31 24.5 L32 21 L37 20 Z" fill="#e11d48" stroke="#ffe4e6" stroke-width="1.2" stroke-linejoin="round"/>' +
+                    '<rect x="33.5" y="14" width="3.5" height="6.5" rx="1" fill="#881337"/>' +
+                    '</svg>';
             }
-            return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3 L19.5 6.5 C19.5 13.5 15.5 18.5 12 20.5 C8.5 18.5 4.5 13.5 4.5 6.5 Z" fill="rgba(56,189,248,0.25)" stroke="#38bdf8" stroke-width="1.6"/><path d="M12 6.5 L16.5 8.5 C16.5 13 14 16.5 12 17.8 C10 16.5 7.5 13 7.5 8.5 Z" fill="#0284c7" opacity="0.6"/><polygon points="12,8.5 13.5,11 16,11 14,12.5 15,15 12,13.5 9,15 10,12.5 8,11 10.5,11" fill="#fef08a"/></svg>';
+            // Pro Soccer Razor Slide Tackle Boot
+            return '<svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '  <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+                '    <stop offset="0%" stop-color="#f43f5e"/>' +
+                '    <stop offset="60%" stop-color="#e11d48"/>' +
+                '    <stop offset="100%" stop-color="#881337"/>' +
+                '  </linearGradient>' +
+                '</defs>' +
+                '<path d="M3 34 L37 34" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>' +
+                '<path d="M14 35 L19 31 M18 36 L24 31 M23 37 L29 32" stroke="#fda4af" stroke-width="1.8" stroke-linecap="round"/>' +
+                '<rect x="15" y="31.5" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
+                '<rect x="21" y="31.5" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
+                '<rect x="27" y="31" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
+                '<path d="M4 18 L11 17 L15 24 L29 27 C31.5 27.5 33 29.5 31 31.5 L12 31.5 C7.5 31.5 4.5 28 4 24 Z" fill="url(#bladeGrad)" stroke="#fecdd3" stroke-width="1.4" stroke-linejoin="round"/>' +
+                '<path d="M12 22 L22 26 M10 24 L18 28" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>' +
+                '<circle cx="32" cy="21" r="5.5" fill="#ffffff" stroke="#1e293b" stroke-width="0.8"/>' +
+                '<polygon points="32,19 33.5,20.2 33,22 31,22 30.5,20.2" fill="#0f172a"/>' +
+                '<path d="M28 22 L25 20 M29 25 L26 27" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>' +
+                '</svg>';
         }
-        // sprint
-        return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12 L12 5 L12 9.5 L19 4 L15 12 L20 12 L8 21 L11 13 Z" fill="#f59e0b" stroke="#fef08a" stroke-width="1.2" stroke-linejoin="round"/><line x1="2" y1="8" x2="7" y2="8" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="12" x2="5" y2="12" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="16" x2="8" y2="16" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></svg>';
+        // Pro Supersonic Turbo Sprint
+        return '<svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<defs>' +
+            '  <linearGradient id="nitroGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '    <stop offset="0%" stop-color="#ffffff"/>' +
+            '    <stop offset="40%" stop-color="#38bdf8"/>' +
+            '    <stop offset="100%" stop-color="#06b6d4"/>' +
+            '  </linearGradient>' +
+            '</defs>' +
+            '<path d="M3 11 L10 18 L3 25" stroke="#06b6d4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>' +
+            '<path d="M9 11 L16 18 L9 25" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>' +
+            '<circle cx="27" cy="8" r="3.2" fill="url(#nitroGrad)"/>' +
+            '<path d="M25 11 L19 19 L16 18 L22 11 Z" fill="url(#nitroGrad)"/>' +
+            '<path d="M24 12 L30 16 L34 14" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<path d="M20 13 L15 15 L12 11" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<path d="M19 19 L26 21 L29 29" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<path d="M17 19 L12 25 L7 27" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>';
     }
     const STICK_R = 58;
     class Hud {
@@ -17424,6 +17889,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             this.game.onOnlineLost = (why) => this.onOnlineLost(why);
             this.showMenu();
             window.__fvh = this;
+            window.app = this;
         }
         fatal(msg) {
             const f = (0, dom_js_6.$)('#fatal');

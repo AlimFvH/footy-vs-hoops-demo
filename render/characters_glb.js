@@ -32,8 +32,12 @@
   uniform mat4 uProj;
   uniform mat4 uView;
   uniform mat4 uModel;
-  uniform mat4 uBones[64];
+  uniform mat4 uBones[96];
   uniform bool uUseSkinning;
+
+  uniform float uRunPhase;
+  uniform float uRunSpeed;
+  uniform float uKickPhase;
 
   out vec3 vWorldPos;
   out vec3 vNormal;
@@ -41,8 +45,77 @@
 
   void main() {
     vUv = aUv;
-    vec4 localPos = vec4(aPos, 1.0);
+    vec3 localPos3 = aPos;
     vec3 localNorm = aNormal;
+
+    // Procedural athletic GPU locomotion (runs with ZERO CPU cost & ZERO mesh tearing!)
+    if (uRunSpeed > 0.05 || uKickPhase > 0.01) {
+      // 1. Legs kinematics (below hip y < -0.05)
+      if (localPos3.y < -0.05) {
+        float legFactor = clamp((-0.05 - localPos3.y) / 0.06, 0.0, 1.0);
+        float kneeFactor = clamp((-0.20 - localPos3.y) / 0.08, 0.0, 1.0);
+
+        // Left Leg: x > 0.015
+        if (localPos3.x > 0.015) {
+          float legAngle = sin(uRunPhase) * 0.58 * uRunSpeed * legFactor;
+          float kneeAngle = max(0.0, sin(uRunPhase)) * 0.82 * uRunSpeed * kneeFactor;
+
+          float cy = cos(legAngle), sy = sin(legAngle);
+          float dy = localPos3.y - (-0.05);
+          float dz = localPos3.z;
+          localPos3.y = -0.05 + (dy * cy - dz * sy);
+          localPos3.z = dy * sy + dz * cy;
+
+          if (kneeFactor > 0.0) {
+            float cky = cos(kneeAngle), sky = sin(kneeAngle);
+            float kdy = localPos3.y - (-0.22);
+            float kdz = localPos3.z;
+            localPos3.y = -0.22 + (kdy * cky + kdz * sky);
+            localPos3.z = -kdy * sky + kdz * cky;
+          }
+        }
+        // Right Leg: x < -0.015
+        else if (localPos3.x < -0.015) {
+          float kickSnap = uKickPhase * 1.15;
+          float legAngle = (-sin(uRunPhase) * 0.58 * uRunSpeed + kickSnap) * legFactor;
+          float kneeAngle = (max(0.0, -sin(uRunPhase)) * 0.82 * uRunSpeed * (1.0 - uKickPhase)) * kneeFactor;
+
+          float cy = cos(legAngle), sy = sin(legAngle);
+          float dy = localPos3.y - (-0.05);
+          float dz = localPos3.z;
+          localPos3.y = -0.05 + (dy * cy - dz * sy);
+          localPos3.z = dy * sy + dz * cy;
+
+          if (kneeFactor > 0.0) {
+            float cky = cos(kneeAngle), sky = sin(kneeAngle);
+            float kdy = localPos3.y - (-0.22);
+            float kdz = localPos3.z;
+            localPos3.y = -0.22 + (kdy * cky + kdz * sky);
+            localPos3.z = -kdy * sky + kdz * cky;
+          }
+        }
+      }
+      // 2. Free Right Arm swing (sx < -0.14, y > -0.05)
+      else if (localPos3.x < -0.14 && localPos3.y > -0.05) {
+        float armAngle = sin(uRunPhase) * 0.65 * uRunSpeed;
+        float cy = cos(armAngle), sy = sin(armAngle);
+        float dy = localPos3.y - 0.24;
+        float dz = localPos3.z;
+        localPos3.y = 0.24 + (dy * cy - dz * sy);
+        localPos3.z = dy * sy + dz * cy;
+      }
+      // 3. Natural Left Arm swing (sx > 0.14, y > 0.05)
+      else if (localPos3.x > 0.14 && localPos3.y > 0.05) {
+        float armAngle = -sin(uRunPhase) * 0.52 * uRunSpeed;
+        float cy = cos(armAngle), sy = sin(armAngle);
+        float dy = localPos3.y - 0.22;
+        float dz = localPos3.z;
+        localPos3.y = 0.22 + (dy * cy - dz * sy);
+        localPos3.z = dy * sy + dz * cy;
+      }
+    }
+
+    vec4 localPos = vec4(localPos3, 1.0);
 
     if (uUseSkinning) {
       int j0 = int(aJoints.x);
@@ -125,8 +198,8 @@
     vec3 rimColor = mix(vec3(0.85, 0.95, 1.0), vec3(1.0, 0.92, 0.80), N.y * 0.5 + 0.5);
     vec3 rimLight = rim * rimColor * 0.45;
 
-    // Vibrant Final Color
-    vec3 finalRgb = ambient * 1.10 + diffuse * 1.05 + specular + rimLight;
+    // Vibrant Balanced Final Color (preserves rich contrast & texture details without blowout)
+    vec3 finalRgb = ambient * 0.55 + diffuse * 0.60 + specular * 0.25 + rimLight * 0.20;
     fragColor = vec4(finalRgb, baseColor.a);
   }
   `;
@@ -140,6 +213,7 @@
   const skinTextureCache = new Map();
   // Preload GLB Character Models immediately into memory to eliminate match start lag
   function preloadGLBModels() {
+    if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
     const urls = ['assets/characters/footy10.glb', 'assets/characters/hoops23.glb', 'assets/characters/keeper1.glb'];
@@ -645,7 +719,10 @@
       uRoughness: gl.getUniformLocation(p, 'uRoughness'),
       uMetallic: gl.getUniformLocation(p, 'uMetallic'),
       uTex: gl.getUniformLocation(p, 'uTex'),
-      uHasTex: gl.getUniformLocation(p, 'uHasTex')
+      uHasTex: gl.getUniformLocation(p, 'uHasTex'),
+      uRunPhase: gl.getUniformLocation(p, 'uRunPhase'),
+      uRunSpeed: gl.getUniformLocation(p, 'uRunSpeed'),
+      uKickPhase: gl.getUniformLocation(p, 'uKickPhase')
     };
   }
 
@@ -847,18 +924,24 @@
       // Smart Animation Clip Resolution for High-Performance GLB Skeletons
       let targetClip = name;
       const lower = String(name).toLowerCase();
-      if (lower === 'kick' || lower === 'shot' || lower === 'shoot') {
-        targetClip = 'Kick_Right';
+      if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'punch_right') {
+        targetClip = 'shoot';
       } else if (lower === 'celebrate' || lower === 'wave' || lower === 'win') {
-        targetClip = 'Wave';
-      } else if (lower === 'tackle' || lower === 'slide' || lower === 'roll') {
-        targetClip = 'Roll';
-      } else if (lower === 'run') {
-        targetClip = 'Run';
-      } else if (lower === 'walk') {
-        targetClip = 'Walk';
-      } else if (lower === 'idle') {
-        targetClip = 'Idle_Neutral';
+        targetClip = 'celebrate';
+      } else if (lower === 'tackle' || lower === 'slide' || lower === 'roll' || lower === 'punch_left') {
+        targetClip = 'slide';
+      } else if (lower === 'run' || lower === 'sprint') {
+        targetClip = 'sprint';
+      } else if (lower === 'walk' || lower === 'jog') {
+        targetClip = 'jog';
+      } else if (lower === 'idle' || lower === 'idle_neutral') {
+        targetClip = 'idle';
+      } else if (lower === 'dribble') {
+        targetClip = 'dribble';
+      } else if (lower === 'header' || lower === 'jump' || lower === 'dunk') {
+        targetClip = 'header';
+      } else if (lower === 'dive' || lower === 'diveleft' || lower === 'diveright') {
+        targetClip = 'diveLeft';
       }
 
       if (this.currentAnim !== targetClip) {
@@ -908,6 +991,19 @@
       this.pitch = 0.18 * sprintDrive; // Fortnite athletic forward sprint posture
       this.elevationLift = (speed > 1.2) ? Math.sin((this.model.playbackTime || 0) * 16) * 0.04 * sprintDrive : 0;
 
+      // Real-time athletic leg locomotion
+      this.runSpeed = Math.min(1.0, speed / 2.6);
+      this.runPhase = (this.runPhase || 0) + dt * Math.min(22.0, speed * 5.2);
+
+      // Kicking animation state
+      const isBasketballMode = Boolean(this.matchView && this.matchView.mode === 'hoops');
+      const isKicking = (a.state === 'kick' || (typeof a.kickT === 'number' && a.kickT > 0));
+      if (isKicking && !isBasketballMode) {
+        this.kickPhase = Math.min(1.0, (this.kickPhase || 0) + dt * 8.0);
+      } else {
+        this.kickPhase = Math.max(0.0, (this.kickPhase || 0) - dt * 5.0);
+      }
+
       const isBallCarrier = Boolean(
         this.matchView &&
         this.matchView.sim &&
@@ -916,7 +1012,6 @@
       );
 
       // Strict Mode Distinction: Any player in basketball match plays BASKETBALL with hands!
-      const isBasketballMode = Boolean(this.matchView && this.matchView.mode === 'hoops');
 
       // ==========================================
       // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
@@ -1040,14 +1135,174 @@
       this.model.update(dt);
 
       // 4. Update world transform matrix with 3D lean, jump elevation, and athletic width
+      // Stand on grass at Y=0 (feet are at Y=0)
       const px = a.x || 0;
       const py = (a.y || 0) + this.elevationLift;
       const pz = a.z || 0;
       // Athletic proportions: broader athletic shoulders, taller basketball build
-      const sx = this.isFooty ? this.scale * 1.04 : this.scale * 1.08;
-      const sy = this.isFooty ? this.scale : this.scale * 1.05;
+      const sx = this.isFooty ? this.scale * 1.02 : this.scale * 1.04;
+      const sy = this.isFooty ? this.scale : this.scale * 1.02;
       const sz = this.scale * 0.98;
       makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, sx, sy, sz, this.pitch, this.roll);
+    }
+  }
+
+  // --- 2.5D Hi-Res Pre-rendered Animation Instance (Supercell / Brawl Stars / Pixar style) ---
+  const _hiResImgCache = new Map();
+  function loadHiResImage(src) {
+    if (_hiResImgCache.has(src)) return _hiResImgCache.get(src);
+    const p = new Promise((resolve) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        console.warn('[CharactersGLB] Failed to load 2.5D image:', src);
+        resolve(null);
+      };
+    });
+    _hiResImgCache.set(src, p);
+    return p;
+  }
+
+  class HiRes25DCharacterInstance {
+    constructor(charRef, imgSrc, opts = {}) {
+      this.charRef = charRef;
+      this.agent = charRef.agent;
+      this.matchView = opts.matchView;
+      this.height = opts.height || 2.40;
+      this.isKeeper = Boolean(opts.isKeeper);
+      this.isFooty = Boolean(opts.isFooty);
+      this.frontSrc = opts.frontSrc || imgSrc;
+      this.backSrc = opts.backSrc || imgSrc;
+      this.loaded = false;
+      this.stepTime = Math.random() * 10;
+      this.idleTime = Math.random() * 10;
+      this.facingLeft = false;
+
+      // Hide the procedural mannequin on frame 0
+      if (charRef.pivot) {
+        charRef.pivot.visible = false;
+      }
+
+      this.init();
+    }
+
+    async init() {
+      const [imgFront, imgBack] = await Promise.all([
+        loadHiResImage(this.frontSrc),
+        loadHiResImage(this.backSrc)
+      ]);
+      if (!imgFront || !this.charRef || !this.charRef.root) return;
+
+      const scene = window.require ? window.require('gfx/scene') : null;
+      const G = window.require ? window.require('gfx/geometry') : null;
+      if (!scene || !G) return;
+
+      const aspect = imgFront.width / imgFront.height;
+      this.w = this.height * aspect;
+      this.h = this.height;
+
+      this.frontTex = new scene.Texture(imgFront, { srgb: true, mipmap: true });
+      this.backTex = imgBack ? new scene.Texture(imgBack, { srgb: true, mipmap: true }) : this.frontTex;
+
+      this.mat = scene.material({
+        texture: this.frontTex,
+        transparent: true,
+        alpha: 1.0,
+        doubleSided: true,
+        unlit: true,
+        depthWrite: false
+      });
+
+      const quadGeo = G.quad ? G.quad(this.w, this.h) : G.plane(this.w, this.h);
+      this.spriteNode = new scene.Node(quadGeo, this.mat);
+      this.spriteNode.setPos(0, this.h * 0.5, 0);
+      this.spriteNode.rotation = [-0.38, 0, 0];
+
+      this.charRef.root.add(this.spriteNode);
+      this.loaded = true;
+
+      if (this.charRef.pivot) {
+        this.charRef.pivot.visible = false;
+      }
+    }
+
+    update(dt) {
+      if (this.charRef && this.charRef.pivot && this.charRef.pivot.visible) {
+        this.charRef.pivot.visible = false;
+      }
+      if (!this.loaded || !this.spriteNode || !this.agent) return;
+
+      const a = this.agent;
+      const vx = a.vx || 0;
+      const vz = a.vz || 0;
+      const speed = Math.hypot(vx, vz);
+
+      // Facing orientation: flip quad horizontally
+      if (vx < -0.2) {
+        this.facingLeft = true;
+      } else if (vx > 0.2) {
+        this.facingLeft = false;
+      } else if (typeof a.fx === 'number') {
+        if (a.fx < -0.15) this.facingLeft = true;
+        else if (a.fx > 0.15) this.facingLeft = false;
+      }
+
+      // Front vs Back texture selection based on vertical facing (towards goal or towards camera)
+      let fz = typeof a.fz === 'number' ? a.fz : (vz < -0.1 ? -1 : 1);
+      if (this.isKeeper) {
+        fz = 1; // Keeper in goal always faces into field
+      }
+      if (fz < -0.1 && this.mat && this.mat.texture !== this.backTex) {
+        this.mat.texture = this.backTex;
+      } else if (fz >= -0.1 && this.mat && this.mat.texture !== this.frontTex) {
+        this.mat.texture = this.frontTex;
+      }
+
+      // Keep billboard facing the camera directly regardless of agent's world yaw
+      if (this.charRef.root) {
+        this.spriteNode.rotation[1] = -this.charRef.root.rotation[1];
+      }
+
+      // Athletic camera angle tilt
+      const cam = (this.matchView && this.matchView.rig && this.matchView.rig.cam) ? this.matchView.rig.cam : null;
+      if (cam && this.charRef.root) {
+        const dy = cam.position[1] - (this.charRef.root.position[1] + this.h * 0.5);
+        const dz = cam.position[2] - this.charRef.root.position[2];
+        const pitchAngle = Math.atan2(dy, Math.max(0.1, dz));
+        this.spriteNode.rotation[0] = -pitchAngle;
+      }
+
+      // Athletic breathing & run stride
+      if (speed > 0.35) {
+        this.stepTime += dt * Math.min(18, speed * 4.6);
+        const bob = Math.abs(Math.sin(this.stepTime)) * 0.06;
+        const tilt = Math.sin(this.stepTime) * 0.05;
+        this.spriteNode.position[1] = this.h * 0.5 + bob;
+        // Lean slightly into lateral movement
+        const lean = Math.max(-0.15, Math.min(0.15, -vx * 0.03));
+        this.spriteNode.rotation[2] = lean + tilt;
+      } else {
+        this.idleTime += dt * 3.4;
+        const breath = Math.sin(this.idleTime) * 0.025;
+        this.spriteNode.position[1] = this.h * 0.5 + breath;
+        this.spriteNode.rotation[2] = 0;
+      }
+
+      // Jump / header / dunk elevation
+      const elevation = (typeof a.elevation === 'number') ? a.elevation : ((typeof a.y === 'number' && a.y > 0) ? a.y : 0);
+      if (elevation > 0) {
+        this.spriteNode.position[1] += elevation;
+      }
+    }
+
+    dispose() {
+      if (this.spriteNode && this.charRef && this.charRef.root) {
+        try { this.charRef.root.remove(this.spriteNode); } catch (e) {}
+      }
+      if (this.charRef && this.charRef.pivot) {
+        this.charRef.pivot.visible = true;
+      }
     }
   }
 
@@ -1055,7 +1310,8 @@
 
   const CharactersGLB = {
     enabled: true,
-    instances: new Map(), // matchView -> GLBCharacterInstance[]
+    mode: 'procedural', // High-Fidelity In-Engine Articulated 3D Humanoid Athletes with 15 natural biomechanical animations
+    instances: new Map(), // matchView -> (HiRes25DCharacterInstance | GLBCharacterInstance)[]
 
     init(gl) {
       if (!gl) return;
@@ -1065,6 +1321,14 @@
     setupMatch(matchView) {
       if (!this.enabled || !matchView || !matchView.chars) return;
 
+      if (this.mode === 'procedural') {
+        // High-Fidelity Articulated 3D Athletes with natural biomechanics
+        matchView.chars.forEach(c => {
+          if (c && c.pivot) c.pivot.visible = true;
+        });
+        return;
+      }
+
       const list = [];
       const mode = matchView.mode;
       const playerChar = matchView.playerChar || 'footy';
@@ -1072,50 +1336,67 @@
 
       matchView.chars.forEach(c => {
         if (!c.agent) return;
-        // Preserve procedural mesh visibility until GLB instance is fully ready
         if (c.pivot) {
-          c.pivot.visible = true;
+          c.pivot.visible = false;
         }
 
         const role = c.agent.role;
         const isKeeper = (role === 'keeper');
         const isTeam0 = (c.agent.team === 0);
-
-        // Core FOOTY vs HOOPS Rivalry: Football Striker vs Basketball All-Star
         const charSport = isKeeper ? 'footy' : (c.sport || (isTeam0 ? playerChar : oppChar));
 
-        // 1. Goalkeeper in goal (Goalkeeper #1) - scale 1.82 (athletic keeper, fits perfectly in 2.5m goal)
-        if (isKeeper) {
-          const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-            scale: 1.88,
-            skin: c.skin,
-            isFooty: true,
-            isKeeper: true,
+        if (this.mode === '2.5d') {
+          let frontSrc = 'assets/characters/footy10_front_clean.png';
+          let backSrc = 'assets/characters/footy10_back_clean.png';
+          let height = 2.45;
+          if (isKeeper) {
+            frontSrc = 'assets/characters/keeper1_front_clean.png';
+            backSrc = 'assets/characters/keeper1_front_clean.png';
+            height = 2.60;
+          } else if (charSport !== 'footy') {
+            frontSrc = 'assets/characters/hoops10_front_clean.png';
+            backSrc = 'assets/characters/hoops10_back_clean.png';
+            height = 2.55;
+          }
+          const inst = new HiRes25DCharacterInstance(c, frontSrc, {
+            frontSrc,
+            backSrc,
+            height,
+            isKeeper,
+            isFooty: (charSport === 'footy'),
             matchView
           });
           list.push(inst);
-        }
-        // 2. Football Athlete (Striker #10) - scale 1.76 (balanced athletic forward)
-        else if (charSport === 'footy') {
-          const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-            scale: 1.82,
-            skin: c.skin,
-            isFooty: true,
-            isKeeper: false,
-            matchView
-          });
-          list.push(inst);
-        }
-        // 3. Basketball Athlete (All-Star #23) - scale 1.82 (athletic basketball guard/forward)
-        else {
-          const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-            scale: 1.86,
-            skin: c.skin,
-            isFooty: false,
-            isKeeper: false,
-            matchView
-          });
-          list.push(inst);
+        } else {
+          // 3D GLB Mode
+          if (isKeeper) {
+            const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
+              scale: 1.05,
+              skin: c.skin,
+              isFooty: true,
+              isKeeper: true,
+              matchView
+            });
+            list.push(inst);
+          } else if (charSport === 'footy') {
+            const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
+              scale: 1.02,
+              skin: c.skin,
+              isFooty: true,
+              isKeeper: false,
+              matchView
+            });
+            list.push(inst);
+          } else {
+            const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
+              scale: 1.08,
+              skin: c.skin,
+              isFooty: false,
+              isKeeper: false,
+              matchView
+            });
+            list.push(inst);
+          }
         }
       });
 
@@ -1126,9 +1407,15 @@
     },
 
     renderMatch(matchView, dt) {
-      if (!this.enabled || !matchView || !matchView.renderer) return;
+      if (!this.enabled || !matchView || !matchView.renderer || this.mode === 'procedural') return;
       const list = this.instances.get(matchView);
       if (!list || list.length === 0) return;
+
+      // In 2.5D Mode, instances update their transforms and the scene graph renders them natively!
+      if (this.mode === '2.5d') {
+        list.forEach(inst => inst.update(dt));
+        return;
+      }
 
       const gl = matchView.renderer.gl;
       if (!gl) return;
@@ -1179,13 +1466,17 @@
           inst.charRef.pivot.visible = false;
         }
 
-        // Lazy-generate custom skin texture if equipped with an alternative skin
-        if (!inst.customTexture && inst.skin && !inst.isKeeper) {
+        // Lazy-generate custom skin texture only if equipped with a special unlocked cosmetic skin
+        const isSpecialSkin = Boolean(inst.skin && inst.skin.id && (inst.skin.id.includes('gold') || inst.skin.id.includes('mythic') || inst.skin.id.includes('cyber') || inst.skin.id.includes('frost') || inst.skin.id.includes('titan')));
+        if (!inst.customTexture && isSpecialSkin && !inst.isKeeper) {
           inst.customTexture = getOrCreateSkinTexture(gl, inst.model, inst.skin, inst.isFooty);
         }
 
         const buffers = getOrCreateBuffers(gl, inst.model);
         gl.uniformMatrix4fv(glLocations.uModel, false, inst.modelMatrix);
+        gl.uniform1f(glLocations.uRunPhase, inst.runPhase || 0.0);
+        gl.uniform1f(glLocations.uRunSpeed, inst.runSpeed || 0.0);
+        gl.uniform1f(glLocations.uKickPhase, inst.kickPhase || 0.0);
 
         const skinActive = !!inst.model.skin;
         gl.uniform1i(glLocations.uUseSkinning, skinActive ? 1 : 0);
@@ -1197,28 +1488,11 @@
           gl.bindVertexArray(pBuf.vao);
 
           const matName = (pBuf.material && pBuf.material.name) ? pBuf.material.name : '';
-          let baseCol = [1, 1, 1, 1];
           let bindTex = inst.customTexture || pBuf.texture;
-          let useTex = false;
-
-          const isTorso = (matName === 'LightBrown');
-          const isLegs = (matName === 'LightBlue');
-          const isBoots = (matName === 'Red_Dark');
-          const isOutsole = (matName === 'White');
-          const isSkin = (matName === 'Skin' || matName === 'Skin_Darker');
-          const isHair = (matName === 'Hair');
-          const isEye = (matName === 'Eye');
-          const isEyebrow = (matName === 'Eyebrows');
-
-          // All Hero athlete primitives (Torso, Legs, Boots, Skin, Hair, Eye, Brows)
-          // sample the baked high-definition Fortnite atlas for photorealistic stylized fidelity!
-          useTex = !!bindTex;
-          baseCol = [1, 1, 1, 1];
-
-          if (inst.isKeeper) {
-            if (isTorso) baseCol = [0.10, 0.95, 0.50, 1.0]; // Vibrant Goalkeeper Green
-            else if (isLegs) baseCol = [0.05, 0.22, 0.12, 1.0];
-            else if (isBoots) baseCol = [0.10, 0.95, 0.50, 1.0];
+          let useTex = !!bindTex;
+          let baseCol = [1, 1, 1, 1];
+          if (!useTex && pBuf.material && pBuf.material.baseColorFactor) {
+            baseCol = pBuf.material.baseColorFactor;
           }
 
           gl.uniform1i(glLocations.uHasTex, useTex ? 1 : 0);
@@ -1259,7 +1533,13 @@
     },
 
     disposeMatch(matchView) {
-      if (this.instances.has(matchView)) {
+      const list = this.instances.get(matchView);
+      if (list) {
+        list.forEach(inst => {
+          if (inst && typeof inst.dispose === 'function') {
+            try { inst.dispose(); } catch (e) {}
+          }
+        });
         this.instances.delete(matchView);
         activeMatches.delete(matchView);
       }

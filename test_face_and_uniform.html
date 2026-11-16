@@ -1,0 +1,467 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Face and Uniform Refinement Test</title>
+</head>
+<body style="margin:0;background:#070913;overflow:hidden;">
+<canvas id="gl" style="display:block;width:1080px;height:1080px;"></canvas>
+<img id="emblem-img" src="assets/emblem.png" style="display:none;" />
+<script src="js/module-loader.js"></script>
+<script>window.__boot = function() {};</script>
+<script src="assets/loaders/glb_loader.js"></script>
+<script src="js/game.js"></script>
+<script>
+window.onload = async function() {
+  try {
+    const G = window.require('gfx/geometry');
+    const scene = window.require('gfx/scene');
+    const renMod = window.require('gfx/renderer');
+    const Renderer = renMod.Renderer;
+
+    const canvas = document.getElementById('gl');
+    const renderer = new Renderer(canvas, { antialias: true, preserveDrawingBuffer: true });
+    renderer.resize(1080, 1080, 1.0);
+
+    const s = scene.createScene();
+    s.fogAmount = 0;
+    // Premium 3-point studio lighting: key light, soft fill, vibrant rim
+    s.sunDir = [0.25, 0.85, 0.65];
+    s.sunColor = [1.25, 1.20, 1.15];
+    s.sky = [0.18, 0.22, 0.35];
+    s.ground = [0.08, 0.10, 0.16];
+
+    const cam = new scene.Camera();
+    cam.fov = 34;
+    cam.aspect = 1.0;
+    cam.near = 0.1;
+    cam.far = 100;
+    // Default camera position: hero 3/4 view
+    cam.position = [0.4, 1.35, 2.3];
+    cam.target = [0, 1.25, 0];
+    cam.update();
+
+    // 1. Load Hoops GLB
+    const resp = await fetch('assets/characters/hoops23.glb');
+    const ab = await resp.arrayBuffer();
+    const parsed = window.GLBLoader.parseGLBContainer(ab);
+
+    const gltf = parsed.gltf;
+    const bin = parsed.bin;
+
+    function getAccessor(idx) {
+      const acc = gltf.accessors[idx];
+      const bv = gltf.bufferViews[acc.bufferView];
+      const byteOffset = (bv.byteOffset || 0) + (acc.byteOffset || 0);
+      if (acc.componentType === 5126) return new Float32Array(bin, byteOffset, acc.count * (acc.type === 'VEC3' ? 3 : acc.type === 'VEC2' ? 2 : 1));
+      if (acc.componentType === 5125) return new Uint32Array(bin, byteOffset, acc.count);
+      if (acc.componentType === 5123) return new Uint16Array(bin, byteOffset, acc.count);
+    }
+
+    const prim = gltf.meshes[0].primitives[0];
+    const pos = getAccessor(prim.attributes.POSITION);
+    const uvs = getAccessor(prim.attributes.TEXCOORD_0);
+    const indices = getAccessor(prim.indices);
+
+    // Compute normals
+    const normals = new Float32Array(pos.length);
+    for (let i = 0; i < indices.length; i += 3) {
+      const i0 = indices[i] * 3, i1 = indices[i+1] * 3, i2 = indices[i+2] * 3;
+      const ax = pos[i1] - pos[i0], ay = pos[i1+1] - pos[i0+1], az = pos[i1+2] - pos[i0+2];
+      const bx = pos[i2] - pos[i0], by = pos[i2+1] - pos[i0+1], bz = pos[i2+2] - pos[i0+2];
+      const nx = ay * bz - az * by;
+      const ny = az * bx - ax * bz;
+      const nz = ax * by - ay * bx;
+      normals[i0] += nx; normals[i0+1] += ny; normals[i0+2] += nz;
+      normals[i1] += nx; normals[i1+1] += ny; normals[i1+2] += nz;
+      normals[i2] += nx; normals[i2+1] += ny; normals[i2+2] += nz;
+    }
+    for (let i = 0; i < normals.length; i += 3) {
+      const l = Math.hypot(normals[i], normals[i+1], normals[i+2]) || 1;
+      normals[i] /= l; normals[i+1] /= l; normals[i+2] /= l;
+    }
+
+    // Extract texture
+    const imgDef = gltf.images[0];
+    const bv = gltf.bufferViews[imgDef.bufferView];
+    const imgBytes = new Uint8Array(bin, bv.byteOffset || 0, bv.byteLength);
+    const blob = new Blob([imgBytes], { type: imgDef.mimeType || 'image/png' });
+    const imgUrl = URL.createObjectURL(blob);
+    const img = new Image();
+    await new Promise(r => { img.onload = r; img.src = imgUrl; });
+
+    const charRoot = new scene.Node();
+
+    const geo = new G.Geometry(pos, normals, uvs, indices);
+    const mat = scene.material({
+      texture: new scene.Texture(img),
+      spec: 0.45,
+      shininess: 45,
+      rim: 0.40,
+      rimColor: [0.0, 0.90, 1.0],
+      doubleSided: true
+    });
+
+    const bodyNode = new scene.Node(geo, mat);
+    bodyNode.setScale(1.95);
+    bodyNode.setPos(0, 0.975, 0);
+    charRoot.add(bodyNode);
+
+    // =========================================================================
+    // 2. REFINED HIGH-DEFINITION STYLIZED FACE (Fortnite / Pixar Aesthetic)
+    // =========================================================================
+    function makeRefinedFaceCanvas(charType) {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 512;
+      const ctx = c.getContext('2d');
+
+      const isFooty = (charType === 'footy');
+      const isHoops = (charType === 'hoops');
+      const isKeeper = (charType === 'keeper');
+
+      // Base skin tones
+      const skinCenter = isHoops ? '#82502f' : (isFooty ? '#deb08d' : '#cca07b');
+      const skinMid = isHoops ? '#673c21' : (isFooty ? '#c99673' : '#b28664');
+      const irisCol = isHoops ? '#543118' : (isFooty ? '#00b4d8' : '#3d7a5a');
+
+      // Feathered skin base (soft elliptical mask that blends seamlessly with 3D skull)
+      const skinGrad = ctx.createRadialGradient(256, 260, 40, 256, 260, 230);
+      skinGrad.addColorStop(0, skinCenter);
+      skinGrad.addColorStop(0.70, skinMid);
+      skinGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = skinGrad;
+      ctx.beginPath();
+      ctx.ellipse(256, 260, 210, 230, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Soft cheek highlights / blush
+      ctx.fillStyle = isHoops ? 'rgba(215, 120, 80, 0.22)' : 'rgba(255, 140, 130, 0.26)';
+      ctx.beginPath();
+      ctx.arc(150, 310, 52, 0, Math.PI * 2);
+      ctx.arc(362, 310, 52, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Stylized Eye Painter
+      function drawPixarEye(cx, cy, flip) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        if (flip) ctx.scale(-1, 1);
+
+        // Eyebrow — athletic, determined arc
+        ctx.fillStyle = isHoops ? '#1a110a' : (isFooty ? '#3d2516' : '#2b1d14');
+        ctx.beginPath();
+        ctx.moveTo(-60, -48);
+        ctx.quadraticCurveTo(0, -66, 60, -44);
+        ctx.quadraticCurveTo(15, -55, -60, -48);
+        ctx.fill();
+
+        // Eye Socket Shadow
+        ctx.fillStyle = isHoops ? 'rgba(40, 20, 10, 0.40)' : 'rgba(90, 45, 30, 0.25)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 54, 32, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye Sclera (White) with warm top shadow
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 46, 26, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Iris Gradient
+        const iGrad = ctx.createRadialGradient(4, -2, 4, 0, 0, 24);
+        iGrad.addColorStop(0, irisCol);
+        iGrad.addColorStop(0.8, '#1e1b18');
+        iGrad.addColorStop(1, '#090807');
+        ctx.fillStyle = iGrad;
+        ctx.beginPath();
+        ctx.arc(2, 0, 21, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pupil
+        ctx.fillStyle = '#050505';
+        ctx.beginPath();
+        ctx.arc(2, 0, 11, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Signature Pixar Catchlight / Specular Sparkles
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(7, -6, 5.5, 0, Math.PI * 2); // Primary glint
+        ctx.arc(-4, 5, 2.5, 0, Math.PI * 2); // Secondary bounce light
+        ctx.fill();
+
+        // Dark Upper Eyelash / Eyeliner
+        ctx.strokeStyle = '#0f0a06';
+        ctx.lineWidth = 5.0;
+        ctx.beginPath();
+        ctx.moveTo(-48, 2);
+        ctx.quadraticCurveTo(0, -28, 48, -2);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Draw both eyes
+      drawPixarEye(165, 220, false);
+      drawPixarEye(347, 220, true);
+
+      // Stylized Nose Tip & Bridge Highlight
+      ctx.fillStyle = isHoops ? 'rgba(255, 200, 160, 0.20)' : 'rgba(255, 255, 255, 0.30)';
+      ctx.beginPath();
+      ctx.ellipse(256, 275, 14, 26, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = isHoops ? '#3a1e0f' : '#6b4129';
+      ctx.beginPath();
+      ctx.arc(238, 320, 6, 0, Math.PI * 2); // Left nostril
+      ctx.arc(274, 320, 6, 0, Math.PI * 2); // Right nostril
+      ctx.fill();
+
+      // Confident Champion Smirk / Smile
+      ctx.strokeStyle = isHoops ? '#2e1408' : '#4a2212';
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(195, 385);
+      ctx.quadraticCurveTo(256, 420, 317, 382);
+      ctx.stroke();
+
+      // White teeth highlight inside smile
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.moveTo(215, 390);
+      ctx.quadraticCurveTo(256, 408, 297, 390);
+      ctx.lineTo(297, 395);
+      ctx.quadraticCurveTo(256, 412, 215, 395);
+      ctx.closePath();
+      ctx.fill();
+
+      return c;
+    }
+
+    const faceCvs = makeRefinedFaceCanvas('hoops');
+    const faceMat = scene.material({
+      texture: new scene.Texture(faceCvs),
+      transparent: true,
+      alpha: 0.98,
+      depthWrite: false,
+      doubleSided: true
+    });
+    // Curved/Planar face decal positioned directly on athlete face
+    const faceDecal = new scene.Node(G.quad(0.20, 0.22), faceMat);
+    faceDecal.setPos(0, 1.66, 0.178);
+    faceDecal.rotation = [-0.03, 0, 0];
+    charRoot.add(faceDecal);
+
+    // =========================================================================
+    // 3. REFINED ATHLETIC UNIFORM (Full Pro Chest Panel & Micro-Mesh Fabric)
+    // =========================================================================
+    function makeRefinedUniformCanvas(charType, isBack) {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 512;
+      const ctx = c.getContext('2d');
+
+      const isFooty = (charType === 'footy');
+      const isHoops = (charType === 'hoops');
+      const isKeeper = (charType === 'keeper');
+
+      const numStr = isFooty ? '10' : (isKeeper ? '1' : '23');
+      const nameStr = isFooty ? 'FOOTY' : (isKeeper ? 'KEEPER' : 'HOOPS');
+      const goldGrad = ctx.createLinearGradient(0, 100, 0, 400);
+      goldGrad.addColorStop(0, '#fef08a');
+      goldGrad.addColorStop(0.5, '#f59e0b');
+      goldGrad.addColorStop(1, '#b45309');
+
+      const primaryFill = isHoops ? goldGrad : (isFooty ? '#00f0ff' : '#10b981');
+
+      // 1. Base Athletic Jersey Fabric Mask with Breathable Micro-Mesh Pattern
+      const jerseyGrad = ctx.createLinearGradient(0, 0, 0, 512);
+      if (isHoops) {
+        jerseyGrad.addColorStop(0, '#1c1f26');
+        jerseyGrad.addColorStop(0.5, '#12141a');
+        jerseyGrad.addColorStop(1, '#0b0d12');
+      } else if (isFooty) {
+        jerseyGrad.addColorStop(0, '#00c3e6');
+        jerseyGrad.addColorStop(0.6, '#0099cc');
+        jerseyGrad.addColorStop(1, '#007399');
+      } else {
+        jerseyGrad.addColorStop(0, '#10b981');
+        jerseyGrad.addColorStop(0.6, '#059669');
+        jerseyGrad.addColorStop(1, '#047857');
+      }
+
+      ctx.save();
+      // Anatomical jersey torso contour
+      ctx.beginPath();
+      ctx.moveTo(80, 0);
+      ctx.lineTo(432, 0);
+      ctx.lineTo(470, 512);
+      ctx.lineTo(42, 512);
+      ctx.closePath();
+      ctx.fillStyle = jerseyGrad;
+      ctx.fill();
+
+      // Micro-mesh sports fabric dots
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      for (let y = 10; y < 512; y += 8) {
+        for (let x = (y % 16 === 0 ? 10 : 14); x < 500; x += 8) {
+          ctx.fillRect(x, y, 2.5, 2.5);
+        }
+      }
+
+      // 2. Collar Piping & V-Neck Detailing
+      if (isHoops) {
+        // Deep Athletic V-Neck with Double Gold Trim
+        ctx.fillStyle = '#0b0d12';
+        ctx.beginPath();
+        ctx.moveTo(170, 0);
+        ctx.lineTo(256, 120);
+        ctx.lineTo(342, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(170, 0); ctx.lineTo(256, 120); ctx.lineTo(342, 0);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(176, 0); ctx.lineTo(256, 114); ctx.lineTo(336, 0);
+        ctx.stroke();
+
+        // Gold side-panel racing stripes
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(90, 60); ctx.lineTo(54, 512);
+        ctx.moveTo(422, 60); ctx.lineTo(458, 512);
+        ctx.stroke();
+      } else {
+        // Crew Neck Collar Trim
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 12;
+        ctx.beginPath();
+        ctx.arc(256, -40, 120, 0.2 * Math.PI, 0.8 * Math.PI);
+        ctx.stroke();
+      }
+
+      // 3. Official Tournament Emblem & Branding
+      if (!isBack) {
+        const embImg = document.getElementById('emblem-img');
+        if (embImg && embImg.complete && embImg.naturalWidth > 0) {
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 10;
+          ctx.drawImage(embImg, 256 - 42, 124, 84, 84);
+          ctx.restore();
+        }
+
+        // Varsity Wordmark
+        ctx.font = '900 66px "Impact", -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = primaryFill;
+        ctx.strokeStyle = '#05070c';
+        ctx.lineWidth = 14;
+        ctx.strokeText(nameStr, 256, 240);
+        ctx.fillText(nameStr, 256, 240);
+
+        // White inner pinstripe
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.strokeText(nameStr, 256, 240);
+
+        // Squad Number
+        ctx.font = '900 178px "Impact", -apple-system, sans-serif';
+        ctx.lineWidth = 26;
+        ctx.strokeStyle = '#05070c';
+        ctx.strokeText(numStr, 256, 380);
+        ctx.fillText(numStr, 256, 380);
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.strokeText(numStr, 256, 380);
+      } else {
+        // BACK: Massive Squad Number and Player Name
+        ctx.font = '900 58px "Impact", -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#05070c';
+        ctx.lineWidth = 12;
+        ctx.strokeText(nameStr, 256, 110);
+        ctx.fillText(nameStr, 256, 110);
+
+        ctx.font = '900 240px "Impact", -apple-system, sans-serif';
+        ctx.lineWidth = 30;
+        ctx.strokeStyle = '#05070c';
+        ctx.strokeText(numStr, 256, 300);
+        ctx.fillStyle = primaryFill;
+        ctx.fillText(numStr, 256, 300);
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5;
+        ctx.strokeText(numStr, 256, 300);
+      }
+
+      ctx.restore();
+      return c;
+    }
+
+    const uniformCvs = makeRefinedUniformCanvas('hoops', false);
+    const uniformMat = scene.material({
+      texture: new scene.Texture(uniformCvs),
+      transparent: true,
+      alpha: 1.0,
+      depthWrite: false,
+      doubleSided: true
+    });
+    // Front uniform decal fitted across chest
+    const uniformNode = new scene.Node(G.quad(0.38, 0.44), uniformMat);
+    uniformNode.setPos(0, 1.33, 0.207);
+    uniformNode.rotation = [-0.07, 0, 0];
+    charRoot.add(uniformNode);
+
+    s.root.add(charRoot);
+
+    // Global camera zoom presets
+    window.setCameraView = function(view) {
+      if (view === 'face') {
+        cam.fov = 18;
+        cam.position = [0.08, 1.67, 1.15];
+        cam.target = [0, 1.67, 0];
+      } else if (view === 'uniform') {
+        cam.fov = 24;
+        cam.position = [0, 1.33, 1.6];
+        cam.target = [0, 1.33, 0];
+      } else if (view === 'full') {
+        cam.fov = 34;
+        cam.position = [0.4, 1.35, 2.3];
+        cam.target = [0, 1.25, 0];
+      }
+      cam.update();
+      renderer.render(s, cam);
+    };
+
+    function loop() {
+      requestAnimationFrame(loop);
+      charRoot.rotation[1] += 0.005;
+      renderer.render(s, cam);
+    }
+    requestAnimationFrame(loop);
+
+    window.__TEST_READY__ = true;
+    console.log('✓ Refined Face and Uniform mounted successfully!');
+  } catch (err) {
+    console.error('Test error:', err);
+    window.__TEST_ERROR__ = err.message;
+  }
+};
+</script>
+</body>
+</html>

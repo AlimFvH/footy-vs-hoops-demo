@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FOOTY vs HOOPS — 2.5D Hi-Res Match Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070913;
+      --cyan: #00e5ff;
+      --gold: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+    #stage { position: absolute; inset: 0; z-index: 1; }
+    canvas#gl { width: 100%; height: 100%; display: block; }
+    #hud {
+      position: absolute;
+      top: 16px; left: 16px; right: 16px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+    .hud-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 10px 18px;
+      pointer-events: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .title { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+    .subtitle { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: linear-gradient(135deg, #00f0ff, #3b82f6);
+      color: #070913;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 10px;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"><canvas id="gl"></canvas></div>
+  <div id="hud">
+    <div class="hud-card">
+      <div class="title">⚽ FOOTY vs HOOPS <span class="badge">2.5D HI-RES MATCH</span></div>
+      <div class="subtitle">Ультра-чёткая графика (Fortnite / Pixar Style) на 60 FPS</div>
+    </div>
+  </div>
+
+  <script src="js/module-loader.js"></script>
+  <script>
+    // Prevent match autostart
+    window.__boot = function() {};
+  </script>
+  <script src="js/game.js"></script>
+  <script>
+    (async function() {
+      const G = window.require('gfx/geometry');
+      const scene = window.require('gfx/scene');
+      const renMod = window.require('gfx/renderer');
+
+      const canvas = document.getElementById('gl');
+      const renderer = new renMod.Renderer(canvas, { antialias: true, preserveDrawingBuffer: true });
+      renderer.clearColor = [0.03, 0.04, 0.08];
+
+      const matchScene = scene.createScene();
+      matchScene.sunDir = [0.35, 0.70, 0.55];
+      matchScene.sunColor = [1.10, 1.05, 0.98];
+      matchScene.sky = [0.45, 0.48, 0.55];
+      matchScene.ground = [0.25, 0.28, 0.32];
+
+      // Match Camera — Classic 3/4 Elevated TV Broadcast View
+      const cam = new scene.Camera();
+      cam.fov = 42;
+      cam.near = 0.5;
+      cam.far = 150;
+      cam.position = [0, 8.5, 12.0];
+      cam.target = [0, 0.5, 0];
+      cam.update();
+
+      // 1. Build Pitch Grass Canvas with Striped Lawn & Sharp White Markings
+      const pCvs = document.createElement('canvas');
+      pCvs.width = 1024; pCvs.height = 1536;
+      const pCtx = pCvs.getContext('2d');
+
+      // Alternating green lawn stripes
+      const stripes = 12;
+      const stripeH = 1536 / stripes;
+      for (let s = 0; s < stripes; s++) {
+        pCtx.fillStyle = (s % 2 === 0) ? '#226b2e' : '#2d7d3a';
+        pCtx.fillRect(0, s * stripeH, 1024, stripeH);
+      }
+
+      // Touchlines & Penalty Box
+      pCtx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      pCtx.lineWidth = 14;
+      pCtx.strokeRect(60, 60, 1024 - 120, 1536 - 120);
+
+      // Halfway line & center circle
+      pCtx.beginPath();
+      pCtx.moveTo(60, 1536 / 2);
+      pCtx.lineTo(1024 - 60, 1536 / 2);
+      pCtx.stroke();
+
+      pCtx.beginPath();
+      pCtx.arc(512, 1536 / 2, 160, 0, Math.PI * 2);
+      pCtx.stroke();
+
+      // Penalty boxes (top & bottom)
+      pCtx.strokeRect(260, 60, 504, 280);
+      pCtx.strokeRect(360, 60, 304, 120);
+
+      pCtx.strokeRect(260, 1536 - 340, 504, 280);
+      pCtx.strokeRect(360, 1536 - 180, 304, 120);
+
+      const pitchW = 14, pitchL = 22;
+      const pitchTex = new scene.Texture(pCvs, { srgb: true, mipmap: true });
+      const pitchNode = new scene.Node(G.plane(pitchW, pitchL), scene.material({
+        texture: pitchTex,
+        spec: 0.12,
+        shininess: 14,
+        receiveShadow: true
+      }));
+      matchScene.root.add(pitchNode);
+
+      // Pitch Surrounds
+      const borderNode = new scene.Node(G.plane(pitchW + 6, pitchL + 6), scene.material({
+        color: [0.08, 0.10, 0.14],
+        spec: 0.15,
+        shininess: 16
+      }));
+      borderNode.setPos(0, -0.02, 0);
+      matchScene.root.add(borderNode);
+
+      // Goal at top
+      const postMat = scene.material({ color: [0.95, 0.98, 1.0], spec: 0.85, shininess: 80 });
+      const goalRoot = new scene.Node();
+      goalRoot.setPos(0, 0, -pitchL * 0.5);
+      const postL = new scene.Node(G.cylinder(0.08, 0.08, 2.2, 12), postMat);
+      postL.setPos(-2.4, 1.1, 0);
+      const postR = new scene.Node(G.cylinder(0.08, 0.08, 2.2, 12), postMat);
+      postR.setPos(2.4, 1.1, 0);
+      const bar = new scene.Node(G.cylinder(0.08, 0.08, 4.88, 12), postMat);
+      bar.rotation = [0, 0, Math.PI / 2];
+      bar.setPos(0, 2.2, 0);
+      goalRoot.add(postL, postR, bar);
+      matchScene.root.add(goalRoot);
+
+      // 2. Preload Character Cutouts
+      async function loadImage(url) {
+        const img = new Image();
+        img.src = url;
+        await img.decode();
+        return img;
+      }
+
+      console.log('Loading character images...');
+      const [imgFooty, imgHoops, imgKeeper] = await Promise.all([
+        loadImage('assets/characters/footy10_preview.png'),
+        loadImage('assets/characters/hoops23_preview.png'),
+        loadImage('assets/characters/keeper1_cutout.png')
+      ]);
+      console.log('Images loaded successfully!');
+
+      // Helper to Create 2.5D Hi-Res Athlete Quad
+      function createHiResAthlete(img, height, ringColor) {
+        const root = new scene.Node();
+
+        const aspect = img.width / img.height;
+        const w = height * aspect;
+        const h = height;
+
+        const tex = new scene.Texture(img, { srgb: true, mipmap: true });
+        const quadGeo = G.quad ? G.quad(w, h) : G.plane(w, h);
+        const mat = scene.material({
+          texture: tex,
+          transparent: true,
+          alpha: 1.0,
+          doubleSided: true,
+          unlit: true, // Crisp full brightness like Clash Royale / Brawl Stars
+          depthWrite: false
+        });
+
+        const spriteNode = new scene.Node(quadGeo, mat);
+        spriteNode.setPos(0, h * 0.5, 0);
+        // Tilt quad so it directly faces the elevated 3/4 camera
+        spriteNode.rotation = [-0.38, 0, 0];
+        root.add(spriteNode);
+
+        // Soft Radial Ground Contact Shadow
+        const shadowCvs = document.createElement('canvas');
+        shadowCvs.width = 128; shadowCvs.height = 128;
+        const sCtx = shadowCvs.getContext('2d');
+        const sGrad = sCtx.createRadialGradient(64, 64, 6, 64, 64, 60);
+        sGrad.addColorStop(0, 'rgba(0, 0, 0, 0.75)');
+        sGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.35)');
+        sGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+        sCtx.fillStyle = sGrad;
+        sCtx.fillRect(0, 0, 128, 128);
+
+        const shadowNode = new scene.Node(G.plane(w * 1.3, w * 0.9), scene.material({
+          texture: new scene.Texture(shadowCvs),
+          transparent: true,
+          unlit: true,
+          depthWrite: false
+        }));
+        shadowNode.setPos(0, 0.015, 0);
+        root.add(shadowNode);
+
+        // Glowing Player Selection Ring
+        if (ringColor) {
+          const rCvs = document.createElement('canvas');
+          rCvs.width = 128; rCvs.height = 128;
+          const rCtx = rCvs.getContext('2d');
+          rCtx.beginPath();
+          rCtx.arc(64, 64, 52, 0, Math.PI * 2);
+          rCtx.strokeStyle = ringColor;
+          rCtx.lineWidth = 10;
+          rCtx.stroke();
+          rCtx.strokeStyle = '#ffffff';
+          rCtx.lineWidth = 3;
+          rCtx.stroke();
+
+          const ringNode = new scene.Node(G.plane(w * 1.25, w * 1.25), scene.material({
+            texture: new scene.Texture(rCvs),
+            transparent: true,
+            unlit: true,
+            depthWrite: false
+          }));
+          ringNode.setPos(0, 0.02, 0);
+          root.add(ringNode);
+        }
+
+        return { root, spriteNode, h, w };
+      }
+
+      // 3. Place Characters on Field
+      // Footy #10 dribbling with cyan selection ring
+      const footy = createHiResAthlete(imgFooty, 2.50, '#00f0ff');
+      footy.root.setPos(-1.2, 0, 2.2);
+      matchScene.root.add(footy.root);
+
+      // Hoops #23 defending with gold selection ring
+      const hoops = createHiResAthlete(imgHoops, 2.65, '#f59e0b');
+      hoops.root.setPos(1.6, 0, -1.2);
+      matchScene.root.add(hoops.root);
+
+      // Keeper #1 in the goal
+      const keeper = createHiResAthlete(imgKeeper, 2.80, '#10b981');
+      keeper.root.setPos(0, 0, -pitchL * 0.5 + 1.2);
+      matchScene.root.add(keeper.root);
+
+      // 4. 3D Match Ball with Shadow
+      const ballMat = scene.material({
+        color: [1.0, 1.0, 1.0],
+        spec: 0.6,
+        shininess: 45,
+        rim: 0.25,
+        rimColor: [1.0, 1.0, 1.0]
+      });
+      const ballNode = new scene.Node(G.sphere(0.24, 20, 16), ballMat);
+      ballNode.setPos(-0.55, 0.24, 3.0);
+      matchScene.root.add(ballNode);
+
+      const bShadowCvs = document.createElement('canvas');
+      bShadowCvs.width = 64; bShadowCvs.height = 64;
+      const bsCtx = bShadowCvs.getContext('2d');
+      const bsGrad = bsCtx.createRadialGradient(32, 32, 4, 32, 32, 28);
+      bsGrad.addColorStop(0, 'rgba(0, 0, 0, 0.7)');
+      bsGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      bsCtx.fillStyle = bsGrad;
+      bsCtx.fillRect(0, 0, 64, 64);
+      const ballShadow = new scene.Node(G.plane(0.65, 0.65), scene.material({
+        texture: new scene.Texture(bShadowCvs),
+        transparent: true,
+        unlit: true,
+        depthWrite: false
+      }));
+      ballShadow.setPos(-0.55, 0.015, 3.0);
+      matchScene.root.add(ballShadow);
+
+      // 5. Render Loop with Natural Athletic Breathing Bounce
+      let t = 0;
+      function loop() {
+        requestAnimationFrame(loop);
+        t += 0.016;
+
+        footy.spriteNode.position[1] = footy.h * 0.5 + Math.sin(t * 3.8) * 0.025;
+        hoops.spriteNode.position[1] = hoops.h * 0.5 + Math.sin(t * 3.4 + 1.2) * 0.025;
+        keeper.spriteNode.position[1] = keeper.h * 0.5 + Math.sin(t * 2.8 + 2.0) * 0.020;
+
+        ballNode.rotation[0] += 0.04;
+        ballNode.rotation[1] += 0.02;
+
+        renderer.render(matchScene, cam);
+      }
+
+      function onResize() {
+        const w = window.innerWidth, h = window.innerHeight;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        renderer.resize(w, h, dpr);
+        cam.aspect = w / h;
+        cam.update();
+      }
+      window.addEventListener('resize', onResize);
+      onResize();
+
+      requestAnimationFrame(loop);
+
+      window.__MATCH_DEMO__ = { ready: true, cam, footy, hoops, keeper, renderer, matchScene };
+      console.log('✓ 2.5D Match Demo Scene Ready!');
+    })();
+  </script>
+</body>
+</html>

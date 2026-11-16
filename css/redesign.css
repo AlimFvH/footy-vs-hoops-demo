@@ -1884,39 +1884,52 @@ canvas {
 
 .hud-top-ctrls {
   position: absolute !important;
-  top: 48px !important;
-  right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+  top: 0 !important;
+  right: 0 !important;
   left: auto !important;
+  bottom: auto !important;
   margin: 0 !important;
   pointer-events: auto !important;
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-end !important;
-  gap: 8px !important;
-  z-index: 120 !important;
+  gap: 10px !important;
+  z-index: 125 !important;
 }
 
 .hud-top-ctrls .hud-pause,
 .hud-top-ctrls .hud-mute {
-  position: relative !important;
-  width: 40px !important;
-  height: 36px !important;
-  border-radius: 10px !important;
+  position: static !important;
+  right: auto !important;
+  left: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 12px !important;
   background: rgba(8, 14, 28, 0.92) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
-  backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
   color: #fff !important;
-  font-size: 14px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55) !important;
-  transition: transform 0.12s ease, background 0.12s ease !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease !important;
   pointer-events: auto !important;
   touch-action: manipulation !important;
   -webkit-tap-highlight-color: transparent !important;
-  z-index: 125 !important;
+  z-index: 126 !important;
+}
+
+.hud-top-ctrls .hud-pause:hover,
+.hud-top-ctrls .hud-mute:hover {
+  background: rgba(18, 28, 52, 0.95) !important;
+  border-color: rgba(0, 240, 255, 0.55) !important;
 }
 
 .hud-top-ctrls .hud-pause:active,
@@ -2022,7 +2035,40 @@ canvas {
 
 .tbtn .ico svg {
   display: block !important;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.75)) !important;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.75)) !important;
+}
+
+.btn-shoot .ico svg {
+  width: 44px !important;
+  height: 44px !important;
+}
+
+.btn-tackle .ico svg {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.btn-sprint .ico svg {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.btn-shoot .lbl {
+  font-size: 14.5px !important;
+  letter-spacing: 0.6px !important;
+  margin-top: 1px !important;
+}
+
+.btn-tackle .lbl {
+  font-size: 11.5px !important;
+  letter-spacing: 0.4px !important;
+  margin-top: 1px !important;
+}
+
+.btn-sprint .lbl {
+  font-size: 10.5px !important;
+  letter-spacing: 0.4px !important;
+  margin-top: 1px !important;
 }
 
 .hud-pause,

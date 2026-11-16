@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer-core');
+let puppeteer;
+try { puppeteer = require('puppeteer-core'); } catch (e) { puppeteer = require('C:/Users/ASUS/Desktop/FOOTY vs HOOPS/node_modules/puppeteer-core'); }
 
 const CHROME_PATH = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 const PORT = 8656;
