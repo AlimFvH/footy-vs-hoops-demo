@@ -2443,13 +2443,13 @@
     if (!HERO_BASE_IMGS.footy) {
       var f = new Image();
       f.crossOrigin = 'anonymous';
-      f.src = 'assets/characters/footy10_preview.png';
+      f.src = 'assets/hero_footy_real.png';
       HERO_BASE_IMGS.footy = f;
     }
     if (!HERO_BASE_IMGS.hoops) {
       var h = new Image();
       h.crossOrigin = 'anonymous';
-      h.src = 'assets/characters/hoops23_preview.png';
+      h.src = 'assets/hero_hoops_real.png';
       HERO_BASE_IMGS.hoops = h;
     }
   }
@@ -2464,7 +2464,7 @@
   function getRecoloredHeroUrl(charId, skinId) {
     var isFooty = (charId === 'footy');
     if (!skinId || (isFooty && skinId === 'skin_rookie') || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_bb_gold' || skinId === 'skin_solar'))) {
-      return isFooty ? 'assets/characters/footy10_preview.png?v=2.4.0' : 'assets/characters/hoops23_preview.png?v=2.4.0';
+      return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
     }
     var cacheKey = charId + '_' + skinId;
     if (HERO_SKIN_CACHE[cacheKey]) {
@@ -2487,20 +2487,19 @@
         for (var y = 0; y < cvs.height; y++) {
           var yPct = y / cvs.height;
           if (isFooty) {
-            var isTorsoOrShorts = (yPct >= 0.20 && yPct <= 0.66);
-            var isSocks = (yPct >= 0.67 && yPct <= 0.88);
-            if (!isTorsoOrShorts && !isSocks) continue;
+            var isTorsoOrShorts = (yPct >= 0.16 && yPct <= 0.68);
+            if (!isTorsoOrShorts) continue;
 
             for (var x = 0; x < cvs.width; x++) {
               var idx = (y * cvs.width + x) * 4;
               if (data[idx + 3] < 40) continue;
               var r = data[idx], g = data[idx + 1], b = data[idx + 2];
               var hsl = heroRgbToHsl(r, g, b);
-              if (hsl.h >= 160 && hsl.h <= 250 && hsl.s >= 0.18) {
+              if (hsl.h >= 170 && hsl.h <= 245 && hsl.s >= 0.25 && hsl.l <= 0.85) {
                 var targetH = pal.h;
                 var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
                 var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
-                if (pal.darkShorts && yPct >= 0.54 && yPct <= 0.66) {
+                if (pal.darkShorts && yPct >= 0.48 && yPct <= 0.64) {
                   targetL *= 0.65;
                   targetS *= 0.8;
                 }
@@ -2510,18 +2509,18 @@
             }
           } else {
             // HOOPS
-            var isJerseyOrShorts = (yPct >= 0.20 && yPct <= 0.62);
+            var isJerseyOrShorts = (yPct >= 0.18 && yPct <= 0.70);
             if (!isJerseyOrShorts) continue;
 
             for (var x = 0; x < cvs.width; x++) {
               var idx = (y * cvs.width + x) * 4;
               if (data[idx + 3] < 40) continue;
               var xPct = x / cvs.width;
-              if (xPct < 0.28 || xPct > 0.72) continue;
+              if (xPct < 0.22 || xPct > 0.78) continue;
 
               var r = data[idx], g = data[idx + 1], b = data[idx + 2];
               var hsl = heroRgbToHsl(r, g, b);
-              if ((hsl.h <= 42 || hsl.h >= 340) && hsl.s >= 0.35 && hsl.l <= 0.75) {
+              if ((hsl.h <= 45 || hsl.h >= 340) && hsl.s >= 0.30 && hsl.l <= 0.75) {
                 var targetH = pal.h;
                 var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
                 var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
@@ -2548,7 +2547,7 @@
         });
       };
     }
-    return isFooty ? 'assets/characters/footy10_preview.png' : 'assets/characters/hoops23_preview.png';
+    return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
   }
 
   function getCharacterDisplayHtml(charId, specificSkinId, options) {
@@ -2562,6 +2561,7 @@
     var skinId = specificSkinId || charSpecificSkin || defaultSkin;
     if (isFooty && skinId === 'skin_solar') skinId = 'skin_rookie';
     if (!isFooty && skinId === 'skin_rookie') skinId = 'skin_solar';
+    var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
     var skinLabel = (lang === 'ru') ? pal.ru : pal.name;
@@ -2571,12 +2571,12 @@
       '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:10px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + skinLabel + '</span></div>'
       : '';
 
-    var heroSvg = isFooty ? getFootyAvatarSvg() : getHoopsAvatarSvg();
+    var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var figureMaxH = showJerseyTag ? 'calc(100% - 36px)' : '100%';
 
     return '<div class="fvh-hero-portrait-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;">' +
-      '<div class="fvh-hero-figure-container" style="display:flex;align-items:center;justify-content:center;height:100%;max-height:' + figureMaxH + ';width:100%;">' +
-      heroSvg +
+      '<div class="fvh-hero-figure-container" style="display:flex;align-items:center;justify-content:center;height:100%;max-height:' + figureMaxH + ';width:100%;position:relative;">' +
+      '<img class="fvh-hero-real-img fvh-hero-cutout-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + imgSrc + '" alt="' + heroTitle + '" style="max-height:100%;max-width:92%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 14px 28px rgba(0,0,0,0.65));pointer-events:none;user-select:none;">' +
       '</div>' +
       tagHtml +
       '</div>';
