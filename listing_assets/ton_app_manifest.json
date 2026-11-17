@@ -1,0 +1,22 @@
+{
+  "name": "FOOTY vs HOOPS",
+  "category": "Gaming",
+  "subcategories": ["Sports", "Arcade", "Play-to-Earn"],
+  "url": "https://t.me/FootyVsHoopsBot/play",
+  "website": "https://alimfvh.github.io/footy-vs-hoops-demo/",
+  "telegram_channel": "https://t.me/footy_vs_hoops_news",
+  "telegram_chat": "https://t.me/footy_vs_hoops_chat",
+  "social_links": {
+    "twitter": "https://x.com/FootyVsHoops"
+  },
+  "ton_features": {
+    "ton_connect": true,
+    "airdrop": true,
+    "telegram_stars": true,
+    "wallet_snapshot": true
+  },
+  "short_description": "1v1 Football vs Basketball 3D arcade battle on Telegram with Play-to-Airdrop.",
+  "full_description": "FOOTY vs HOOPS brings sports esports to Telegram Mini Apps. Select either Football or Basketball faction, compete in real-time 1v1 PvP matches, collect rare kits and custom balls, complete quests, and earn $FOOTY / $HOOPS token drop points with TON wallet snapshot integration.",
+  "icon_url": "https://alimfvh.github.io/footy-vs-hoops-demo/listing_assets/icon_512x512.png",
+  "cover_url": "https://alimfvh.github.io/footy-vs-hoops-demo/listing_assets/banner_1200x630.png"
+}

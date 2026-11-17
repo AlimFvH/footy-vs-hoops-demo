@@ -1,0 +1,29 @@
+{
+  "name": "FOOTY vs HOOPS",
+  "short_name": "footyvshoops",
+  "tagline": "Ultimate 1v1 Sports Arcade: Football vs Basketball",
+  "description": "FOOTY vs HOOPS — эпическая аркадная битва двух величайших видов спорта прямо в Telegram! Выбирай сторону: футболист-страйкер #10 или баскетболист-звезда #23. Сражайся в динамичных матчах 1v1 в реальном времени, отбирай мяч фирменными подкатами, забивай в девятку или круши кольцо мощными слэм-данками. Открывай паки, собирай эксклюзивные формы и мячи всех редкостей, выполняй задания, зови друзей в свой Squad и зарабатывай очки Play-to-Airdrop ($FOOTY и $HOOPS).",
+  "description_en": "FOOTY vs HOOPS is an epic 1v1 sports arcade clash between Football and Basketball right inside Telegram! Choose your faction: Striker #10 or All-Star #23. Battle in fast-paced real-time 1v1 PvP, execute sliding tackles, curve long-range shots into top corners, or perform thunderous slam dunks. Unlock exclusive jerseys and balls across all rarities, complete daily quests, invite teammates, and earn Play-to-Airdrop points ($FOOTY & $HOOPS).",
+  "categories": ["Games", "Sports", "Arcade", "PvP"],
+  "tags": ["football", "soccer", "basketball", "pvp", "sports", "airdrop", "ton", "multiplayer"],
+  "platforms": ["telegram_mini_app", "web"],
+  "app_url": "https://alimfvh.github.io/footy-vs-hoops-demo/",
+  "bot_username": "FootyVsHoopsBot",
+  "bot_link": "https://t.me/FootyVsHoopsBot/play",
+  "author": {
+    "name": "FOOTY vs HOOPS Team",
+    "support_url": "https://t.me/footy_vs_hoops_chat",
+    "channel_url": "https://t.me/footy_vs_hoops_news"
+  },
+  "assets": {
+    "icon": "icon_512x512.png",
+    "banner": "banner_1200x630.png",
+    "screenshots": [
+      "screenshots/1_home_screen.png",
+      "screenshots/2_live_3d_matchplay.png",
+      "screenshots/3_hoops_allstar.png",
+      "screenshots/4_shop_rare_jerseys.png",
+      "screenshots/5_balls_and_airdrop.png"
+    ]
+  }
+}
