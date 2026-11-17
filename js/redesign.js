@@ -6702,7 +6702,7 @@
           if (isSelEquipped) {
             selectBtn.className = 'btn block';
             selectBtn.disabled = true;
-            selectBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('check', 16) + ' <span>' + tr('equippedState') + '</span></span>';
+            selectBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('check', 16) + ' <span>' + (tr('equipped') || 'Надето') + '</span></span>';
             selectBtn.onclick = null;
           } else {
             selectBtn.className = 'btn primary block';
@@ -6761,7 +6761,7 @@
             '<div class="thumbwrap"><div class="thumb" style="display:flex;align-items:center;justify-content:center;">' +
             renderItemArtwork(item, 'thumb') +
             '</div>' +
-            (isEquipped ? '<span class="st st-eq">✓ ' + tr('equippedState') + '</span>' : '') +
+            (isEquipped ? '<span class="st st-eq">' + tr('equippedState') + '</span>' : '') +
             '</div>' +
             '<div class="fvh-shopc-meta">' +
             '  <div class="nm">' + localizedItemName + '</div>' +
@@ -7821,7 +7821,7 @@
             '  <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + ct.icon + '</div>' +
             '  <div style="flex:1;min-width:0;">' +
             '    <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ct.name + ' <span style="font-size:11px;color:#94a3b8;font-weight:500;">' + ct.handle + '</span></div>' +
-            '    <div style="font-size:11px;color:#22c55e;font-weight:700;margin-top:1px;">✓ ' + ((lang === 'ru') ? 'Получено (+50 FvH Coin)' : 'Claimed (+50 FvH Coin)') + '</div>' +
+            '    <div style="font-size:11px;color:#22c55e;font-weight:700;margin-top:1px;">' + ((lang === 'ru') ? 'Получено (+50 FvH Coin)' : 'Claimed (+50 FvH Coin)') + '</div>' +
             '  </div>' +
             '</div>' +
             '<span style="font-size:11px;color:#22c55e;font-weight:800;background:rgba(34,197,94,0.15);padding:4px 10px;border-radius:12px;white-space:nowrap;">' + tr('taskCompleted') + '</span>';
@@ -8330,7 +8330,7 @@
         var eqBtn = document.createElement('button');
         eqBtn.className = 'btn block';
         eqBtn.disabled = true;
-        eqBtn.textContent = '✓ ' + tr('equippedState');
+        eqBtn.textContent = tr('equippedState');
         actionsBox.appendChild(eqBtn);
       } else if (isOwned) {
         var ownedBtn = document.createElement('button');
@@ -8752,7 +8752,7 @@
         card.innerHTML =
           '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
           '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">✓ ' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
+          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
           '</div>' +
           '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
           renderItemArtwork(it, 'thumb') +
@@ -10383,7 +10383,7 @@
       '  <span style="font-size:22px;flex-shrink:0;">💎</span>' +
       '  <div style="min-width:0;">' +
       '    <div style="font-size:13px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('profileTgeWalletTitle') + '</div>' +
-      '    <div style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (stats.hasWallet ? ('✓ ' + escapeHtml(shortWallet)) : (lang === 'ru' ? 'Снимок (Snapshot) для начисления' : 'Snapshot destination')) + '</div>' +
+      '    <div style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (stats.hasWallet ? escapeHtml(shortWallet) : (lang === 'ru' ? 'Снимок (Snapshot) для начисления' : 'Snapshot destination')) + '</div>' +
       '  </div>' +
       '</div>' +
       '<button type="button" class="btn small fvh-btn-airdrop-manage-wallet" style="width:100%;font-size:12px;font-weight:900;padding:9px 14px;background:' + (stats.hasWallet ? 'rgba(255,255,255,0.08)' : '#0098ea') + ';border:' + (stats.hasWallet ? '1px solid rgba(255,255,255,0.2)' : 'none') + ';color:#fff;cursor:pointer;border-radius:10px;text-align:center;box-sizing:border-box;">' +
