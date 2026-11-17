@@ -332,14 +332,38 @@
     setAnimation(clipIndexOrName) {
       if (typeof clipIndexOrName === 'number') {
         if (clipIndexOrName >= 0 && clipIndexOrName < this.animations.length) {
-          this.activeAnimIndex = clipIndexOrName;
+          if (this.activeAnimIndex !== clipIndexOrName) {
+            this.activeAnimIndex = clipIndexOrName;
+            this.playbackTime = 0;
+          }
         }
       } else {
-        let idx = this.animations.findIndex(a => a.name.toLowerCase() === String(clipIndexOrName).toLowerCase());
-        if (idx === -1 && String(clipIndexOrName).toLowerCase() === 'idle_neutral') {
+        const raw = String(clipIndexOrName).toLowerCase();
+        const query = raw.replace(/[^a-z0-9]/g, '');
+        let idx = this.animations.findIndex(a => a.name.toLowerCase().replace(/[^a-z0-9]/g, '') === query);
+        if (idx === -1 && (query.includes('idle') || query === 'stand')) {
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('idle'));
+        } else if (idx === -1 && (query.includes('run') || query.includes('sprint') || query.includes('dash') || query.includes('fast'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'run');
+        } else if (idx === -1 && (query.includes('walk') || query.includes('jog') || query.includes('step') || query.includes('slow'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'walk');
+        } else if (idx === -1 && (query.includes('kick') || query.includes('shoot') || query.includes('shot') || query.includes('strike'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'kick_right');
+          if (idx === -1) idx = this.animations.findIndex(a => a.name.toLowerCase().includes('kick'));
+        } else if (idx === -1 && (query.includes('punch') || query.includes('slam') || query.includes('dunk') || query.includes('pass'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'punch_right');
+          if (idx === -1) idx = this.animations.findIndex(a => a.name.toLowerCase().includes('punch'));
+        } else if (idx === -1 && (query.includes('roll') || query.includes('slide') || query.includes('tackle') || query.includes('dive'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'roll');
+        } else if (idx === -1 && (query.includes('wave') || query.includes('celebrate') || query.includes('win') || query.includes('cheer'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'wave');
+        } else if (idx === -1 && (query.includes('hit') || query.includes('hurt') || query.includes('stun'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'hitrecieve');
         }
-        if (idx !== -1) this.activeAnimIndex = idx;
+        if (idx !== -1 && this.activeAnimIndex !== idx) {
+          this.activeAnimIndex = idx;
+          this.playbackTime = 0;
+        }
       }
     }
 

@@ -45,77 +45,8 @@
 
   void main() {
     vUv = aUv;
-    vec3 localPos3 = aPos;
+    vec4 localPos = vec4(aPos, 1.0);
     vec3 localNorm = aNormal;
-
-    // Procedural athletic GPU locomotion (runs with ZERO CPU cost & ZERO mesh tearing!)
-    if (uRunSpeed > 0.05 || uKickPhase > 0.01) {
-      // 1. Legs kinematics (below hip y < -0.05)
-      if (localPos3.y < -0.05) {
-        float legFactor = clamp((-0.05 - localPos3.y) / 0.06, 0.0, 1.0);
-        float kneeFactor = clamp((-0.20 - localPos3.y) / 0.08, 0.0, 1.0);
-
-        // Left Leg: x > 0.015
-        if (localPos3.x > 0.015) {
-          float legAngle = sin(uRunPhase) * 0.58 * uRunSpeed * legFactor;
-          float kneeAngle = max(0.0, sin(uRunPhase)) * 0.82 * uRunSpeed * kneeFactor;
-
-          float cy = cos(legAngle), sy = sin(legAngle);
-          float dy = localPos3.y - (-0.05);
-          float dz = localPos3.z;
-          localPos3.y = -0.05 + (dy * cy - dz * sy);
-          localPos3.z = dy * sy + dz * cy;
-
-          if (kneeFactor > 0.0) {
-            float cky = cos(kneeAngle), sky = sin(kneeAngle);
-            float kdy = localPos3.y - (-0.22);
-            float kdz = localPos3.z;
-            localPos3.y = -0.22 + (kdy * cky + kdz * sky);
-            localPos3.z = -kdy * sky + kdz * cky;
-          }
-        }
-        // Right Leg: x < -0.015
-        else if (localPos3.x < -0.015) {
-          float kickSnap = uKickPhase * 1.15;
-          float legAngle = (-sin(uRunPhase) * 0.58 * uRunSpeed + kickSnap) * legFactor;
-          float kneeAngle = (max(0.0, -sin(uRunPhase)) * 0.82 * uRunSpeed * (1.0 - uKickPhase)) * kneeFactor;
-
-          float cy = cos(legAngle), sy = sin(legAngle);
-          float dy = localPos3.y - (-0.05);
-          float dz = localPos3.z;
-          localPos3.y = -0.05 + (dy * cy - dz * sy);
-          localPos3.z = dy * sy + dz * cy;
-
-          if (kneeFactor > 0.0) {
-            float cky = cos(kneeAngle), sky = sin(kneeAngle);
-            float kdy = localPos3.y - (-0.22);
-            float kdz = localPos3.z;
-            localPos3.y = -0.22 + (kdy * cky + kdz * sky);
-            localPos3.z = -kdy * sky + kdz * cky;
-          }
-        }
-      }
-      // 2. Free Right Arm swing (sx < -0.14, y > -0.05)
-      else if (localPos3.x < -0.14 && localPos3.y > -0.05) {
-        float armAngle = sin(uRunPhase) * 0.65 * uRunSpeed;
-        float cy = cos(armAngle), sy = sin(armAngle);
-        float dy = localPos3.y - 0.24;
-        float dz = localPos3.z;
-        localPos3.y = 0.24 + (dy * cy - dz * sy);
-        localPos3.z = dy * sy + dz * cy;
-      }
-      // 3. Natural Left Arm swing (sx > 0.14, y > 0.05)
-      else if (localPos3.x > 0.14 && localPos3.y > 0.05) {
-        float armAngle = -sin(uRunPhase) * 0.52 * uRunSpeed;
-        float cy = cos(armAngle), sy = sin(armAngle);
-        float dy = localPos3.y - 0.22;
-        float dz = localPos3.z;
-        localPos3.y = 0.22 + (dy * cy - dz * sy);
-        localPos3.z = dy * sy + dz * cy;
-      }
-    }
-
-    vec4 localPos = vec4(localPos3, 1.0);
 
     if (uUseSkinning) {
       int j0 = int(aJoints.x);
@@ -921,27 +852,28 @@
       if (!this.model) return;
       this.model.playbackSpeed = speed;
 
-      // Smart Animation Clip Resolution for High-Performance GLB Skeletons
       let targetClip = name;
       const lower = String(name).toLowerCase();
-      if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'punch_right') {
-        targetClip = 'shoot';
-      } else if (lower === 'celebrate' || lower === 'wave' || lower === 'win') {
-        targetClip = 'celebrate';
-      } else if (lower === 'tackle' || lower === 'slide' || lower === 'roll' || lower === 'punch_left') {
-        targetClip = 'slide';
-      } else if (lower === 'run' || lower === 'sprint') {
-        targetClip = 'sprint';
+      if (lower === 'idle' || lower === 'idle_neutral') {
+        targetClip = 'Idle';
       } else if (lower === 'walk' || lower === 'jog') {
-        targetClip = 'jog';
-      } else if (lower === 'idle' || lower === 'idle_neutral') {
-        targetClip = 'idle';
-      } else if (lower === 'dribble') {
-        targetClip = 'dribble';
-      } else if (lower === 'header' || lower === 'jump' || lower === 'dunk') {
-        targetClip = 'header';
-      } else if (lower === 'dive' || lower === 'diveleft' || lower === 'diveright') {
-        targetClip = 'diveLeft';
+        targetClip = 'Walk';
+      } else if (lower === 'run' || lower === 'sprint') {
+        targetClip = 'Run';
+      } else if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'kick_right') {
+        targetClip = 'Kick_Right';
+      } else if (lower === 'kick_left') {
+        targetClip = 'Kick_Left';
+      } else if (lower === 'punch' || lower === 'punch_right') {
+        targetClip = 'Punch_Right';
+      } else if (lower === 'punch_left') {
+        targetClip = 'Punch_Left';
+      } else if (lower === 'slide' || lower === 'tackle' || lower === 'roll' || lower === 'dive') {
+        targetClip = 'Roll';
+      } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win') {
+        targetClip = 'Wave';
+      } else if (lower === 'hit' || lower === 'hitrecieve') {
+        targetClip = 'HitRecieve';
       }
 
       if (this.currentAnim !== targetClip) {
@@ -1310,7 +1242,7 @@
 
   const CharactersGLB = {
     enabled: true,
-    mode: 'procedural', // High-Fidelity In-Engine Articulated 3D Humanoid Athletes with 15 natural biomechanical animations
+    mode: 'glb', // 3D In-Engine Skinned GLB Athletes (Footy #10, Hoops #23, Keeper #1)
     instances: new Map(), // matchView -> (HiRes25DCharacterInstance | GLBCharacterInstance)[]
 
     init(gl) {
