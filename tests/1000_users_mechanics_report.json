@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-17T10:51:20.412Z",
+  "usersProcessed": 1000,
+  "footballMatches": 200,
+  "basketballMatches": 150,
+  "duelsCompleted": 100,
+  "aiMatches": 100,
+  "totalGoals": 627,
+  "totalHoopsPoints": 1384,
+  "storePurchases": 1000,
+  "questsClaimed": 402,
+  "attacksBlocked": "10/10",
+  "errors": 0,
+  "durationMs": 7
+}

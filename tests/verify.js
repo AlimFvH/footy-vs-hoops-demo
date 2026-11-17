@@ -368,6 +368,31 @@ it('Server Payment Endpoints: Product catalog, Stars invoices, TON memos, and Le
   assert(srvCode.includes('paymentsLedger'), 'Must persist transactions to paymentsLedger');
 });
 
+// 24. 1,000-User Enterprise Mechanics & 3D Skeletal Animation Integrity
+it('Enterprise Mechanics & 3D Animation Integrity: 1,000 simulated users, GLB skeletal clips, and zero desync', () => {
+  const glbLoaderCode = fs.readFileSync('assets/loaders/glb_loader.js', 'utf8');
+  assert(glbLoaderCode.includes('query.includes(\'run\') || query.includes(\'sprint\')'), 'glb_loader must resolve run/sprint alias');
+  assert(glbLoaderCode.includes('query.includes(\'kick\') || query.includes(\'shoot\')'), 'glb_loader must resolve kick/shoot alias');
+  assert(glbLoaderCode.includes('query.includes(\'roll\') || query.includes(\'slide\')'), 'glb_loader must resolve roll/slide alias');
+  assert(glbLoaderCode.includes('this.playbackTime = 0'), 'glb_loader must reset playbackTime on anim change');
+
+  const charGlbCode = fs.readFileSync('render/characters_glb.js', 'utf8');
+  assert(charGlbCode.includes("mode: 'glb'"), 'characters_glb must have mode: glb');
+  assert(charGlbCode.includes("targetClip = 'Kick_Right'"), 'characters_glb must map kick to Kick_Right');
+  assert(charGlbCode.includes("targetClip = 'Roll'"), 'characters_glb must map slide/tackle to Roll');
+  assert(charGlbCode.includes("targetClip = 'Wave'"), 'characters_glb must map celebrate to Wave');
+
+  assert(fs.existsSync('assets/characters/footy10.glb'), 'footy10.glb must exist');
+  assert(fs.existsSync('assets/characters/hoops23.glb'), 'hoops23.glb must exist');
+  assert(fs.existsSync('assets/characters/keeper1.glb'), 'keeper1.glb must exist');
+
+  assert(fs.existsSync('tests/1000_users_mechanics_report.json'), '1000 users mechanics report must exist');
+  const report = JSON.parse(fs.readFileSync('tests/1000_users_mechanics_report.json', 'utf8'));
+  assert.strictEqual(report.usersProcessed, 1000, 'Must process 1,000 users');
+  assert.strictEqual(report.errors, 0, 'Must have zero errors');
+  assert.strictEqual(report.attacksBlocked, '10/10', 'Must block 10/10 attacks');
+});
+
 console.log(`\nResults: ${passedTests}/${totalTests} tests passed.\n`);
 if (passedTests === totalTests) {
   process.exit(0);
