@@ -1310,7 +1310,7 @@
 
   const CharactersGLB = {
     enabled: true,
-    mode: 'procedural', // High-Fidelity In-Engine Articulated 3D Humanoid Athletes with 15 natural biomechanical animations
+    mode: 'glb', // 3D In-Engine Skinned GLB Athletes
     instances: new Map(), // matchView -> (HiRes25DCharacterInstance | GLBCharacterInstance)[]
 
     init(gl) {
