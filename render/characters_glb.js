@@ -224,7 +224,197 @@
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 0.90;
 
-        // --- RARITY-BASED HIGH-DETAIL JERSEY PATTERNS ---
+        // --- SPECIFIC HIGH-CONTRAST JERSEY SIGNATURE ARTWORK ---
+        if (sId.includes('dragon')) {
+          // DRAGON FLAME: Rising blazing fire tongues & gold warrior accents
+          const fGrad = ctx.createLinearGradient(cx, topY + hH, cx, topY);
+          fGrad.addColorStop(0, '#7f1d1d');
+          fGrad.addColorStop(0.35, '#dc2626');
+          fGrad.addColorStop(0.7, '#ea580c');
+          fGrad.addColorStop(1, '#fde047');
+          ctx.fillStyle = fGrad;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.11, topY + hH);
+          ctx.lineTo(cx - W * 0.08, topY + hH * 0.25);
+          ctx.lineTo(cx - W * 0.04, topY + hH * 0.55);
+          ctx.lineTo(cx, topY + hH * 0.10);
+          ctx.lineTo(cx + W * 0.04, topY + hH * 0.55);
+          ctx.lineTo(cx + W * 0.08, topY + hH * 0.25);
+          ctx.lineTo(cx + W * 0.11, topY + hH);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 3.2;
+          ctx.stroke();
+          if (isFront) {
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(cx, topY + hH * 0.38, W * 0.024, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#7f1d1d';
+            ctx.lineWidth = 2.0;
+            ctx.stroke();
+          }
+        } else if (sId.includes('phoenix')) {
+          // PHOENIX REBIRTH: Radiant golden sunburst with soaring wings
+          const pGrad = ctx.createRadialGradient(cx, topY + hH * 0.4, 4, cx, topY + hH * 0.4, W * 0.14);
+          pGrad.addColorStop(0, '#ffffff');
+          pGrad.addColorStop(0.4, '#facc15');
+          pGrad.addColorStop(0.75, '#ea580c');
+          pGrad.addColorStop(1, '#7f1d1d');
+          ctx.fillStyle = pGrad;
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.4, W * 0.11, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fde047';
+          ctx.lineWidth = 4.0;
+          ctx.beginPath();
+          ctx.arc(cx - W * 0.04, topY + hH * 0.4, W * 0.08, Math.PI * 0.9, Math.PI * 1.8);
+          ctx.arc(cx + W * 0.04, topY + hH * 0.4, W * 0.08, Math.PI * 1.2, Math.PI * 0.1);
+          ctx.stroke();
+        } else if (sId.includes('chrono') || sId.includes('void')) {
+          // CHRONO SOVEREIGN / VOID WALKER: Obsidian cyber suit with glowing neon cyan power core
+          ctx.fillStyle = '#050811';
+          ctx.fillRect(cx - W * 0.12, topY, W * 0.24, hH);
+          ctx.strokeStyle = '#00f0ff';
+          ctx.lineWidth = 3.0;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.09, topY); ctx.lineTo(cx - W * 0.09, topY + hH * 0.35);
+          ctx.lineTo(cx, topY + hH * 0.5); ctx.lineTo(cx + W * 0.09, topY + hH * 0.35);
+          ctx.lineTo(cx + W * 0.09, topY);
+          ctx.moveTo(cx, topY + hH * 0.5); ctx.lineTo(cx, topY + hH);
+          ctx.stroke();
+          ctx.fillStyle = '#00f0ff';
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(cx, topY + hH * 0.48, W * 0.026, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.0;
+          ctx.stroke();
+        } else if (sId.includes('nebula')) {
+          // CELESTIAL NEBULA: Cosmic violet galaxy nebula with glowing starfield
+          const nGrad = ctx.createLinearGradient(cx - W * 0.12, topY, cx + W * 0.12, topY + hH);
+          nGrad.addColorStop(0, '#2e1065');
+          nGrad.addColorStop(0.5, '#701a75');
+          nGrad.addColorStop(1, '#0284c7');
+          ctx.fillStyle = nGrad;
+          ctx.fillRect(cx - W * 0.12, topY, W * 0.24, hH);
+          ctx.fillStyle = '#ffffff';
+          for (let s = 0; s < 18; s++) {
+            const sx = cx - W * 0.10 + ((s * 47) % Math.round(W * 0.20));
+            const sy = topY + ((s * 61) % Math.round(hH));
+            ctx.beginPath();
+            ctx.arc(sx, sy, (s % 3 === 0) ? 2.5 : 1.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (sId.includes('golden')) {
+          // GOLDEN CREST: Regal metallic 24K gold sash with royal laurel
+          const gGrad = ctx.createLinearGradient(cx - W * 0.11, topY, cx + W * 0.11, topY + hH);
+          gGrad.addColorStop(0, '#fef08a');
+          gGrad.addColorStop(0.5, '#f59e0b');
+          gGrad.addColorStop(1, '#b45309');
+          ctx.strokeStyle = gGrad;
+          ctx.lineWidth = W * 0.054;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.11, topY);
+          ctx.lineTo(cx + W * 0.11, topY + hH);
+          ctx.stroke();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+          if (isFront) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(cx, topY + hH * 0.4, W * 0.025, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (sId.includes('bib') || sId.includes('training_bib')) {
+          // TRAINING BIB: High-vis volt green training pinnie
+          ctx.fillStyle = '#a3e635';
+          ctx.fillRect(cx - W * 0.10, topY + hH * 0.12, W * 0.20, hH * 0.82);
+          ctx.strokeStyle = '#4d7c0f';
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(cx - W * 0.10, topY + hH * 0.12, W * 0.20, hH * 0.82);
+          ctx.fillStyle = 'rgba(0,0,0,0.18)';
+          for (let my = topY + hH * 0.16; my < topY + hH * 0.9; my += 12) {
+            for (let mx = cx - W * 0.08; mx < cx + W * 0.08; mx += 12) {
+              ctx.fillRect(mx, my, 2.5, 2.5);
+            }
+          }
+        } else if (sId.includes('block') || sId.includes('dual')) {
+          // DUAL BLOCK: 50/50 vertical split
+          ctx.fillStyle = sCol;
+          ctx.fillRect(cx, topY, W * 0.12, hH);
+          ctx.strokeStyle = accCol;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(cx, topY); ctx.lineTo(cx, topY + hH);
+          ctx.stroke();
+        } else if (sId.includes('contrast_v') || sId.includes('vneck')) {
+          // CONTRAST V: Sharp bold chevron V
+          ctx.fillStyle = sCol;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.10, topY);
+          ctx.lineTo(cx, topY + hH * 0.42);
+          ctx.lineTo(cx + W * 0.10, topY);
+          ctx.lineTo(cx + W * 0.10, topY + hH * 0.14);
+          ctx.lineTo(cx, topY + hH * 0.56);
+          ctx.lineTo(cx - W * 0.10, topY + hH * 0.14);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = accCol;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else if (sId.includes('velocity')) {
+          // NEON VELOCITY: Electric lime & cyan lightning chevrons
+          ctx.strokeStyle = '#a3e635';
+          ctx.lineWidth = 4.0;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.09, topY + hH * 0.2);
+          ctx.lineTo(cx, topY + hH * 0.38);
+          ctx.lineTo(cx + W * 0.09, topY + hH * 0.2);
+          ctx.moveTo(cx - W * 0.09, topY + hH * 0.45);
+          ctx.lineTo(cx, topY + hH * 0.63);
+          ctx.lineTo(cx + W * 0.09, topY + hH * 0.45);
+          ctx.stroke();
+        } else if (sId.includes('solar')) {
+          // SOLAR FLARE: Blazing sunburst orange & yellow chevron
+          const sGrad = ctx.createLinearGradient(cx, topY, cx, topY + hH);
+          sGrad.addColorStop(0, '#f97316');
+          sGrad.addColorStop(1, '#facc15');
+          ctx.fillStyle = sGrad;
+          ctx.beginPath();
+          ctx.moveTo(cx - W * 0.10, topY + hH * 0.1);
+          ctx.lineTo(cx, topY + hH * 0.45);
+          ctx.lineTo(cx + W * 0.10, topY + hH * 0.1);
+          ctx.lineTo(cx + W * 0.10, topY + hH * 0.25);
+          ctx.lineTo(cx, topY + hH * 0.60);
+          ctx.lineTo(cx - W * 0.10, topY + hH * 0.25);
+          ctx.closePath();
+          ctx.fill();
+        } else if (sId.includes('miami')) {
+          // VAPORWAVE MIAMI: Hot pink and cyan split gradient
+          const vGrad = ctx.createLinearGradient(cx - W * 0.12, topY, cx + W * 0.12, topY + hH);
+          vGrad.addColorStop(0, '#ec4899');
+          vGrad.addColorStop(1, '#06b6d4');
+          ctx.fillStyle = vGrad;
+          ctx.fillRect(cx - W * 0.12, topY, W * 0.24, hH);
+        } else if (sId.includes('titan')) {
+          // TITAN VANGUARD: Mecha armored plates with gold energy vents
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(cx - W * 0.11, topY + hH * 0.15, W * 0.22, hH * 0.75);
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 3.0;
+          ctx.strokeRect(cx - W * 0.11, topY + hH * 0.15, W * 0.22, hH * 0.75);
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(cx - W * 0.08, topY + hH * 0.35, W * 0.16, 4);
+          ctx.fillRect(cx - W * 0.08, topY + hH * 0.55, W * 0.16, 4);
+        } else
+
+        // --- RARITY-BASED FALLBACK PATTERNS ---
 
         if (rarity === 'mythic') {
           // MYTHIC TITAN / HYPER BEAST: Celestial Double Aurora Sash & Cosmic Core
@@ -419,7 +609,7 @@
   function getOrCreateSkinTexture(gl, model, skin, isFooty) {
     if (!gl || !model || !skin || !skin.id) return null;
     // Default hero skins use the pristine embedded 1024x1024 atlas directly
-    if (skin.id === 'skin_rookie' || skin.id === 'skin_solar' || skin.id === 'skin_bb_onyx' || skin.id === 'skin_classic') {
+    if (skin.id === 'skin_rookie' || skin.id === 'skin_bb_onyx') {
       return null;
     }
     
@@ -1410,9 +1600,9 @@
           inst.charRef.pivot.visible = false;
         }
 
-        // Lazy-generate custom skin texture only if equipped with a special unlocked cosmetic skin
-        const isSpecialSkin = Boolean(inst.skin && inst.skin.id && (inst.skin.id.includes('gold') || inst.skin.id.includes('mythic') || inst.skin.id.includes('cyber') || inst.skin.id.includes('frost') || inst.skin.id.includes('titan')));
-        if (!inst.customTexture && isSpecialSkin && !inst.isKeeper) {
+        // Lazy-generate custom skin texture whenever any custom kit is equipped
+        const isCustomSkin = Boolean(inst.skin && inst.skin.id && inst.skin.id !== 'skin_rookie' && inst.skin.id !== 'skin_bb_onyx');
+        if (!inst.customTexture && isCustomSkin && !inst.isKeeper) {
           inst.customTexture = getOrCreateSkinTexture(gl, inst.model, inst.skin, inst.isFooty);
         }
 

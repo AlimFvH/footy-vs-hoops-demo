@@ -1885,17 +1885,17 @@ canvas {
 }
 
 .hud-top-ctrls {
-  position: static !important;
-  top: auto !important;
-  right: auto !important;
+  position: absolute !important;
+  top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+  right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
   left: auto !important;
   bottom: auto !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
   pointer-events: auto !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   gap: 8px !important;
   z-index: 1000 !important;
 }
@@ -1946,17 +1946,17 @@ canvas {
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
-  padding: 5px 12px !important;
-  min-width: 64px !important;
+  padding: 5px 9px !important;
+  min-width: 60px !important;
 }
 
 .sb-name {
   font-size: 11.5px !important;
   letter-spacing: 0.5px !important;
   color: #e2e8f0 !important;
-  max-width: 78px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  max-width: 96px !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
   white-space: nowrap !important;
 }
 

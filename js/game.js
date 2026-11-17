@@ -2984,7 +2984,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 const toRimX = dx / (dist || 1);
                 const toRimZ = dz / (dist || 1);
                 const dunkDot = fx * toRimX + fz * toRimZ;
-                if (dunkDot > 0.40) {
+                if (dunkDot > 0.5 || dunkDot > 0.40) {
                     this.launchShot(a, 0, 0, true);
                     return;
                 }
@@ -3014,6 +3014,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             }
 
             const throwDist = Math.max(3.2, dist);
+            // Basketball directional shot calculation: aimX = a.x + fx * throwDist; aimZ = a.z + fz * throwDist
             const aimX = a.x + assistedFx * throwDist;
             const aimZ = a.z + assistedFz * throwDist;
 
