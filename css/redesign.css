@@ -1885,19 +1885,26 @@ canvas {
 }
 
 .hud-top-ctrls {
-  position: absolute !important;
-  top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
-  right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
   left: auto !important;
   bottom: auto !important;
-  margin: 0 !important;
+  margin: 0 auto !important;
   pointer-events: auto !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
   gap: 8px !important;
   z-index: 1000 !important;
+}
+
+img[src*="user_football"], img[src*="user_basketball"], img[src*="ball_"] {
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
+  background: transparent !important;
 }
 
 .hud-top-ctrls .hud-pause,

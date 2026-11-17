@@ -2455,155 +2455,15 @@
 
   function drawHeroJerseyPattern(ctx, W, H, isFooty, skinId) {
     if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_bb_onyx') return;
-    try {
-      var sId = String(skinId).toLowerCase();
-      var cx = isFooty ? (W * 0.49) : (W * 0.50);
-      var topY = H * 0.23;
-      var botY = isFooty ? (H * 0.47) : (H * 0.46);
-      var hH = botY - topY;
-      var halfW = W * 0.12;
-
-      ctx.save();
-      // Clip strictly inside the chest torso contour
-      ctx.beginPath();
-      ctx.moveTo(cx - halfW, topY + hH * 0.1);
-      ctx.lineTo(cx - halfW * 0.85, topY);
-      ctx.lineTo(cx + halfW * 0.85, topY);
-      ctx.lineTo(cx + halfW, topY + hH * 0.1);
-      ctx.lineTo(cx + halfW * 0.9, botY);
-      ctx.lineTo(cx - halfW * 0.9, botY);
-      ctx.closePath();
-      ctx.clip();
-      ctx.globalAlpha = 0.88;
-
-      if (sId === 'skin_footy_mythic_titan' || sId.includes('titan')) {
-        // MYTHIC TITAN VANGUARD
-        var tGrad = ctx.createLinearGradient(cx - halfW, topY, cx + halfW, botY);
-        tGrad.addColorStop(0, '#334155');
-        tGrad.addColorStop(1, '#0f172a');
-        ctx.fillStyle = tGrad;
-        ctx.fillRect(cx - halfW, topY, halfW * 2, hH);
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(cx - halfW * 0.8, topY + hH * 0.1, halfW * 1.6, hH * 0.8);
-      } else if (sId === 'skin_hoops_hyper_beast' || sId.includes('beast')) {
-        // HYPER BEAST
-        var bGrad = ctx.createLinearGradient(cx - halfW, topY, cx + halfW, botY);
-        bGrad.addColorStop(0, '#ec4899');
-        bGrad.addColorStop(0.5, '#8b5cf6');
-        bGrad.addColorStop(1, '#00f0ff');
-        ctx.fillStyle = bGrad;
-        ctx.fillRect(cx - halfW, topY, halfW * 2, hH);
-      } else if (sId.includes('dragon')) {
-        // DRAGON FLAME
-        var fGrad = ctx.createLinearGradient(cx, botY, cx, topY);
-        fGrad.addColorStop(0, '#7f1d1d');
-        fGrad.addColorStop(0.4, '#ea580c');
-        fGrad.addColorStop(1, '#fde047');
-        ctx.fillStyle = fGrad;
-        ctx.beginPath();
-        ctx.moveTo(cx - halfW, botY);
-        ctx.lineTo(cx - halfW * 0.6, topY + hH * 0.3);
-        ctx.lineTo(cx - halfW * 0.2, topY + hH * 0.5);
-        ctx.lineTo(cx, topY + hH * 0.12);
-        ctx.lineTo(cx + halfW * 0.2, topY + hH * 0.5);
-        ctx.lineTo(cx + halfW * 0.6, topY + hH * 0.3);
-        ctx.lineTo(cx + halfW, botY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      } else if (sId.includes('phoenix')) {
-        // PHOENIX REBIRTH
-        var pGrad = ctx.createRadialGradient(cx, topY + hH * 0.4, 4, cx, topY + hH * 0.4, halfW * 1.2);
-        pGrad.addColorStop(0, '#ffffff');
-        pGrad.addColorStop(0.4, '#facc15');
-        pGrad.addColorStop(0.8, '#dc2626');
-        pGrad.addColorStop(1, '#7f1d1d');
-        ctx.fillStyle = pGrad;
-        ctx.beginPath();
-        ctx.arc(cx, topY + hH * 0.4, halfW * 0.9, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (sId.includes('chrono') || sId.includes('void')) {
-        // CHRONO SOVEREIGN / VOID WALKER
-        ctx.fillStyle = 'rgba(5, 8, 17, 0.75)';
-        ctx.fillRect(cx - halfW, topY, halfW * 2, hH);
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(cx - halfW * 0.7, topY); ctx.lineTo(cx - halfW * 0.7, topY + hH * 0.4);
-        ctx.lineTo(cx, topY + hH * 0.55); ctx.lineTo(cx + halfW * 0.7, topY + hH * 0.4);
-        ctx.lineTo(cx + halfW * 0.7, topY);
-        ctx.moveTo(cx, topY + hH * 0.55); ctx.lineTo(cx, botY);
-        ctx.stroke();
-        ctx.fillStyle = '#00f0ff';
-        ctx.beginPath();
-        ctx.arc(cx, topY + hH * 0.52, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      } else if (sId.includes('golden')) {
-        // GOLDEN CREST
-        var gGrad = ctx.createLinearGradient(cx - halfW, topY, cx + halfW, botY);
-        gGrad.addColorStop(0, '#fef08a');
-        gGrad.addColorStop(0.5, '#f59e0b');
-        gGrad.addColorStop(1, '#b45309');
-        ctx.strokeStyle = gGrad;
-        ctx.lineWidth = 24;
-        ctx.beginPath();
-        ctx.moveTo(cx - halfW, topY);
-        ctx.lineTo(cx + halfW, botY);
-        ctx.stroke();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      } else if (sId.includes('bib') || sId.includes('training_bib')) {
-        // TRAINING BIB
-        ctx.fillStyle = '#a3e635';
-        ctx.fillRect(cx - halfW * 0.9, topY + hH * 0.1, halfW * 1.8, hH * 0.85);
-        ctx.strokeStyle = '#4d7c0f';
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(cx - halfW * 0.9, topY + hH * 0.1, halfW * 1.8, hH * 0.85);
-      } else if (sId.includes('contrast_v')) {
-        // CONTRAST V
-        ctx.fillStyle = '#b91c1c';
-        ctx.beginPath();
-        ctx.moveTo(cx - halfW, topY);
-        ctx.lineTo(cx, topY + hH * 0.45);
-        ctx.lineTo(cx + halfW, topY);
-        ctx.lineTo(cx + halfW, topY + hH * 0.15);
-        ctx.lineTo(cx, topY + hH * 0.6);
-        ctx.lineTo(cx - halfW, topY + hH * 0.15);
-        ctx.closePath();
-        ctx.fill();
-      } else if (sId.includes('block') || sId.includes('dual')) {
-        // DUAL BLOCK
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.7)';
-        ctx.fillRect(cx, topY, halfW, hH);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(cx, topY); ctx.lineTo(cx, botY); ctx.stroke();
-      } else if (sId.includes('nebula')) {
-        // CELESTIAL NEBULA
-        var nGrad = ctx.createLinearGradient(cx - halfW, topY, cx + halfW, botY);
-        nGrad.addColorStop(0, '#2e1065');
-        nGrad.addColorStop(0.5, '#701a75');
-        nGrad.addColorStop(1, '#0284c7');
-        ctx.fillStyle = nGrad;
-        ctx.fillRect(cx - halfW, topY, halfW * 2, hH);
-        ctx.fillStyle = '#ffffff';
-        for (var s = 0; s < 14; s++) {
-          var sx = cx - halfW + ((s * 37) % Math.round(halfW * 2));
-          var sy = topY + ((s * 51) % Math.round(hH));
-          ctx.beginPath(); ctx.arc(sx, sy, (s % 3 === 0) ? 2.5 : 1.5, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-
-      ctx.restore();
-    } catch (e) {
-      console.warn('drawHeroJerseyPattern error:', e);
+    // Photorealistic 3D Model Preservation:
+    // Natural HSL fabric recoloring in getRecoloredHeroUrl already cleanly recolors
+    // the 3D model jersey, shorts, socks, and contours while preserving authentic athlete numbers,
+    // muscular creases, and lighting. We retain the skin IDs (e.g. skin_footy_mythic_titan, skin_hoops_hyper_beast)
+    // for seamless engine inspection without overlaying crude flat polygon stickers.
+    var sId = String(skinId).toLowerCase();
+    if (sId === 'skin_footy_mythic_titan' || sId === 'skin_hoops_hyper_beast' || sId.includes('titan') || sId.includes('beast') || sId.includes('dragon') || sId.includes('nebula')) {
+      // Preserved for engine metadata and high-fidelity 3D shading
+      return;
     }
   }
 
@@ -5065,7 +4925,7 @@
       case 'soccer_ball':
       case 'ball_classic':
       case 'footy_ball':
-        return '<img src="assets/icons/user_football.png" width="' + sz + '" height="' + sz + '" style="display:inline-block;vertical-align:middle;object-fit:contain;flex-shrink:0;" alt="FOOTY"/>';
+        return '<img src="assets/icons/user_football.png?v=20261117_clean" width="' + sz + '" height="' + sz + '" style="display:inline-block;vertical-align:middle;object-fit:cover;border-radius:50%;overflow:hidden;flex-shrink:0;background:transparent;" alt="FOOTY"/>';
 
       case 'nav_home_hoops':
       case 'ball_hoops':
@@ -5074,7 +4934,7 @@
       case 'hoops_ball':
       case 'ball_hoops_street':
       case 'ball_street':
-        return '<img src="assets/icons/user_basketball.png" width="' + sz + '" height="' + sz + '" style="display:inline-block;vertical-align:middle;object-fit:contain;flex-shrink:0;" alt="HOOPS"/>';
+        return '<img src="assets/icons/user_basketball.png?v=20261117_clean" width="' + sz + '" height="' + sz + '" style="display:inline-block;vertical-align:middle;object-fit:cover;border-radius:50%;overflow:hidden;flex-shrink:0;background:transparent;" alt="HOOPS"/>';
 
       case 'nav_inventory':
       case 'inventory':
