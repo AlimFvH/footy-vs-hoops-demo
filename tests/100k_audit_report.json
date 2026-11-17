@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-17T09:00:53.963Z",
+  "timestamp": "2026-11-17T09:34:59.271Z",
   "totalUsers": 100000,
   "breakdown": {
     "pvpUsers": 50000,
@@ -17,8 +17,8 @@
     "attacksBlocked": 10,
     "anomaliesDetected": 0
   },
-  "elapsedMs": 454,
-  "throughputUsersPerSec": 220264,
+  "elapsedMs": 460,
+  "throughputUsersPerSec": 217391,
   "evaluation": {
     "securityScore": 10,
     "antiAbuseScore": 10,

@@ -4799,7 +4799,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         skin('skin_sunset', 'Sunset Gold', 'rare', 750, { primary: 0xf97316, secondary: 0xd946ef, shorts: 0x4c0519, style: 'hoops' }),
         skin('skin_mars', 'Mars Rover', 'epic', 1400, { primary: 0xb91c1c, secondary: 0x450a0a, shorts: 0x18181b, style: 'circuit' }),
         // Preserved legacy test balls for test suite assertions
-        { id: 'ball_footy_classic', category: 'balls', slot: 'ball.footy', mode: 'footy', name: 'Match Classic', rarity: 'common', price: 0, isDefault: true, visual: { mode: 'footy', base: 0xf8f9fa, accent: 0x0f172a, style: 'classic' } },
+        { id: 'ball_footy_classic', category: 'balls', slot: 'ball.footy', mode: 'footy', name: 'Match Classic', rarity: 'common', price: 0, isDefault: true, visual: { mode: 'footy', base: 0xf8f9fa, accent: 0x2563eb, style: 'classic' } },
         { id: 'ball_footy_classic_pro', category: 'balls', slot: 'ball.footy', mode: 'footy', name: 'Classic Pro Footy', rarity: 'rare', price: 200, visual: { mode: 'footy', base: 0xffffff, accent: 0x1e3a8a, style: 'classic' } },
         { id: 'ball_footy_inferno', category: 'balls', slot: 'ball.footy', mode: 'footy', name: 'Inferno', rarity: 'legendary', price: 700, visual: { mode: 'footy', base: 0x2a0a0a, accent: 0xff6a00, style: 'flame', glow: 0xff6a00 } },
         { id: 'ball_footy_cyber_neon', category: 'balls', slot: 'ball.footy', mode: 'footy', name: 'Cyber Neon', rarity: 'rare', price: 400, visual: { mode: 'footy', base: 0x0f172a, accent: 0x22d3ee, style: 'plasma', glow: 0x22d3ee } },
@@ -9570,7 +9570,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             if (isHoops) {
                 return { mode: 'hoops', base: 0xe8772e, accent: 0x1a0d05, style: 'classic', id: id || fallback || 'ball_hoops_street' };
             }
-            return { mode: 'footy', base: 0xf5f5f5, accent: 0x222222, style: 'classic', id: id || fallback || 'ball_footy_classic' };
+            return { mode: 'footy', base: 0xf5f5f5, accent: 0x2563eb, style: 'classic', id: id || fallback || 'ball_footy_classic' };
         }
         const vis = Object.assign({}, it.visual);
         if (it && it.id) vis.id = it.id;
@@ -13640,33 +13640,43 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                     '<ellipse cx="19" cy="8.5" rx="2.5" ry="1.2" transform="rotate(-30 19 8.5)" fill="#ffffff" opacity="0.5"/>' +
                     '</svg>';
             }
-            // Pro Kinetic Ballistic Strike - Football
+            // Pro Kinetic Ballistic Strike - Football (Authentic 3D Blue-Hex Ball)
             return '<svg width="42" height="42" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">' +
                 '<defs>' +
                 '  <linearGradient id="strikeBeam" x1="0%" y1="100%" x2="100%" y2="0%">' +
-                '    <stop offset="0%" stop-color="#ff3b00" stop-opacity="0"/>' +
-                '    <stop offset="60%" stop-color="#ff8800" stop-opacity="0.6"/>' +
-                '    <stop offset="100%" stop-color="#ffc83b"/>' +
+                '    <stop offset="0%" stop-color="#2563eb" stop-opacity="0"/>' +
+                '    <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.6"/>' +
+                '    <stop offset="100%" stop-color="#00f0ff"/>' +
                 '  </linearGradient>' +
-                '  <radialGradient id="ballProShade" cx="38%" cy="32%" r="65%">' +
+                '  <radialGradient id="fvh_soc_strike" cx="35%" cy="30%" r="70%">' +
                 '    <stop offset="0%" stop-color="#ffffff"/>' +
-                '    <stop offset="55%" stop-color="#d1d5db"/>' +
-                '    <stop offset="85%" stop-color="#4b5563"/>' +
-                '    <stop offset="100%" stop-color="#1f2937"/>' +
+                '    <stop offset="30%" stop-color="#f8fafc"/>' +
+                '    <stop offset="65%" stop-color="#cbd5e1"/>' +
+                '    <stop offset="90%" stop-color="#64748b"/>' +
+                '    <stop offset="100%" stop-color="#1e293b"/>' +
                 '  </radialGradient>' +
+                '  <radialGradient id="fvh_soc_strike_blue" cx="36%" cy="32%" r="68%">' +
+                '    <stop offset="0%" stop-color="#60a5fa"/>' +
+                '    <stop offset="35%" stop-color="#2563eb"/>' +
+                '    <stop offset="75%" stop-color="#1d4ed8"/>' +
+                '    <stop offset="100%" stop-color="#172554"/>' +
+                '  </radialGradient>' +
+                '  <clipPath id="fvh_soc_strike_clip"><circle cx="26" cy="18" r="13"/></clipPath>' +
                 '</defs>' +
                 '<path d="M4 38 L14 28" stroke="url(#strikeBeam)" stroke-width="3" stroke-linecap="round"/>' +
-                '<path d="M2 30 L9 23" stroke="#ff7700" stroke-width="2" stroke-linecap="round" opacity="0.7"/>' +
-                '<path d="M12 40 L19 33" stroke="#ffaa00" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
-                '<path d="M12 30 L22 20 M22 20 L16 19 M22 20 L21 26" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<circle cx="26" cy="18" r="13" fill="url(#ballProShade)" stroke="#9ca3af" stroke-width="1"/>' +
-                '<polygon points="26,13 30,16 28.5,21 23.5,21 22,16" fill="#111827" stroke="#374151" stroke-width="0.7"/>' +
-                '<polygon points="26,5.5 28.5,7.5 27.5,10 24.5,10 23.5,7.5" fill="#111827"/>' +
-                '<polygon points="36,11 37.5,14 35,16 33,14 33.5,11.5" fill="#111827"/>' +
-                '<polygon points="35.5,24 32.5,26 31,23.5 32,21 35,21" fill="#111827"/>' +
-                '<polygon points="16.5,24 19.5,26 21,23.5 20,21 17,21" fill="#111827"/>' +
-                '<polygon points="16,11 18.5,11.5 19,14 17,16 14.5,14" fill="#111827"/>' +
-                '<circle cx="22" cy="13" r="1.8" fill="#ffffff" opacity="0.9"/>' +
+                '<path d="M2 30 L9 23" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>' +
+                '<path d="M12 40 L19 33" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
+                '<path d="M12 30 L22 20 M22 20 L16 19 M22 20 L21 26" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<circle cx="26" cy="18" r="13" fill="url(#fvh_soc_strike)" stroke="#93c5fd" stroke-width="0.9"/>' +
+                '<g clip-path="url(#fvh_soc_strike_clip)">' +
+                '  <polygon points="26,14 30,17 28.5,22 23.5,22 22,17" fill="url(#fvh_soc_strike_blue)" stroke="#1e293b" stroke-width="0.7"/>' +
+                '  <polygon points="26,6.5 28.5,8.5 27.5,11 24.5,11 23.5,8.5" fill="url(#fvh_soc_strike_blue)"/>' +
+                '  <polygon points="36,12 37.5,15 35,17 33,15 33.5,12.5" fill="url(#fvh_soc_strike_blue)"/>' +
+                '  <polygon points="35.5,25 32.5,27 31,24.5 32,22 35,22" fill="url(#fvh_soc_strike_blue)"/>' +
+                '  <polygon points="16.5,25 19.5,27 21,24.5 20,22 17,22" fill="url(#fvh_soc_strike_blue)"/>' +
+                '  <polygon points="16,12 18.5,12.5 19,15 17,17 14.5,15" fill="url(#fvh_soc_strike_blue)"/>' +
+                '  <circle cx="22" cy="13" r="1.8" fill="#ffffff" opacity="0.9"/>' +
+                '</g>' +
                 '</svg>';
         }
         if (action === 'tackle') {
@@ -13706,8 +13716,8 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 '<rect x="27" y="31" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
                 '<path d="M4 18 L11 17 L15 24 L29 27 C31.5 27.5 33 29.5 31 31.5 L12 31.5 C7.5 31.5 4.5 28 4 24 Z" fill="url(#bladeGrad)" stroke="#fecdd3" stroke-width="1.4" stroke-linejoin="round"/>' +
                 '<path d="M12 22 L22 26 M10 24 L18 28" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>' +
-                '<circle cx="32" cy="21" r="5.5" fill="#ffffff" stroke="#1e293b" stroke-width="0.8"/>' +
-                '<polygon points="32,19 33.5,20.2 33,22 31,22 30.5,20.2" fill="#0f172a"/>' +
+                '<circle cx="32" cy="21" r="5.5" fill="#ffffff" stroke="#2563eb" stroke-width="0.8"/>' +
+                '<polygon points="32,19 33.5,20.2 33,22 31,22 30.5,20.2" fill="#2563eb"/>' +
                 '<path d="M28 22 L25 20 M29 25 L26 27" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>' +
                 '</svg>';
         }
@@ -14074,11 +14084,11 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 if (isHoops) {
                     iconSvg = (window.getUiIconSvg && typeof window.getUiIconSvg === 'function')
                         ? window.getUiIconSvg('nav_home_hoops', 16)
-                        : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;margin-right:4px;"><circle cx="12" cy="12" r="9.5" fill="#ea580c" stroke="#fef08a" stroke-width="1.3"/><line x1="2.5" y1="12" x2="21.5" y2="12" stroke="#1c1917" stroke-width="1.3"/><line x1="12" y1="2.5" x2="12" y2="21.5" stroke="#1c1917" stroke-width="1.3"/><path d="M5.5 6 C10 8.5 10 15.5 5.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/><path d="M18.5 6 C14 8.5 14 15.5 18.5 18" stroke="#1c1917" stroke-width="1.3" fill="none"/></svg>';
+                        : '<svg width="16" height="16" viewBox="0 0 48 48" fill="none" style="vertical-align:middle;flex-shrink:0;margin-right:4px;" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="fvh_bb_fb" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#fb923c"/><stop offset="40%" stop-color="#ea580c"/><stop offset="75%" stop-color="#c2410c"/><stop offset="100%" stop-color="#431407"/></radialGradient><clipPath id="fvh_bb_clip_fb"><circle cx="24" cy="24" r="22"/></clipPath></defs><circle cx="24" cy="24" r="22" fill="url(#fvh_bb_fb)"/><g clip-path="url(#fvh_bb_clip_fb)"><path d="M2 24 Q24 25.5 46 24" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round"/><path d="M24 2 Q25.5 24 24 46" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round"/><path d="M8 8 C18 14 18 34 8 40" stroke="#1c1917" stroke-width="2" fill="none"/><path d="M40 8 C30 14 30 34 40 40" stroke="#1c1917" stroke-width="2" fill="none"/><ellipse cx="16" cy="13" rx="8" ry="4" transform="rotate(-30 16 13)" fill="#ffffff" opacity="0.45"/><circle cx="13" cy="11" r="1.8" fill="#ffffff" opacity="0.7"/></g></svg>';
                 } else if (isFooty) {
                     iconSvg = (window.getUiIconSvg && typeof window.getUiIconSvg === 'function')
                         ? window.getUiIconSvg('nav_home_footy', 16)
-                        : '<svg width="16" height="16" viewBox="0 0 48 48" fill="none" style="vertical-align:middle;flex-shrink:0;margin-right:4px;" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="fvh_soc_base_hud" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#f8fafc"/><stop offset="65%" stop-color="#cbd5e1"/><stop offset="90%" stop-color="#64748b"/><stop offset="100%" stop-color="#1e293b"/></radialGradient><radialGradient id="fvh_soc_blue_hud" cx="36%" cy="32%" r="68%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="35%" stop-color="#2563eb"/><stop offset="75%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#172554"/></radialGradient><clipPath id="fvh_soc_clip_hud"><circle cx="24" cy="24" r="22"/></clipPath></defs><circle cx="24" cy="24" r="22" fill="url(#fvh_soc_base_hud)"/><g clip-path="url(#fvh_soc_clip_hud)"><polygon points="17,14 27,11 34,18 29,27 18,25" fill="url(#fvh_soc_blue_hud)" stroke="#0f172a" stroke-width="1.2" stroke-linejoin="round"/><polygon points="12,23 18,25 15,35 7,37 5,28" fill="#1e293b" stroke="#0f172a" stroke-width="1.2" stroke-linejoin="round"/><polygon points="29,27 38,24 43,32 37,41 27,39" fill="url(#fvh_soc_blue_hud)" stroke="#0f172a" stroke-width="1.2" stroke-linejoin="round"/><polygon points="8,10 17,14 12,23 3,21 3,12" fill="url(#fvh_soc_blue_hud)" stroke="#0f172a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="13" cy="11" r="2" fill="#ffffff" opacity="0.8"/></g></svg>';
+                        : '<svg width="16" height="16" viewBox="0 0 48 48" fill="none" style="vertical-align:middle;flex-shrink:0;margin-right:4px;" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="fvh_soc_base_hud" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#f8fafc"/><stop offset="65%" stop-color="#cbd5e1"/><stop offset="90%" stop-color="#64748b"/><stop offset="100%" stop-color="#1e293b"/></radialGradient><radialGradient id="fvh_soc_blue_hud" cx="36%" cy="32%" r="68%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="35%" stop-color="#2563eb"/><stop offset="75%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#172554"/></radialGradient><radialGradient id="fvh_soc_blue_dark_hud" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="50%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#0f172a"/></radialGradient><clipPath id="fvh_soc_clip_hud"><circle cx="24" cy="24" r="22"/></clipPath></defs><circle cx="24" cy="24" r="22" fill="url(#fvh_soc_base_hud)"/><g clip-path="url(#fvh_soc_clip_hud)"><path d="M22 17 L29 18 L32 25 L27 31 L18 29 L17 22 Z" fill="#ffffff" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/><path d="M22 17 L17 22 L11 19 L11 12 L18 10 Z" fill="url(#fvh_soc_blue_hud)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/><path d="M29 18 L36 14 L42 18 L40 25 L32 25 Z" fill="url(#fvh_soc_blue_hud)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/><path d="M18 29 L27 31 L26 38 L18 41 L14 36 Z" fill="url(#fvh_soc_blue_hud)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/><path d="M11 19 L17 22 L18 29 L14 36 L7 33 L6 25 Z" fill="#e2e8f0" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/><path d="M6 25 L7 33 L2 35 L0 27 L2 20 Z" fill="url(#fvh_soc_blue_dark_hud)" stroke="#1e293b" stroke-width="0.8"/><path d="M32 25 L40 25 L44 32 L39 39 L27 31 Z" fill="#cbd5e1" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/><circle cx="13" cy="11" r="2" fill="#ffffff" opacity="0.75"/></g></svg>';
                 }
                 return `<span class="sb-team-inner" style="display:inline-flex;align-items:center;">${iconSvg}<span>${clean}</span></span>`;
             };
@@ -16565,7 +16575,7 @@ define("ui/kit", ["require", "exports", "i18n/index", "ui/dom"], function (requi
     exports.toggle = toggle;
     exports.seg = seg;
     const NAV = [
-        { name: 'menu', icon: '⚽', key: 'nav.home' },
+        { name: 'menu', icon: (typeof window !== 'undefined' && window.getUiIconSvg ? window.getUiIconSvg('nav_home_footy', 20) : '⚽'), key: 'nav.home' },
         { name: 'characters', icon: '👕', key: 'nav.inventory' },
         { name: 'shop', icon: '🛒', key: 'menu.shop' },
         { name: 'quests', icon: '🎯', key: 'menu.quests' },
@@ -17400,7 +17410,12 @@ define("ui/pages", ["require", "exports", "core/input", "core/economy", "core/qu
         thumb(it, big = false) {
             if (!it || !it.visual) {
                 const isHoops = it && (it.mode === 'hoops' || (it.id && it.id.includes('hoops')));
-                return (0, dom_js_5.h)('div', { class: `thumb${big ? ' big' : ''}` }, isHoops ? '🏀' : '⚽');
+                const fallbackIco = (typeof window !== 'undefined' && window.getUiIconSvg)
+                    ? window.getUiIconSvg(isHoops ? 'nav_home_hoops' : 'nav_home_footy', big ? 48 : 28)
+                    : (isHoops ? '🏀' : '⚽');
+                const tBox = (0, dom_js_5.h)('div', { class: `thumb${big ? ' big' : ''}` });
+                tBox.innerHTML = fallbackIco;
+                return tBox;
             }
             const vis = it.visual;
             const c = (k, f = 0x222222) => '#' + (typeof vis[k] === 'number' ? vis[k] : f).toString(16).padStart(6, '0');

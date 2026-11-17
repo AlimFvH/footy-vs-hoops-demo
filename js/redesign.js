@@ -1390,10 +1390,10 @@
     en: {
       chooseTeamTitle: 'CHOOSE YOUR TEAM',
       chooseTeamDesc: 'Choose which team to support in the 15-day seasonal competition. Your choice is locked for the entire season!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Football faction. Technique, precision, and unstoppable power shots.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Basketball faction. Agility, high-flying dunks, and pinpoint swishes.',
       confirmTeamSelection: 'Confirm Team Selection',
@@ -1438,10 +1438,10 @@
     ru: {
       chooseTeamTitle: 'ВЫБЕРИТЕ КОМАНДУ',
       chooseTeamDesc: 'Выберите, какую команду поддержать в 15-дневном сезонном соревновании. Ваш выбор фиксируется на весь сезон!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Команда футбола. Скорость, техника и мощные удары по воротам.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Команда баскетбола. Дриблинг, прыжки и меткие броски в кольцо.',
       confirmTeamSelection: 'Подтвердить выбор команды',
@@ -1486,10 +1486,10 @@
     es: {
       chooseTeamTitle: 'ELIGE TU EQUIPO',
       chooseTeamDesc: 'Elige qué equipo apoyar en la competición de temporada de 15 días. ¡Tu elección queda fijada para toda la temporada!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Facción de fútbol. Velocidad, técnica y disparos imparables.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Facción de baloncesto. Agilidad, mates espectaculares y precisión.',
       confirmTeamSelection: 'Confirmar selección de equipo',
@@ -1534,10 +1534,10 @@
     de: {
       chooseTeamTitle: 'WÄHLE DEIN TEAM',
       chooseTeamDesc: 'Wähle, welches Team du im 15-tägigen Saisonwettbewerb unterstützen möchtest. Deine Wahl ist für die gesamte Saison festgelegt!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Fußball-Fraktion. Technik, Präzision und unaufhaltsame Torschüsse.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Basketball-Fraktion. Agilität, Dunks und punktgenaue Treffer.',
       confirmTeamSelection: 'Teamauswahl bestätigen',
@@ -1582,10 +1582,10 @@
     fr: {
       chooseTeamTitle: 'CHOISISSEZ VOTRE ÉQUIPE',
       chooseTeamDesc: 'Choisissez quelle équipe soutenir dans la compétition saisonnière de 15 jours. Votre choix est verrouillé pour toute la saison !',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Faction football. Technique, précision et tirs puissants.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Faction basket. Agilité, dunks spectaculaires et paniers parfaits.',
       confirmTeamSelection: 'Confirmer la sélection de l\'équipe',
@@ -1630,10 +1630,10 @@
     pt: {
       chooseTeamTitle: 'ESCOLHA SEU TIME',
       chooseTeamDesc: 'Escolha qual time apoiar na competição de 15 dias da temporada. Sua escolha fica bloqueada por toda a temporada!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Facção de futebol. Técnica, precisão e chutes indefensáveis.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Facção de basquete. Agilidade, enterradas e arremessos precisos.',
       confirmTeamSelection: 'Confirmar escolha do time',
@@ -1678,10 +1678,10 @@
     it: {
       chooseTeamTitle: 'SCEGLI LA TUA SQUADRA',
       chooseTeamDesc: 'Scegli quale squadra supportare nella competizione stagionale di 15 giorni. La tua scelta è bloccata per l\'intera stagione!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Fazione calcio. Tecnica, precisione e tiri imparabili.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Fazione basket. Agilità, schiacciate spettacolari e precisione.',
       confirmTeamSelection: 'Conferma selezione squadra',
@@ -1726,10 +1726,10 @@
     uk: {
       chooseTeamTitle: 'ОБЕРІТЬ СВОЮ КОМАНДУ',
       chooseTeamDesc: 'Оберіть, яку команду підтримати в 15-денному сезонному змаганні. Ваш вибір фіксується на весь сезон!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Команда футболу. Швидкість, техніка та потужні удари по воротах.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Команда баскетболу. Дриблінг, стрибки та влучні кидки в кошик.',
       confirmTeamSelection: 'Підтвердити вибір команди',
@@ -1774,10 +1774,10 @@
     pl: {
       chooseTeamTitle: 'WYBIERZ SWOJĄ DRUŻYNĘ',
       chooseTeamDesc: 'Wybierz, którą drużynę wesprzesz w 15-dniowej rywalizacji sezonowej. Twój wybór jest zablokowany na cały sezon!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Frakcja piłki nożnej. Technika, precyzja i potężne strzały.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Frakcja koszykówki. Zwinność, wsady i precyzyjne rzuty.',
       confirmTeamSelection: 'Potwierdź wybór drużyny',
@@ -1822,10 +1822,10 @@
     tr: {
       chooseTeamTitle: 'TAKIMINI SEÇ',
       chooseTeamDesc: '15 günlük sezon yarışmasında hangi takımı destekleyeceğini seç. Seçimin tüm sezon boyunca kilitlenecektir!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Futbol grubu. Teknik, hassasiyet ve durdurulamaz şutlar.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Basketbol grubu. Çeviklik, smaçlar ve isabetli atışlar.',
       confirmTeamSelection: 'Takım Seçimini Onayla',
@@ -1870,10 +1870,10 @@
     nl: {
       chooseTeamTitle: 'KIES JE TEAM',
       chooseTeamDesc: 'Kies welk team je wilt steunen in de 15-daagse seizoenscompetitie. Je keuze staat vast voor het hele seizoen!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'Voetbalfactie. Techniek, precisie en krachtige schoten.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'Basketbalfactie. Behendigheid, dunks en zuivere scores.',
       confirmTeamSelection: 'Teamselectie bevestigen',
@@ -1918,10 +1918,10 @@
     ja: {
       chooseTeamTitle: 'チームを選択',
       chooseTeamDesc: '15日間のシーズン大会で応援するチームを選んでください。選択はシーズン終了まで変更できません！',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'サッカーチーム。テクニックと圧倒的なシュート力。',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'バスケットボールチーム。華麗なダンクと正確無比なシュート。',
       confirmTeamSelection: 'チーム選択を確定する',
@@ -1966,10 +1966,10 @@
     ko: {
       chooseTeamTitle: '팀 선택',
       chooseTeamDesc: '15일간의 시즌 대회에서 지원할 팀을 선택하세요. 선택한 팀은 이번 시즌 동안 고정됩니다!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: '축구 팀. 정교한 기술과 강력한 슈팅력.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: '농구 팀. 민첩한 움직임과 화려한 덩크슛.',
       confirmTeamSelection: '팀 선택 확인',
@@ -2014,10 +2014,10 @@
     zh: {
       chooseTeamTitle: '选择您的阵营',
       chooseTeamDesc: '在为期15天的赛季对抗中选择支持的阵营。您的选择将在整个赛季内锁定！',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: '足球阵营。精湛技术与势不可挡的强力破门。',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: '篮球阵营。灵活敏捷与震撼暴扣。',
       confirmTeamSelection: '确认选择阵营',
@@ -2062,10 +2062,10 @@
     ar: {
       chooseTeamTitle: 'اختر فريقك',
       chooseTeamDesc: 'اختر الفريق الذي ستدعمه في المسابقة الموسمية لمدة 15 يوماً. اختيارك مثبت طوال الموسم!',
-      teamFootyName: 'FOOTY ⚽',
+      teamFootyName: 'FOOTY',
       teamFootyToken: '$FOOTY',
       teamFootyDesc: 'فريق كرة القدم. تقنية وسرعة وتسديدات خارقة.',
-      teamHoopsName: 'HOOPS 🏀',
+      teamHoopsName: 'HOOPS',
       teamHoopsToken: '$HOOPS',
       teamHoopsDesc: 'فريق كرة السلة. رشاقة وسلات ساحقة ودقة عالية.',
       confirmTeamSelection: 'تأكيد اختيار الفريق',
@@ -3171,15 +3171,15 @@
     var fStart = '#ffffff';
     var fMid = '#e2e8f0';
     var fEnd = '#1e293b';
-    var patch = '#0f172a';
-    var seamColor = '#475569';
-    var seamStitch = '#94a3b8';
+    var patch = '#2563eb';
+    var seamColor = '#1e293b';
+    var seamStitch = '#93c5fd';
     var hasAura = false;
     var auraColor = '#00f0ff';
     var isGold = false;
 
     if (id === 'ball_footy_classic') {
-      fStart = '#ffffff'; fMid = '#e2e8f0'; fEnd = '#334155'; patch = '#0f172a'; seamColor = '#334155'; seamStitch = '#ffffff';
+      fStart = '#ffffff'; fMid = '#e2e8f0'; fEnd = '#334155'; patch = '#2563eb'; seamColor = '#1e293b'; seamStitch = '#93c5fd';
     } else if (id === 'ball_footy_classic_pro') {
       fStart = '#ffffff'; fMid = '#cbd5e1'; fEnd = '#1e3a8a'; patch = '#1d4ed8'; seamColor = '#f59e0b'; seamStitch = '#fde047';
     } else if (id === 'ball_footy_inferno') {
@@ -4162,7 +4162,14 @@
         '<path d="M12 16L88 16 M12 104L88 104" stroke="#fef08a" stroke-width="2" stroke-dasharray="3 2"/>' +
         '<circle cx="50" cy="56" r="22" fill="#451a03" stroke="#facc15" stroke-width="2"/>' +
         '<circle cx="50" cy="56" r="14" stroke="#ea580c" stroke-width="2"/>' +
-        '<text x="50" y="63" font-size="18" text-anchor="middle">🏀</text>' +
+        '<g transform="translate(38, 44) scale(0.5)">' +
+        '  <circle cx="24" cy="24" r="22" fill="#ea580c"/>' +
+        '  <path d="M2 24 Q24 25.5 46 24" stroke="#1c1917" stroke-width="2.2"/>' +
+        '  <path d="M24 2 Q25.5 24 24 46" stroke="#1c1917" stroke-width="2.2"/>' +
+        '  <path d="M8 8 C18 14 18 34 8 40" stroke="#1c1917" stroke-width="2" fill="none"/>' +
+        '  <path d="M40 8 C30 14 30 34 40 40" stroke="#1c1917" stroke-width="2" fill="none"/>' +
+        '  <ellipse cx="16" cy="13" rx="8" ry="4" transform="rotate(-30 16 13)" fill="#ffffff" opacity="0.5"/>' +
+        '</g>' +
         '<rect x="22" y="86" width="56" height="12" rx="3" fill="#180802"/>' +
         '<text x="50" y="95" font-family="Impact, Arial Black" font-size="8" fill="#facc15" text-anchor="middle" letter-spacing="1">ALL-STAR</text>' +
         '</svg>';
@@ -4198,7 +4205,14 @@
       '<rect x="12" y="6" width="76" height="108" rx="7" fill="url(#pFooty)" stroke="#00f0ff" stroke-width="2.5"/>' +
       '<path d="M12 16L88 16 M12 104L88 104" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 2"/>' +
       '<circle cx="50" cy="56" r="22" fill="#082f49" stroke="#00f0ff" stroke-width="2"/>' +
-      '<text x="50" y="63" font-size="18" text-anchor="middle">⚽</text>' +
+      '<g transform="translate(38, 44) scale(0.5)">' +
+      '  <circle cx="24" cy="24" r="22" fill="#ffffff"/>' +
+      '  <path d="M22 17 L29 18 L32 25 L27 31 L18 29 L17 22 Z" fill="#ffffff" stroke="#475569" stroke-width="0.8"/>' +
+      '  <path d="M22 17 L17 22 L11 19 L11 12 L18 10 Z" fill="#2563eb" stroke="#1e293b" stroke-width="0.8"/>' +
+      '  <path d="M29 18 L36 14 L42 18 L40 25 L32 25 Z" fill="#2563eb" stroke="#1e293b" stroke-width="0.8"/>' +
+      '  <path d="M18 29 L27 31 L26 38 L18 41 L14 36 Z" fill="#2563eb" stroke="#1e293b" stroke-width="0.8"/>' +
+      '  <circle cx="13" cy="11" r="2" fill="#ffffff" opacity="0.8"/>' +
+      '</g>' +
       '<rect x="22" y="86" width="56" height="12" rx="3" fill="#031622"/>' +
       '<text x="50" y="95" font-family="Impact, Arial Black" font-size="8" fill="#00f0ff" text-anchor="middle" letter-spacing="1">STRIKER</text>' +
       '</svg>';
@@ -4843,6 +4857,13 @@
     var sz = size || 22;
     var active = (opts && opts.active) || false;
 
+    // Resolve dynamic generic names
+    if (name === 'ball' || name === 'nav_home') {
+      var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
+      var curTeam = (theApp && theApp.store && theApp.store.data && (theApp.store.data.selectedTeam || theApp.store.data.selectedCharacter)) || 'footy';
+      name = (curTeam === 'hoops') ? 'nav_home_hoops' : 'nav_home_footy';
+    }
+
     switch (name) {
       case 'nav_home_footy':
       case 'ball_footy':
@@ -4882,6 +4903,12 @@
           '</svg>';
 
       case 'nav_home_hoops':
+      case 'ball_hoops':
+      case 'basketball_ball':
+      case 'basketball':
+      case 'hoops_ball':
+      case 'ball_hoops_street':
+      case 'ball_street':
         return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
           '<defs>' +
           '  <radialGradient id="fvh_bb_base" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#fb923c"/><stop offset="40%" stop-color="#ea580c"/><stop offset="75%" stop-color="#c2410c"/><stop offset="95%" stop-color="#9a3412"/><stop offset="100%" stop-color="#431407"/></radialGradient>' +
@@ -12479,23 +12506,27 @@
 
     var chosenTeam = null;
 
-    // Card 1: FOOTY ⚽ — $FOOTY
+    // Card 1: FOOTY — $FOOTY
     var cardFooty = document.createElement('div');
     cardFooty.className = 'fvh-team-card footy';
     cardFooty.innerHTML =
       '<div class="fvh-team-card-emblem">' +
-      '  <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#00f0ff 0%,#0369a1 100%);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 16px rgba(0,240,255,0.4);border:2px solid #00f0ff;">⚽</div>' +
+      '  <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.25) 0%,rgba(15,23,42,0.9) 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(0,240,255,0.4);border:2px solid #00f0ff;">' +
+      getUiIconSvg('nav_home_footy', 36) +
+      '  </div>' +
       '</div>' +
       '<div class="fvh-team-card-title">' + tr('teamFootyName') + '</div>' +
       '<div class="fvh-team-card-token">' + tr('teamFootyToken') + '</div>' +
       '<div class="fvh-team-card-desc">' + tr('teamFootyDesc') + '</div>';
 
-    // Card 2: HOOPS 🏀 — $HOOPS
+    // Card 2: HOOPS — $HOOPS
     var cardHoops = document.createElement('div');
     cardHoops.className = 'fvh-team-card hoops';
     cardHoops.innerHTML =
       '<div class="fvh-team-card-emblem">' +
-      '  <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#ff8c00 0%,#c2410c 100%);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 16px rgba(255,140,0,0.4);border:2px solid #ff8c00;">🏀</div>' +
+      '  <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,rgba(251,146,60,0.25) 0%,rgba(24,8,2,0.9) 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(255,140,0,0.4);border:2px solid #ff8c00;">' +
+      getUiIconSvg('nav_home_hoops', 36) +
+      '  </div>' +
       '</div>' +
       '<div class="fvh-team-card-title">' + tr('teamHoopsName') + '</div>' +
       '<div class="fvh-team-card-token">' + tr('teamHoopsToken') + '</div>' +
