@@ -191,6 +191,7 @@ const PRODUCT_CATALOG = {
 // Preserves ownership of deprecated duplicate items while surfacing only distinct canonical items
 const LEGACY_ITEM_ALIASES = {
   // Legacy football skins
+  'skin_crimson': 'skin_contrast_v',
   'skin_gold': 'skin_golden',
   'skin_shadow': 'skin_midnight',
   'skin_neon': 'skin_velocity',
@@ -209,6 +210,7 @@ const LEGACY_ITEM_ALIASES = {
   'skin_mars': 'skin_bb_mirage',
   'skin_hoops_cyber_dunk': 'skin_bb_cyber',
   // Legacy football balls
+  'ball_footy_classic': 'ball_classic',
   'ball_footy_classic_pro': 'ball_classic',
   'ball_footy_neon': 'ball_cyber_hex',
   'ball_footy_gold': 'ball_gold_stitch',
@@ -217,6 +219,7 @@ const LEGACY_ITEM_ALIASES = {
   'ball_earthrise': 'ball_pitch_white',
   'ball_footy_galactic': 'ball_nebula',
   // Legacy basketball balls
+  'ball_hoops_street': 'ball_hoops_classic',
   'ball_hoops_classic_pro': 'ball_hoops_classic',
   'ball_hoops_blaze': 'ball_molten',
   'ball_hoops_neon_energy': 'ball_hoops_lime',

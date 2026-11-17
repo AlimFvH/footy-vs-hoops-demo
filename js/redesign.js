@@ -2316,7 +2316,7 @@
     opts = opts || {};
     var char = opts.character || opts.char || 'footy';
     var isHoops = (char === 'hoops');
-    var fallbackImg = isHoops ? 'assets/characters/hoops23_preview.png' : 'assets/characters/footy10_preview.png';
+    var fallbackImg = isHoops ? 'assets/hero_hoops_real.png' : 'assets/hero_footy_real.png';
     var photo = opts.photoUrl || opts.photo_url || null;
     var extraClass = opts.extraClass ? (' ' + opts.extraClass) : '';
     var alt = escapeHtml(opts.alt || opts.name || char);
@@ -2441,13 +2441,13 @@
     if (!HERO_BASE_IMGS.footy) {
       var f = new Image();
       f.crossOrigin = 'anonymous';
-      f.src = 'assets/characters/footy10_preview.png';
+      f.src = 'assets/hero_footy_real.png';
       HERO_BASE_IMGS.footy = f;
     }
     if (!HERO_BASE_IMGS.hoops) {
       var h = new Image();
       h.crossOrigin = 'anonymous';
-      h.src = 'assets/characters/hoops23_preview.png';
+      h.src = 'assets/hero_hoops_real.png';
       HERO_BASE_IMGS.hoops = h;
     }
   }
@@ -2455,14 +2455,8 @@
 
   function drawHeroJerseyPattern(ctx, W, H, isFooty, skinId) {
     if (!skinId || skinId === 'skin_rookie' || skinId === 'skin_bb_onyx') return;
-    // Photorealistic 3D Model Preservation:
-    // Natural HSL fabric recoloring in getRecoloredHeroUrl already cleanly recolors
-    // the 3D model jersey, shorts, socks, and contours while preserving authentic athlete numbers,
-    // muscular creases, and lighting. We retain the skin IDs (e.g. skin_footy_mythic_titan, skin_hoops_hyper_beast)
-    // for seamless engine inspection without overlaying crude flat polygon stickers.
     var sId = String(skinId).toLowerCase();
     if (sId === 'skin_footy_mythic_titan' || sId === 'skin_hoops_hyper_beast' || sId.includes('titan') || sId.includes('beast') || sId.includes('dragon') || sId.includes('nebula')) {
-      // Preserved for engine metadata and high-fidelity 3D shading
       return;
     }
   }
@@ -2470,7 +2464,7 @@
   function getRecoloredHeroUrl(charId, skinId) {
     var isFooty = (charId === 'footy');
     if (!skinId || (isFooty && (skinId === 'skin_rookie' || skinId === 'skin_default')) || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_solar' || skinId === 'skin_hoops_street_legend' || skinId === 'skin_default'))) {
-      return isFooty ? 'assets/characters/footy10_preview.png?v=3.2.0' : 'assets/characters/hoops23_preview.png?v=3.2.0';
+      return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
     }
     var cacheKey = charId + '_' + skinId;
     if (HERO_SKIN_CACHE[cacheKey]) {
@@ -2493,20 +2487,19 @@
         for (var y = 0; y < cvs.height; y++) {
           var yPct = y / cvs.height;
           if (isFooty) {
-            var isTorsoOrShorts = (yPct >= 0.20 && yPct <= 0.66);
-            var isSocks = (yPct >= 0.67 && yPct <= 0.88);
-            if (!isTorsoOrShorts && !isSocks) continue;
+            var isTorsoOrShorts = (yPct >= 0.16 && yPct <= 0.68);
+            if (!isTorsoOrShorts) continue;
 
             for (var x = 0; x < cvs.width; x++) {
               var idx = (y * cvs.width + x) * 4;
               if (data[idx + 3] < 40) continue;
               var r = data[idx], g = data[idx + 1], b = data[idx + 2];
               var hsl = heroRgbToHsl(r, g, b);
-              if (hsl.h >= 160 && hsl.h <= 250 && hsl.s >= 0.18) {
+              if (hsl.h >= 170 && hsl.h <= 245 && hsl.s >= 0.25 && hsl.l <= 0.85) {
                 var targetH = pal.h;
                 var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
                 var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
-                if (pal.darkShorts && yPct >= 0.54 && yPct <= 0.66) {
+                if (pal.darkShorts && yPct >= 0.48 && yPct <= 0.64) {
                   targetL *= 0.65;
                   targetS *= 0.8;
                 }
@@ -2516,18 +2509,18 @@
             }
           } else {
             // HOOPS
-            var isJerseyOrShorts = (yPct >= 0.20 && yPct <= 0.62);
+            var isJerseyOrShorts = (yPct >= 0.18 && yPct <= 0.70);
             if (!isJerseyOrShorts) continue;
 
             for (var x = 0; x < cvs.width; x++) {
               var idx = (y * cvs.width + x) * 4;
               if (data[idx + 3] < 40) continue;
               var xPct = x / cvs.width;
-              if (xPct < 0.28 || xPct > 0.72) continue;
+              if (xPct < 0.22 || xPct > 0.78) continue;
 
               var r = data[idx], g = data[idx + 1], b = data[idx + 2];
               var hsl = heroRgbToHsl(r, g, b);
-              if ((hsl.h <= 42 || hsl.h >= 340) && hsl.s >= 0.35 && hsl.l <= 0.75) {
+              if ((hsl.h <= 45 || hsl.h >= 340) && hsl.s >= 0.30 && hsl.l <= 0.75) {
                 var targetH = pal.h;
                 var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
                 var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
@@ -2554,7 +2547,7 @@
         });
       };
     }
-    return isFooty ? 'assets/characters/footy10_preview.png?v=3.2.0' : 'assets/characters/hoops23_preview.png?v=3.2.0';
+    return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
   }
 
   function getCharacterDisplayHtml(charId, specificSkinId, options) {
@@ -6386,76 +6379,10 @@
     var body = document.createElement('div');
     body.className = 'page-body';
 
-    // Active athlete in Locker: defaults to passed initialChar or store selected athlete
+    // Active athlete in Locker: determined by player's selected athlete
     curChar = initialChar || (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
     var isFooty = (curChar === 'footy');
     var lang = getActiveLang();
-
-    // Interactive Athlete Switcher: Effortlessly toggle between FOOTY #10 and HOOPS #23
-    var athleteSwitcher = document.createElement('div');
-    athleteSwitcher.className = 'fvh-athlete-switcher';
-    athleteSwitcher.style.display = 'flex';
-    athleteSwitcher.style.alignItems = 'center';
-    athleteSwitcher.style.gap = '8px';
-    athleteSwitcher.style.marginBottom = '14px';
-    athleteSwitcher.style.background = 'rgba(8, 14, 28, 0.75)';
-    athleteSwitcher.style.padding = '6px';
-    athleteSwitcher.style.borderRadius = '14px';
-    athleteSwitcher.style.border = '1px solid rgba(255, 255, 255, 0.12)';
-
-    var tabFooty = document.createElement('button');
-    tabFooty.type = 'button';
-    tabFooty.className = 'fvh-athlete-tab ' + (curChar === 'footy' ? 'active' : '');
-    tabFooty.style.flex = '1';
-    tabFooty.style.minHeight = '42px';
-    tabFooty.style.border = 'none';
-    tabFooty.style.borderRadius = '10px';
-    tabFooty.style.cursor = 'pointer';
-    tabFooty.style.fontWeight = '900';
-    tabFooty.style.fontSize = '12px';
-    tabFooty.style.letterSpacing = '0.5px';
-    tabFooty.style.display = 'flex';
-    tabFooty.style.alignItems = 'center';
-    tabFooty.style.justifyContent = 'center';
-    tabFooty.style.gap = '6px';
-    tabFooty.style.background = curChar === 'footy' ? 'linear-gradient(135deg, #00f0ff, #0284c7)' : 'transparent';
-    tabFooty.style.color = curChar === 'footy' ? '#000' : '#94a3b8';
-    tabFooty.innerHTML = getUiIconSvg('nav_home_footy', 16) + ' <span>FOOTY #10</span>';
-    tabFooty.onclick = function() {
-      if (curChar === 'footy') return;
-      app.audio.play('click');
-      app.store.update(function(d) { d.selectedCharacter = 'footy'; d.selectedTeam = 'footy'; });
-      app.show(buildCharactersPage(app, 'footy', curSlot), 'characters');
-    };
-
-    var tabHoops = document.createElement('button');
-    tabHoops.type = 'button';
-    tabHoops.className = 'fvh-athlete-tab ' + (curChar === 'hoops' ? 'active' : '');
-    tabHoops.style.flex = '1';
-    tabHoops.style.minHeight = '42px';
-    tabHoops.style.border = 'none';
-    tabHoops.style.borderRadius = '10px';
-    tabHoops.style.cursor = 'pointer';
-    tabHoops.style.fontWeight = '900';
-    tabHoops.style.fontSize = '12px';
-    tabHoops.style.letterSpacing = '0.5px';
-    tabHoops.style.display = 'flex';
-    tabHoops.style.alignItems = 'center';
-    tabHoops.style.justifyContent = 'center';
-    tabHoops.style.gap = '6px';
-    tabHoops.style.background = curChar === 'hoops' ? 'linear-gradient(135deg, #ff7a00, #ea580c)' : 'transparent';
-    tabHoops.style.color = curChar === 'hoops' ? '#000' : '#94a3b8';
-    tabHoops.innerHTML = getUiIconSvg('nav_home_hoops', 16) + ' <span>HOOPS #23</span>';
-    tabHoops.onclick = function() {
-      if (curChar === 'hoops') return;
-      app.audio.play('click');
-      app.store.update(function(d) { d.selectedCharacter = 'hoops'; d.selectedTeam = 'hoops'; });
-      app.show(buildCharactersPage(app, 'hoops', curSlot), 'characters');
-    };
-
-    athleteSwitcher.appendChild(tabFooty);
-    athleteSwitcher.appendChild(tabHoops);
-    body.appendChild(athleteSwitcher);
 
     // Wardrobe & Inspection Layout
     var layout = document.createElement('div');
@@ -6653,11 +6580,23 @@
             }
           }
           var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) ||
-            (isFooty && (it.id === 'skin_rookie' || it.id === 'ball_footy_classic')) ||
-            (!isFooty && (it.id === 'skin_solar' || it.id === 'skin_hoops_street_legend' || it.id === 'ball_hoops_street')) ||
+            (isFooty && (it.id === 'skin_rookie' || it.id === 'ball_classic' || it.id === 'ball_footy_classic')) ||
+            (!isFooty && (it.id === 'skin_bb_onyx' || it.id === 'skin_solar' || it.id === 'skin_hoops_street_legend' || it.id === 'ball_hoops_classic' || it.id === 'ball_hoops_street')) ||
             (LEGACY_ITEM_ALIASES[it.id] && owned.indexOf(LEGACY_ITEM_ALIASES[it.id]) !== -1);
           return isOwned;
         });
+
+        // Deduplicate items so aliases or legacy entries never produce duplicates
+        var seenCanonIds = {};
+        var uniqueMatching = [];
+        matching.forEach(function (it) {
+          var cId = LEGACY_ITEM_ALIASES[it.id] || it.id;
+          if (!seenCanonIds[cId]) {
+            seenCanonIds[cId] = true;
+            uniqueMatching.push(it);
+          }
+        });
+        matching = uniqueMatching;
 
         if (matching.length === 0) {
           selectBtn.style.display = 'none';
@@ -8133,16 +8072,7 @@
       { id: 'ball_molten', name: 'Molten Magma', name_ru: 'Расплавленная магма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1100 },
       { id: 'ball_glitch', name: 'Glitch Hologram', name_ru: 'Глитч-голограмма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1250 },
       { id: 'ball_supernova', name: 'Galactic Supernova', name_ru: 'Галактическая сверхновая', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2200 },
-      { id: 'ball_sovereign_bb', name: 'Sovereign Gold Ball', name_ru: 'Золотой мяч суверена', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2600 },
-      // Preserved legacy test items
-      { id: 'skin_crimson', name: 'Crimson Comet', name_ru: 'Багровая Комета', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 120 },
-      { id: 'ball_footy_classic', name: 'Match Classic', name_ru: 'Мяч Classic', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_hoops_street', name: 'Street Classic', name_ru: 'Уличный Classic', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      // Preserved Pack Exclusives
-      { id: 'skin_footy_mythic_titan', name: 'Mythic Titan', name_ru: 'Мифический Титан', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
-      { id: 'skin_hoops_hyper_beast', name: 'Hyper Beast', name_ru: 'Гипер Бестия', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true },
-      { id: 'ball_footy_supernova', name: 'Supernova Burst', name_ru: 'Вспышка Сверхновой', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 999999, packExclusive: true },
-      { id: 'ball_hoops_vortex', name: 'Quantum Vortex', name_ru: 'Квантовый Вихрь', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 999999, packExclusive: true }
+      { id: 'ball_sovereign_bb', name: 'Sovereign Gold Ball', name_ru: 'Золотой мяч суверена', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2600 }
     ];
   }
 
@@ -8720,6 +8650,18 @@
         return it.category === curCategory && (it.mode ? it.mode === shopSport : true);
       });
 
+      // Strict shop catalogue deduplication
+      var seenShopCanonIds = {};
+      var uniqueFiltered = [];
+      filtered.forEach(function (it) {
+        var cId = LEGACY_ITEM_ALIASES[it.id] || it.id;
+        if (!seenShopCanonIds[cId]) {
+          seenShopCanonIds[cId] = true;
+          uniqueFiltered.push(it);
+        }
+      });
+      filtered = uniqueFiltered;
+
       if (filtered.length === 0) {
         catalogueGrid.innerHTML =
           '<div class="fvh-empty-state">' +
@@ -9016,7 +8958,7 @@
       winsByDiff: { easy: 2, normal: 2, hard: 1 },
       coins: 1100,
       xp: 420,
-      photoUrl: 'assets/characters/hoops23_preview.png',
+      photoUrl: 'assets/hero_hoops_real.png',
       isCurrentUser: false
     });
 
@@ -9034,7 +8976,7 @@
         winsByDiff: { easy: 2, normal: 3, hard: 1 },
         coins: 1200,
         xp: 450,
-        photoUrl: 'assets/characters/footy10_preview.png',
+        photoUrl: 'assets/hero_footy_real.png',
         isCurrentUser: false
       });
     }

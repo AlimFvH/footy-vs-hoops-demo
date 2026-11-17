@@ -1885,17 +1885,17 @@ canvas {
 }
 
 .hud-top-ctrls {
-  position: static !important;
-  top: auto !important;
-  right: auto !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
   left: auto !important;
   bottom: auto !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
   pointer-events: auto !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   gap: 8px !important;
   z-index: 1000 !important;
 }
@@ -2050,35 +2050,46 @@ img[src*="user_football"], img[src*="user_basketball"], img[src*="ball_"] {
 }
 
 .btn-shoot .ico svg {
-  width: 44px !important;
-  height: 44px !important;
+  width: 36px !important;
+  height: 36px !important;
 }
 
 .btn-tackle .ico svg {
-  width: 38px !important;
-  height: 38px !important;
+  width: 28px !important;
+  height: 28px !important;
 }
 
 .btn-sprint .ico svg {
-  width: 34px !important;
-  height: 34px !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.btn-pass .ico svg {
+  width: 26px !important;
+  height: 26px !important;
 }
 
 .btn-shoot .lbl {
-  font-size: 14.5px !important;
-  letter-spacing: 0.6px !important;
+  font-size: 12.5px !important;
+  letter-spacing: 0.5px !important;
   margin-top: 1px !important;
 }
 
 .btn-tackle .lbl {
-  font-size: 11.5px !important;
-  letter-spacing: 0.4px !important;
+  font-size: 10px !important;
+  letter-spacing: 0.3px !important;
   margin-top: 1px !important;
 }
 
 .btn-sprint .lbl {
-  font-size: 10.5px !important;
-  letter-spacing: 0.4px !important;
+  font-size: 9px !important;
+  letter-spacing: 0.3px !important;
+  margin-top: 1px !important;
+}
+
+.btn-pass .lbl {
+  font-size: 9px !important;
+  letter-spacing: 0.3px !important;
   margin-top: 1px !important;
 }
 

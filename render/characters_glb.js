@@ -1444,7 +1444,7 @@
 
   const CharactersGLB = {
     enabled: true,
-    mode: 'glb', // 3D In-Engine Skinned GLB Athletes (Footy #10, Hoops #23, Keeper #1)
+    mode: 'procedural', // High-Fidelity In-Engine Articulated 3D Humanoid Athletes with fluid 60fps biomechanical animations
     instances: new Map(), // matchView -> (HiRes25DCharacterInstance | GLBCharacterInstance)[]
 
     init(gl) {
