@@ -5619,21 +5619,56 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
 
 function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.save();
+        // 1. Clean, dark circular medallion backing with glowing outer neon rim
+        const backingR = radius * 0.96;
+        g.beginPath();
+        g.arc(cx, cy, backingR, 0, Math.PI * 2);
+        const grad = g.createRadialGradient(cx, cy, radius * 0.1, cx, cy, backingR);
+        grad.addColorStop(0, isBasketball ? 'rgba(12, 18, 36, 0.88)' : 'rgba(6, 18, 28, 0.88)');
+        grad.addColorStop(1, isBasketball ? 'rgba(5, 8, 18, 0.96)' : 'rgba(3, 8, 16, 0.96)');
+        g.fillStyle = grad;
+        g.fill();
+
+        // Glowing outer accent ring
+        g.lineWidth = isBasketball ? 5 : 6;
+        g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
+        g.shadowColor = isBasketball ? '#f97316' : '#00f0ff';
+        g.shadowBlur = 12;
+        g.stroke();
+        g.shadowBlur = 0;
+
+        // Inner clean boundary pinstripe
+        g.beginPath();
+        g.arc(cx, cy, radius * 0.91, 0, Math.PI * 2);
+        g.lineWidth = 1.8;
+        g.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        g.stroke();
+
+        // 2. High-resolution official emblem drawn dead center with true proportions
         const emb = getOfficialEmblem();
         if (typeof g.drawImage === 'function' && emb && emb.complete && emb.naturalWidth > 0) {
-            // Draw ONLY the authentic official emblem in the center circle
-            const emSize = radius * 1.62;
+            g.imageSmoothingEnabled = true;
+            g.imageSmoothingQuality = 'high';
+            const emSize = radius * 1.72;
             g.drawImage(emb, cx - emSize / 2, cy - emSize / 2, emSize, emSize);
         } else {
-            // Crisp fallback if image is still loading
+            // Crisp geometric fallback while image loads
             const embR = radius * 0.72;
+            g.save();
             g.beginPath();
-            g.arc(cx, cy, embR, 0, Math.PI * 2);
-            g.fillStyle = isBasketball ? 'rgba(8, 12, 24, 0.85)' : 'rgba(5, 10, 20, 0.85)';
+            g.arc(cx, cy, embR, Math.PI * 0.5, Math.PI * 1.5);
+            g.closePath();
+            g.fillStyle = '#ffffff';
             g.fill();
-            g.lineWidth = 4;
-            g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
-            g.stroke();
+            g.restore();
+
+            g.save();
+            g.beginPath();
+            g.arc(cx, cy, embR, -Math.PI * 0.5, Math.PI * 0.5);
+            g.closePath();
+            g.fillStyle = '#f97316';
+            g.fill();
+            g.restore();
         }
         g.restore();
     }
@@ -5772,8 +5807,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         const Z = (z) => (z + pd / 2) * PPM_B;
         const { W, L, APRON } = basketball_js_1.BB;
 
-        // 1. Fortnite Cyber Midnight Apron & Baseline Safety Run-off Surface
-        g.fillStyle = hex(t.apron || 0x0a0c16);
+        // 1. NBA Tournament Sapphire Apron & Baseline Safety Run-off Surface
+        g.fillStyle = hex(t.apron || 0x1b2845);
         g.fillRect(0, 0, c.width, c.height);
 
         // Outer apron glowing boundary border
@@ -5840,8 +5875,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.restore();
         }
 
-        // Dark apron perimeter shadow
-        g.fillStyle = 'rgba(0,0,0,0.5)';
+        // Soft apron boundary drop shadow (clean natural depth, zero pitch-black blocks)
+        g.fillStyle = 'rgba(0,0,0,0.18)';
         const ox = X(-W);
         const oz = Z(-L);
         g.fillRect(px0, Z(-L - APRON), c.width, oz - Z(-L - APRON));
@@ -7494,31 +7529,25 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             root.add(wall, rail);
         }
 
-        // 2. Modern Center-Hung Arena Cube Scoreboard (Suspended high above center court at y = 15.0m)
+        // 2. Giant Floating Cyber Hardwood Arena Jumbotron (Positioned in North sky behind hoop so court is 100% crystal clear!)
         const hoopsJumboTex = new scene_js_1.Texture(makeJumbotronTexture('★ HOOPS #23 ALL-STAR ★', 'CYBER HARDWOOD ARENA', '#f97316', 'hoops'), { srgb: true, mipmap: true });
         const hoopsJumboMat = (0, scene_js_1.material)({ texture: hoopsJumboTex, unlit: true, doubleSided: true });
 
-        // Center-hung 4-sided mega jumbotron high above center court
-        const jumbo = new scene_js_1.Node();
-        jumbo.setPos(0, 15.0, 0);
+        // North skyline elevated jumbotron (direct in-game sightline above opponent hoop)
+        const northJumbo = new scene_js_1.Node();
+        northJumbo.setPos(0, 16.5, -(L + APRON + 8.5));
+        northJumbo.rotation = [-0.12, 0, 0];
 
-        for (const s of [-1, 1]) {
-            const sideNode = new scene_js_1.Node();
-            sideNode.setPos(0, 0, s * 4.8);
-            sideNode.rotation = [s * 0.22, s < 0 ? 0 : Math.PI, 0];
+        const screen = new scene_js_1.Node(G.plane(14.0, 5.2), hoopsJumboMat);
+        screen.rotation = [Math.PI / 2, 0, 0];
 
-            const screen = new scene_js_1.Node(G.plane(10.5, 4.0), hoopsJumboMat);
-            screen.rotation = [Math.PI / 2, 0, 0];
+        const caseNode = new scene_js_1.Node(G.box(14.6, 5.6, 0.6), barrierMat);
+        caseNode.setPos(0, 0, -0.32);
+        const trimNode = new scene_js_1.Node(G.box(14.8, 5.8, 0.08), neonOrangeMat);
+        trimNode.setPos(0, 0, -0.04);
 
-            const caseNode = new scene_js_1.Node(G.box(11.0, 4.4, 0.6), barrierMat);
-            caseNode.setPos(0, 0, -0.32);
-            const trimNode = new scene_js_1.Node(G.box(11.2, 4.6, 0.08), s < 0 ? neonOrangeMat : neonCyanMat);
-            trimNode.setPos(0, 0, -0.04);
-
-            sideNode.add(caseNode, trimNode, screen);
-            jumbo.add(sideNode);
-        }
-        root.add(jumbo);
+        northJumbo.add(caseNode, trimNode, screen);
+        root.add(northJumbo);
 
         // 3. Cyber Stadium Floodlight Pylons (4 corners of basketball court)
         const pylonMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.6, shininess: 55 });
@@ -8146,9 +8175,9 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const { W, L, APRON } = basketball_js_2.BB;
         const isDefault = Boolean(t && (t.isDefault || t.id === 'std_hoops_street' || t.id === 'std_hoops_gold'));
         
-        // Massive seamless ground plane (500x500)
-        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : 0x0b0e16);
-        const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.1, fog: false }));
+        // Massive seamless ground plane (500x500) - Polished tournament arena concourse
+        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : 0x1e2433);
+        const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.15, fog: false }));
         ground.setPos(0, -0.06, 0);
 
         // 360-Degree Panoramic Sky Dome
@@ -8271,7 +8300,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
 
             stanchion.add(pole, arm, base, safetyPad);
             hoop.add(board, rim, mount, springBox, net, stanchion);
-            if (s > 0) hoop.visible = false; // Hide foreground south hoop so it never blocks portrait camera
+            // Both hoops fully visible with authentic tournament geometry
             root.add(hoop);
             hoopRoots.push(hoop);
         }
@@ -8354,7 +8383,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CameraRig = exports.CLOSE_UP = void 0;
     const NDC_LIMIT = 0.9;
-    exports.CLOSE_UP = { footy: 0.82, hoops: 0.78 };
+    exports.CLOSE_UP = { footy: 0.85, hoops: 0.98 };
     class CameraRig {
         constructor(mode, aspect, halfW, halfL) {
             this.mode = mode;
@@ -9662,8 +9691,8 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.ballVisual.mode = mode;
             }
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            // Prominent, clearly trackable ball size (r = 0.34m for soccer, 0.32m for basketball)
-            const r = (mode === 'footy') ? 0.34 : 0.32;
+            // Prominent, clearly trackable ball size proportional to 3D player models (r = 0.23m for soccer, 0.24m for basketball)
+            const r = (mode === 'footy') ? 0.23 : 0.24;
             this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: 0.75, shininess: 55, castShadow: true, rim: 0.25, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.4) : [0, 0, 0] }));
             this.ballShadow = new scene_js_5.Node(G.plane(r * 2.8, r * 2.8), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.ballGlow = new scene_js_5.Node(G.ring(r * 1.25, r * 1.9, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
@@ -10127,7 +10156,7 @@ define("i18n/en", ["require", "exports"], function (require, exports) {
         'shop.stars': 'Pay with Telegram Stars',
         'shop.ton': 'Pay with TON',
         'shop.paymentsSoon': 'Real-money purchases (Telegram Stars, TON) are not enabled in this demo.',
-        'nav.home': 'Home',
+        'nav.home': 'Play',
         'album.title': "Collection Album",
         'album.col.footy': "FOOTY",
         'album.col.hoops': "HOOPS",
@@ -10179,7 +10208,7 @@ define("i18n/en", ["require", "exports"], function (require, exports) {
         'pack.pool': "Can contain",
         'pack.notEnough': "Not enough demo coins",
         'pack.sum': "{a} new · {b} duplicates",
-        'nav.inventory': "Inventory",
+        'nav.inventory': "Locker",
         'inv.unequip': "Unequip",
         'inv.empty': "Nothing here yet. Buy or win items to fill your Inventory.",
         'inv.goShop': "Go to Shop",
@@ -11344,7 +11373,7 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const d = {
-        'app.tagline': 'Два вида спорта. Одна арена. Выбери свою игру.',
+        'app.tagline': 'Два вида спорта. Один чемпион. Выбери свою игру.',
         'common.back': 'Назад', 'common.close': 'Закрыть', 'common.cancel': 'Отмена', 'common.confirm': 'Подтвердить', 'common.ok': 'ОК',
         'common.yes': 'Да', 'common.no': 'Нет', 'common.on': 'Вкл', 'common.off': 'Выкл', 'common.loading': 'Загрузка…', 'common.soon': 'Скоро',
         'common.demo': 'ДЕМО', 'common.coins': 'Демо-монеты', 'common.level': 'Уровень {n}', 'common.copy': 'Копировать', 'common.copied': 'Скопировано!',
@@ -11418,8 +11447,8 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
         'err.webgl': 'Устройство не смогло запустить 3D-графику (WebGL2). Попробуй обновить браузер или Telegram.', 'err.contextLost': 'Графический контекст потерян. Нажми, чтобы перезагрузить.', 'err.reload': 'Перезагрузить',
         'orient.hint': 'Совет: в горизонтальном режиме обзор шире.', 'back.confirm': 'Выйти из матча?',
         'shop.demoNote': 'Демо-монеты не имеют реальной денежной стоимости и не могут быть выведены.', 'shop.need': 'Не хватает {n}', 'shop.all': 'Все',
-        'nav.home': 'Главная',
-        'nav.inventory': "Инвентарь",
+        'nav.home': 'Играть',
+        'nav.inventory': "Гардероб",
         'inv.unequip': "Снять",
         'inv.empty': "Здесь пока пусто. Покупайте или выигрывайте предметы.",
         'inv.goShop': "В магазин",
@@ -11547,7 +11576,7 @@ define("i18n/uk", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const d = {
-        'app.tagline': 'Два види спорту. Одна арена. Обери свою гру.',
+        'app.tagline': 'Два види спорту. Один чемпіон. Обери свою гру.',
         'common.back': 'Назад', 'common.close': 'Закрити', 'common.cancel': 'Скасувати', 'common.confirm': 'Підтвердити', 'common.ok': 'ОК',
         'common.yes': 'Так', 'common.no': 'Ні', 'common.on': 'Увімк.', 'common.off': 'Вимк.', 'common.loading': 'Завантаження…', 'common.soon': 'Незабаром',
         'common.demo': 'ДЕМО', 'common.coins': 'Демо-монети', 'common.level': 'Рівень {n}', 'common.copy': 'Копіювати', 'common.copied': 'Скопійовано!',
@@ -16529,12 +16558,11 @@ define("ui/kit", ["require", "exports", "i18n/index", "ui/dom"], function (requi
     exports.toggle = toggle;
     exports.seg = seg;
     const NAV = [
-        { name: 'menu', icon: '🏠', key: 'nav.home' },
-        { name: 'quests', icon: '🎯', key: 'menu.quests' },
+        { name: 'menu', icon: '⚽', key: 'nav.home' },
+        { name: 'characters', icon: '👕', key: 'nav.inventory' },
         { name: 'shop', icon: '🛒', key: 'menu.shop' },
-        { name: 'inventory', icon: '🎒', key: 'nav.inventory' },
+        { name: 'quests', icon: '🎯', key: 'menu.quests' },
         { name: 'profile', icon: '👤', key: 'menu.profile' },
-        { name: 'settings', icon: '⚙', key: 'menu.settings' },
     ];
     function bottomNav(active, go) {
         const el = (0, dom_js_2.h)('nav', { class: 'bottom-nav', 'aria-label': 'navigation' }, ...NAV.map((n) => (0, dom_js_2.h)('button', { class: `nav-item${n.name === active ? ' on' : ''}`, type: 'button', 'aria-label': (0, index_js_3.t)(n.key), 'aria-current': n.name === active ? 'page' : 'false', on: { click: () => { if (n.name !== active)

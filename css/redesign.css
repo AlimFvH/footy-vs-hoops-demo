@@ -2265,34 +2265,43 @@ canvas {
 }
 
 .fvh-nav-item.active {
-  color: var(--accent-lime) !important;
+  color: #bef264 !important;
 }
 
 .fvh-nav-item.active .fvh-nav-icon {
-  transform: translateY(-1px) scale(1.12) !important;
+  transform: translateY(-1px) scale(1.08) !important;
+  color: #bef264 !important;
 }
 
 .fvh-nav-item.active::after {
   content: '';
   position: absolute;
   top: 0;
-  width: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
   height: 3px;
-  background: var(--accent-lime);
-  border-radius: 3px;
-  box-shadow: 0 2px 8px rgba(190, 242, 100, 0.5);
+  background: #bef264;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(190, 242, 100, 0.7);
 }
 
 .fvh-nav-icon {
   font-size: 18px !important;
   line-height: 1 !important;
-  display: block !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   transition: transform 0.15s ease !important;
 }
 
 .fvh-nav-label {
   font-size: 10px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
+  color: #94a3b8 !important;
   letter-spacing: 0.2px !important;
   text-transform: uppercase !important;
   white-space: nowrap !important;
@@ -2301,6 +2310,11 @@ canvas {
   max-width: 100% !important;
   display: block !important;
   text-align: center !important;
+}
+
+.fvh-nav-item.active .fvh-nav-label {
+  color: #bef264 !important;
+  font-weight: 900 !important;
 }
 
 /* Safe-area padding for all page views */
