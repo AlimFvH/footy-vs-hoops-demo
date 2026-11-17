@@ -1879,13 +1879,14 @@ canvas {
   backdrop-filter: blur(10px) !important;
   font-weight: 800 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75) !important;
-  max-width: calc(100vw - 32px) !important;
+  max-width: calc(100vw - 110px) !important;
+  margin: 0 auto !important;
 }
 
 .hud-top-ctrls {
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
+  position: fixed !important;
+  top: calc(max(var(--sat), 12px) + 6px) !important;
+  right: calc(max(var(--sar), 12px) + 6px) !important;
   left: auto !important;
   bottom: auto !important;
   margin: 0 !important;
@@ -1894,8 +1895,8 @@ canvas {
   flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-end !important;
-  gap: 10px !important;
-  z-index: 125 !important;
+  gap: 8px !important;
+  z-index: 150 !important;
 }
 
 .hud-top-ctrls .hud-pause,
@@ -1906,11 +1907,13 @@ canvas {
   top: auto !important;
   bottom: auto !important;
   margin: 0 !important;
-  width: 42px !important;
-  height: 42px !important;
-  border-radius: 12px !important;
-  background: rgba(8, 14, 28, 0.92) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  border-radius: 10px !important;
+  background: rgba(8, 14, 28, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   display: flex !important;
@@ -1918,12 +1921,12 @@ canvas {
   justify-content: center !important;
   cursor: pointer !important;
   color: #fff !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
   transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease !important;
   pointer-events: auto !important;
   touch-action: manipulation !important;
   -webkit-tap-highlight-color: transparent !important;
-  z-index: 126 !important;
+  z-index: 151 !important;
 }
 
 .hud-top-ctrls .hud-pause:hover,
@@ -8385,12 +8388,12 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 }
 
 /* Solo Menu OVR & Upgrade Pills */
-.fvh-solo-ovr-pill {
-  transition: transform 0.12s ease, background 0.12s ease;
-}
-.fvh-solo-ovr-pill:active {
-  transform: scale(0.94);
-  background: rgba(0, 240, 255, 0.25) !important;
+.fvh-rival-ovr-capsule,
+.fvh-solo-ovr-pill,
+.fvh-podium-ovr-pill,
+.fvh-ovr-mini-badge,
+.fvh-upgrades-ovr-box {
+  display: none !important;
 }
 .fvh-solo-upgrade-pill {
   transition: transform 0.12s ease, filter 0.12s ease;

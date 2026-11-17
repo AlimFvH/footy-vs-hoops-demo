@@ -4847,6 +4847,11 @@
       case 'nav_home_footy':
       case 'ball_footy':
       case 'football_ball':
+      case 'football':
+      case 'soccer':
+      case 'soccer_ball':
+      case 'ball_classic':
+      case 'footy_ball':
         return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
           '<defs>' +
           '  <radialGradient id="fvh_soc_base" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#f8fafc"/><stop offset="65%" stop-color="#cbd5e1"/><stop offset="90%" stop-color="#64748b"/><stop offset="100%" stop-color="#1e293b"/></radialGradient>' +
@@ -6141,11 +6146,6 @@
         (lang === 'ru' ? 'Очки прокачки: ' : 'Training Tiers: ') + '<b style="color:#fff;">' + (pL + sL + kL + spL) + ' / 40</b>' +
         '    </div>' +
         '  </div>' +
-        '  <div class="fvh-upgrades-ovr-box" style="text-align:center;padding:8px 12px;background:rgba(0,0,0,0.45);border:1.5px solid ' + (isFooty ? 'rgba(0,240,255,0.4)' : 'rgba(249,115,22,0.4)') + ';border-radius:14px;flex-shrink:0;">' +
-        '    <div style="font-size:9.5px;font-weight:800;color:#94a3b8;letter-spacing:0.5px;">RATING</div>' +
-        '    <div style="font-size:24px;font-weight:900;color:' + (isFooty ? '#00f0ff' : '#f97316') + ';line-height:1;">' + ovr + '</div>' +
-        '    <div style="font-size:9.5px;font-weight:900;color:#facc15;">OVR</div>' +
-        '  </div>' +
         '</div>';
       body.appendChild(heroBanner);
 
@@ -6543,7 +6543,6 @@
         raritySeg.style.display = 'none';
         avatarBox.innerHTML = getCharacterDisplayHtml(curChar, null);
         equipSlotList.innerHTML =
-          '<div class="fvh-equipped-slot"><span>⚡ Рейтинг (OVR):</span><b style="color:#00f0ff;font-size:14px;">' + ovr + ' OVR</b></div>' +
           '<div class="fvh-equipped-slot"><span>💥 ' + (lang === 'ru' ? 'Сила удара / броска:' : 'Power:') + '</span><b>Lvl ' + pLvl + ' / 10</b></div>' +
           '<div class="fvh-equipped-slot"><span>💨 ' + (lang === 'ru' ? 'Выносливость:' : 'Stamina:') + '</span><b>Lvl ' + sLvl + ' / 10</b></div>' +
           '<div class="fvh-equipped-slot"><span>🧤 ' + (lang === 'ru' ? 'Вратарь:' : 'Goalkeeper:') + '</span><b>Lvl ' + kLvl + ' / 10</b></div>';
@@ -8881,7 +8880,6 @@
       '<div class="fvh-podium-name" title="' + escapeHtml(ath.name) + '">' + escapeHtml(ath.name) + '</div>' +
       '<div class="fvh-podium-meta-row">' +
       teamTag +
-      '  <span class="fvh-podium-ovr-pill">OVR ' + athOvr + '</span>' +
       '</div>' +
       '<div class="fvh-podium-score">' + (ath.score || 0).toLocaleString() + ' <small style="font-size:10px;opacity:0.85;">' + tr('ptsUnit') + '</small></div>' +
       '<div class="fvh-podium-winrate">' + statsText + '</div>' +
@@ -9446,7 +9444,6 @@
           '  </div>' +
           '  <div class="fvh-lb-club">' +
           '    <span class="fvh-team-pill ' + (isHoops ? 'hoops' : 'footy') + '">' + (isHoops ? '🏀 ' + tr('hoopsChar') : '⚽ ' + tr('footyChar')) + '</span>' +
-          '    <span class="fvh-ovr-mini-badge">OVR ' + athOvr + '</span>' +
           '    · ' + escapeHtml(ath.club || 'FvH Club') +
           '    · <span class="fvh-lb-winrate-text">' + statsText + '</span>' +
           '  </div>' +
@@ -12785,7 +12782,6 @@
       '      <span class="fvh-rival-icon" style="display:inline-flex;align-items:center;">' + getUiIconSvg('nav_home_footy', 16) + '</span>' +
       '      <span class="fvh-rival-name">FOOTY</span>' +
       '    </div>' +
-      '    <span class="fvh-rival-ovr-capsule fvh-solo-ovr-pill" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">' + getUiIconSvg('lightning', 12) + ' <span>' + footyOvr + ' OVR</span></span>' +
       '  </div>' +
       '  <div class="fvh-rivalry-center-badge">' +
       '    <span class="fvh-clash-vs">VS</span>' +
@@ -12795,7 +12791,6 @@
       '      <span class="fvh-rival-icon" style="display:inline-flex;align-items:center;">' + getUiIconSvg('nav_home_hoops', 16) + '</span>' +
       '      <span class="fvh-rival-name">HOOPS</span>' +
       '    </div>' +
-      '    <span class="fvh-rival-ovr-capsule fvh-solo-ovr-pill" title="' + (lang === 'ru' ? 'Прокачка навыков' : 'Upgrade Skills') + '">' + getUiIconSvg('lightning', 12) + ' <span>' + hoopsOvr + ' OVR</span></span>' +
       '  </div>' +
       '</div>' +
       '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
