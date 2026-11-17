@@ -7445,28 +7445,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             root.add(wall, rail);
         }
 
-        // 2. Giant Floating Holographic Stadium Jumbotrons (Elevated in North & South skies!)
-        const footyJumboTex = new scene_js_1.Texture(makeJumbotronTexture('★ FOOTY #10 STRIKER ★', 'NEO TURF ARENA', '#00f0ff', 'footy'), { srgb: true, mipmap: true });
-        const footyJumboMat = (0, scene_js_1.material)({ texture: footyJumboTex, unlit: true, doubleSided: true });
-        
-        for (const s of [-1, 1]) {
-            const jumbo = new scene_js_1.Node();
-            jumbo.setPos(0, 16.5, s * (L + GD + 8.5));
-            jumbo.rotation = [s * 0.12, s < 0 ? 0 : Math.PI, 0];
-            
-            // Screen display quad
-            const screen = new scene_js_1.Node(G.plane(16.0, 6.0), footyJumboMat);
-            screen.rotation = [Math.PI / 2, 0, 0];
-            
-            // Outer titanium casing & neon border
-            const caseNode = new scene_js_1.Node(G.box(16.6, 6.6, 0.8), barrierMat);
-            caseNode.setPos(0, 0, -0.42);
-            const trimNode = new scene_js_1.Node(G.box(16.8, 6.8, 0.1), neonCyanMat);
-            trimNode.setPos(0, 0, -0.05);
-
-            jumbo.add(caseNode, trimNode, screen);
-            root.add(jumbo);
-        }
+        // 2. Open Sky Vista (Clean field-of-view behind goals without big screen obstruction)
 
         // 3. Four Monumental Cyber Floodlight Towers
         for (const sx of [-1, 1]) {
@@ -7529,25 +7508,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             root.add(wall, rail);
         }
 
-        // 2. Giant Floating Cyber Hardwood Arena Jumbotron (Positioned in North sky behind hoop so court is 100% crystal clear!)
-        const hoopsJumboTex = new scene_js_1.Texture(makeJumbotronTexture('★ HOOPS #23 ALL-STAR ★', 'CYBER HARDWOOD ARENA', '#f97316', 'hoops'), { srgb: true, mipmap: true });
-        const hoopsJumboMat = (0, scene_js_1.material)({ texture: hoopsJumboTex, unlit: true, doubleSided: true });
-
-        // North skyline elevated jumbotron (direct in-game sightline above opponent hoop)
-        const northJumbo = new scene_js_1.Node();
-        northJumbo.setPos(0, 16.5, -(L + APRON + 8.5));
-        northJumbo.rotation = [-0.12, 0, 0];
-
-        const screen = new scene_js_1.Node(G.plane(14.0, 5.2), hoopsJumboMat);
-        screen.rotation = [Math.PI / 2, 0, 0];
-
-        const caseNode = new scene_js_1.Node(G.box(14.6, 5.6, 0.6), barrierMat);
-        caseNode.setPos(0, 0, -0.32);
-        const trimNode = new scene_js_1.Node(G.box(14.8, 5.8, 0.08), neonOrangeMat);
-        trimNode.setPos(0, 0, -0.04);
-
-        northJumbo.add(caseNode, trimNode, screen);
-        root.add(northJumbo);
+        // 2. Open Court Skyline (Clean sightline behind hoops without big screen obstruction)
 
         // 3. Cyber Stadium Floodlight Pylons (4 corners of basketball court)
         const pylonMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.6, shininess: 55 });
