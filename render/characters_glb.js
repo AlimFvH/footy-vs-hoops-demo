@@ -590,6 +590,11 @@
       gl.generateMipmap(gl.TEXTURE_2D);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      const anisoExt = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+      if (anisoExt) {
+        const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
+        gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
+      }
       gl.bindTexture(gl.TEXTURE_2D, null);
 
       skinTextureCache.set(key, skinTex);
@@ -723,6 +728,11 @@
         gl.generateMipmap(gl.TEXTURE_2D);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        const anisoExt = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+        if (anisoExt) {
+          const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
+          gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
+        }
         gl.bindTexture(gl.TEXTURE_2D, null);
       }
 
@@ -797,7 +807,7 @@
       this.roll = 0;
       this.elevationLift = 0;
       // Athletic, calibrated player scale (fits comfortably in goal & under rim)
-      this.scale = options.scale || 1.76;
+      this.scale = options.scale || 1.96;
       this.currentAnim = 'idle';
       this.modelMatrix = new Float32Array(16);
 
@@ -868,7 +878,9 @@
         targetClip = 'Punch_Right';
       } else if (lower === 'punch_left') {
         targetClip = 'Punch_Left';
-      } else if (lower === 'slide' || lower === 'tackle' || lower === 'roll' || lower === 'dive') {
+      } else if (lower === 'slide' || lower === 'tackle') {
+        targetClip = (this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops')) ? 'Punch_Left' : 'Kick_Right';
+      } else if (lower === 'roll' || lower === 'dive') {
         targetClip = 'Roll';
       } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win') {
         targetClip = 'Wave';
@@ -1032,12 +1044,12 @@
           this.roll = -0.22 * Math.sin(strikeProgress * Math.PI); // Aerodynamic scissor twist
           this.setAnimation('Kick_Right', 2.4);
         }
-        // 3. Fortnite Low Ninja Slide Tackle
+        // 3. Authentic Football Turf Slide Tackle (Подкат - leg extended skimming grass, body reclined, NO SOMERSAULT ROLL)
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          this.elevationLift = -0.10;
-          this.pitch = -0.32; // Dynamic backward lean skimming the pitch
-          this.roll = 0.22;
-          this.setAnimation('Roll', 2.0);
+          this.elevationLift = -0.54;
+          this.pitch = -0.68; // Dynamic backward lean skimming the turf
+          this.roll = -0.26;  // Banked slightly onto slide hip
+          this.setAnimation('Kick_Right', 2.6);
         }
         // 4. Fortnite Victory Royale Emote: Hype Jump & Victory Flex
         else if (a.celebrateT > 0) {
@@ -1303,7 +1315,7 @@
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
             const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-              scale: 1.74,
+              scale: 1.96,
               skin: c.skin,
               isFooty: true,
               isKeeper: true,
@@ -1312,7 +1324,7 @@
             list.push(inst);
           } else if (charSport === 'footy') {
             const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-              scale: 1.72,
+              scale: 1.96,
               skin: c.skin,
               isFooty: true,
               isKeeper: false,
@@ -1321,7 +1333,7 @@
             list.push(inst);
           } else {
             const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-              scale: 1.78,
+              scale: 2.05,
               skin: c.skin,
               isFooty: false,
               isKeeper: false,

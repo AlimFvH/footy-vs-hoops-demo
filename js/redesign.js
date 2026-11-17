@@ -2461,7 +2461,7 @@
 
   function getRecoloredHeroUrl(charId, skinId) {
     var isFooty = (charId === 'footy');
-    if (!skinId || (isFooty && skinId === 'skin_rookie') || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_bb_gold' || skinId === 'skin_solar'))) {
+    if (!skinId || (isFooty && (skinId === 'skin_rookie' || skinId === 'skin_default')) || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_solar' || skinId === 'skin_hoops_street_legend' || skinId === 'skin_default'))) {
       return isFooty ? 'assets/characters/footy10_preview.png?v=3.2.0' : 'assets/characters/hoops23_preview.png?v=3.2.0';
     }
     var cacheKey = charId + '_' + skinId;
@@ -2555,11 +2555,13 @@
     var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
     var opts = options || {};
     // Ensure HOOPS doesn't inherit FOOTY's skin_rookie by default
-    var defaultSkin = isFooty ? 'skin_rookie' : 'skin_solar';
-    var charSpecificSkin = isFooty ? (eq['skin.footy'] || (eq.skin !== 'skin_solar' ? eq.skin : null)) : (eq['skin.hoops'] || (eq.skin !== 'skin_rookie' ? eq.skin : null));
+    var defaultSkin = isFooty ? 'skin_rookie' : 'skin_bb_onyx';
+    var charSpecificSkin = isFooty
+      ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' ? eq.skin : null))
+      : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin === 'skin_solar') ? eq.skin : null));
     var skinId = specificSkinId || charSpecificSkin || defaultSkin;
-    if (isFooty && skinId === 'skin_solar') skinId = 'skin_rookie';
-    if (!isFooty && skinId === 'skin_rookie') skinId = 'skin_solar';
+    if (isFooty && (skinId.startsWith('skin_bb_') || skinId.startsWith('skin_hoops') || skinId === 'skin_solar')) skinId = 'skin_rookie';
+    if (!isFooty && skinId === 'skin_rookie') skinId = 'skin_bb_onyx';
     var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
@@ -2614,6 +2616,44 @@
     // === FOOTBALL KITS (Footy) ===
     if (id === 'skin_rookie') {
       primary = '#1d4ed8'; secondary = '#0284c7'; accent = '#ffffff'; trim = '#60a5fa'; number = '10'; pattern = 'chevron';
+    } else if (id === 'skin_plain_white') {
+      primary = '#f8fafc'; secondary = '#e2e8f0'; accent = '#0284c7'; trim = '#38bdf8'; number = '7'; pattern = 'sash';
+    } else if (id === 'skin_training_bib') {
+      primary = '#a3e635'; secondary = '#65a30d'; accent = '#1e293b'; trim = '#4d7c0f'; number = '14'; pattern = 'stripes';
+    } else if (id === 'skin_casual_tee') {
+      primary = '#0284c7'; secondary = '#38bdf8'; accent = '#ffffff'; trim = '#e2e8f0'; number = '11'; pattern = 'pinstripes';
+    } else if (id === 'skin_block_dual') {
+      primary = '#1e3a8a'; secondary = '#38bdf8'; accent = '#ffffff'; trim = '#60a5fa'; number = '8'; pattern = 'cyber_strike';
+    } else if (id === 'skin_contrast_v') {
+      primary = '#b91c1c'; secondary = '#1e293b'; accent = '#fca5a5'; trim = '#ef4444'; number = '9'; pattern = 'claw_stripes';
+    } else if (id === 'skin_raglan_dual') {
+      primary = '#047857'; secondary = '#10b981'; accent = '#ffffff'; trim = '#34d399'; number = '4'; pattern = 'sash';
+    } else if (id === 'skin_solar' && !id.includes('bb_') && !id.includes('hoops')) {
+      primary = '#ea580c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#fdba74'; number = '17'; pattern = 'flame_stripes';
+    } else if (id === 'skin_velocity') {
+      primary = '#06b6d4'; secondary = '#00f0ff'; accent = '#10b981'; trim = '#67e8f9'; number = '22'; pattern = 'lightning';
+    } else if (id === 'skin_midnight') {
+      primary = '#09090b'; secondary = '#3b0764'; accent = '#c084fc'; trim = '#a855f7'; number = '99'; pattern = 'eclipse';
+    } else if (id === 'skin_cyber' && !id.includes('bb_')) {
+      primary = '#1e1b4b'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#38bdf8'; number = '77'; pattern = 'cyber_strike';
+    } else if (id === 'skin_pixel_camo') {
+      primary = '#0284c7'; secondary = '#e0f2fe'; accent = '#ffffff'; trim = '#38bdf8'; number = '3'; pattern = 'frost';
+    } else if (id === 'skin_electric') {
+      primary = '#581c87'; secondary = '#9333ea'; accent = '#f0abfc'; trim = '#c084fc'; number = '10'; pattern = 'lightning';
+    } else if (id === 'skin_golden') {
+      primary = '#854d0e'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fef08a'; number = '1'; pattern = 'golden_legend';
+    } else if (id === 'skin_aurora') {
+      primary = '#064e3b'; secondary = '#06b6d4'; accent = '#a7f3d0'; trim = '#2dd4bf'; number = '10'; pattern = 'championship_stars';
+    } else if (id === 'skin_matrix') {
+      primary = '#022c22'; secondary = '#10b981'; accent = '#00f0ff'; trim = '#34d399'; number = '01'; pattern = 'matrix';
+    } else if (id === 'skin_dynasty') {
+      primary = '#3b0764'; secondary = '#e2e8f0'; accent = '#facc15'; trim = '#c084fc'; number = '21'; pattern = 'royal';
+    } else if (id === 'skin_dragon') {
+      primary = '#7f1d1d'; secondary = '#ea580c'; accent = '#fde047'; trim = '#f97316'; number = '9'; pattern = 'flame_stripes';
+    } else if (id === 'skin_phoenix') {
+      primary = '#9a3412'; secondary = '#f59e0b'; accent = '#ffffff'; trim = '#fde047'; number = '10'; pattern = 'lightning';
+    } else if (id === 'skin_chrono') {
+      primary = '#0f172a'; secondary = '#0284c7'; accent = '#facc15'; trim = '#38bdf8'; number = '00'; pattern = 'championship_stars';
     } else if (id === 'skin_footy_royal_striker') {
       primary = '#1e3a8a'; secondary = '#d97706'; accent = '#fef08a'; trim = '#fbbf24'; number = '7'; pattern = 'sash';
     } else if (id === 'skin_footy_cyber_strike') {
@@ -2634,28 +2674,56 @@
       primary = '#09090b'; secondary = '#7c3aed'; accent = '#c084fc'; trim = '#a855f7'; number = '00'; pattern = 'eclipse';
     } else if (id === 'skin_gold') {
       primary = '#854d0e'; secondary = '#facc15'; accent = '#ffffff'; trim = '#fef08a'; number = '1'; pattern = 'royal';
-    } else if (id === 'skin_cyber') {
-      primary = '#4a044e'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#f43f5e'; number = '23'; pattern = 'glitch';
     } else if (id === 'skin_hydro') {
       primary = '#0369a1'; secondary = '#06b6d4'; accent = '#67e8f9'; trim = '#22d3ee'; number = '11'; pattern = 'aquatic';
     } else if (id === 'skin_astronaut') {
       primary = '#1e293b'; secondary = '#94a3b8'; accent = '#38bdf8'; trim = '#facc15'; number = '01'; pattern = 'space';
-    } else if (id === 'skin_premium_black_gold') {
-      primary = '#0a0a0a'; secondary = '#78350f'; accent = '#fef08a'; trim = '#f59e0b'; number = '10'; pattern = 'pinstripes';
-    } else if (id === 'skin_neon_cyber') {
-      primary = '#1e1b4b'; secondary = '#9333ea'; accent = '#22d3ee'; trim = '#22d3ee'; number = '10'; pattern = 'circuit';
-    } else if (id === 'skin_electric_blue') {
-      primary = '#1d4ed8'; secondary = '#3b82f6'; accent = '#60a5fa'; trim = '#60a5fa'; number = '10'; pattern = 'lightning';
-    } else if (id === 'skin_crimson_elite') {
-      primary = '#991b1b'; secondary = '#b91c1c'; accent = '#fef08a'; trim = '#f59e0b'; number = '7'; pattern = 'flame_stripes';
     } else if (id === 'skin_championship') {
       primary = '#0f172a'; secondary = '#eab308'; accent = '#facc15'; trim = '#eab308'; number = '1'; pattern = 'championship_stars';
     } else if (id === 'skin_footy_mythic_titan') {
       primary = '#0f172a'; secondary = '#0284c7'; accent = '#00f0ff'; trim = '#38bdf8'; number = '99'; pattern = 'mythic_titan';
 
     // === BASKETBALL JERSEYS (Hoops - Authentically Sleeveless Pro Cut Tanks) ===
-    } else if (id === 'skin_solar') {
-      isBasketball = true; primary = '#ea580c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#c2410c'; number = '24'; pattern = 'flame'; teamName = 'SOLAR';
+    } else if (id === 'skin_bb_onyx') {
+      isBasketball = true; primary = '#18181b'; secondary = '#27272a'; accent = '#ffffff'; trim = '#71717a'; number = '23'; pattern = 'plain'; teamName = 'HOOPS';
+    } else if (id === 'skin_bb_white') {
+      isBasketball = true; primary = '#f8fafc'; secondary = '#e2e8f0'; accent = '#dc2626'; trim = '#1e3a8a'; number = '1'; pattern = 'street'; teamName = 'HOOPS';
+    } else if (id === 'skin_bb_navy') {
+      isBasketball = true; primary = '#0f172a'; secondary = '#1e3a8a'; accent = '#cbd5e1'; trim = '#64748b'; number = '30'; pattern = 'plain'; teamName = 'CITY';
+    } else if (id === 'skin_bb_crimson') {
+      isBasketball = true; primary = '#b91c1c'; secondary = '#991b1b'; accent = '#ffffff'; trim = '#18181b'; number = '23'; pattern = 'street'; teamName = 'BULLS';
+    } else if (id === 'skin_bb_forest') {
+      isBasketball = true; primary = '#14532d'; secondary = '#15803d'; accent = '#ffffff'; trim = '#facc15'; number = '33'; pattern = 'plain'; teamName = 'BOSTON';
+    } else if (id === 'skin_bb_royal') {
+      isBasketball = true; primary = '#1d4ed8'; secondary = '#1e40af'; accent = '#facc15'; trim = '#fbbf24'; number = '30'; pattern = 'bay_arc'; teamName = 'BAY';
+    } else if (id === 'skin_bb_sunset') {
+      isBasketball = true; primary = '#701a75'; secondary = '#ea580c'; accent = '#fde047'; trim = '#f97316'; number = '1'; pattern = 'sunset'; teamName = 'SUNS';
+    } else if (id === 'skin_bb_miami') {
+      isBasketball = true; primary = '#db2777'; secondary = '#06b6d4'; accent = '#fdf4ff'; trim = '#ec4899'; number = '3'; pattern = 'split'; teamName = 'MIAMI';
+    } else if (id === 'skin_bb_amber') {
+      isBasketball = true; primary = '#d97706'; secondary = '#b45309'; accent = '#fef08a'; trim = '#fde047'; number = '7'; pattern = 'flame'; teamName = 'VOLT';
+    } else if (id === 'skin_bb_cyber') {
+      isBasketball = true; primary = '#3b0764'; secondary = '#06b6d4'; accent = '#22d3ee'; trim = '#8b5cf6'; number = '99'; pattern = 'cyber_dunk'; teamName = 'CYBER';
+    } else if (id === 'skin_bb_mirage') {
+      isBasketball = true; primary = '#ca8a04'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '13'; pattern = 'mars'; teamName = 'MIRAGE';
+    } else if (id === 'skin_bb_tropical') {
+      isBasketball = true; primary = '#0f766e'; secondary = '#f43f5e'; accent = '#ccfbf1'; trim = '#14b8a6'; number = '2'; pattern = 'split'; teamName = 'TROPIC';
+    } else if (id === 'skin_bb_arctic') {
+      isBasketball = true; primary = '#0369a1'; secondary = '#e0f2fe'; accent = '#ffffff'; trim = '#38bdf8'; number = '0'; pattern = 'bay_arc'; teamName = 'ARCTIC';
+    } else if (id === 'skin_bb_gold') {
+      isBasketball = true; primary = '#78350f'; secondary = '#ca8a04'; accent = '#fef08a'; trim = '#facc15'; number = '24'; pattern = 'phantom_black'; teamName = 'DYNASTY';
+    } else if (id === 'skin_bb_prism') {
+      isBasketball = true; primary = '#1e293b'; secondary = '#38bdf8'; accent = '#f43f5e'; trim = '#a855f7'; number = '11'; pattern = 'cyber_dunk'; teamName = 'PRISM';
+    } else if (id === 'skin_bb_noir') {
+      isBasketball = true; primary = '#09090b'; secondary = '#991b1b'; accent = '#fca5a5'; trim = '#ef4444'; number = '8'; pattern = 'street'; teamName = 'NOIR';
+    } else if (id === 'skin_bb_tokyo') {
+      isBasketball = true; primary = '#581c87'; secondary = '#db2777'; accent = '#00f0ff'; trim = '#ec4899'; number = '88'; pattern = 'cyber_dunk'; teamName = 'TOKYO';
+    } else if (id === 'skin_bb_nebula') {
+      isBasketball = true; primary = '#2e1065'; secondary = '#7c3aed'; accent = '#38bdf8'; trim = '#c084fc'; number = '00'; pattern = 'mars'; teamName = 'NEBULA';
+    } else if (id === 'skin_bb_void') {
+      isBasketball = true; primary = '#050508'; secondary = '#4c1d95'; accent = '#a855f7'; trim = '#7c3aed'; number = 'X'; pattern = 'phantom_black'; teamName = 'VOID';
+    } else if (id === 'skin_bb_titan') {
+      isBasketball = true; primary = '#1c1917'; secondary = '#b45309'; accent = '#fde047'; trim = '#fbbf24'; number = '99'; pattern = 'hyper_beast'; teamName = 'TITAN';
     } else if (id === 'skin_hoops_street_legend') {
       isBasketball = true; primary = '#1f2937'; secondary = '#ef4444'; accent = '#ffffff'; trim = '#dc2626'; number = '3'; pattern = 'street'; teamName = 'LEGEND';
     } else if (id === 'skin_hoops_golden_state') {
@@ -2672,7 +2740,7 @@
       isBasketball = true; primary = '#991b1b'; secondary = '#ea580c'; accent = '#fed7aa'; trim = '#f97316'; number = '42'; pattern = 'mars'; teamName = 'ARES';
     } else if (id === 'skin_hoops_hyper_beast') {
       isBasketball = true; primary = '#450a0a'; secondary = '#ea580c'; accent = '#facc15'; trim = '#f97316'; number = '99'; pattern = 'hyper_beast'; teamName = 'BEAST';
-    } else if (id.indexOf('hoops') !== -1) {
+    } else if (id.indexOf('hoops') !== -1 || id.indexOf('bb_') !== -1) {
       isBasketball = true; primary = '#ea580c'; secondary = '#f59e0b'; accent = '#ffffff'; trim = '#fb923c'; number = '23'; pattern = 'plain'; teamName = 'HOOPS';
     }
 
@@ -3081,18 +3149,40 @@
       var glow = '';
       var textBadge = 'PRO';
 
-      if (id === 'ball_hoops_street') {
-        bStart = '#f97316'; bMid = '#c2410c'; bEnd = '#431407'; seam = '#180802'; seamHighlight = '#7c2d12'; textBadge = 'STREET';
+      if (id === 'ball_hoops_street' || id === 'ball_hoops_classic') {
+        bStart = '#ea580c'; bMid = '#c2410c'; bEnd = '#381203'; seam = '#180802'; seamHighlight = '#78350f'; textBadge = 'CLASSIC';
+      } else if (id === 'ball_hoops_rubber') {
+        bStart = '#3f3f46'; bMid = '#18181b'; bEnd = '#09090b'; seam = '#180802'; seamHighlight = '#71717a'; textBadge = 'RUBBER';
+      } else if (id === 'ball_hoops_white') {
+        bStart = '#ffffff'; bMid = '#e2e8f0'; bEnd = '#64748b'; seam = '#0f172a'; seamHighlight = '#38bdf8'; textBadge = 'WHITE';
+      } else if (id === 'ball_hoops_asphalt') {
+        bStart = '#52525b'; bMid = '#27272a'; bEnd = '#09090b'; seam = '#f97316'; seamHighlight = '#fdba74'; textBadge = 'STREET';
+      } else if (id === 'ball_hoops_navy') {
+        bStart = '#1e3a8a'; bMid = '#0f172a'; bEnd = '#020617'; seam = '#94a3b8'; seamHighlight = '#cbd5e1'; textBadge = 'NAVY';
+      } else if (id === 'ball_hoops_crimson') {
+        bStart = '#ef4444'; bMid = '#b91c1c'; bEnd = '#450a0a'; seam = '#09090b'; seamHighlight = '#fca5a5'; textBadge = 'BULL';
+      } else if (id === 'ball_hoops_lime') {
+        bStart = '#a3e635'; bMid = '#65a30d'; bEnd = '#14532d'; seam = '#09090b'; seamHighlight = '#bef264'; glow = 'filter="drop-shadow(0 0 7px #a3e635)"'; textBadge = 'LIME';
+      } else if (id === 'ball_hoops_camo') {
+        bStart = '#334155'; bMid = '#1e293b'; bEnd = '#020617'; seam = '#06b6d4'; seamHighlight = '#67e8f9'; glow = 'filter="drop-shadow(0 0 6px #06b6d4)"'; textBadge = 'CAMO';
+      } else if (id === 'ball_hoops_sunset') {
+        bStart = '#fde047'; bMid = '#ea580c'; bEnd = '#4a044e'; seam = '#180802'; seamHighlight = '#f59e0b'; glow = 'filter="drop-shadow(0 0 7px #f59e0b)"'; textBadge = 'SUNSET';
+      } else if (id === 'ball_gold_groove' || id === 'ball_hoops_golden_elite') {
+        bStart = '#78350f'; bMid = '#451a03'; bEnd = '#1c0a00'; seam = '#facc15'; seamHighlight = '#fef08a'; hasCrest = true; glow = 'filter="drop-shadow(0 0 8px #facc15)"'; textBadge = 'GOLD 24K';
+      } else if (id === 'ball_cyber_grid') {
+        bStart = '#0f172a'; bMid = '#020617'; bEnd = '#000000'; seam = '#00f0ff'; seamHighlight = '#22d3ee'; glow = 'filter="drop-shadow(0 0 9px #00f0ff)"'; textBadge = 'GRID';
+      } else if (id === 'ball_molten' || id === 'ball_hoops_molten_fire') {
+        bStart = '#fb923c'; bMid = '#ea580c'; bEnd = '#3f0707'; seam = '#fef08a'; seamHighlight = '#ef4444'; glow = 'filter="drop-shadow(0 0 9px #ea580c)"'; textBadge = 'MOLTEN';
+      } else if (id === 'ball_glitch') {
+        bStart = '#ec4899'; bMid = '#8b5cf6'; bEnd = '#1e1b4b'; seam = '#00f0ff'; seamHighlight = '#f472b6'; glow = 'filter="drop-shadow(0 0 9px #d946ef)"'; textBadge = 'GLITCH';
+      } else if (id === 'ball_supernova' || id === 'ball_hoops_cosmic') {
+        bStart = '#a78bfa'; bMid = '#4c1d95'; bEnd = '#090514'; seam = '#00f0ff'; seamHighlight = '#f43f5e'; hasRing = true; glow = 'filter="drop-shadow(0 0 10px #a855f7)"'; textBadge = 'NOVA';
+      } else if (id === 'ball_sovereign_bb') {
+        bStart = '#fef08a'; bMid = '#eab308'; bEnd = '#713f12'; seam = '#0f172a'; seamHighlight = '#fde047'; hasStar = true; hasRing = true; glow = 'filter="drop-shadow(0 0 11px #facc15)"'; textBadge = 'SOVEREIGN';
       } else if (id === 'ball_hoops_classic_pro') {
         bStart = '#f59e0b'; bMid = '#d97706'; bEnd = '#5c2b09'; seam = '#0f172a'; seamHighlight = '#fde047'; hasCrest = true; textBadge = 'OFFICIAL';
       } else if (id === 'ball_hoops_neon_energy') {
         bStart = '#00f0ff'; bMid = '#0284c7'; bEnd = '#051937'; seam = '#10b981'; seamHighlight = '#67e8f9'; glow = 'filter="drop-shadow(0 0 8px #00f0ff)"'; textBadge = 'NEON';
-      } else if (id === 'ball_hoops_molten_fire') {
-        bStart = '#ef4444'; bMid = '#b91c1c'; bEnd = '#3f0707'; seam = '#fef08a'; seamHighlight = '#f97316'; glow = 'filter="drop-shadow(0 0 9px #ea580c)"'; textBadge = 'FIRE';
-      } else if (id === 'ball_hoops_golden_elite') {
-        bStart = '#fef08a'; bMid = '#eab308'; bEnd = '#583008'; seam = '#0f172a'; seamHighlight = '#fef08a'; hasStar = true; glow = 'filter="drop-shadow(0 0 9px #facc15)"'; textBadge = 'MVP 24K';
-      } else if (id === 'ball_hoops_cosmic') {
-        bStart = '#a78bfa'; bMid = '#4c1d95'; bEnd = '#12042b'; seam = '#d946ef'; seamHighlight = '#38bdf8'; hasRing = true; glow = 'filter="drop-shadow(0 0 9px #a855f7)"'; textBadge = 'COSMIC';
       } else if (id === 'ball_hoops_midnight') {
         bStart = '#3f3f46'; bMid = '#18181b'; bEnd = '#050507'; seam = '#00f0ff'; seamHighlight = '#38bdf8'; glow = 'filter="drop-shadow(0 0 6px #0284c7)"'; textBadge = 'STEALTH';
       } else if (id === 'ball_hoops_blaze') {
@@ -3178,26 +3268,42 @@
     var auraColor = '#00f0ff';
     var isGold = false;
 
-    if (id === 'ball_footy_classic') {
+    if (id === 'ball_classic' || id === 'ball_footy_classic') {
       fStart = '#ffffff'; fMid = '#e2e8f0'; fEnd = '#334155'; patch = '#2563eb'; seamColor = '#1e293b'; seamStitch = '#93c5fd';
+    } else if (id === 'ball_training') {
+      fStart = '#fdba74'; fMid = '#f97316'; fEnd = '#7c2d12'; patch = '#ea580c'; seamColor = '#18181b'; seamStitch = '#ffedd5';
+    } else if (id === 'ball_street') {
+      fStart = '#94a3b8'; fMid = '#64748b'; fEnd = '#1e293b'; patch = '#eab308'; seamColor = '#0f172a'; seamStitch = '#fde047';
+    } else if (id === 'ball_slate') {
+      fStart = '#cbd5e1'; fMid = '#475569'; fEnd = '#0f172a'; patch = '#1e293b'; seamColor = '#09090b'; seamStitch = '#94a3b8';
+    } else if (id === 'ball_pitch_white') {
+      fStart = '#ffffff'; fMid = '#f1f5f9'; fEnd = '#94a3b8'; patch = '#e2e8f0'; seamColor = '#38bdf8'; seamStitch = '#7dd3fc';
+    } else if (id === 'ball_vortex' || id === 'ball_footy_plasma') {
+      fStart = '#bef264'; fMid = '#84cc16'; fEnd = '#14532d'; patch = '#06b6d4'; seamColor = '#00f0ff'; seamStitch = '#a7f3d0'; hasAura = true; auraColor = '#84cc16';
+    } else if (id === 'ball_solar') {
+      fStart = '#fef08a'; fMid = '#f97316'; fEnd = '#431407'; patch = '#ef4444'; seamColor = '#facc15'; seamStitch = '#fde047'; hasAura = true; auraColor = '#ea580c';
+    } else if (id === 'ball_cyan_vector') {
+      fStart = '#67e8f9'; fMid = '#06b6d4'; fEnd = '#082f49'; patch = '#0284c7'; seamColor = '#00f0ff'; seamStitch = '#a5f3fc'; hasAura = true; auraColor = '#00f0ff';
+    } else if (id === 'ball_cyber_hex' || id === 'ball_footy_cyber_neon') {
+      fStart = '#0f172a'; fMid = '#020617'; fEnd = '#000000'; patch = '#00f0ff'; seamColor = '#0284c7'; seamStitch = '#38bdf8'; hasAura = true; auraColor = '#00f0ff';
+    } else if (id === 'ball_gold_stitch' || id === 'ball_footy_gold' || id === 'ball_footy_golden_elite') {
+      fStart = '#1e3a8a'; fMid = '#0f172a'; fEnd = '#020617'; patch = '#ca8a04'; seamColor = '#facc15'; seamStitch = '#fef08a'; hasAura = true; auraColor = '#eab308'; isGold = true;
+    } else if (id === 'ball_hyperdrive') {
+      fStart = '#0284c7'; fMid = '#1e1b4b'; fEnd = '#020617'; patch = '#38bdf8'; seamColor = '#00f0ff'; seamStitch = '#a5f3fc'; hasAura = true; auraColor = '#0284c7';
+    } else if (id === 'ball_chromatic') {
+      fStart = '#e0e7ff'; fMid = '#c084fc'; fEnd = '#3b0764'; patch = '#ec4899'; seamColor = '#00f0ff'; seamStitch = '#f0abfc'; hasAura = true; auraColor = '#d946ef';
+    } else if (id === 'ball_magma' || id === 'ball_footy_inferno') {
+      fStart = '#fb923c'; fMid = '#b91c1c'; fEnd = '#1c0a00'; patch = '#ef4444'; seamColor = '#facc15'; seamStitch = '#f97316'; hasAura = true; auraColor = '#ef4444';
+    } else if (id === 'ball_nebula' || id === 'ball_footy_galactic') {
+      fStart = '#c084fc'; fMid = '#4c1d95'; fEnd = '#090514'; patch = '#00f0ff'; seamColor = '#e879f9'; seamStitch = '#ffffff'; hasAura = true; auraColor = '#a855f7';
+    } else if (id === 'ball_sovereign' || id === 'ball_footy_supernova') {
+      fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#451a03'; patch = '#ca8a04'; seamColor = '#facc15'; seamStitch = '#fde047'; hasAura = true; auraColor = '#facc15'; isGold = true;
     } else if (id === 'ball_footy_classic_pro') {
       fStart = '#ffffff'; fMid = '#cbd5e1'; fEnd = '#1e3a8a'; patch = '#1d4ed8'; seamColor = '#f59e0b'; seamStitch = '#fde047';
-    } else if (id === 'ball_footy_inferno') {
-      fStart = '#fb923c'; fMid = '#ea580c'; fEnd = '#3a0707'; patch = '#ef4444'; seamColor = '#facc15'; seamStitch = '#f97316'; hasAura = true; auraColor = '#ea580c';
-    } else if (id === 'ball_footy_cyber_neon') {
-      fStart = '#00f0ff'; fMid = '#0284c7'; fEnd = '#020617'; patch = '#10b981'; seamColor = '#00f0ff'; seamStitch = '#67e8f9'; hasAura = true; auraColor = '#00f0ff';
-    } else if (id === 'ball_footy_golden_elite') {
-      fStart = '#fef08a'; fMid = '#eab308'; fEnd = '#583008'; patch = '#a16207'; seamColor = '#facc15'; seamStitch = '#fef08a'; hasAura = true; auraColor = '#facc15'; isGold = true;
     } else if (id === 'ball_footy_neon') {
       fStart = '#d9f99d'; fMid = '#84cc16'; fEnd = '#14532d'; patch = '#09090b'; seamColor = '#06b6d4'; seamStitch = '#a7f3d0';
-    } else if (id === 'ball_footy_plasma') {
-      fStart = '#e879f9'; fMid = '#7c3aed'; fEnd = '#18042b'; patch = '#ec4899'; seamColor = '#00f0ff'; seamStitch = '#f472b6'; hasAura = true; auraColor = '#a855f7';
-    } else if (id === 'ball_footy_gold') {
-      fStart = '#fef08a'; fMid = '#ca8a04'; fEnd = '#451a03'; patch = '#78350f'; seamColor = '#facc15'; seamStitch = '#fef08a'; hasAura = true; auraColor = '#facc15'; isGold = true;
-    } else if (id === 'ball_earthrise' || id === 'ball_footy_galactic') {
+    } else if (id === 'ball_earthrise') {
       fStart = '#38bdf8'; fMid = '#0284c7'; fEnd = '#061a35'; patch = '#15803d'; seamColor = '#ffffff'; seamStitch = '#7dd3fc'; hasAura = true; auraColor = '#38bdf8';
-    } else if (id === 'ball_footy_supernova') {
-      fStart = '#facc15'; fMid = '#0284c7'; fEnd = '#080f24'; patch = '#00f0ff'; seamColor = '#facc15'; seamStitch = '#ffffff'; hasAura = true; auraColor = '#00f0ff'; isGold = true;
     }
 
     var defs = '<defs>' +
@@ -4873,34 +4979,7 @@
       case 'soccer_ball':
       case 'ball_classic':
       case 'footy_ball':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<defs>' +
-          '  <radialGradient id="fvh_soc_base" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#f8fafc"/><stop offset="65%" stop-color="#cbd5e1"/><stop offset="90%" stop-color="#64748b"/><stop offset="100%" stop-color="#1e293b"/></radialGradient>' +
-          '  <radialGradient id="fvh_soc_blue" cx="36%" cy="32%" r="68%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="35%" stop-color="#2563eb"/><stop offset="75%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#172554"/></radialGradient>' +
-          '  <radialGradient id="fvh_soc_blue_dark" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="50%" stop-color="#1d4ed8"/><stop offset="100%" stop-color="#0f172a"/></radialGradient>' +
-          '  <linearGradient id="fvh_soc_gloss" x1="0%" y1="0%" x2="50%" y2="80%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/><stop offset="35%" stop-color="#ffffff" stop-opacity="0.3"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
-          '  <clipPath id="fvh_soc_clip"><circle cx="24" cy="24" r="22"/></clipPath>' +
-          '  <radialGradient id="fvh_soc_inner_shadow" cx="35%" cy="30%" r="65%"><stop offset="60%" stop-color="#000000" stop-opacity="0"/><stop offset="88%" stop-color="#0f172a" stop-opacity="0.35"/><stop offset="100%" stop-color="#020617" stop-opacity="0.75"/></radialGradient>' +
-          '</defs>' +
-          '<circle cx="24" cy="24" r="22" fill="url(#fvh_soc_base)"/>' +
-          '<g clip-path="url(#fvh_soc_clip)">' +
-          '  <path d="M22 17 L29 18 L32 25 L27 31 L18 29 L17 22 Z" fill="#ffffff" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M22 17 L17 22 L11 19 L11 12 L18 10 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M29 18 L36 14 L42 18 L40 25 L32 25 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M18 29 L27 31 L26 38 L18 41 L14 36 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M11 19 L17 22 L18 29 L14 36 L7 33 L6 25 Z" fill="#e2e8f0" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M6 25 L7 33 L2 35 L0 27 L2 20 Z" fill="url(#fvh_soc_blue_dark)" stroke="#1e293b" stroke-width="0.8"/>' +
-          '  <path d="M32 25 L40 25 L44 32 L39 39 L27 31 Z" fill="#cbd5e1" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M40 25 L48 24 L48 33 L44 32 Z" fill="url(#fvh_soc_blue_dark)" stroke="#1e293b" stroke-width="0.8"/>' +
-          '  <path d="M39 39 L44 32 L48 37 L43 44 L35 43 Z" fill="url(#fvh_soc_blue_dark)" stroke="#1e293b" stroke-width="0.8"/>' +
-          '  <path d="M18 10 L26 7 L34 10 L36 14 L29 18 L22 17 Z" fill="#ffffff" stroke="#475569" stroke-width="0.8" stroke-linejoin="round"/>' +
-          '  <path d="M26 7 L25 1 L35 2 L34 10 Z" fill="url(#fvh_soc_blue)" stroke="#1e293b" stroke-width="0.8"/>' +
-          '  <path d="M2 24 A22 22 0 1 0 46 24 A22 22 0 1 0 2 24 Z" fill="none" stroke="#0f172a" stroke-width="2.5" opacity="0.6"/>' +
-          '  <circle cx="24" cy="24" r="22" fill="url(#fvh_soc_inner_shadow)"/>' +
-          '  <ellipse cx="16" cy="13" rx="9" ry="4.5" transform="rotate(-35 16 13)" fill="url(#fvh_soc_gloss)"/>' +
-          '  <circle cx="13" cy="11" r="2" fill="#ffffff" opacity="0.75"/>' +
-          '</g>' +
-          '</svg>';
+        return '<img src="assets/icons/user_football.png" width="' + sz + '" height="' + sz + '" style="display:inline-block;vertical-align:middle;object-fit:contain;flex-shrink:0;" alt="FOOTY"/>';
 
       case 'nav_home_hoops':
       case 'ball_hoops':
@@ -4909,28 +4988,7 @@
       case 'hoops_ball':
       case 'ball_hoops_street':
       case 'ball_street':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<defs>' +
-          '  <radialGradient id="fvh_bb_base" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#fb923c"/><stop offset="40%" stop-color="#ea580c"/><stop offset="75%" stop-color="#c2410c"/><stop offset="95%" stop-color="#9a3412"/><stop offset="100%" stop-color="#431407"/></radialGradient>' +
-          '  <linearGradient id="fvh_bb_gloss" x1="0%" y1="0%" x2="60%" y2="80%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/><stop offset="45%" stop-color="#ffffff" stop-opacity="0.2"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
-          '  <clipPath id="fvh_bb_clip"><circle cx="24" cy="24" r="22"/></clipPath>' +
-          '  <radialGradient id="fvh_bb_inner_shadow" cx="35%" cy="30%" r="65%"><stop offset="55%" stop-color="#000000" stop-opacity="0"/><stop offset="90%" stop-color="#431407" stop-opacity="0.45"/><stop offset="100%" stop-color="#1c1917" stop-opacity="0.8"/></radialGradient>' +
-          '</defs>' +
-          '<circle cx="24" cy="24" r="22" fill="url(#fvh_bb_base)"/>' +
-          '<g clip-path="url(#fvh_bb_clip)">' +
-          '  <path d="M2 24 Q24 25.5 46 24" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round"/>' +
-          '  <path d="M2 24.8 Q24 26.3 46 24.8" stroke="#fdba74" stroke-width="0.6" opacity="0.4"/>' +
-          '  <path d="M24 2 Q25.5 24 24 46" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round"/>' +
-          '  <path d="M24.8 2 Q26.3 24 24.8 46" stroke="#fdba74" stroke-width="0.6" opacity="0.4"/>' +
-          '  <path d="M9 7 C18 14 18 34 9 41" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
-          '  <path d="M9.8 7.5 C18.8 14.5 18.8 33.5 9.8 40.5" stroke="#fdba74" stroke-width="0.6" opacity="0.4" fill="none"/>' +
-          '  <path d="M39 7 C30 14 30 34 39 41" stroke="#1c1917" stroke-width="2.2" stroke-linecap="round" fill="none"/>' +
-          '  <path d="M38.2 7.5 C29.2 14.5 29.2 33.5 38.2 40.5" stroke="#fdba74" stroke-width="0.6" opacity="0.4" fill="none"/>' +
-          '  <circle cx="24" cy="24" r="22" fill="url(#fvh_bb_inner_shadow)"/>' +
-          '  <ellipse cx="16" cy="13" rx="8" ry="4" transform="rotate(-30 16 13)" fill="url(#fvh_bb_gloss)"/>' +
-          '  <circle cx="13" cy="11" r="1.8" fill="#ffffff" opacity="0.7"/>' +
-          '</g>' +
-          '</svg>';
+        return '<img src="assets/icons/user_basketball.png" width="' + sz + '" height="' + sz + '" style="display:inline-block;vertical-align:middle;object-fit:contain;flex-shrink:0;" alt="HOOPS"/>';
 
       case 'nav_inventory':
       case 'inventory':
@@ -6612,8 +6670,8 @@
       var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
 
       var curCharSkin = isFooty
-        ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'))
-        : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_hoops') || eq.skin === 'skin_solar') ? eq.skin : 'skin_hoops_street_legend'));
+        ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('skin_bb_') && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'))
+        : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('skin_bb_') || eq.skin === 'skin_solar') ? eq.skin : 'skin_bb_onyx'));
       avatarBox.innerHTML = getCharacterDisplayHtml(curChar, curCharSkin);
       var activeBallId = isFooty
         ? (eq['ball.footy'] || (eq.ball && !eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_footy_classic'))
@@ -12834,38 +12892,10 @@
       '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
       '    <span style="display:inline-flex;align-items:center;">' + getUiIconSvg(isFooty ? 'nav_home_footy' : 'nav_home_hoops', 14) + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
       '  </div>' +
-      '</div>' +
-      '<div class="fvh-solo-actions-row" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-      '  <button type="button" class="btn fvh-solo-gear-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('inventory', 15) + '</span> <span>' + tr('openLocker') + '</span></button>' +
-      '  <button type="button" class="btn fvh-solo-rank-pill" style="padding:10px 10px;font-size:12px;font-weight:900;border-radius:12px;background:linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(251, 191, 36, 0.10));border:1.5px solid rgba(245, 158, 11, 0.45);color:#fbbf24;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('crown', 15) + '</span> <span>' + (lang === 'ru' ? 'Лидеры' : 'Rankings') + '</span></button>' +
       '</div>';
-
-    heroCard.querySelector('.fvh-solo-gear-pill').onclick = function (e) {
-      e.stopPropagation();
-      app.audio.play('click');
-      app.go('characters', { char: curChar, slot: 'skins' });
-    };
-
-    var openLockerAction = function (e) {
-      if (e) e.stopPropagation();
-      app.audio.play('click');
-      app.go('characters', { char: curChar, slot: 'skins' });
-    };
-    heroCard.querySelectorAll('.fvh-rival-ovr-capsule').forEach(function (pill) {
-      pill.onclick = openLockerAction;
-    });
-    var rankBtn = heroCard.querySelector('.fvh-solo-rank-pill');
-    if (rankBtn) {
-      rankBtn.onclick = function (e) {
-        if (e) e.stopPropagation();
-        app.audio.play('click');
-        app.go('leaderboard');
-      };
-    }
 
     heroCard.querySelectorAll('.fvh-rival-side').forEach(function (sideEl) {
       sideEl.onclick = function (e) {
-        if (e.target.closest('.fvh-rival-ovr-capsule')) return;
         e.stopPropagation();
         app.audio.play('click');
         var side = sideEl.getAttribute('data-side') || curChar;
@@ -12939,49 +12969,6 @@
       app.go('airdrop');
     };
     screen.appendChild(airdropBanner);
-
-    // 4. Secondary Console Hub: Quick access to Shop, Quests (with +100 FvH friend invites badge), and Leaderboard
-    var secondaryHub = document.createElement('div');
-    secondaryHub.className = 'fvh-secondary-hub';
-
-    var shopLabel = lang === 'ru' ? 'Магазин' : 'Shop';
-    var shopSub = isFooty ? (lang === 'ru' ? 'Бутик FOOTY' : 'FOOTY Gear') : (lang === 'ru' ? 'Бутик HOOPS' : 'HOOPS Gear');
-    var questsLabel = lang === 'ru' ? 'Задания' : 'Quests';
-    var questsSub = '+100 FvH ' + (lang === 'ru' ? 'за друга' : '/ invite');
-    var leadLabel = lang === 'ru' ? 'Рейтинг' : 'Leaderboard';
-    var leadSub = lang === 'ru' ? 'Топ игроков' : 'Top Athletes';
-
-    secondaryHub.innerHTML =
-      '<button type="button" class="fvh-hub-tile" id="fvh-hub-shop">' +
-      '  <span class="tile-icon">' + getUiIconSvg('nav_shop', 22) + '</span>' +
-      '  <span class="tile-title">' + shopLabel + '</span>' +
-      '  <span class="tile-sub">' + shopSub + '</span>' +
-      '</button>' +
-      '<button type="button" class="fvh-hub-tile" id="fvh-hub-quests" style="border-color:rgba(250,204,21,0.3);">' +
-      '  <span class="tile-icon">' + getUiIconSvg('nav_quests', 22) + '</span>' +
-      '  <span class="tile-title">' + questsLabel + '</span>' +
-      '  <span class="tile-sub" style="color:#facc15;font-weight:800;">' + questsSub + '</span>' +
-      '</button>' +
-      '<button type="button" class="fvh-hub-tile" id="fvh-hub-leaderboard">' +
-      '  <span class="tile-icon">' + getUiIconSvg('trophy', 22) + '</span>' +
-      '  <span class="tile-title">' + leadLabel + '</span>' +
-      '  <span class="tile-sub">' + leadSub + '</span>' +
-      '</button>';
-
-    secondaryHub.querySelector('#fvh-hub-shop').onclick = function () {
-      app.audio.play('click');
-      app.go('shop');
-    };
-    secondaryHub.querySelector('#fvh-hub-quests').onclick = function () {
-      app.audio.play('click');
-      app.go('quests');
-    };
-    secondaryHub.querySelector('#fvh-hub-leaderboard').onclick = function () {
-      app.audio.play('click');
-      app.go('leaderboard');
-    };
-
-    screen.appendChild(secondaryHub);
 
     // 5. Token Rivalry Compact Ticker
     screen.appendChild(createRivalryTicker(app));

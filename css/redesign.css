@@ -1879,14 +1879,14 @@ canvas {
   backdrop-filter: blur(10px) !important;
   font-weight: 800 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75) !important;
-  max-width: calc(100vw - 110px) !important;
+  max-width: min(calc(100vw - 120px), 280px) !important;
   margin: 0 auto !important;
 }
 
 .hud-top-ctrls {
   position: fixed !important;
-  top: calc(max(var(--sat), 12px) + 6px) !important;
-  right: calc(max(var(--sar), 12px) + 6px) !important;
+  top: calc(max(var(--sat), 8px) + 6px) !important;
+  right: calc(max(var(--sar), 8px) + 8px) !important;
   left: auto !important;
   bottom: auto !important;
   margin: 0 !important;
@@ -1895,7 +1895,7 @@ canvas {
   flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-end !important;
-  gap: 8px !important;
+  gap: 6px !important;
   z-index: 1000 !important;
 }
 
