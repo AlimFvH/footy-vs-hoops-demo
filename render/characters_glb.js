@@ -1368,10 +1368,10 @@
           });
           list.push(inst);
         } else {
-          // 3D GLB Mode
+          // 3D GLB Mode (Scaled to heroic, easily readable stature on mobile screens)
           if (isKeeper) {
             const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-              scale: 1.05,
+              scale: 1.50,
               skin: c.skin,
               isFooty: true,
               isKeeper: true,
@@ -1380,7 +1380,7 @@
             list.push(inst);
           } else if (charSport === 'footy') {
             const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-              scale: 1.02,
+              scale: 1.48,
               skin: c.skin,
               isFooty: true,
               isKeeper: false,
@@ -1389,7 +1389,7 @@
             list.push(inst);
           } else {
             const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-              scale: 1.08,
+              scale: 1.54,
               skin: c.skin,
               isFooty: false,
               isKeeper: false,

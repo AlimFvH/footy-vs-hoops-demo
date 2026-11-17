@@ -9232,6 +9232,19 @@
     };
     body.appendChild(myCard);
 
+    // Sponsor / Advertising Slot on Leaderboard
+    var adBanner = document.createElement('div');
+    adBanner.className = 'fvh-lb-ad-banner';
+    adBanner.style.cssText = 'margin:10px 0 14px;padding:12px 16px;border-radius:14px;background:rgba(15,23,42,0.85);border:1.5px dashed rgba(0,240,255,0.4);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:900;letter-spacing:0.8px;font-size:12px;color:#38bdf8;text-transform:uppercase;box-shadow:0 4px 16px rgba(0,0,0,0.3);';
+    var adBadge = document.createElement('span');
+    adBadge.style.cssText = 'padding:3px 8px;border-radius:6px;background:linear-gradient(135deg,#00f0ff,#0284c7);color:#020617;font-size:10px;font-weight:900;letter-spacing:0.5px;';
+    adBadge.textContent = 'AD';
+    var adText = document.createElement('span');
+    adText.textContent = isRu ? 'Здесь может быть ваша реклама' : 'YOUR AD HERE';
+    adBanner.appendChild(adBadge);
+    adBanner.appendChild(adText);
+    body.appendChild(adBanner);
+
     // 3. Team Rivalry Balance Card (Compact Clash Card)
     var scoreboardCard = document.createElement('div');
     scoreboardCard.className = 'fvh-war-scoreboard-card';

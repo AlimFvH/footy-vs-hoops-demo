@@ -5315,21 +5315,21 @@ define("data/ads", ["require", "exports"], function (require, exports) {
         hidden: 3.0,
         cycleTotal: 10.0,
         footySlides: [
-            { text: '⚡ FOOTY vs HOOPS ⚡', accent: 0x00f0ff, color: 0xffffff },
-            { text: '★ VICTORY ROYALE ★', accent: 0x10b981, color: 0xffffff },
-            { text: '⚡ HYPER STRIKER #10 ⚡', accent: 0x38bdf8, color: 0xffffff },
-            { text: '🏆 CYBER ARENA 🏆', accent: 0xfacc15, color: 0xffffff }
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x00f0ff, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x10b981, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x38bdf8, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfacc15, color: 0xffffff }
         ],
         hoopsSlides: [
-            { text: '🔥 ALL-STAR HOOPS #23 🔥', accent: 0xf97316, color: 0xffffff },
-            { text: '★ VICTORY ROYALE ★', accent: 0xec4899, color: 0xffffff },
-            { text: '⚡ METEOR SLAM DUNK ⚡', accent: 0xfb923c, color: 0xffffff },
-            { text: '🏆 CYBER ARENA 🏆', accent: 0xfacc15, color: 0xffffff }
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xf97316, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xec4899, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfb923c, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfacc15, color: 0xffffff }
         ],
         slides: [
-            { text: '⚡ FOOTY vs HOOPS ⚡', accent: 0x00f0ff, color: 0xffffff },
-            { text: '★ VICTORY ROYALE ★', accent: 0xfacc15, color: 0xffffff },
-            { text: '🔥 ALL-STAR SPORTS 🔥', accent: 0x38bdf8, color: 0xffffff }
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x00f0ff, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfacc15, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x38bdf8, color: 0xffffff }
         ]
     };
 });
@@ -5619,176 +5619,22 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
 
 function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.save();
-        // 1. Dark circular backing plate with glowing neon accent rim
-        g.beginPath();
-        g.arc(cx, cy, radius, 0, Math.PI * 2);
-        g.fillStyle = isBasketball ? 'rgba(8, 12, 24, 0.88)' : 'rgba(5, 10, 20, 0.85)';
-        g.fill();
-        g.lineWidth = isBasketball ? 5 : 6;
-        g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
-        g.shadowColor = isBasketball ? '#f97316' : '#00f0ff';
-        g.shadowBlur = 14;
-        g.stroke();
-        g.shadowBlur = 0;
-
-        // Inner glowing border ring
-        g.beginPath();
-        g.arc(cx, cy, radius * 0.94, 0, Math.PI * 2);
-        g.lineWidth = 2;
-        g.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-        g.stroke();
-
-        // 2. High-Fidelity Dual-Sport Vector Crest (Soccer on Left, Basketball on Right)
-        const embR = radius * 0.78;
-
-        // Left Half: Authentic 3D Soccer Ball Dome
-        g.save();
-        g.beginPath();
-        g.arc(cx, cy, embR, Math.PI * 0.5, Math.PI * 1.5);
-        g.closePath();
-        g.clip();
-
-        const soccerGrad = g.createRadialGradient(cx - embR * 0.35, cy - embR * 0.3, embR * 0.1, cx, cy, embR);
-        soccerGrad.addColorStop(0, '#ffffff');
-        soccerGrad.addColorStop(0.5, '#e2e8f0');
-        soccerGrad.addColorStop(0.85, '#94a3b8');
-        soccerGrad.addColorStop(1, '#475569');
-        g.fillStyle = soccerGrad;
-        g.fill();
-
-        // Soccer Ball Pentagons & Seams
-        g.fillStyle = '#0f172a';
-        g.strokeStyle = '#334155';
-        g.lineWidth = embR * 0.035;
-
-        // Center-left pentagon
-        const px = cx - embR * 0.42, py = cy, pr = embR * 0.28;
-        g.beginPath();
-        for (let i = 0; i < 5; i++) {
-            const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
-            const x = px + Math.cos(a) * pr;
-            const y = py + Math.sin(a) * pr;
-            if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
-        }
-        g.closePath();
-        g.fill();
-        g.stroke();
-
-        // Radiating seam lines
-        for (let i = 0; i < 5; i++) {
-            const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
-            g.beginPath();
-            g.moveTo(px + Math.cos(a) * pr, py + Math.sin(a) * pr);
-            g.lineTo(px + Math.cos(a) * pr * 1.8, py + Math.sin(a) * pr * 1.8);
-            g.stroke();
-        }
-        g.restore();
-
-        // Right Half: Authentic 3D Basketball Dome
-        g.save();
-        g.beginPath();
-        g.arc(cx, cy, embR, -Math.PI * 0.5, Math.PI * 0.5);
-        g.closePath();
-        g.clip();
-
-        const bballGrad = g.createRadialGradient(cx + embR * 0.3, cy - embR * 0.3, embR * 0.1, cx, cy, embR);
-        bballGrad.addColorStop(0, '#ff9a3c');
-        bballGrad.addColorStop(0.45, '#f97316');
-        bballGrad.addColorStop(0.82, '#c2410c');
-        bballGrad.addColorStop(1, '#6c2208');
-        g.fillStyle = bballGrad;
-        g.fill();
-
-        // Basketball Black Rubber Seams
-        g.strokeStyle = '#1c1917';
-        g.lineWidth = embR * 0.055;
-        g.lineCap = 'round';
-
-        // Horizontal equator seam
-        g.beginPath();
-        g.moveTo(cx, cy);
-        g.lineTo(cx + embR, cy);
-        g.stroke();
-
-        // Curved lateral arc seam
-        g.beginPath();
-        g.arc(cx + embR * 0.6, cy, embR * 0.65, -Math.PI * 0.45, Math.PI * 0.45);
-        g.stroke();
-        g.restore();
-
-        // 3. Central Dynamic Lightning Bolt / Divider
-        g.beginPath();
-        const topY = cy - embR * 1.05;
-        const botY = cy + embR * 1.05;
-        const midY1 = cy - embR * 0.15;
-        const midY2 = cy + embR * 0.15;
-        g.moveTo(cx - embR * 0.04, topY);
-        g.lineTo(cx + embR * 0.12, midY1);
-        g.lineTo(cx - embR * 0.08, midY2);
-        g.lineTo(cx + embR * 0.05, botY);
-        g.lineTo(cx - embR * 0.05, botY);
-        g.lineTo(cx + embR * 0.08, midY2);
-        g.lineTo(cx - embR * 0.12, midY1);
-        g.closePath();
-        g.fillStyle = '#ffffff';
-        g.shadowColor = '#00f0ff';
-        g.shadowBlur = 10;
-        g.fill();
-        g.shadowBlur = 0;
-
-        // 4. Central "VS" Golden Badge
-        const vsW = embR * 0.52;
-        const vsH = embR * 0.34;
-        g.beginPath();
-        g.roundRect ? g.roundRect(cx - vsW / 2, cy - vsH / 2, vsW, vsH, 8) : g.rect(cx - vsW / 2, cy - vsH / 2, vsW, vsH);
-        g.fillStyle = '#070c18';
-        g.fill();
-        g.lineWidth = 2.5;
-        g.strokeStyle = '#f59e0b';
-        g.stroke();
-
-        g.font = `900 ${Math.round(embR * 0.26)}px system-ui, -apple-system, sans-serif`;
-        g.textAlign = 'center';
-        g.textBaseline = 'middle';
-        g.fillStyle = '#fbbf24';
-        g.fillText('VS', cx, cy + 1);
-
-        // 5. Arched "FOOTY" & "HOOPS" Championship Typography
-        const fs = Math.round(radius * 0.19);
-        g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
-        g.textBaseline = 'middle';
-
-        // Top Banner Text: "FOOTY"
-        g.save();
-        g.fillStyle = '#00f0ff';
-        g.shadowColor = '#000000';
-        g.shadowBlur = 6;
-        g.strokeStyle = '#000000';
-        g.lineWidth = 4;
-        g.strokeText('⚡ FOOTY ⚡', cx, cy - radius * 0.76);
-        g.fillText('⚡ FOOTY ⚡', cx, cy - radius * 0.76);
-        g.restore();
-
-        // Bottom Banner Text: "HOOPS"
-        g.save();
-        g.fillStyle = '#fb923c';
-        g.shadowColor = '#000000';
-        g.shadowBlur = 6;
-        g.strokeStyle = '#000000';
-        g.lineWidth = 4;
-        g.strokeText('🏀 HOOPS 🏀', cx, cy + radius * 0.76);
-        g.fillText('🏀 HOOPS 🏀', cx, cy + radius * 0.76);
-        g.restore();
-
-        // 6. Draw high-res official emblem image if already preloaded
         const emb = getOfficialEmblem();
         if (typeof g.drawImage === 'function' && emb && emb.complete && emb.naturalWidth > 0) {
-            const emSize = radius * 1.5;
-            g.globalAlpha = 0.85;
+            // Draw ONLY the authentic official emblem in the center circle
+            const emSize = radius * 1.62;
             g.drawImage(emb, cx - emSize / 2, cy - emSize / 2, emSize, emSize);
-            g.globalAlpha = 1.0;
+        } else {
+            // Crisp fallback if image is still loading
+            const embR = radius * 0.72;
+            g.beginPath();
+            g.arc(cx, cy, embR, 0, Math.PI * 2);
+            g.fillStyle = isBasketball ? 'rgba(8, 12, 24, 0.85)' : 'rgba(5, 10, 20, 0.85)';
+            g.fill();
+            g.lineWidth = 4;
+            g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
+            g.stroke();
         }
-
         g.restore();
     }
 
@@ -6028,10 +5874,10 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.lineTo(X(W), Z(0));
         g.stroke();
 
-        // Center Jump Circle with glowing holographic crest
+        // Center Jump Circle with clean official emblem
         const centerR = basketball_js_1.BB.CENTER_R * PPM_B;
         g.fillStyle = hex(t.centerPaint || 0x06b6d4);
-        g.globalAlpha = 0.75;
+        g.globalAlpha = 0.55;
         g.beginPath();
         g.arc(X(0), Z(0), centerR, 0, Math.PI * 2);
         g.fill();
@@ -6040,15 +5886,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.arc(X(0), Z(0), centerR, 0, Math.PI * 2);
         g.stroke();
 
-        // Center circle inner ring & central star emblem
-        g.beginPath();
-        g.arc(X(0), Z(0), centerR * 0.5, 0, Math.PI * 2);
-        g.strokeStyle = '#ffffff';
-        g.lineWidth = 0.05 * PPM_B * 1.4;
-        g.stroke();
-
         // Official FOOTY vs HOOPS Center Court Emblem
-        drawOfficialCenterEmblem(g, X(0), Z(0), centerR * 0.82, true);
+        drawOfficialCenterEmblem(g, X(0), Z(0), centerR * 0.88, true);
 
         g.strokeStyle = lineCol;
         g.lineWidth = 0.08 * PPM_B * 1.4;
@@ -6238,7 +6077,19 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.fillRect(x0 + 12, H - 10, pw - 24, 2);
             g.shadowBlur = 0;
 
-            let slideText = s.text || '⚡ FOOTY vs HOOPS ⚡';
+            let slideText = s.text || 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА';
+            try {
+                let userLang = 'ru';
+                if (typeof window !== 'undefined') {
+                    if (window.app && window.app.store && window.app.store.data && window.app.store.data.language) {
+                        userLang = window.app.store.data.language;
+                    } else if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.language_code) {
+                        userLang = window.Telegram.WebApp.initDataUnsafe.user.language_code;
+                    }
+                }
+                const isEnglish = (userLang === 'en' || (typeof userLang === 'string' && userLang.toLowerCase().startsWith('en')));
+                slideText = isEnglish ? 'YOUR AD HERE' : 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА';
+            } catch (e) {}
 
             // Main Text (Bold, ultra-crisp, high contrast with deep drop shadow & neon glow)
             let fs = s.sub ? 66 : 80;
