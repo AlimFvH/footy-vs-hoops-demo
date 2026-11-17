@@ -8486,6 +8486,13 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
     exports.FOOTY_GROW = 1.0;
     const lin = (c, k = 1) => (0, math_js_8.rgb)(c).map((v) => Math.min(1, v * k));
 
+    // Smooth cubic hermite interpolation for buttery animation transitions
+    function smoothDamp(current, target, rate, dt) {
+        const t = 1 - Math.exp(-rate * dt);
+        const smoothT = t * t * (3 - 2 * t); // Hermite smoothstep
+        return current + (target - current) * smoothT;
+    }
+
     // Helper: Build crisp 3D squad numbers (#10 for Footy, #23 for Hoops, #1 for Keeper)
     function build3DNumber(numStr, color, accentColor, fineList) {
         const group = new scene_js_3.Node();
@@ -8573,10 +8580,11 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             const sg = quality >= 1 ? 1 : 0;
             const mk = (g, color, o = {}) => {
                 var _a, _b;
-                const spec = o.spec !== undefined ? o.spec : (o.shoe ? 0.72 : (o.fabric ? 0.40 : (o.skin ? 0.28 : 0.32)));
-                const shininess = o.shininess !== undefined ? o.shininess : (o.shoe ? 64 : (o.fabric ? 35 : (o.skin ? 24 : 28)));
-                const rim = o.rim !== undefined ? o.rim : (o.fabric ? 0.42 : (o.skin ? 0.38 : 0.28));
-                const rimColor = o.rimColor || (o.skin ? [1.0, 0.88, 0.75] : [0.95, 0.98, 1.0]);
+                // Enhanced material properties for Fortnite/Pixar quality rendering
+                const spec = o.spec !== undefined ? o.spec : (o.shoe ? 0.78 : (o.fabric ? 0.45 : (o.skin ? 0.32 : 0.35)));
+                const shininess = o.shininess !== undefined ? o.shininess : (o.shoe ? 72 : (o.fabric ? 42 : (o.skin ? 28 : 32)));
+                const rim = o.rim !== undefined ? o.rim : (o.fabric ? 0.48 : (o.skin ? 0.42 : 0.32));
+                const rimColor = o.rimColor || (o.skin ? [1.0, 0.92, 0.80] : [0.96, 0.98, 1.0]);
                 const n = new scene_js_3.Node(g, (0, scene_js_3.material)({
                     color: lin(color),
                     spec: spec,
@@ -8827,10 +8835,10 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 this.pivot.add(arm);
             }
 
-            // 5. Stylized 3D Human Hero Athlete: Authentic Pixar/Fortnite Turnaround Proportions
+            // 5. Stylized 3D Human Hero Athlete: Pixar/Fortnite Proportions (slightly oversized head for charm)
             this.head = new scene_js_3.Node();
             this.head.setPos(0, 1.95, 0);
-            this.head.scale = [0.88, 0.90, 0.88];
+            this.head.scale = [0.92, 0.94, 0.92];
 
             const faceImg = (0, textures_js_2.getFaceImage)(charType);
             const faceTex = (faceImg && faceImg.complete && faceImg.naturalWidth > 0) ? new scene_js_3.Texture(faceImg) : null;
@@ -8851,16 +8859,18 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             }
 
             if (faceTex) {
-                // High-Resolution Pixar/Fortnite Stylized Face mapped directly from User Turnaround Art!
-                const facePlate = new scene_js_3.Node(G.quad(0.25, 0.26), (0, scene_js_3.material)({
+                // High-Resolution Stylized Face — sharp and clean on mobile
+                const facePlate = new scene_js_3.Node(G.quad(0.27, 0.28), (0, scene_js_3.material)({
                     texture: faceTex,
                     color: [1, 1, 1],
                     transparent: true,
                     alpha: 1.0,
                     depthWrite: true,
                     receiveShadow: true,
-                    spec: 0.18,
-                    shininess: 24
+                    spec: 0.22,
+                    shininess: 28,
+                    rim: 0.15,
+                    rimColor: [1.0, 0.92, 0.82]
                 }));
                 this.head.add(at(facePlate, 0, 0.015, 0.168));
             } else {
@@ -8959,7 +8969,7 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
         ease(key, target, rate, dt) {
             var _a;
             const cur = (_a = this.pose[key]) !== null && _a !== void 0 ? _a : target;
-            const v = cur + (target - cur) * (1 - Math.exp(-rate * dt));
+            const v = smoothDamp(cur, target, rate, dt);
             this.pose[key] = v;
             return v;
         }
@@ -8986,7 +8996,9 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
                 dyaw -= Math.PI * 2;
             while (dyaw < -Math.PI)
                 dyaw += Math.PI * 2;
-            const yawStep = dyaw * (1 - Math.exp(-(a.tackle.phase === 'lunge' ? 40 : 18) * dt));
+            const yawT = 1 - Math.exp(-(a.tackle.phase === 'lunge' ? 40 : 18) * dt);
+            const smoothYawT = yawT * yawT * (3 - 2 * yawT);
+            const yawStep = dyaw * smoothYawT;
             this.yaw += yawStep;
             const yawRate = dt > 0 ? yawStep / dt : 0;
             this.root.rotation[1] = this.yaw;
@@ -9331,7 +9343,8 @@ define("render/characters", ["require", "exports", "gfx/geometry", "gfx/math", "
             this.torso.rotation[2] = Math.sin(ph) * amp * (foot ? 0.075 : 0.065) + (kickP >= 0 ? (foot ? -0.28 : -0.22) * kick : 0);
             this.head.position[1] = (foot ? 2.05 : 1.99) + Math.abs(sp) * amp * 0.035;
             this.head.rotation[1] = -this.torso.rotation[1] * 0.7 + Math.sin(this.t * 1.3) * 0.04 * (1 - amp);
-            this.head.rotation[0] = -lean * 0.45 + (a.shootCharging || a.shotT > 0 ? -0.3 : 0);
+            this.head.rotation[0] = -lean * 0.45 + (a.shootCharging || a.shotT > 0 ? -0.3 : 0) + (isSprinting ? -0.08 : 0);
+            this.head.rotation[2] = -this.torso.rotation[2] * 0.5 + Math.sin(ph) * amp * 0.03;
             if (a.human) {
                 this.marker.position[1] = 0.08 * Math.sin(this.t * 4);
                 this.chevron.rotation[1] = this.t * 2.5;
