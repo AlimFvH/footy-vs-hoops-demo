@@ -2627,6 +2627,31 @@
     return isFooty ? 'assets/hero_footy_real.png?v=3.6.0-authentic-3d' : 'assets/hero_hoops_real.png?v=3.6.0-authentic-3d';
   }
 
+  function getWardrobe3DViewerHtml(charId, specificSkinId) {
+    var isFooty = charId === 'footy';
+    var defaultSkin = isFooty ? 'footy_classic' : 'hoops_classic';
+    var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
+    var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
+    var charSpecificSkin = isFooty
+      ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('hoops_') && eq.skin !== 'skin_solar' ? eq.skin : null))
+      : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('hoops_') || eq.skin === 'skin_solar') ? eq.skin : null));
+    var skinId = specificSkinId || charSpecificSkin || defaultSkin;
+    var iframeSrc = 'benchmark/wardrobe_viewer.html?embed=1&transparent=1&sport=' + encodeURIComponent(charId) + '&kit=' + encodeURIComponent(skinId);
+    var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
+    var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.footy_classic : HERO_SKIN_PALETTES.hoops_classic);
+    var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
+    var skinLabel = (lang === 'ru') ? (pal && pal.ru) : (pal && pal.name);
+    var tagHtml = '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:6px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + (skinLabel || skinId) + '</span></div>';
+    var hintHtml = '<div class="fvh-3d-hint" style="font-size:10px;color:#94a3b8;margin-top:2px;display:flex;align-items:center;gap:4px;"><span style="font-size:12px;">🔄</span> <span>' + (lang === 'ru' ? 'Вращайте модель 360°' : 'Rotate model 360°') + '</span></div>';
+
+    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
+      '<iframe class="fvh-3d-athlete-frame" allowtransparency="true" data-hero="' + charId + '" data-kit="' + skinId + '" src="' + iframeSrc + '" title="' + heroTitle + '" style="width:100%;flex:1 1 auto;min-height:300px;border:none;background:transparent;border-radius:18px;display:block;pointer-events:auto;" allow="autoplay" loading="eager"></iframe>' +
+      tagHtml +
+      hintHtml +
+    '</div>';
+  }
+  window.getWardrobe3DViewerHtml = getWardrobe3DViewerHtml;
+
   function getCharacterDisplayHtml(charId, specificSkinId, options) {
     var isFooty = charId === 'footy';
     var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
@@ -2693,10 +2718,34 @@
     var teamName = '';
 
     // === FOOTBALL KITS (Footy) ===
-    if (id === 'skin_rookie') {
-      primary = '#1d4ed8'; secondary = '#0284c7'; accent = '#ffffff'; trim = '#60a5fa'; number = '10'; cut = 'classic'; pattern = 'chevron';
-    } else if (id === 'skin_plain_white') {
-      primary = '#f8fafc'; secondary = '#e2e8f0'; accent = '#0284c7'; trim = '#38bdf8'; number = '7'; cut = 'polo'; pattern = 'pinstripes';
+    if (id === 'footy_classic' || id === 'skin_rookie') {
+      primary = '#00d2ff'; secondary = '#ffffff'; accent = '#0284c7'; trim = '#38bdf8'; number = '10'; cut = 'classic'; pattern = 'sash';
+    } else if (id === 'footy_2_white' || id === 'footy_kit_2_white' || id === 'skin_plain_white') {
+      primary = '#f8fafc'; secondary = '#0284c7'; accent = '#38bdf8'; trim = '#0284c7'; number = '10'; cut = 'classic'; pattern = 'sash';
+    } else if (id === 'footy_6_crimson' || id === 'footy_kit_6_crimson') {
+      primary = '#dc2626'; secondary = '#7f1d1d'; accent = '#fbbf24'; trim = '#fbbf24'; number = '10'; cut = 'half_half'; pattern = 'claw';
+    } else if (id === 'footy_7_gold' || id === 'footy_kit_7_gold') {
+      primary = '#eab308'; secondary = '#713f12'; accent = '#fef08a'; trim = '#facc15'; number = '10'; cut = 'golden_crest'; pattern = 'royal';
+    } else if (id === 'footy_1_sapphire' || id === 'footy_kit_1_sapphire') {
+      primary = '#1d4ed8'; secondary = '#0284c7'; accent = '#ffffff'; trim = '#60a5fa'; number = '10'; cut = 'speed'; pattern = 'arrows';
+    } else if (id === 'footy_4_amber' || id === 'footy_kit_4_amber') {
+      primary = '#ea580c'; secondary = '#f59e0b'; accent = '#fef08a'; trim = '#fbbf24'; number = '10'; cut = 'phoenix'; pattern = 'flame';
+    } else if (id === 'footy_5_amethyst' || id === 'footy_kit_5_amethyst') {
+      primary = '#7e22ce'; secondary = '#a855f7'; accent = '#f0abfc'; trim = '#c084fc'; number = '10'; cut = 'chrono'; pattern = 'space';
+    } else if (id === 'footy_9_dragon' || id === 'footy_kit_9_dragon') {
+      primary = '#991b1b'; secondary = '#ea580c'; accent = '#fde047'; trim = '#facc15'; number = '10'; cut = 'dragon'; pattern = 'dragon';
+    } else if (id === 'footy_3_neon' || id === 'footy_kit_3_neon') {
+      primary = '#15803d'; secondary = '#22c55e'; accent = '#a7f3d0'; trim = '#4ade80'; number = '10'; cut = 'chrono'; pattern = 'matrix';
+    } else if (id === 'footy_8_obsidian' || id === 'footy_kit_8_obsidian') {
+      primary = '#09090b'; secondary = '#27272a'; accent = '#00f0ff'; trim = '#38bdf8'; number = '10'; cut = 'camo'; pattern = 'stealth';
+    } else if (id === 'footy_0_tiffany' || id === 'footy_kit_0_tiffany') {
+      primary = '#0f766e'; secondary = '#14b8a6'; accent = '#ccfbf1'; trim = '#2dd4bf'; number = '10'; cut = 'half_half'; pattern = 'split';
+    } else if (id === 'footy_kit_star_holiday' || id === 'footy_star_holiday') {
+      primary = '#dc2626'; secondary = '#15803d'; accent = '#fde047'; trim = '#fef08a'; number = '25'; cut = 'classic'; pattern = 'royal';
+    } else if (id === 'footy_kit_star_emperor' || id === 'footy_star_emperor') {
+      primary = '#312e81'; secondary = '#eab308'; accent = '#38bdf8'; trim = '#fbbf24'; number = '1'; cut = 'golden_crest'; pattern = 'royal';
+    } else if (id === 'footy_kit_star_samurai' || id === 'footy_star_samurai') {
+      primary = '#f8fafc'; secondary = '#06b6d4'; accent = '#dc2626'; trim = '#22d3ee'; number = '77'; cut = 'chrono'; pattern = 'circuit';
     } else if (id === 'skin_training_bib') {
       primary = '#a3e635'; secondary = '#65a30d'; accent = '#1e293b'; trim = '#4d7c0f'; number = '14'; cut = 'bib'; pattern = 'mesh';
     } else if (id === 'skin_casual_tee') {
@@ -2763,8 +2812,34 @@
       primary = '#0f172a'; secondary = '#0284c7'; accent = '#00f0ff'; trim = '#38bdf8'; number = '99'; cut = 'chrono'; pattern = 'titan';
 
     // === BASKETBALL JERSEYS (Hoops - Pro Sleeveless Tanks) ===
-    } else if (id === 'skin_bb_onyx') {
-      isBasketball = true; primary = '#18181b'; secondary = '#27272a'; accent = '#ffffff'; trim = '#71717a'; number = '23'; cut = 'tank_wide'; teamName = 'HOOPS';
+    } else if (id === 'hoops_classic' || id === 'skin_bb_onyx' || id === 'skin_solar') {
+      isBasketball = true; primary = '#f97316'; secondary = '#0f172a'; accent = '#ffffff'; trim = '#fb923c'; number = '23'; cut = 'tank_wide'; teamName = 'HOOPS';
+    } else if (id === 'hoops_2_chicago' || id === 'skin_bb_crimson') {
+      isBasketball = true; primary = '#dc2626'; secondary = '#18181b'; accent = '#ffffff'; trim = '#facc15'; number = '23'; cut = 'tank_vneck'; teamName = 'BULLS';
+    } else if (id === 'hoops_3_la' || id === 'skin_bb_gold') {
+      isBasketball = true; primary = '#eab308'; secondary = '#581c87'; accent = '#ffffff'; trim = '#facc15'; number = '23'; cut = 'tank_wide'; teamName = 'LAKERS';
+    } else if (id === 'hoops_4_boston' || id === 'skin_bb_forest') {
+      isBasketball = true; primary = '#15803d'; secondary = '#14532d'; accent = '#ffffff'; trim = '#facc15'; number = '23'; cut = 'tank_wide'; teamName = 'BOSTON';
+    } else if (id === 'hoops_6_charlotte' || id === 'skin_bb_tropical') {
+      isBasketball = true; primary = '#0284c7'; secondary = '#581c87'; accent = '#38bdf8'; trim = '#22d3ee'; number = '23'; cut = 'tank_scoop'; teamName = 'BREEZE';
+    } else if (id === 'hoops_5_raptor') {
+      isBasketball = true; primary = '#9d174d'; secondary = '#18181b'; accent = '#f43f5e'; trim = '#fb7185'; number = '23'; cut = 'tank_vneck'; teamName = 'RAPTOR';
+    } else if (id === 'hoops_0_neon' || id === 'skin_bb_tokyo') {
+      isBasketball = true; primary = '#06b6d4'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#38bdf8'; number = '23'; cut = 'tank_cyber'; teamName = 'NEON';
+    } else if (id === 'hoops_7_phoenix' || id === 'skin_bb_amber') {
+      isBasketball = true; primary = '#ea580c'; secondary = '#581c87'; accent = '#fde047'; trim = '#facc15'; number = '23'; cut = 'tank_vneck'; teamName = 'PHOENIX';
+    } else if (id === 'hoops_9_beast') {
+      isBasketball = true; primary = '#16a34a'; secondary = '#18181b'; accent = '#fde047'; trim = '#4ade80'; number = '23'; cut = 'tank_split'; teamName = 'BEAST';
+    } else if (id === 'hoops_8_mamba' || id === 'skin_bb_noir') {
+      isBasketball = true; primary = '#18181b'; secondary = '#581c87'; accent = '#eab308'; trim = '#facc15'; number = '24'; cut = 'tank_wide'; teamName = 'MAMBA';
+    } else if (id === 'hoops_1_miami' || id === 'skin_bb_miami') {
+      isBasketball = true; primary = '#db2777'; secondary = '#06b6d4'; accent = '#ffffff'; trim = '#38bdf8'; number = '23'; cut = 'tank_scoop'; teamName = 'MIAMI';
+    } else if (id === 'hoops_kit_star_holiday' || id === 'hoops_star_holiday') {
+      isBasketball = true; primary = '#dc2626'; secondary = '#15803d'; accent = '#fde047'; trim = '#fef08a'; number = '25'; cut = 'tank_vneck'; teamName = 'XMAS';
+    } else if (id === 'hoops_kit_star_astral' || id === 'hoops_star_astral') {
+      isBasketball = true; primary = '#312e81'; secondary = '#7c3aed'; accent = '#facc15'; trim = '#c084fc'; number = '99'; cut = 'tank_gold'; teamName = 'ASTRAL';
+    } else if (id === 'hoops_kit_star_phantom' || id === 'hoops_star_phantom') {
+      isBasketball = true; primary = '#09090b'; secondary = '#d946ef'; accent = '#00f0ff'; trim = '#22d3ee'; number = '0'; cut = 'tank_cyber'; teamName = 'PHANTOM';
     } else if (id === 'skin_bb_white') {
       isBasketball = true; primary = '#f8fafc'; secondary = '#e2e8f0'; accent = '#dc2626'; trim = '#1e3a8a'; number = '1'; cut = 'tank_vneck'; teamName = 'HOOPS';
     } else if (id === 'skin_bb_navy') {
@@ -4994,6 +5069,10 @@
       'skin_bb_miami': 'hoops_1_miami.png',
     };
 
+    if (cat === 'skins' || cat === 'stars' || (itemOrId && (itemOrId.category === 'skins' || itemOrId.category === 'stars')) || (id && (id.startsWith('footy_') || id.startsWith('hoops_') || id.startsWith('skin_')))) {
+      return getDetailedJerseySvg(itemOrId, size);
+    }
+
     if (KNOWN_STORE_ASSETS[imgId]) {
       var szPx = size === 'large' ? '120px' : '72px';
       return '<img src="store/items/' + KNOWN_STORE_ASSETS[imgId] + '" style="max-width:100%;max-height:100%;width:' + szPx + ';height:' + szPx + ';object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.5));" onerror="this.style.display=\'none\';">';
@@ -6636,18 +6715,16 @@
       var defaultKit = (charId === 'hoops') ? 'hoops_classic' : 'footy_classic';
       var initialKit = kitId || eq['skin.' + charId] || eq.skin || defaultKit;
 
-      var img = avatarBox.querySelector('.fvh-hero-real-img');
-      if (img) {
-        var newSrc = getRecoloredHeroUrl(charId, initialKit);
-        img.src = newSrc;
-        img.setAttribute('data-skin', initialKit);
-        img.setAttribute('data-hero', charId);
-        var pal = HERO_SKIN_PALETTES[initialKit] || ((charId === 'footy') ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
+      var frame = avatarBox.querySelector('.fvh-3d-athlete-frame');
+      if (frame && frame.contentWindow && frame.getAttribute('data-hero') === charId) {
+        frame.contentWindow.postMessage({ action: 'changeKit', kit: initialKit, athlete: charId }, '*');
+        frame.setAttribute('data-kit', initialKit);
+        var pal = HERO_SKIN_PALETTES[initialKit] || ((charId === 'footy') ? HERO_SKIN_PALETTES.footy_classic : HERO_SKIN_PALETTES.hoops_classic);
         var sLabel = (lang === 'ru') ? (pal && pal.ru) : (pal && pal.name);
         var tagSpan = avatarBox.querySelector('.fvh-hero-active-jersey-tag span:last-child');
         if (tagSpan && sLabel) tagSpan.textContent = sLabel;
       } else {
-        avatarBox.innerHTML = getCharacterDisplayHtml(charId, initialKit, { showJerseyTag: true });
+        avatarBox.innerHTML = getWardrobe3DViewerHtml(charId, initialKit);
       }
     }
 
@@ -11244,7 +11321,7 @@
   }
 
   // Quick Match Search Modal (Real Matchmaking Server Integration - No Fake Opponents)
-  function showQuickMatchSearchModal(app, curChar) {
+  function showQuickMatchSearchModal(app, targetSport) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-back';
 
@@ -11254,6 +11331,9 @@
     var isCancelled = false;
     var timerId = null;
     var pollId = null;
+
+    var playerFaction = (app && app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
+    var curSport = (targetSport === 'hoops') ? 'hoops' : 'footy';
 
     var tabId = '';
     try {
@@ -11278,7 +11358,7 @@
         '<div class="fvh-mm-radar-ring r1"></div>' +
         '<div class="fvh-mm-radar-ring r2"></div>' +
         '<div class="fvh-mm-radar-ring r3"></div>' +
-        '<div class="fvh-mm-radar-center" style="display:flex;align-items:center;justify-content:center;">' + (curChar === 'footy' ? getUiIconSvg('nav_home_footy', 28) : getUiIconSvg('nav_home_hoops', 28)) + '</div>' +
+        '<div class="fvh-mm-radar-center" style="display:flex;align-items:center;justify-content:center;">' + (playerFaction === 'footy' ? getUiIconSvg('nav_home_footy', 28) : getUiIconSvg('nav_home_hoops', 28)) + '</div>' +
         '</div>' +
         '<div class="fvh-mm-status" id="fvh-mm-status-text">' + tr('searchingOpponent') + '</div>' +
         '<div class="fvh-mm-timer" id="fvh-mm-timer">00:01</div>' +
@@ -11355,8 +11435,8 @@
         body: JSON.stringify({
           playerId: playerId,
           playerName: playerName,
-          character: curChar,
-          mode: curChar
+          character: playerFaction,
+          mode: curSport
         })
       })
       .then(function (r) {
@@ -11438,7 +11518,7 @@
       clearInterval(timerId);
       if (pollId) clearInterval(pollId);
 
-      var opp = matchInfo.opponent || { name: 'Challenger', char: curChar === 'footy' ? 'hoops' : 'footy' };
+      var opp = matchInfo.opponent || { name: 'Challenger', char: playerFaction === 'footy' ? 'hoops' : 'footy' };
       statusEl.style.color = '#10b981';
       statusEl.innerHTML = '<b>' + tr('matchFoundTitle') + '</b><br><span style="font-size:13px;color:#fff;">vs ' + opp.name + ' (' + (opp.char === 'footy' ? '⚽ FOOTY' : '🏀 HOOPS') + ')</span>';
 
@@ -11460,7 +11540,7 @@
         var hostChar = (m.host && (m.host.char || m.host.character)) || (matchInfo && matchInfo.opponent && matchInfo.role === 'guest' && matchInfo.opponent.char);
         if (hostChar === 'hoops') resolvedMode = 'hoops';
         else if (hostChar === 'footy') resolvedMode = 'footy';
-        else resolvedMode = (curChar === 'hoops') ? 'hoops' : 'footy';
+        else resolvedMode = (curSport === 'hoops') ? 'hoops' : 'footy';
       }
 
       var rawMin = Number(m.minutes !== undefined ? m.minutes : (matchInfo && matchInfo.minutes));
@@ -12213,9 +12293,30 @@
     var practiceCard = document.createElement('div');
     practiceCard.className = 'fvh-mode-card practice-card';
 
-    var selSport = curChar;
+    var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || curChar || 'footy';
+    var selSport = playerChosenChar;
     var selDiff = curSettings.difficulty || 'normal';
     var selMinutes = curSettings.matchMinutes || 2;
+
+    function getPracticeMatchupHtml(sport) {
+      var isPlayerFooty = (playerChosenChar === 'footy');
+      var youTeamName = isPlayerFooty ? 'FOOTY' : 'HOOPS';
+      var youTeamIcon = isPlayerFooty ? '⚽' : '🏀';
+      var youColor = isPlayerFooty ? '#00f59b' : '#ff7a00';
+      var cpuTeamName = isPlayerFooty ? 'HOOPS' : 'FOOTY';
+      var cpuTeamIcon = isPlayerFooty ? '🏀' : '⚽';
+      var cpuColor = isPlayerFooty ? '#ff7a00' : '#00f59b';
+      var sportText = (sport === 'footy')
+        ? (lang === 'ru' ? '⚽ Дисциплина: Футбол' : '⚽ Discipline: Football')
+        : (lang === 'ru' ? '🏀 Дисциплина: Баскетбол' : '🏀 Discipline: Basketball');
+
+      return '<div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">' +
+        '<span style="color:' + youColor + ';font-weight:900;">' + youTeamIcon + ' ' + tr('youTeam') + ': ' + youTeamName + '</span>' +
+        '<span style="color:#ffd000;font-weight:900;margin:0 4px;">⚔️ VS ⚔️</span>' +
+        '<span style="color:' + cpuColor + ';font-weight:900;">' + tr('cpuTeam') + ': ' + cpuTeamName + ' ' + cpuTeamIcon + '</span>' +
+        '</div>' +
+        '<div style="margin-top:3px;font-size:10.5px;color:#cbd5e1;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">' + sportText + '</div>';
+    }
 
     practiceCard.innerHTML =
       '<div class="fvh-mode-card-header">' +
@@ -12224,20 +12325,17 @@
       '</div>' +
       '<div class="fvh-mode-card-body">' +
         '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +
-        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь против компьютерного соперника, оттачивайте мастерство и готовьтесь к предстоящему сезону!' : 'Battle against AI opponent, master your skills, and prepare for the upcoming season!') + '</div>' +
+        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь за выбранную команду, оттачивайте мастерство и побеждайте компьютерного соперника!' : 'Battle for your chosen faction, master your skills, and defeat the computer opponent!') + '</div>' +
         '<div class="fvh-mode-controls">' +
           '<div class="fvh-ctrl-row">' +
-            '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
+            '<span class="fvh-ctrl-label">' + (lang === 'ru' ? 'Вид спорта:' : 'Discipline:') + '</span>' +
             '<div class="seg seg-sport">' +
-              '<button type="button" class="' + (selSport === 'footy' ? 'on' : '') + '" data-sport="footy"><span style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY</span></span></button>' +
-              '<button type="button" class="' + (selSport === 'hoops' ? 'on' : '') + '" data-sport="hoops"><span style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS</span></span></button>' +
+              '<button type="button" class="' + (selSport === 'footy' ? 'on' : '') + '" data-sport="footy"><span style="display:inline-flex;align-items:center;gap:5px;"><span>⚽</span> <span>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</span></span></button>' +
+              '<button type="button" class="' + (selSport === 'hoops' ? 'on' : '') + '" data-sport="hoops"><span style="display:inline-flex;align-items:center;gap:5px;"><span>🏀</span> <span>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</span></span></button>' +
             '</div>' +
           '</div>' +
           '<div class="fvh-practice-matchup" id="fvh-practice-matchup" style="margin-bottom:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:11.5px;font-weight:800;text-align:center;">' +
-            (selSport === 'footy'
-              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
-              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
-            ) +
+            getPracticeMatchupHtml(selSport) +
           '</div>' +
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('difficulty') + ':</span>' +
@@ -12261,10 +12359,7 @@
         selSport = b.dataset.sport;
         var pMatchup = practiceCard.querySelector('#fvh-practice-matchup');
         if (pMatchup) {
-          pMatchup.innerHTML = (selSport === 'footy'
-            ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
-            : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
-          );
+          pMatchup.innerHTML = getPracticeMatchupHtml(selSport);
         }
         app.audio.play('click');
       };
@@ -12295,7 +12390,7 @@
       }
       app.launch({
         mode: selSport,
-        char: (selSport === 'hoops') ? 'hoops' : 'footy',
+        char: playerChosenChar,
         difficulty: selDiff,
         minutes: selMinutes,
         arenaId: chosenArena,
@@ -12314,6 +12409,9 @@
 
     function renderQuickCard() {
       var isFooty = (onlineSport === 'footy');
+      var isPlayerFooty = (playerChosenChar === 'footy');
+      var youTeamName = isPlayerFooty ? 'FOOTY' : 'HOOPS';
+      var youColor = isPlayerFooty ? '#00f59b' : '#ff7a00';
       quickCard.innerHTML =
         '<div class="fvh-mode-card-header">' +
           '<span class="fvh-mode-badge online" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('lightning', 13) + ' <span>' + tr('quickMatchBadge') + '</span></span>' +
@@ -12321,12 +12419,12 @@
         '</div>' +
         '<div class="fvh-mode-card-body">' +
           '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
-          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь в реальном времени против живого соперника 1v1 через WebRTC.' : 'Battle in real-time against a live 1v1 human opponent via WebRTC.') + '</div>' +
+          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь в реальном времени против живого соперника 1v1 через WebRTC за команду <b style="color:' + youColor + ';">' + youTeamName + '</b>.' : 'Battle in real-time against a live 1v1 human opponent via WebRTC for team <b style="color:' + youColor + ';">' + youTeamName + '</b>.') + '</div>' +
           '<div class="fvh-ctrl-row" style="margin:10px 0 12px 0;">' +
-            '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
+            '<span class="fvh-ctrl-label">' + (lang === 'ru' ? 'Вид спорта:' : 'Discipline:') + '</span>' +
             '<div class="seg seg-sport-online">' +
-              '<button type="button" class="' + (isFooty ? 'on' : '') + '" data-sport="footy">⚽ FOOTY</button>' +
-              '<button type="button" class="' + (!isFooty ? 'on' : '') + '" data-sport="hoops">🏀 HOOPS</button>' +
+              '<button type="button" class="' + (isFooty ? 'on' : '') + '" data-sport="footy"><span>⚽</span> <span>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</span></button>' +
+              '<button type="button" class="' + (!isFooty ? 'on' : '') + '" data-sport="hoops"><span>🏀</span> <span>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</span></button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -13793,7 +13891,7 @@
       setTimeout(function () {
         app.launch({
           mode: targetLaunch,
-          char: targetLaunch,
+          char: (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy',
           difficulty: 'normal',
           minutes: 2,
           boostId: null
