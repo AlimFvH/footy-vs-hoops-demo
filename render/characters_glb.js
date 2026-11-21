@@ -609,7 +609,7 @@
   function getOrCreateSkinTexture(gl, model, skin, isFooty) {
     if (!gl || !model || !skin || !skin.id) return null;
     // Default hero skins use the pristine embedded 1024x1024 atlas directly
-    if (skin.id === 'skin_rookie' || skin.id === 'skin_bb_onyx') {
+    if (skin.id === 'skin_rookie' || skin.id === 'skin_bb_onyx' || skin.id === 'footy_classic' || skin.id === 'hoops_classic') {
       return null;
     }
     
@@ -1058,22 +1058,28 @@
         targetClip = 'Idle';
       } else if (lower === 'walk' || lower === 'jog') {
         targetClip = 'Walk';
-      } else if (lower === 'run' || lower === 'sprint') {
+      } else if (lower === 'run' || lower === 'sprint' || lower === 'anim_ea_sprintdrive') {
         targetClip = 'Run';
-      } else if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'kick_right') {
-        targetClip = 'Kick_Right';
+      } else if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'kick_right' || lower === 'anim_ea_powerstrike') {
+        const isHoops = (this.isHoops || this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops') || (this.matchView && this.matchView.mode === 'hoops'));
+        targetClip = isHoops ? 'Anim_2K_JumpShot' : 'Anim_EA_PowerStrike';
       } else if (lower === 'kick_left') {
         targetClip = 'Kick_Left';
       } else if (lower === 'punch' || lower === 'punch_right') {
         targetClip = 'Punch_Right';
       } else if (lower === 'punch_left') {
         targetClip = 'Punch_Left';
-      } else if (lower === 'slide' || lower === 'tackle') {
-        targetClip = (this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops')) ? 'Punch_Left' : 'Kick_Right';
-      } else if (lower === 'roll' || lower === 'dive') {
-        targetClip = 'Roll';
-      } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win') {
-        targetClip = 'Wave';
+      } else if (lower === 'slide' || lower === 'tackle' || lower === 'anim_ea_slidetackle') {
+        const isHoops = (this.isHoops || this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops') || (this.matchView && this.matchView.mode === 'hoops'));
+        targetClip = isHoops ? 'Anim_2K_Steal' : 'Anim_EA_SlideTackle';
+      } else if (lower === 'dunk' || lower === 'slamdunk' || lower === 'anim_2k_slamdunk') {
+        targetClip = 'Anim_2K_SlamDunk';
+      } else if (lower === 'steal' || lower === 'anim_2k_steal') {
+        targetClip = 'Anim_2K_Steal';
+      } else if (lower === 'roll' || lower === 'dive' || lower === 'anim_ea_keeperdive' || lower === 'save') {
+        targetClip = 'Anim_EA_KeeperDive';
+      } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win' || lower === 'anim_celebration') {
+        targetClip = 'Anim_Celebration';
       } else if (lower === 'hit' || lower === 'hitrecieve') {
         targetClip = 'HitRecieve';
       }
@@ -1155,33 +1161,33 @@
         if (a.dunk && a.dunk.active) {
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
-          // Fortnite gravity-defying hang time: stays suspended at peak rim height longer
+          // Soaring tomahawk elevation
           const hangTimeArc = Math.pow(Math.sin(dunkProgress * Math.PI), 0.65);
-          this.elevationLift = hangTimeArc * 1.38;
-          this.pitch = 0.38 * Math.sin(dunkProgress * Math.PI);
-          this.roll = corneringLean + 0.12 * Math.sin(dunkProgress * Math.PI * 2);
-          this.setAnimation('Punch_Right', 2.2);
+          this.elevationLift = hangTimeArc * 0.85;
+          this.pitch = 0.20 * Math.sin(dunkProgress * Math.PI);
+          this.roll = corneringLean + 0.08 * Math.sin(dunkProgress * Math.PI * 2);
+          this.setAnimation('Anim_2K_SlamDunk', 1.8);
         }
         // 2. Jump Shot Elevation & Release (Overhead wrist flick with elevation)
         else if (a.shotT > 0) {
           const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
           this.elevationLift = Math.sin(shotProgress * Math.PI) * 0.65;
           this.pitch = -0.08; // High elevation arch
-          this.setAnimation('Punch_Right', 1.8);
+          this.setAnimation('Anim_2K_JumpShot', 1.6);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
         else if (a.kickT > 0) {
           this.pitch = 0.12;
-          this.setAnimation('Punch_Right', 2.2);
+          this.setAnimation('Anim_2K_JumpShot', 2.0);
         }
         // 4. Interception Lunge / Hand Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
           this.pitch = 0.18;
-          this.setAnimation('Punch_Left', 1.8);
+          this.setAnimation('Anim_2K_Steal', 1.6);
         }
-        // 5. Celebration Wave
+        // 5. Celebration Victory Royale Emote
         else if (a.celebrateT > 0) {
-          this.setAnimation('Wave', 1.25);
+          this.setAnimation('Anim_Celebration', 1.5);
         }
         // 6. Basketball Dribbling (Athletic crouch protecting the ball with hand bounce)
         else if (isBallCarrier) {
@@ -1214,32 +1220,32 @@
           const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.42));
           const diveArc = Math.sin(diveProg * Math.PI);
           const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : 1);
-          this.roll = -diveDir * (1.15 + 0.3 * diveArc);
+          this.roll = -diveDir * (0.85 + 0.25 * diveArc);
           this.elevationLift = 0.20 * diveArc;
           this.pitch = 0.15 * diveArc;
-          this.setAnimation('Roll', 1.7);
+          this.setAnimation('Anim_EA_KeeperDive', 1.6);
         }
         else if (a.role === 'keeper' && a.jumpT > 0) {
           const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
           this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.30;
           this.pitch = -0.10;
-          this.setAnimation('Punch_Right', 2.0);
+          this.setAnimation('Anim_EA_KeeperDive', 1.8);
         }
-        // 2. Fortnite Airborne Power Strike / Flying Volley Scissor Kick
+        // 2. Authentic Football Power Strike (EA FC / FIFA style: grounded plant foot, torso leaned over ball, sweet-spot strike)
         else if (a.kickT > 0 || a.shotT > 0) {
           const timer = a.kickT || a.shotT || 0;
           const strikeProgress = Math.min(1, Math.max(0, 1 - timer / 0.45));
-          this.elevationLift = Math.sin(strikeProgress * Math.PI) * 0.46; // Explosive airborne leap
-          this.pitch = 0.36 * Math.sin(strikeProgress * Math.PI * 1.2);
-          this.roll = -0.22 * Math.sin(strikeProgress * Math.PI); // Aerodynamic scissor twist
-          this.setAnimation('Kick_Right', 2.4);
+          this.elevationLift = 0.0; // Plant foot stays grounded on pitch (no flying karate leap)
+          this.pitch = 0.22 * Math.sin(strikeProgress * Math.PI); // Torso leans over ball
+          this.roll = -0.06 * Math.sin(strikeProgress * Math.PI); // Subtle athletic torque
+          this.setAnimation('Anim_EA_PowerStrike', 1.5);
         }
         // 3. Authentic Football Turf Slide Tackle (Подкат - leg extended skimming grass, body reclined, NO SOMERSAULT ROLL)
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          this.elevationLift = -0.54;
-          this.pitch = -0.68; // Dynamic backward lean skimming the turf
-          this.roll = -0.26;  // Banked slightly onto slide hip
-          this.setAnimation('Kick_Right', 2.6);
+          this.elevationLift = -0.38;
+          this.pitch = -0.45; // Dynamic backward lean skimming the turf
+          this.roll = -0.22;  // Banked slightly onto slide hip
+          this.setAnimation('Anim_EA_SlideTackle', 1.6);
         }
         // 4. Fortnite Victory Royale Emote: Hype Jump & Victory Flex
         else if (a.celebrateT > 0) {
@@ -1247,7 +1253,7 @@
           this.elevationLift = Math.max(0, Math.sin(cT * 9) * 0.32);
           this.pitch = -0.12 * Math.sin(cT * 7);
           this.roll = Math.sin(cT * 5) * 0.16;
-          this.setAnimation('Wave', 1.9);
+          this.setAnimation('Anim_Celebration', 1.5);
         }
         // 5. Sprinting (Stable upright posture, zero side wobbling)
         else if (speed > 1.8) {
@@ -1444,7 +1450,7 @@
 
   const CharactersGLB = {
     enabled: true,
-    mode: 'procedural', // High-Fidelity In-Engine Articulated 3D Humanoid Athletes with fluid 60fps biomechanical animations
+    mode: '3d', // High-Fidelity 3D GLB Athletes with Skeletal GPU Skinning & Authentic Sports Animations
     instances: new Map(), // matchView -> (HiRes25DCharacterInstance | GLBCharacterInstance)[]
 
     init(gl) {
@@ -1601,7 +1607,7 @@
         }
 
         // Lazy-generate custom skin texture whenever any custom kit is equipped
-        const isCustomSkin = Boolean(inst.skin && inst.skin.id && inst.skin.id !== 'skin_rookie' && inst.skin.id !== 'skin_bb_onyx');
+        const isCustomSkin = Boolean(inst.skin && inst.skin.id && inst.skin.id !== 'skin_rookie' && inst.skin.id !== 'skin_bb_onyx' && inst.skin.id !== 'footy_classic' && inst.skin.id !== 'hoops_classic');
         if (!inst.customTexture && isCustomSkin && !inst.isKeeper) {
           inst.customTexture = getOrCreateSkinTexture(gl, inst.model, inst.skin, inst.isFooty);
         }

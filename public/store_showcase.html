@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FOOTY vs HOOPS — ВИТРИНА МАГАЗИНА ФОРМ 2026</title>
+  <style>
+    :root {
+      --bg: #070a12;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --text: #f8fafc;
+      --gold: #f59e0b;
+      --gold-glow: rgba(245, 158, 11, 0.35);
+      --cyan: #0abab5;
+      --accent: #38bdf8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 60px;
+    }
+
+    /* Header */
+    header {
+      padding: 30px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      filter: drop-shadow(0 0 12px var(--gold-glow));
+    }
+    .brand-text h1 {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-text p {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .header-balance {
+      display: flex;
+      gap: 16px;
+    }
+    .balance-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 24px;
+    }
+
+    /* Mega Banner Showcase */
+    .mega-banner-wrap {
+      margin-bottom: 40px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(245, 158, 11, 0.4);
+      position: relative;
+    }
+    .mega-banner-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .mega-banner-wrap:hover .mega-banner-img {
+      transform: scale(1.015);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .filter-btn.active {
+      background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
+      color: #1e1403;
+      border-color: var(--gold);
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
+
+    /* Cards Grid */
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 30px;
+    }
+    .card-item {
+      background: var(--card-bg);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+    }
+    .card-item:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+    .card-preview-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: pointer;
+    }
+    .card-action-bar {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(10, 15, 26, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .try-on-btn {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .try-on-btn:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    /* Modal for Fullscreen View */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      cursor: pointer;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-img {
+      max-height: 85vh;
+      max-width: 90vw;
+      border-radius: 20px;
+      box-shadow: 0 0 50px rgba(0,0,0,0.9);
+      border: 2px solid var(--gold);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-wrap">
+      <img src="emblem.png" alt="Footy vs Hoops" class="brand-logo">
+      <div class="brand-text">
+        <h1>FOOTY vs HOOPS — МАГАЗИН ЭКИПИРОВКИ</h1>
+        <p>Официальные формы сезона 2026 • 21 уникальная форма • Идеальная эмблема</p>
+      </div>
+    </div>
+    <div class="header-balance">
+      <div class="balance-pill" style="color: #38bdf8;">💎 5,420 ГЕМОВ</div>
+      <div class="balance-pill" style="color: #f59e0b;">🪙 125,000 МОНЕТ</div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Mega Banner -->
+    <div class="mega-banner-wrap">
+      <img src="store/mega_store_banner_flagship.png" alt="Коллекция Чемпионов" class="mega-banner-img">
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterCards('all')">🔥 Все формы (7 флагманов)</button>
+      <button class="filter-btn" onclick="filterCards('legendary')">👑 Легендарные (24K Gold, Дракон, Мамба, Титан)</button>
+      <button class="filter-btn" onclick="filterCards('epic')">⚡ Эпические (Чикаго 1998)</button>
+      <button class="filter-btn" onclick="filterCards('rare')">🌸 Редкие (Майами Вайс)</button>
+      <button class="filter-btn" onclick="filterCards('common')">💎 Престижные (Тиффани & Оникс)</button>
+      <a href="/benchmark/wardrobe_viewer.html" class="filter-btn" style="margin-left: auto; background: rgba(56, 189, 248, 0.2); color: #38bdf8; text-decoration: none;">👕 Открыть 3D Гардероб (21 форма) ➔</a>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="store-grid" id="store-grid">
+
+      <!-- Card 1 -->
+      <div class="card-item" data-rarity="legendary">
+        <img src="store/cover_footy_gold24k.png" alt="Золотой Владыка" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #f59e0b;">★ 24K GOLD SOVEREIGN</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card-item" data-rarity="legendary">
+        <img src="store/cover_footy_dragon.png" alt="Пламя Дракона" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #ef4444;">★ IMPERIAL DRAGON</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card-item" data-rarity="common">
+        <img src="store/cover_footy_tiffany.png" alt="Тиффани & Оникс" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #0abab5;">💎 DIAMOND PRESTIGE</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card-item" data-rarity="epic">
+        <img src="store/cover_hoops_chicago.png" alt="Чикаго Классик 1998" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #dc2626;">🔴 CHICAGO HERITAGE 1998</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="card-item" data-rarity="legendary">
+        <img src="store/cover_hoops_mamba.png" alt="Чёрная Мамба" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #a855f7;">🖤 BLACK MAMBA VENOM</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="card-item" data-rarity="rare">
+        <img src="store/cover_hoops_miami.png" alt="Майами Роуз Вайс" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #ec4899;">🌸 MIAMI VICE SYNTHWAVE</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+      <!-- Card 7 -->
+      <div class="card-item" data-rarity="legendary">
+        <img src="store/cover_keeper_titan.png" alt="Титан Щит" class="card-preview-img" onclick="openModal(this.src)">
+        <div class="card-action-bar">
+          <span style="font-weight: 800; font-size: 13px; color: #10b981;">🧤 TITAN AEGIS KEEPER</span>
+          <a href="/benchmark/wardrobe_viewer.html" class="try-on-btn">Примерить в 3D ➔</a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Fullscreen Modal -->
+  <div class="modal-overlay" id="modal" onclick="closeModal()">
+    <img src="" alt="Enlarged Store Card" class="modal-img" id="modal-img">
+  </div>
+
+  <script>
+    function filterCards(rarity) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.card-item').forEach(card => {
+        if (rarity === 'all' || card.dataset.rarity === rarity) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function openModal(src) {
+      document.getElementById('modal-img').src = src;
+      document.getElementById('modal').classList.add('active');
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+  </script>
+</body>
+</html>

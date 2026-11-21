@@ -340,23 +340,42 @@
       } else {
         const raw = String(clipIndexOrName).toLowerCase();
         const query = raw.replace(/[^a-z0-9]/g, '');
-        let idx = this.animations.findIndex(a => a.name.toLowerCase().replace(/[^a-z0-9]/g, '') === query);
+        // 1. Exact match (case-insensitive)
+        let idx = this.animations.findIndex(a => a.name.toLowerCase() === raw);
+        // 2. Normalized alphanumeric exact match
+        if (idx === -1) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().replace(/[^a-z0-9]/g, '') === query);
+        }
+        // 3. Substring match
+        if (idx === -1) {
+          idx = this.animations.findIndex(a => {
+            const norm = a.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return norm.includes(query) || query.includes(norm);
+          });
+        }
         if (idx === -1 && (query.includes('idle') || query === 'stand')) {
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('idle'));
         } else if (idx === -1 && (query.includes('run') || query.includes('sprint') || query.includes('dash') || query.includes('fast'))) {
-          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'run');
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('sprint') || a.name.toLowerCase() === 'run');
         } else if (idx === -1 && (query.includes('walk') || query.includes('jog') || query.includes('step') || query.includes('slow'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase() === 'walk');
-        } else if (idx === -1 && (query.includes('kick') || query.includes('shoot') || query.includes('shot') || query.includes('strike'))) {
-          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'kick_right');
-          if (idx === -1) idx = this.animations.findIndex(a => a.name.toLowerCase().includes('kick'));
-        } else if (idx === -1 && (query.includes('punch') || query.includes('slam') || query.includes('dunk') || query.includes('pass'))) {
+        } else if (idx === -1 && (query.includes('kick') || query.includes('strike'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('powerstrike') || a.name.toLowerCase().includes('kick_right') || a.name.toLowerCase().includes('kick'));
+        } else if (idx === -1 && (query.includes('slide') || query.includes('tackle'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('slidetackle') || a.name.toLowerCase().includes('roll'));
+        } else if (idx === -1 && (query.includes('jump') || query.includes('shot') || query.includes('shoot'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('jumpshot') || a.name.toLowerCase().includes('punch_right'));
+        } else if (idx === -1 && (query.includes('dunk') || query.includes('slam'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('slamdunk') || a.name.toLowerCase().includes('interact'));
+        } else if (idx === -1 && (query.includes('steal') || query.includes('strip'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('steal') || a.name.toLowerCase().includes('hitrecieve'));
+        } else if (idx === -1 && (query.includes('dive') || query.includes('save') || query.includes('keeper'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('keeperdive') || a.name.toLowerCase().includes('kick_left'));
+        } else if (idx === -1 && (query.includes('punch') || query.includes('pass'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase() === 'punch_right');
           if (idx === -1) idx = this.animations.findIndex(a => a.name.toLowerCase().includes('punch'));
-        } else if (idx === -1 && (query.includes('roll') || query.includes('slide') || query.includes('tackle') || query.includes('dive'))) {
-          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'roll');
-        } else if (idx === -1 && (query.includes('wave') || query.includes('celebrate') || query.includes('win') || query.includes('cheer'))) {
-          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'wave');
+        } else if (idx === -1 && (query.includes('wave') || query.includes('celebrat') || query.includes('win') || query.includes('cheer'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('celebrat') || a.name.toLowerCase() === 'wave');
         } else if (idx === -1 && (query.includes('hit') || query.includes('hurt') || query.includes('stun'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase() === 'hitrecieve');
         }
@@ -464,10 +483,11 @@
     return null;
   }
 
+  // Root-relative URLs to ensure preloading succeeds from any subpath (e.g. /benchmark/)
   const PRELOAD_URLS = [
-    'assets/characters/footy10.glb',
-    'assets/characters/hoops23.glb',
-    'assets/characters/keeper1.glb'
+    '/assets/characters/footy10.glb',
+    '/assets/characters/hoops23.glb',
+    '/assets/characters/keeper1.glb'
   ];
 
   function preloadAll() {

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FOOTY vs HOOPS — PRO STORE</title>
+  <style>
+    :root {
+      --bg: #030712;
+      --card-bg: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(10, 15, 26, 0.98) 100%);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --emerald: #10b981;
+      --cyan: #00d2ff;
+      --orange: #f97316;
+      --gold: #facc15;
+      --common: #64748b;
+      --rare: #00d2ff;
+      --epic: #d946ef;
+      --legendary: #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #02040a;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0;
+    }
+
+    /* Mobile Frame Wrapper */
+    .app-frame {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 0%, #111a2e 0%, #080d1a 50%, #03060f 100%);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+      border-left: 1px solid rgba(255, 255, 255, 0.06);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 90px;
+    }
+
+    /* Telegram Top Bar */
+    .tg-header {
+      padding: 10px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(8, 13, 24, 0.94);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .tg-back {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .tg-back:active { background: rgba(255, 255, 255, 0.15); }
+    .tg-title-box { text-align: center; }
+    .tg-title-box h2 {
+      font-size: 14.5px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+    }
+    .tg-title-box p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+    .tg-more {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Economy Bar */
+    .economy-bar {
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .wallet-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.08) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #fbbf24;
+    }
+    .stars-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(250, 204, 21, 0.22) 0%, rgba(217, 119, 6, 0.12) 100%);
+      border: 1px solid rgba(250, 204, 21, 0.5);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #fde047;
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.2);
+    }
+
+    /* Selector Rail */
+    .selector-rail {
+      padding: 12px 14px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Sport Toggle */
+    .sport-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .sport-btn {
+      padding: 10px;
+      border-radius: 11px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sport-btn.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+    }
+    .sport-btn.hoops.active {
+      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);
+    }
+
+    /* Sub-filters Row */
+    .sub-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .sub-filter-row::-webkit-scrollbar { display: none; }
+    .cat-pill {
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .cat-pill.active {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #fff;
+    }
+    .cat-pill.star-pill.active {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(217, 119, 6, 0.2) 100%);
+      border-color: #facc15;
+      color: #fde047;
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
+    }
+    .divider-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      flex-shrink: 0;
+    }
+    .rarity-pill {
+      padding: 5px 10px;
+      border-radius: 18px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .rarity-pill.active {
+      border-color: #38bdf8;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    /* 2-Column Store Grid */
+    .shop-grid {
+      padding: 8px 14px 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    /* Tactile Item Card */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+      transition: transform 0.18s, border-color 0.18s;
+      cursor: pointer;
+    }
+    .card:active {
+      transform: scale(0.975);
+    }
+    .card.common { border-color: rgba(148, 163, 184, 0.25); }
+    .card.rare { border-color: rgba(0, 210, 255, 0.35); }
+    .card.epic { border-color: rgba(217, 70, 239, 0.4); }
+    .card.legendary { border-color: rgba(251, 191, 36, 0.45); }
+    .card.star-exclusive {
+      border: 1.5px solid rgba(250, 204, 21, 0.55);
+      background: linear-gradient(180deg, rgba(30, 24, 46, 0.95) 0%, rgba(16, 12, 28, 0.98) 100%);
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+    }
+
+    /* Top Tags inside Card */
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      min-height: 20px;
+    }
+    .rarity-badge {
+      font-size: 9.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 2.5px 7px;
+      border-radius: 6px;
+    }
+    .common .rarity-badge { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; }
+    .rare .rarity-badge { background: rgba(0, 210, 255, 0.2); color: #38bdf8; border: 1px solid rgba(0, 210, 255, 0.4); }
+    .epic .rarity-badge { background: rgba(217, 70, 239, 0.2); color: #f472b6; border: 1px solid rgba(217, 70, 239, 0.4); }
+    .legendary .rarity-badge { background: rgba(251, 191, 36, 0.25); color: #fde047; border: 1px solid rgba(251, 191, 36, 0.5); }
+    .star-exclusive .rarity-badge { background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.2) 100%); color: #fde047; border: 1px solid #facc15; }
+
+    .status-tag {
+      font-size: 10px;
+      font-weight: 800;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Thumbnail Stage */
+    .card-thumb {
+      width: 100%;
+      height: 145px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .card-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.6));
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card:hover .card-thumb img {
+      transform: scale(1.08) translateY(-2px);
+    }
+
+    /* Titles & Info */
+    .card-name {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .card-price {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fde047;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    /* Action Buy Button */
+    .btn-buy {
+      width: 100%;
+      padding: 9px 6px;
+      border-radius: 12px;
+      border: none;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+      transition: all 0.15s;
+    }
+    .btn-buy:active { transform: scale(0.96); }
+    .card.epic .btn-buy:not(.owned):not(.equipped):not(.star-btn) {
+      background: linear-gradient(180deg, #c026d3 0%, #9333ea 100%);
+      box-shadow: 0 4px 14px rgba(192, 38, 211, 0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+    }
+    .card.legendary .btn-buy:not(.owned):not(.equipped):not(.star-btn) {
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255,255,255,0.45);
+      color: #0f172a;
+    }
+    .btn-buy.star-btn:not(.owned):not(.equipped) {
+      background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255,255,255,0.5);
+      color: #0f172a;
+    }
+    .btn-buy.owned {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      box-shadow: none;
+    }
+    .btn-buy.equipped {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+    }
+
+    /* Modal Inspection Box */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 15, 0.85);
+      backdrop-filter: blur(14px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-box {
+      width: 100%;
+      max-width: 380px;
+      background: linear-gradient(180deg, #131c31 0%, #0a0f1d 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
+      animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalPop {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-preview-img {
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.65));
+      margin: 8px 0 14px;
+      transition: transform 0.25s;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .modal-rarity { margin-bottom: 12px; }
+    .modal-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 18px;
+      padding: 0 8px;
+    }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    .btn-3d-tryon {
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #38bdf8;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 440px;
+      height: 64px;
+      background: rgba(8, 12, 22, 0.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 6px;
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 700;
+      position: relative;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .nav-item .ni { font-size: 19px; }
+    .nav-item.active { color: #a3e635; }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 18%;
+      right: 18%;
+      height: 3px;
+      background: #a3e635;
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 0 8px #a3e635;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 12.5px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      z-index: 400;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+    <div class="modal-box" id="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <img class="modal-preview-img" id="m-img" src="" alt="">
+      <div class="modal-title" id="m-title"></div>
+      <div class="modal-rarity" id="m-rarity"></div>
+      <div class="modal-desc" id="m-desc"></div>
+      <div class="modal-actions">
+        <button class="btn-buy" id="m-btn"></button>
+        <a class="btn-3d-tryon" id="m-3d-btn" href="/benchmark/wardrobe_viewer.html" target="_blank">
+          👟 Примерить в 3D гардеробе
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-frame">
+    <!-- Telegram Mini App Top Header -->
+    <header class="tg-header">
+      <button class="tg-back" onclick="history.back()">‹</button>
+      <div class="tg-title-box">
+        <h2>FOOTY vs HOOPS ⚽🏀</h2>
+        <p>мини-приложение</p>
+      </div>
+      <button class="tg-more">•••</button>
+    </header>
+
+    <!-- Economy Bar -->
+    <div class="economy-bar">
+      <div class="wallet-pill">
+        <span>🪙</span> <span id="coin-bal">2,450 FvH</span>
+      </div>
+      <div class="stars-pill">
+        <span>⭐</span> <span id="stars-bal">1,500 Stars</span>
+      </div>
+    </div>
+
+    <!-- Sport & Category Filters -->
+    <div class="selector-rail">
+      <!-- Sport Toggle: Footy vs Hoops -->
+      <div class="sport-toggle">
+        <button class="sport-btn active" id="btn-footy" onclick="setSport('footy')">
+          ⚽ FOOTY (Футбол)
+        </button>
+        <button class="sport-btn hoops" id="btn-hoops" onclick="setSport('hoops')">
+          🏀 HOOPS (Баскетбол)
+        </button>
+      </div>
+
+      <!-- Unified Sub-filter Row -->
+      <div class="sub-filter-row">
+        <button class="cat-pill active" id="cat-kits" onclick="setCategory('kits')">
+          👕 Формы
+        </button>
+        <button class="cat-pill star-pill" id="cat-stars" onclick="setCategory('stars')">
+          ⭐ За Звёзды
+        </button>
+        <span class="divider-dot"></span>
+        <button class="rarity-pill active" onclick="setRarity('all')">Все</button>
+        <button class="rarity-pill" onclick="setRarity('common')">Обычный</button>
+        <button class="rarity-pill" onclick="setRarity('rare')">⭐ Редкий</button>
+        <button class="rarity-pill" onclick="setRarity('epic')">👑 Эпический</button>
+        <button class="rarity-pill" onclick="setRarity('legendary')">💎 Легендарный</button>
+      </div>
+    </div>
+
+    <!-- 2-Column Store Grid -->
+    <main class="shop-grid" id="items-grid"></main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <a class="nav-item" href="/">
+        <span class="ni">⚽</span>
+        <span>ИГРАТЬ</span>
+      </a>
+      <a class="nav-item" href="/benchmark/wardrobe_viewer.html">
+        <span class="ni">👕</span>
+        <span>ГАРДЕРОБ</span>
+      </a>
+      <div class="nav-item active">
+        <span class="ni">🛒</span>
+        <span>МАГАЗИН</span>
+      </div>
+      <div class="nav-item">
+        <span class="ni">🏅</span>
+        <span>ЗАДАНИЯ</span>
+      </div>
+      <div class="nav-item">
+        <span class="ni">👤</span>
+        <span>ПРОФИЛЬ</span>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    // Database with exact user rarity assignment and new star items:
+    const DB = {
+      kits: [
+        // --- 10 REGULAR FOOTY KITS ---
+        { id: 'footy_2_white', sport: 'footy', category: 'kits', currency: 'coin', name: 'Чистый Дом', rarity: 'common', price: 200, badge: 'ОБЫЧНЫЙ', desc: 'Традиции клуба: белоснежная текстура жаккардового плетения с королевской диагональной лентой побед (Royal Sash).', img: 'store/items/footy_2_white.png', modelKit: 'footy_kit_2_white' },
+        { id: 'footy_6_crimson', sport: 'footy', category: 'kits', currency: 'coin', name: 'Багровый Гладиатор', rarity: 'common', price: 250, badge: 'ОБЫЧНЫЙ', desc: 'Спартанский дух победы: золотой греческий меандр по контуру, античные линии анатомического доспеха и алый кармин.', img: 'store/items/footy_6_crimson.png', modelKit: 'footy_kit_6_crimson' },
+        { id: 'footy_7_gold', sport: 'footy', category: 'kits', currency: 'coin', name: 'Золотой Владыка', rarity: 'common', price: 300, badge: 'ОБЫЧНЫЙ', desc: 'Королевский триумф: золотая барочная филигрань в стиле Versace, чемпионские пятиконечные звезды славы.', img: 'store/items/footy_7_gold.png', modelKit: 'footy_kit_7_gold' },
+        { id: 'footy_1_sapphire', sport: 'footy', category: 'kits', currency: 'coin', name: 'Сапфир Страйкер', rarity: 'rare', price: 550, badge: '⭐ РЕДКИЙ', desc: 'Сверхзвуковые кинетические шевроны (Sonic Wave) цвета сапфира с неоново-лазурной окантовкой для взрывного прорыва.', img: 'store/items/footy_1_sapphire.png', modelKit: 'footy_kit_1_sapphire' },
+        { id: 'footy_4_amber', sport: 'footy', category: 'kits', currency: 'coin', name: 'Янтарный Сокол', rarity: 'rare', price: 600, badge: '⭐ РЕДКИЙ', desc: 'Хищный удар: раскинутые крылья золотого сокола на груди и плечах с теплыми янтарными аэродинамическими перьями.', img: 'store/items/footy_4_amber.png', modelKit: 'footy_kit_4_amber' },
+        { id: 'footy_5_amethyst', sport: 'footy', category: 'kits', currency: 'coin', name: 'Аметист Туманность', rarity: 'rare', price: 650, badge: '⭐ РЕДКИЙ', desc: 'Космическое видение плеймейкера: фиолетовая звездная туманность со светящимися созвездиями и узлами.', img: 'store/items/footy_5_amethyst.png', modelKit: 'footy_kit_5_amethyst' },
+        { id: 'footy_9_dragon', sport: 'footy', category: 'kits', currency: 'coin', name: 'Пламя Дракона', rarity: 'epic', price: 1200, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Высшая первобытная мощь: золотой восточный дракон, обвивающий торс, пылающая золотая чешуя и языки огня.', img: 'store/items/footy_9_dragon.png', modelKit: 'footy_kit_9_dragon' },
+        { id: 'footy_3_neon', sport: 'footy', category: 'kits', currency: 'coin', name: 'Неон Тренинг', rarity: 'epic', price: 1300, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Тактическая цифровая матрица (Isometric Grid): изумрудно-лаймовая сетка анализа поля со светящимися узлами.', img: 'store/items/footy_3_neon.png', modelKit: 'footy_kit_3_neon' },
+        { id: 'footy_8_obsidian', sport: 'footy', category: 'kits', currency: 'coin', name: 'Обсидиановый Шиноби', rarity: 'legendary', price: 2500, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Призрачный скрытный дриблинг: нано-карбоновые соты, пульсирующие неоновые магистрали и оптический камуфляж.', img: 'store/items/footy_8_obsidian.png', modelKit: 'footy_kit_8_obsidian' },
+        { id: 'footy_0_tiffany', sport: 'footy', category: 'kits', currency: 'coin', name: 'Тиффани Оникс', rarity: 'legendary', price: 2800, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Сбалансированный сплит: черный оникс (непробиваемость) и бирюзовый тиффани (скорость) с карбоновой сеткой.', img: 'store/items/footy_0_tiffany.png', modelKit: 'footy_kit_0_tiffany' },
+
+        // --- 3 STAR FOOTY KITS (ЗА ЗВЁЗДЫ) ---
+        { id: 'footy_star_holiday', sport: 'footy', category: 'kits', currency: 'star', name: 'Новогодняя Метель 🎄', rarity: 'legendary', price: 250, badge: '🎄 НОВОГОДНИЙ', desc: 'Эксклюзивный новогодний комплект: королевский алый бархат Санты, морозная белая опушка, вышитые золотые елочки, снежинки и номер 25.', img: 'store/items/footy_star_holiday.png', modelKit: 'footy_kit_star_holiday' },
+        { id: 'footy_star_emperor', sport: 'footy', category: 'kits', currency: 'star', name: 'Галактический Император ⭐', rarity: 'legendary', price: 500, badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Царственный космический индиго-пурпур, золотой лавровый шеврон славы, переливающийся бирюзовый кант и золотой чемпионский номер 1.', img: 'store/items/footy_star_emperor.png', modelKit: 'footy_kit_star_emperor' },
+        { id: 'footy_star_samurai', sport: 'footy', category: 'kits', currency: 'star', name: 'Квантовый Самурай ⚡', rarity: 'legendary', price: 750, badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Белоснежная нано-керамическая броня кибер-ронина со светящейся неоновой лазурью, японским орнаментом и голографическим номером 77.', img: 'store/items/footy_star_samurai.png', modelKit: 'footy_kit_star_samurai' },
+
+        // --- 10 REGULAR HOOPS KITS (МАЙКИ) ---
+        { id: 'hoops_2_chicago', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Чикаго Классик 1998', rarity: 'common', price: 200, badge: 'ОБЫЧНЫЙ', desc: 'Золотая эра 23 номера: бычий кармин с текстурой зерен баскетбольного мяча и золотыми звездами чемпионов.', img: 'store/items/hoops_2_chicago.png', modelKit: 'hoops_kit_2_crimson' },
+        { id: 'hoops_3_la', sport: 'hoops', category: 'kits', currency: 'coin', name: 'ЛА Династия', rarity: 'common', price: 250, badge: 'ОБЫЧНЫЙ', desc: 'Золото Голливуда и царский пурпур Лейкерс: солнечные лучи славы ShowTime и граненые кристаллы.', img: 'store/items/hoops_3_la.png', modelKit: 'hoops_kit_3_gold' },
+        { id: 'hoops_4_boston', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Бостон Прайд', rarity: 'common', price: 300, badge: 'ОБЫЧНЫЙ', desc: 'Монолитная защита: изумрудные кельтские узлы бесконечности и кристаллическая огранка на груди.', img: 'store/items/hoops_4_boston.png', modelKit: 'hoops_kit_4_emerald' },
+        { id: 'hoops_6_charlotte', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Шарлотт Бриз', rarity: 'rare', price: 550, badge: '⭐ РЕДКИЙ', desc: 'Морской владыка: чешуя океанского дракона с фиолетовыми переливами и ветвями неоновых кораллов.', img: 'store/items/hoops_6_charlotte.png', modelKit: 'hoops_kit_6_cyan' },
+        { id: 'hoops_5_raptor', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Коготь Раптора', rarity: 'rare', price: 600, badge: '⭐ РЕДКИЙ', desc: 'Хищный перехват мяча: тройной диагональный след когтей хищника, обнажающий светящийся слой.', img: 'store/items/hoops_5_raptor.png', modelKit: 'hoops_kit_5_amethyst' },
+        { id: 'hoops_0_neon', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Неон Сити', rarity: 'rare', price: 650, badge: '⭐ РЕДКИЙ', desc: 'Уличные ночные площадки: градиент ночного неба с неоновыми контурами небоскребов и геометрией сетки.', img: 'store/items/hoops_0_neon.png', modelKit: 'hoops_kit_0_neon' },
+        { id: 'hoops_7_phoenix', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Восходящий Феникс', rarity: 'epic', price: 1200, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Возрождение в клатч-моментах: огненные золотые крылья Феникса, взмывающие от пояса к плечам.', img: 'store/items/hoops_7_phoenix.png', modelKit: 'hoops_kit_7_amber' },
+        { id: 'hoops_9_beast', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Гипер Зверь', rarity: 'epic', price: 1300, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Сокрушительный данк: яростная пасть кибер-титана, космическая туманность и золотые молнии Зевса.', img: 'store/items/hoops_9_beast.png', modelKit: 'hoops_kit_9_galaxy' },
+        { id: 'hoops_8_mamba', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Чёрная Мамба', rarity: 'legendary', price: 2500, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Инстинкт безжалостного финишера: рельефная змеиная чешуя с фиолетовым ядовитым отливом и клыками гадюки.', img: 'store/items/hoops_8_mamba.png', modelKit: 'hoops_kit_8_stealth' },
+        { id: 'hoops_1_miami', sport: 'hoops', category: 'kits', currency: 'coin', name: 'Майами Роуз', rarity: 'legendary', price: 2800, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Океанский закат Флориды: плавный закатный переход от фламинго к бирюзе с пальмовыми силуэтами Vice City.', img: 'store/items/hoops_1_miami.png', modelKit: 'hoops_kit_1_pink' },
+
+        // --- 3 STAR HOOPS KITS (МАЙКИ ЗА ЗВЁЗДЫ) ---
+        { id: 'hoops_star_holiday', sport: 'hoops', category: 'kits', currency: 'star', name: 'Новогодний Данк 🎄', rarity: 'legendary', price: 250, badge: '🎄 НОВОГОДНИЙ', desc: 'Рождественская безрукавная майка Санты: алый бархат с изумрудными резинками, золотыми елочками, снежинками и номером 25.', img: 'store/items/hoops_star_holiday.png', modelKit: 'hoops_kit_star_holiday' },
+        { id: 'hoops_star_astral', sport: 'hoops', category: 'kits', currency: 'star', name: 'Звёздный Властелин ⭐', rarity: 'legendary', price: 500, badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Полночный сапфировый и ультрафиолетовый шелк с золотыми созвездиями, золотыми окантовками пройм и сияющим номером 99.', img: 'store/items/hoops_star_astral.png', modelKit: 'hoops_kit_star_astral' },
+        { id: 'hoops_star_phantom', sport: 'hoops', category: 'kits', currency: 'star', name: 'Неоновый Фантом ⚡', rarity: 'legendary', price: 750, badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Матовый ультра-черный карбон с двойными лазерными розово-бирюзовыми неоновыми полосами в стиле Vice City и хромированным номером 0.', img: 'store/items/hoops_star_phantom.png', modelKit: 'hoops_kit_star_phantom' }
+      ]
+    };
+
+    // State
+    let currentSport = 'footy';
+    let currentCategory = 'kits';
+    let currentRarity = 'all';
+    let coins = 2450;
+    let stars = 1500;
+    const owned = new Set(['footy_2_white', 'hoops_2_chicago']);
+    const equipped = {
+      footy_kits: 'footy_2_white',
+      hoops_kits: 'hoops_2_chicago'
+    };
+
+    function setSport(s) {
+      currentSport = s;
+      document.getElementById('btn-footy').classList.toggle('active', s === 'footy');
+      document.getElementById('btn-hoops').classList.toggle('active', s === 'hoops');
+      renderGrid();
+    }
+
+    function setCategory(c) {
+      currentCategory = c;
+      document.getElementById('cat-kits').classList.toggle('active', c === 'kits');
+      document.getElementById('cat-stars').classList.toggle('active', c === 'stars');
+      renderGrid();
+    }
+
+    function setRarity(r) {
+      currentRarity = r;
+      document.querySelectorAll('.rarity-pill').forEach(b => {
+        b.classList.toggle('active', b.textContent.toLowerCase().includes(r === 'all' ? 'все' : r));
+      });
+      renderGrid();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2200);
+    }
+
+    function openModal(itemOrId) {
+      const item = typeof itemOrId === 'string'
+        ? DB.kits.find(x => x.id === itemOrId)
+        : itemOrId;
+      if (!item) return;
+      const modal = document.getElementById('modal');
+      const slotKey = `${item.sport}_kits`;
+      const isOwned = owned.has(item.id);
+      const isEquipped = equipped[slotKey] === item.id;
+
+      document.getElementById('m-img').src = item.img;
+      document.getElementById('m-title').textContent = item.name;
+      document.getElementById('m-rarity').innerHTML = `<span class="rarity-badge ${item.rarity}">${item.badge}</span>`;
+      document.getElementById('m-desc').textContent = item.desc;
+
+      const btn = document.getElementById('m-btn');
+      const isStar = item.currency === 'star';
+      btn.className = `btn-buy ${isEquipped ? 'equipped' : (isOwned ? 'owned' : (isStar ? 'star-btn' : ''))}`;
+      btn.innerHTML = isEquipped ? '✓ Надето' : (isOwned ? 'Надеть' : (isStar ? `Купить за ⭐ ${item.price} Stars` : `Купить за 🪙 ${item.price.toLocaleString()} FvH`));
+      btn.onclick = () => {
+        buyItem(item);
+        openModal(item);
+      };
+
+      const tryonBtn = document.getElementById('m-3d-btn');
+      if (item.modelKit) {
+        tryonBtn.href = `/benchmark/wardrobe_viewer.html?sport=${item.sport}&kit=${item.modelKit}`;
+        tryonBtn.style.display = 'flex';
+      } else {
+        tryonBtn.href = `/benchmark/wardrobe_viewer.html?sport=${item.sport}`;
+        tryonBtn.style.display = 'flex';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeModal(e) {
+      if (!e || e.target.id === 'modal' || e.target.classList.contains('modal-close')) {
+        document.getElementById('modal').style.display = 'none';
+      }
+    }
+
+    function buyItem(item) {
+      const slotKey = `${item.sport}_kits`;
+
+      if (owned.has(item.id)) {
+        equipped[slotKey] = item.id;
+        showToast(`✅ ${item.name} надето!`);
+        renderGrid();
+        return;
+      }
+
+      if (item.currency === 'star') {
+        if (stars < item.price) {
+          showToast(`❌ Недостаточно Stars! Нужно: ⭐ ${item.price}`);
+          return;
+        }
+        stars -= item.price;
+        document.getElementById('stars-bal').textContent = stars + ' Stars';
+      } else {
+        if (coins < item.price) {
+          showToast(`❌ Недостаточно монет! Нужно: 🪙 ${item.price.toLocaleString()} FvH`);
+          return;
+        }
+        coins -= item.price;
+        document.getElementById('coin-bal').textContent = coins.toLocaleString() + ' FvH';
+      }
+
+      owned.add(item.id);
+      equipped[slotKey] = item.id;
+      showToast(`🎉 Успешно куплено: ${item.name}!`);
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('items-grid');
+      grid.innerHTML = '';
+
+      let pool = [];
+      if (currentCategory === 'stars') {
+        // Show star kits for current sport
+        pool = DB.kits.filter(x => x.currency === 'star');
+      } else {
+        pool = DB.kits.filter(x => x.currency !== 'star');
+      }
+
+      const items = pool.filter(it => {
+        if (it.sport !== currentSport) return false;
+        if (currentRarity !== 'all' && it.rarity !== currentRarity) return false;
+        return true;
+      });
+
+      items.forEach(it => {
+        const slotKey = `${currentSport}_kits`;
+        const isOwned = owned.has(it.id);
+        const isEquipped = equipped[slotKey] === it.id;
+        const isStar = it.currency === 'star';
+
+        const card = document.createElement('div');
+        card.className = `card ${it.rarity} ${isStar ? 'star-exclusive' : ''}`;
+
+        const priceText = isOwned
+          ? 'В коллекции'
+          : (isStar ? `⭐ ${it.price} Stars` : `🪙 ${it.price.toLocaleString()} FvH`);
+
+        const btnText = isEquipped
+          ? '✓ Надето'
+          : (isOwned ? 'Надеть' : (isStar ? `Купить за ⭐ ${it.price}` : `Купить за 🪙 ${it.price}`));
+
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="rarity-badge">${it.badge}</span>
+            ${isEquipped ? '<span class="status-tag">✓ Надето</span>' : (isOwned ? '<span class="status-tag">✓ В коллекции</span>' : '')}
+          </div>
+          <div class="card-thumb">
+            <img src="${it.img}" alt="${it.name}">
+          </div>
+          <div class="card-name" title="${it.name}">${it.name}</div>
+          <div class="card-price" style="${isStar ? 'color:#fde047;font-weight:900;' : ''}">
+            ${priceText}
+          </div>
+          <button class="btn-buy ${isEquipped ? 'equipped' : (isOwned ? 'owned' : (isStar ? 'star-btn' : ''))}">
+            ${btnText}
+          </button>
+        `;
+
+        card.onclick = (e) => {
+          if (e.target.closest('.btn-buy')) return;
+          openModal(it);
+        };
+
+        card.querySelector('.btn-buy').onclick = (e) => {
+          e.stopPropagation();
+          buyItem(it);
+        };
+
+        grid.appendChild(card);
+      });
+    }
+
+    renderGrid();
+  </script>
+</body>
+</html>

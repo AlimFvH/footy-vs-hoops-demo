@@ -94,6 +94,41 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const d = this.noiseBuf.getChannelData(0);
                     for (let i = 0; i < len; i++)
                         d[i] = Math.random() * 2 - 1;
+
+                    // Real Studio Sports Game Audio Sample Preloader (EA FC & NBA 2K Fidelity)
+                    if (!this.audioSamplesLoaded) {
+                        this.audioSamplesLoaded = true;
+                        this.audioSamples = {};
+                        const sampleMap = {
+                            kick: 'assets/audio/kick_power_strike.wav',
+                            shot: 'assets/audio/kick_power_strike.wav',
+                            tackle: 'assets/audio/slide_tackle.wav',
+                            step: 'assets/audio/sprint_step.wav',
+                            swish: 'assets/audio/shot_swish.wav',
+                            dunk: 'assets/audio/dunk_slam.wav',
+                            steal: 'assets/audio/steal_swipe.wav',
+                            save: 'assets/audio/keeper_save.wav',
+                            goal: 'assets/audio/celebration.wav',
+                            score: 'assets/audio/celebration.wav',
+                            win: 'assets/audio/celebration.wav',
+                            celebration: 'assets/audio/celebration.wav',
+                            bounce: 'assets/audio/ball_bounce.wav',
+                            dribble: 'assets/audio/dribble.wav',
+                            dribble_court: 'assets/audio/dribble.wav',
+                            whistle: 'assets/audio/whistle.wav',
+                            whistleStart: 'assets/audio/whistle.wav',
+                            whistleEnd: 'assets/audio/whistle.wav',
+                            whistleRestart: 'assets/audio/whistle.wav',
+                            squeak: 'assets/audio/sneaker_squeak.wav'
+                        };
+                        for (const [sName, sUrl] of Object.entries(sampleMap)) {
+                            fetch(sUrl)
+                                .then(res => res.ok ? res.arrayBuffer() : null)
+                                .then(buf => buf ? this.ctx.decodeAudioData(buf) : null)
+                                .then(decoded => { if (decoded) this.audioSamples[sName] = decoded; })
+                                .catch(() => {});
+                        }
+                    }
                 }
                 if (this.ctx.state === 'suspended')
                     void this.ctx.resume();
@@ -191,6 +226,22 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     return;
                 this.lastPlay[name] = now;
             }
+
+            // High-fidelity real game audio sample playback
+            if (this.audioSamples && this.audioSamples[name]) {
+                try {
+                    const src = c.createBufferSource();
+                    src.buffer = this.audioSamples[name];
+                    src.playbackRate.setValueAtTime(pitch, now);
+                    const sGain = c.createGain();
+                    sGain.gain.setValueAtTime(v * 0.95, now);
+                    src.connect(sGain);
+                    sGain.connect(this.sfxGain);
+                    src.start(now);
+                    return;
+                } catch(e) {}
+            }
+
             switch (name) {
                 case 'kick':
                     // Punchy sub-bass transient + leather boot strike + surface air whoosh
@@ -4709,6 +4760,41 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         visual: Object.assign({ shorts: 0x1c2233, skin: 0xe0ac86, hair: 0x2a1a10, boots: 0x111111, accent: 0xffffff, style: 'plain' }, v),
     });
             exports.ITEMS = [
+        // --- 10 FOOTY CANONICAL KITS ---
+        skin('footy_2_white', 'Чистый Дом', 'common', 200, { primary: 0xffffff, secondary: 0x0070f3, shorts: 0x111827, skin: 0xdfa070, hair: 0x221810, boots: 0x0070f3, accent: 0xffd700, style: 'plain', mode: 'footy' }),
+        skin('footy_6_crimson', 'Багровый Гладиатор', 'common', 250, { primary: 0x991b1b, secondary: 0xf59e0b, shorts: 0x18181b, skin: 0xdfa070, hair: 0x221810, boots: 0xd97706, accent: 0xfef08a, style: 'stripes', mode: 'footy' }),
+        skin('footy_7_gold', 'Золотой Владыка', 'common', 300, { primary: 0xfacc15, secondary: 0xca8a04, shorts: 0x171717, skin: 0xdfa070, hair: 0x221810, boots: 0xfde047, accent: 0xffffff, style: 'royal', mode: 'footy' }),
+        skin('footy_1_sapphire', 'Сапфир Страйкер', 'rare', 550, { primary: 0x1d4ed8, secondary: 0x38bdf8, shorts: 0x1e3a8a, skin: 0xdfa070, hair: 0x221810, boots: 0x60a5fa, accent: 0x93c5fd, style: 'velocity', mode: 'footy' }),
+        skin('footy_4_amber', 'Янтарный Сокол', 'rare', 600, { primary: 0xf59e0b, secondary: 0x78350f, shorts: 0x451a03, skin: 0xdfa070, hair: 0x221810, boots: 0xfbbf24, accent: 0xfde047, style: 'flame', mode: 'footy' }),
+        skin('footy_5_amethyst', 'Аметист Туманность', 'rare', 650, { primary: 0x7e22ce, secondary: 0xc084fc, shorts: 0x3b0764, skin: 0xdfa070, hair: 0x221810, boots: 0xa855f7, accent: 0xf472b6, style: 'cosmic', mode: 'footy' }),
+        skin('footy_9_dragon', 'Пламя Дракона', 'epic', 1200, { primary: 0xdc2626, secondary: 0xea580c, shorts: 0x450a0a, skin: 0xdfa070, hair: 0x221810, boots: 0xf97316, accent: 0xfde047, style: 'dragon', mode: 'footy' }),
+        skin('footy_3_neon', 'Неон Тренинг', 'epic', 1300, { primary: 0x84cc16, secondary: 0x06b6d4, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x22c55e, accent: 0x00f0ff, style: 'circuit', mode: 'footy' }),
+        skin('footy_8_obsidian', 'Обсидиановый Шиноби', 'legendary', 2500, { primary: 0x18181b, secondary: 0x00f0ff, shorts: 0x09090b, skin: 0xdfa070, hair: 0x221810, boots: 0x22d3ee, accent: 0x00f0ff, style: 'stealth', mode: 'footy' }),
+        skin('footy_0_tiffany', 'Тиффани Оникс', 'legendary', 2800, { primary: 0x0d9488, secondary: 0x18181b, shorts: 0x042f2e, skin: 0xdfa070, hair: 0x221810, boots: 0x14b8a6, accent: 0x2dd4bf, style: 'split', mode: 'footy' }),
+
+        // --- 3 FOOTY STAR KITS ---
+        skin('footy_kit_star_holiday', '🎄 Новогодняя 2027', 'legendary', 250, { primary: 0xb91c1c, secondary: 0xffffff, shorts: 0x7f1d1d, skin: 0xdfa070, hair: 0x221810, boots: 0xfacc15, accent: 0x22c55e, style: 'holiday', mode: 'footy' }),
+        skin('footy_kit_star_emperor', '🌌 Галактический Император', 'legendary', 500, { primary: 0x312e81, secondary: 0xfacc15, shorts: 0x1e1b4b, skin: 0xdfa070, hair: 0x221810, boots: 0x38bdf8, accent: 0xfde047, style: 'emperor', mode: 'footy' }),
+        skin('footy_kit_star_samurai', '⚔️ Квантовый Самурай', 'legendary', 750, { primary: 0xf8fafc, secondary: 0x00f0ff, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x00f0ff, accent: 0xef4444, style: 'samurai', mode: 'footy' }),
+
+        // --- 10 HOOPS CANONICAL TANKS (МАЙКИ) ---
+        skin('hoops_2_chicago', 'Чикаго Классик 1998', 'common', 200, { primary: 0xb91c1c, secondary: 0x18181b, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xdc2626, accent: 0xffffff, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_3_la', 'ЛА Династия', 'common', 250, { primary: 0xfacc15, secondary: 0x6b21a8, shorts: 0x581c87, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfacc15, accent: 0xffffff, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_4_boston', 'Бостон Прайд', 'common', 300, { primary: 0x15803d, secondary: 0xffffff, shorts: 0x14532d, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x22c55e, accent: 0xfef08a, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_6_charlotte', 'Шарлотт Бриз', 'rare', 550, { primary: 0x0d9488, secondary: 0x7c3aed, shorts: 0x134e4a, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x14b8a6, accent: 0xa78bfa, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_5_raptor', 'Коготь Раптора', 'rare', 600, { primary: 0x831843, secondary: 0x18181b, shorts: 0x500724, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xbe123c, accent: 0xffffff, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_0_neon', 'Неон Сити', 'rare', 650, { primary: 0x0f172a, secondary: 0x00f0ff, shorts: 0x020617, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x00f0ff, accent: 0xf43f5e, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_7_phoenix', 'Восходящий Феникс', 'epic', 1200, { primary: 0xf97316, secondary: 0x7c2d12, shorts: 0x431407, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfbbf24, accent: 0xfde047, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_9_beast', 'Гипер-Зверь', 'epic', 1300, { primary: 0x047857, secondary: 0xfbbf24, shorts: 0x064e3b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x10b981, accent: 0xf59e0b, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_8_mamba', 'Черная Мамба', 'legendary', 2500, { primary: 0x18181b, secondary: 0xeab308, shorts: 0x09090b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfacc15, accent: 0x7c3aed, style: 'hoops', mode: 'hoops' }, '🎽'),
+        skin('hoops_1_miami', 'Майами Роуз', 'legendary', 2800, { primary: 0xec4899, secondary: 0x06b6d4, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x06b6d4, accent: 0xffffff, style: 'hoops', mode: 'hoops' }, '🎽'),
+
+        // --- 3 HOOPS STAR TANKS ---
+        skin('hoops_kit_star_holiday', '🎄 Новогодняя 2027', 'legendary', 250, { primary: 0xb91c1c, secondary: 0x15803d, shorts: 0x7f1d1d, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfacc15, accent: 0xffffff, style: 'holiday', mode: 'hoops' }, '🎽'),
+        skin('hoops_kit_star_astral', '🪐 Астральный Владыка', 'legendary', 500, { primary: 0x312e81, secondary: 0x06b6d4, shorts: 0x1e1b4b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xa855f7, accent: 0xfde047, style: 'astral', mode: 'hoops' }, '🎽'),
+        skin('hoops_kit_star_phantom', '⚡ Неоновый Фантом', 'legendary', 750, { primary: 0x09090b, secondary: 0xec4899, shorts: 0x000000, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x06b6d4, accent: 0xf43f5e, style: 'phantom', mode: 'hoops' }, '🎽'),
+
+        // --- LEGACY KITS PRESERVED ---
         skin('skin_rookie', 'Classic Stripes', 'common', 0, { primary: 0x00f0ff, secondary: 0xffffff, shorts: 0x0f172a, hair: 0x18181b, boots: 0x00f0ff, accent: 0x0f172a, style: 'stripes' }),
         skin('skin_plain_white', 'Pure Home', 'common', 150, { primary: 0xf8fafc, secondary: 0x0f172a, shorts: 0x0f172a, hair: 0x18181b, boots: 0xf8fafc, accent: 0x38bdf8, style: 'plain' }),
         skin('skin_training_bib', 'Neon Practice', 'common', 180, { primary: 0x84cc16, secondary: 0x1e293b, shorts: 0x0f172a, hair: 0x18181b, boots: 0x84cc16, accent: 0xa3e635, style: 'bib' }),
@@ -9505,7 +9591,37 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             }
             if (isSkin) {
                 const KNOWN_SKIN_VISUALS = {
-                    // Footy Kits
+                    // Footy Canonical Kits
+                    footy_2_white: { primary: 0xffffff, secondary: 0x0070f3, shorts: 0x111827, skin: 0xdfa070, hair: 0x221810, boots: 0x0070f3, accent: 0xffd700, style: 'plain' },
+                    footy_6_crimson: { primary: 0x991b1b, secondary: 0xf59e0b, shorts: 0x18181b, skin: 0xdfa070, hair: 0x221810, boots: 0xd97706, accent: 0xfef08a, style: 'stripes' },
+                    footy_7_gold: { primary: 0xfacc15, secondary: 0xca8a04, shorts: 0x171717, skin: 0xdfa070, hair: 0x221810, boots: 0xfde047, accent: 0xffffff, style: 'royal' },
+                    footy_1_sapphire: { primary: 0x1d4ed8, secondary: 0x38bdf8, shorts: 0x1e3a8a, skin: 0xdfa070, hair: 0x221810, boots: 0x60a5fa, accent: 0x93c5fd, style: 'velocity' },
+                    footy_4_amber: { primary: 0xf59e0b, secondary: 0x78350f, shorts: 0x451a03, skin: 0xdfa070, hair: 0x221810, boots: 0xfbbf24, accent: 0xfde047, style: 'flame' },
+                    footy_5_amethyst: { primary: 0x7e22ce, secondary: 0xc084fc, shorts: 0x3b0764, skin: 0xdfa070, hair: 0x221810, boots: 0xa855f7, accent: 0xf472b6, style: 'cosmic' },
+                    footy_9_dragon: { primary: 0xdc2626, secondary: 0xea580c, shorts: 0x450a0a, skin: 0xdfa070, hair: 0x221810, boots: 0xf97316, accent: 0xfde047, style: 'dragon' },
+                    footy_3_neon: { primary: 0x84cc16, secondary: 0x06b6d4, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x22c55e, accent: 0x00f0ff, style: 'circuit' },
+                    footy_8_obsidian: { primary: 0x18181b, secondary: 0x00f0ff, shorts: 0x09090b, skin: 0xdfa070, hair: 0x221810, boots: 0x22d3ee, accent: 0x00f0ff, style: 'stealth' },
+                    footy_0_tiffany: { primary: 0x0d9488, secondary: 0x18181b, shorts: 0x042f2e, skin: 0xdfa070, hair: 0x221810, boots: 0x14b8a6, accent: 0x2dd4bf, style: 'split' },
+                    footy_kit_star_holiday: { primary: 0xb91c1c, secondary: 0xffffff, shorts: 0x7f1d1d, skin: 0xdfa070, hair: 0x221810, boots: 0xfacc15, accent: 0x22c55e, style: 'holiday' },
+                    footy_kit_star_emperor: { primary: 0x312e81, secondary: 0xfacc15, shorts: 0x1e1b4b, skin: 0xdfa070, hair: 0x221810, boots: 0x38bdf8, accent: 0xfde047, style: 'emperor' },
+                    footy_kit_star_samurai: { primary: 0xf8fafc, secondary: 0x00f0ff, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x00f0ff, accent: 0xef4444, style: 'samurai' },
+
+                    // Hoops Canonical Tanks
+                    hoops_2_chicago: { primary: 0xb91c1c, secondary: 0x18181b, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xdc2626, accent: 0xffffff, style: 'hoops' },
+                    hoops_3_la: { primary: 0xfacc15, secondary: 0x6b21a8, shorts: 0x581c87, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfacc15, accent: 0xffffff, style: 'hoops' },
+                    hoops_4_boston: { primary: 0x15803d, secondary: 0xffffff, shorts: 0x14532d, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x22c55e, accent: 0xfef08a, style: 'hoops' },
+                    hoops_6_charlotte: { primary: 0x0d9488, secondary: 0x7c3aed, shorts: 0x134e4a, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x14b8a6, accent: 0xa78bfa, style: 'hoops' },
+                    hoops_5_raptor: { primary: 0x831843, secondary: 0x18181b, shorts: 0x500724, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xbe123c, accent: 0xffffff, style: 'hoops' },
+                    hoops_0_neon: { primary: 0x0f172a, secondary: 0x00f0ff, shorts: 0x020617, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x00f0ff, accent: 0xf43f5e, style: 'hoops' },
+                    hoops_7_phoenix: { primary: 0xf97316, secondary: 0x7c2d12, shorts: 0x431407, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfbbf24, accent: 0xfde047, style: 'hoops' },
+                    hoops_9_beast: { primary: 0x047857, secondary: 0xfbbf24, shorts: 0x064e3b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x10b981, accent: 0xf59e0b, style: 'hoops' },
+                    hoops_8_mamba: { primary: 0x18181b, secondary: 0xeab308, shorts: 0x09090b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfacc15, accent: 0x7c3aed, style: 'hoops' },
+                    hoops_1_miami: { primary: 0xec4899, secondary: 0x06b6d4, shorts: 0x18181b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x06b6d4, accent: 0xffffff, style: 'hoops' },
+                    hoops_kit_star_holiday: { primary: 0xb91c1c, secondary: 0x15803d, shorts: 0x7f1d1d, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xfacc15, accent: 0xffffff, style: 'holiday' },
+                    hoops_kit_star_astral: { primary: 0x312e81, secondary: 0x06b6d4, shorts: 0x1e1b4b, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0xa855f7, accent: 0xfde047, style: 'astral' },
+                    hoops_kit_star_phantom: { primary: 0x09090b, secondary: 0xec4899, shorts: 0x000000, skin: 0x6c4424, hair: 0x0a0a0a, boots: 0x06b6d4, accent: 0xf43f5e, style: 'phantom' },
+
+                    // Footy Legacy Kits
                     skin_rookie: { primary: 0x00c8ff, secondary: 0x0a1e3f, shorts: 0x0a1e3f, skin: 0xdfa070, hair: 0x221810, boots: 0x00c8ff, accent: 0xffffff, style: 'plain' },
                     skin_plain_white: { primary: 0xf8fafc, secondary: 0x0284c7, shorts: 0x0284c7, skin: 0xdfa070, hair: 0x221810, boots: 0x38bdf8, accent: 0x0284c7, style: 'plain' },
                     skin_training_bib: { primary: 0xa3e635, secondary: 0x365314, shorts: 0x1e293b, skin: 0xdfa070, hair: 0x221810, boots: 0xa3e635, accent: 0x4ade80, style: 'bib' },
@@ -17245,6 +17361,24 @@ define("ui/pages", ["require", "exports", "core/input", "core/economy", "core/qu
             this.albumCol = 'footy';
         }
         build(name) {
+            if (typeof window !== 'undefined') {
+                if (name === 'shop' && typeof window.buildShopPage === 'function') {
+                    return window.buildShopPage(this.app);
+                }
+                if ((name === 'characters' || name === 'inventory') && typeof window.buildCharactersPage === 'function') {
+                    const curChar = (this.app.store && this.app.store.data && (this.app.store.data.selectedTeam || this.app.store.data.selectedCharacter)) || 'footy';
+                    return window.buildCharactersPage(this.app, curChar, 'skins');
+                }
+                if (name === 'quests' && typeof window.buildQuestsPage === 'function') {
+                    return window.buildQuestsPage(this.app);
+                }
+                if (name === 'profile' && typeof window.buildProfilePage === 'function') {
+                    return window.buildProfilePage(this.app);
+                }
+                if (name === 'settings' && typeof window.buildSettingsPage === 'function') {
+                    return window.buildSettingsPage(this.app);
+                }
+            }
             switch (name) {
                 case 'quests': return this.quests();
                 case 'shop': return this.shop();
@@ -17885,8 +18019,12 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 }
             }
         }
-        go(page) {
+        go(page, opts) {
             this.audio.play('click');
+            if (typeof window !== 'undefined' && typeof window.fvhGo === 'function') {
+                window.fvhGo(page, opts);
+                return;
+            }
             if (page === 'menu')
                 this.showMenu();
             else if (page === 'mode')

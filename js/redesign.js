@@ -636,9 +636,9 @@
       packStarsStarter: 'Star Starter Pack',
       packStarsChampion: 'Star Champion Pack',
       packStarsLegend: 'Star Ultimate Legend Pack',
-      packStarsStarterDesc: '500 FvH Coin + guaranteed RARE item for your team!',
-      packStarsChampionDesc: '2,000 FvH Coin + guaranteed EPIC item for your team!',
-      packStarsLegendDesc: '6,000 FvH Coin + guaranteed LEGENDARY item + chance for MYTHIC!',
+      packStarsStarterDesc: '1,500 FvH Coin + guaranteed RARE kit for your team!',
+      packStarsChampionDesc: '4,000 FvH Coin + guaranteed EPIC kit for your team!',
+      packStarsLegendDesc: '10,000 FvH Coin + guaranteed LEGENDARY kit for your team!',
       upgradesTitle: 'Skills & Training',
       upgradesSubtitle: 'Upgrade your athlete skills to dominate in 1v1 PvP & single player matches',
       upgradeSkillPowerFooty: 'Shot Power',
@@ -1223,9 +1223,9 @@
       packStarsStarter: 'Звёздный Набор Новичка',
       packStarsChampion: 'Чемпионский Пак Звёзд',
       packStarsLegend: 'Ультимейт Легенда Пак',
-      packStarsStarterDesc: '500 FvH Coin + гарантированный РЕДКИЙ предмет вашей команды!',
-      packStarsChampionDesc: '2,000 FvH Coin + гарантированный ЭПИЧЕСКИЙ предмет вашей команды!',
-      packStarsLegendDesc: '6,000 FvH Coin + гарантированный ЛЕГЕНДАРНЫЙ предмет + шанс на МИФИК!',
+      packStarsStarterDesc: '1,500 FvH Coin + гарантированная РЕДКАЯ форма вашей команды!',
+      packStarsChampionDesc: '4,000 FvH Coin + гарантированная ЭПИЧЕСКАЯ форма вашей команды!',
+      packStarsLegendDesc: '10,000 FvH Coin + гарантированная ЛЕГЕНДАРНАЯ форма вашей команды!',
       upgradesTitle: 'Прокачка Навыков',
       upgradesSubtitle: 'Прокачивайте характеристики своего атлета для превосходства на поле',
       upgradeSkillPowerFooty: 'Сила Удара',
@@ -2316,7 +2316,7 @@
     opts = opts || {};
     var char = opts.character || opts.char || 'footy';
     var isHoops = (char === 'hoops');
-    var fallbackImg = isHoops ? 'assets/hero_hoops_real.png' : 'assets/hero_footy_real.png';
+    var fallbackImg = isHoops ? 'assets/hero_hoops_real.png?v=3.6.0-authentic-3d' : 'assets/hero_footy_real.png?v=3.6.0-authentic-3d';
     var photo = opts.photoUrl || opts.photo_url || null;
     var extraClass = opts.extraClass ? (' ' + opts.extraClass) : '';
     var alt = escapeHtml(opts.alt || opts.name || char);
@@ -2341,7 +2341,48 @@
 
   // Dynamic Hero Jersey Palette Definitions for in-game and menu character customization
       var HERO_SKIN_PALETTES = {
-    skin_rookie: { h: 184, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Classic Stripes', ru: 'Классические полосы' },
+    // Canonical 10 Football Kits
+    
+    footy_classic: { h: 184, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Classic Blue #10', ru: 'Классика #10' },
+    footy_6_crimson: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Crimson Gladiator', ru: 'Багровый Гладиатор' },
+    footy_7_gold: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Golden Sovereign', ru: 'Золотая Владыка' },
+    footy_4_amber: { h: 35, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Amber Falcon', ru: 'Янтарный Сокол' },
+    footy_kit_star_emperor: { h: 250, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' },
+    footy_kit_star_samurai: { h: 190, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' },
+    footy_2_white: { h: 210, s: 0.15, lMult: 1.35, darkShorts: false, name: 'Clean Home', ru: 'Чистый Дом' },
+    footy_2_crimson: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Crimson Gladiator', ru: 'Багровый Гладиатор' },
+    footy_2_gold: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Golden Sovereign', ru: 'Золотая Владыка' },
+    footy_1_sapphire: { h: 218, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Sapphire Striker', ru: 'Сапфир Страйкер' },
+    footy_7_amber: { h: 35, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Amber Falcon', ru: 'Янтарный Сокол' },
+    footy_5_amethyst: { h: 270, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Amethyst Nebula', ru: 'Аметист Туманность' },
+    footy_9_dragon: { h: 8, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Dragon Flame', ru: 'Пламя Дракона' },
+    footy_3_neon: { h: 140, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Neon Training', ru: 'Неон Тренинг' },
+    footy_8_obsidian: { h: 240, s: 0.20, lMult: 0.45, darkShorts: true, name: 'Obsidian Shinobi', ru: 'Обсидиановый Шиноби' },
+    footy_0_tiffany: { h: 175, s: 0.85, lMult: 1.05, darkShorts: true, name: 'Tiffany Onyx', ru: 'Тиффани Оникс' },
+
+    // 3 Football Star Kits
+    footy_kit_star_holiday: { h: 142, s: 0.85, lMult: 0.9, darkShorts: true, name: 'Holiday 2027', ru: '🎄 Новогодняя 2027' },
+    footy_kit_star_astral: { h: 250, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' },
+    footy_kit_star_phantom: { h: 190, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' },
+
+    // Canonical 10 Basketball Tanks
+    hoops_classic: { h: 25, s: 0.95, lMult: 0.95, darkShorts: true, name: 'Solar Flare #23', ru: 'Солнечная вспышка' },
+    hoops_2_chicago: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Chicago Classic', ru: 'Чикаго Классик' },
+    hoops_3_la: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'LA Dynasty', ru: 'ЛА Династия' },
+    hoops_4_boston: { h: 142, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Boston Pride', ru: 'Бостон Прайд' },
+    hoops_6_charlotte: { h: 175, s: 0.85, lMult: 1.0, darkShorts: true, name: 'Charlotte Breeze', ru: 'Шарлотт Бриз' },
+    hoops_5_raptor: { h: 330, s: 0.85, lMult: 0.8, darkShorts: true, name: 'Raptor Claw', ru: 'Коготь Раптора' },
+    hoops_0_neon: { h: 190, s: 0.95, lMult: 0.6, darkShorts: true, name: 'Neon City', ru: 'Неон Сити' },
+    hoops_7_phoenix: { h: 25, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Rising Phoenix', ru: 'Восходящий Феникс' },
+    hoops_9_beast: { h: 155, s: 0.95, lMult: 0.9, darkShorts: true, name: 'Hyper Beast', ru: 'Гипер Зверь' },
+    hoops_8_mamba: { h: 45, s: 0.95, lMult: 0.45, darkShorts: true, name: 'Black Mamba', ru: 'Черная Мамба' },
+    hoops_1_miami: { h: 335, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Miami Rose', ru: 'Майами Роуз' },
+
+    // 3 Basketball Star Tanks
+    hoops_kit_star_holiday: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Holiday 2027', ru: '🎄 Новогодняя 2027' },
+    hoops_kit_star_astral: { h: 250, s: 0.90, lMult: 0.85, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' },
+    hoops_kit_star_phantom: { h: 335, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' },
+    skin_rookie: { h: 184, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Classic Blue #10', ru: 'Классика #10' },
     skin_plain_white: { h: 210, s: 0.90, lMult: 1.25, darkShorts: true, name: 'Pure Home', ru: 'Чистый домашний' },
     skin_training_bib: { h: 84, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Neon Practice', ru: 'Неоновая тренировка' },
     skin_casual_tee: { h: 215, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Street Classic', ru: 'Уличная классика' },
@@ -2441,13 +2482,13 @@
     if (!HERO_BASE_IMGS.footy) {
       var f = new Image();
       f.crossOrigin = 'anonymous';
-      f.src = 'assets/hero_footy_real.png';
+      f.src = 'assets/hero_footy_real.png?v=3.6.0-authentic-3d';
       HERO_BASE_IMGS.footy = f;
     }
     if (!HERO_BASE_IMGS.hoops) {
       var h = new Image();
       h.crossOrigin = 'anonymous';
-      h.src = 'assets/hero_hoops_real.png';
+      h.src = 'assets/hero_hoops_real.png?v=3.6.0-authentic-3d';
       HERO_BASE_IMGS.hoops = h;
     }
   }
@@ -2463,8 +2504,8 @@
 
   function getRecoloredHeroUrl(charId, skinId) {
     var isFooty = (charId === 'footy');
-    if (!skinId || (isFooty && (skinId === 'skin_rookie' || skinId === 'skin_default')) || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_solar' || skinId === 'skin_hoops_street_legend' || skinId === 'skin_default'))) {
-      return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
+    if (!skinId || (isFooty && (skinId === 'skin_rookie' || skinId === 'footy_classic' || skinId === 'skin_default')) || (!isFooty && (skinId === 'skin_bb_onyx' || skinId === 'skin_solar' || skinId === 'hoops_classic' || skinId === 'skin_hoops_street_legend' || skinId === 'skin_default'))) {
+      return isFooty ? 'assets/hero_footy_real.png?v=3.6.0-authentic-3d' : 'assets/hero_hoops_real.png?v=3.6.0-authentic-3d';
     }
     var cacheKey = charId + '_' + skinId;
     if (HERO_SKIN_CACHE[cacheKey]) {
@@ -2482,7 +2523,7 @@
 
         var imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
         var data = imgData.data;
-        var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
+        var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.footy_classic : HERO_SKIN_PALETTES.hoops_classic);
 
         for (var y = 0; y < cvs.height; y++) {
           var yPct = y / cvs.height;
@@ -2547,7 +2588,7 @@
         });
       };
     }
-    return isFooty ? 'assets/hero_footy_real.png' : 'assets/hero_hoops_real.png';
+    return isFooty ? 'assets/hero_footy_real.png?v=3.6.0-authentic-3d' : 'assets/hero_hoops_real.png?v=3.6.0-authentic-3d';
   }
 
   function getCharacterDisplayHtml(charId, specificSkinId, options) {
@@ -2556,13 +2597,13 @@
     var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
     var opts = options || {};
     // Ensure HOOPS doesn't inherit FOOTY's skin_rookie by default
-    var defaultSkin = isFooty ? 'skin_rookie' : 'skin_bb_onyx';
+    var defaultSkin = isFooty ? 'footy_classic' : 'hoops_classic';
     var charSpecificSkin = isFooty
       ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' ? eq.skin : null))
       : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin === 'skin_solar') ? eq.skin : null));
     var skinId = specificSkinId || charSpecificSkin || defaultSkin;
-    if (isFooty && (skinId.startsWith('skin_bb_') || skinId.startsWith('skin_hoops') || skinId === 'skin_solar')) skinId = 'skin_rookie';
-    if (!isFooty && skinId === 'skin_rookie') skinId = 'skin_bb_onyx';
+    if (isFooty && (skinId.startsWith('skin_bb_') || skinId.startsWith('skin_hoops') || skinId.startsWith('hoops_') || skinId === 'skin_solar')) skinId = 'footy_classic';
+    if (!isFooty && (skinId === 'skin_rookie' || skinId === 'footy_classic' || skinId === 'footy_2_white' || skinId.startsWith('footy_') || skinId.startsWith('skin_footy'))) skinId = 'hoops_classic';
     var imgSrc = getRecoloredHeroUrl(charId, skinId);
     var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
@@ -4858,6 +4899,70 @@
       else if (id === 'coins' || id.startsWith('pkg_coins_') || id.startsWith('coins_') || id.toLowerCase().indexOf('coin') !== -1) cat = 'coins';
     }
 
+    var imgId = (typeof itemOrId === 'object' && itemOrId.id) ? itemOrId.id : (typeof itemOrId === 'string' ? itemOrId : '');
+    var KNOWN_STORE_ASSETS = {
+      'footy_classic': 'footy_classic.png',
+      'hoops_classic': 'hoops_classic.png',
+      'footy_2_white': 'footy_2_white.png',
+      'footy_6_crimson': 'footy_6_crimson.png',
+      'footy_7_gold': 'footy_7_gold.png',
+      'footy_1_sapphire': 'footy_1_sapphire.png',
+      'footy_4_amber': 'footy_4_amber.png',
+      'footy_5_amethyst': 'footy_5_amethyst.png',
+      'footy_9_dragon': 'footy_9_dragon.png',
+      'footy_3_neon': 'footy_3_neon.png',
+      'footy_8_obsidian': 'footy_8_obsidian.png',
+      'footy_0_tiffany': 'footy_0_tiffany.png',
+      'footy_kit_star_holiday': 'footy_star_holiday.png',
+      'footy_kit_star_emperor': 'footy_star_emperor.png',
+      'footy_kit_star_samurai': 'footy_star_samurai.png',
+      'footy_star_holiday': 'footy_star_holiday.png',
+      'footy_star_emperor': 'footy_star_emperor.png',
+      'footy_star_samurai': 'footy_star_samurai.png',
+      'hoops_2_chicago': 'hoops_2_chicago.png',
+      'hoops_3_la': 'hoops_3_la.png',
+      'hoops_4_boston': 'hoops_4_boston.png',
+      'hoops_6_charlotte': 'hoops_6_charlotte.png',
+      'hoops_5_raptor': 'hoops_5_raptor.png',
+      'hoops_0_neon': 'hoops_0_neon.png',
+      'hoops_7_phoenix': 'hoops_7_phoenix.png',
+      'hoops_9_beast': 'hoops_9_beast.png',
+      'hoops_8_mamba': 'hoops_8_mamba.png',
+      'hoops_1_miami': 'hoops_1_miami.png',
+      'hoops_kit_star_holiday': 'hoops_star_holiday.png',
+      'hoops_kit_star_astral': 'hoops_star_astral.png',
+      'hoops_kit_star_phantom': 'hoops_star_phantom.png',
+      'hoops_star_holiday': 'hoops_star_holiday.png',
+      'hoops_star_astral': 'hoops_star_astral.png',
+      'hoops_star_phantom': 'hoops_star_phantom.png',
+      // Mapped legacy aliases for seamless compatibility
+      'skin_rookie': 'footy_classic.png',
+      'skin_plain_white': 'footy_2_white.png',
+      'skin_crimson': 'footy_6_crimson.png',
+      'skin_golden': 'footy_7_gold.png',
+      'skin_solar': 'hoops_classic.png',
+      'skin_electric': 'footy_5_amethyst.png',
+      'skin_dragon': 'footy_9_dragon.png',
+      'skin_training_bib': 'footy_3_neon.png',
+      'skin_midnight': 'footy_8_obsidian.png',
+      'skin_cyber': 'footy_3_neon.png',
+      'skin_pixel_camo': 'footy_1_sapphire.png',
+      'skin_bb_onyx': 'hoops_classic.png',
+      'skin_bb_crimson': 'hoops_2_chicago.png',
+      'skin_bb_gold': 'hoops_3_la.png',
+      'skin_bb_forest': 'hoops_4_boston.png',
+      'skin_bb_tropical': 'hoops_6_charlotte.png',
+      'skin_bb_tokyo': 'hoops_0_neon.png',
+      'skin_bb_amber': 'hoops_7_phoenix.png',
+      'skin_bb_noir': 'hoops_8_mamba.png',
+      'skin_bb_miami': 'hoops_1_miami.png',
+    };
+
+    if (KNOWN_STORE_ASSETS[imgId]) {
+      var szPx = size === 'large' ? '120px' : '72px';
+      return '<img src="store/items/' + KNOWN_STORE_ASSETS[imgId] + '" style="max-width:100%;max-height:100%;width:' + szPx + ';height:' + szPx + ';object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.5));" onerror="this.style.display=\'none\';">';
+    }
+
     if (cat === 'crowd') return getDetailedCrowdSvg(itemOrId, size);
     if (cat === 'boosts') return getDetailedBoostSvg(itemOrId, size);
     if (cat === 'skins') return getDetailedJerseySvg(itemOrId, size);
@@ -6413,6 +6518,23 @@
     previewCol.appendChild(charRole);
     previewCol.appendChild(equipSlotList);
     previewCol.appendChild(selectBtn);
+
+    var tryonBtn = document.createElement('a');
+    tryonBtn.className = 'btn block fvh-3d-tryon-btn';
+    tryonBtn.href = '/benchmark/wardrobe_viewer.html';
+    tryonBtn.target = '_blank';
+    tryonBtn.style.marginTop = '8px';
+    tryonBtn.style.textDecoration = 'none';
+    tryonBtn.style.fontSize = '12px';
+    tryonBtn.style.display = 'flex';
+    tryonBtn.style.alignItems = 'center';
+    tryonBtn.style.justifyContent = 'center';
+    tryonBtn.style.gap = '6px';
+    tryonBtn.style.background = 'linear-gradient(135deg, rgba(56,189,248,0.22), rgba(251,146,60,0.22))';
+    tryonBtn.style.border = '1px solid rgba(255,255,255,0.25)';
+    tryonBtn.style.color = '#ffffff';
+    tryonBtn.innerHTML = '<span>🔄</span> <span>' + (lang === 'ru' ? '3D Примерочная 360°' : '3D Fitting Room 360°') + '</span>';
+    previewCol.appendChild(tryonBtn);
     layout.appendChild(previewCol);
 
     // Right Locker Items Column
@@ -6421,16 +6543,14 @@
 
     // Slot Category Tabs (Football or Basketball based on team)
     var isFooty = (curChar === 'footy');
-    var ballSlotId = isFooty ? 'balls_footy' : 'balls_hoops';
-    var ballSlotLabel = isFooty ? tr('catFootballBalls') : tr('catBasketballBalls');
-    var validSlots = ['skins', ballSlotId];
+    var validSlots = ['skins', 'stars'];
     if (validSlots.indexOf(curSlot) === -1) curSlot = 'skins';
     var slotSeg = document.createElement('div');
     slotSeg.className = 'seg fvh-wardrobe-seg';
     slotSeg.style.marginBottom = '8px';
     var slots = [
-      { id: 'skins', icon: 'cat_skins', label: (tr('catSkins') || (lang === 'ru' ? 'Форма' : 'Kits')) },
-      { id: ballSlotId, icon: isFooty ? 'nav_home_footy' : 'nav_home_hoops', label: ballSlotLabel }
+      { id: 'skins', icon: 'cat_skins', label: (isFooty ? (lang === 'ru' ? 'Формы' : 'Kits') : (lang === 'ru' ? 'Майки' : 'Tanks')) },
+      { id: 'stars', icon: 'star', label: (lang === 'ru' ? 'За Звёзды' : 'For Stars') }
     ];
     slots.forEach(function (s) {
       var sb = document.createElement('button');
@@ -6483,6 +6603,57 @@
     page.appendChild(body);
     container.appendChild(page);
 
+    function updateWardrobeAvatar(charId, kitId) {
+      var existingFrame = avatarBox.querySelector('#fvh-wardrobe-3d-frame');
+      var eq = (app && app.store && app.store.data && app.store.data.equipped) || {};
+      var defaultKit = (charId === 'hoops') ? 'hoops_classic' : 'footy_classic';
+      var initialKit = kitId || eq['skin.' + charId] || eq.skin || defaultKit;
+
+      if (existingFrame && existingFrame.dataset.sport === charId) {
+        try {
+          if (existingFrame.contentWindow) {
+            existingFrame.contentWindow.postMessage({
+              action: 'changeKit',
+              kit: initialKit,
+              texture: initialKit
+            }, '*');
+          }
+        } catch (e) {}
+        var pal = HERO_SKIN_PALETTES[initialKit] || (charId === 'hoops' ? HERO_SKIN_PALETTES.hoops_classic : HERO_SKIN_PALETTES.footy_classic);
+        var tag = avatarBox.querySelector('.fvh-hero-active-jersey-tag');
+        if (tag && pal) {
+          tag.innerHTML = '<span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + ((lang === 'ru') ? pal.ru : pal.name) + '</span>';
+        }
+        return;
+      }
+
+      avatarBox.innerHTML = '';
+      var frame = document.createElement('iframe');
+      frame.id = 'fvh-wardrobe-3d-frame';
+      frame.dataset.sport = charId;
+      frame.src = '/benchmark/wardrobe_viewer.html?sport=' + charId + '&kit=' + initialKit + '&embed=1&transparent=1';
+      frame.setAttribute('allow', 'webgl');
+      frame.style.width = '100%';
+      frame.style.height = '100%';
+      frame.style.minHeight = '270px';
+      frame.style.border = 'none';
+      frame.style.borderRadius = '16px';
+      frame.style.background = 'transparent';
+      avatarBox.appendChild(frame);
+
+      var pal = HERO_SKIN_PALETTES[initialKit] || (charId === 'hoops' ? HERO_SKIN_PALETTES.hoops_classic : HERO_SKIN_PALETTES.footy_classic);
+      var tagDiv = document.createElement('div');
+      tagDiv.className = 'fvh-hero-active-jersey-tag';
+      tagDiv.style.cssText = 'position:relative;margin-top:6px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (charId === 'footy' ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (charId === 'footy' ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;';
+      tagDiv.innerHTML = '<span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + ((lang === 'ru') ? (pal ? pal.ru : initialKit) : (pal ? pal.name : initialKit)) + '</span>';
+      avatarBox.appendChild(tagDiv);
+
+      var hintDiv = document.createElement('div');
+      hintDiv.style.cssText = 'font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:0.3px;';
+      hintDiv.textContent = (lang === 'ru' ? '👆 Вращайте 360° · Выберите форму ниже' : '👆 Rotate 360° · Select kit below');
+      avatarBox.appendChild(hintDiv);
+    }
+
     function updateView() {
       title.textContent = tr('lockerTitle', { char: curChar === 'footy' ? tr('footyChar') : tr('hoopsChar') });
 
@@ -6519,7 +6690,7 @@
 
       // Sanitize equipped items to prevent unowned cosmetics from staying equipped
       var defaultSlotItems = {
-        skin: 'skin_rookie',
+        skin: 'footy_classic',
         'ball.footy': 'ball_footy_classic',
         'ball.hoops': 'ball_hoops_street',
         'stadium.footy': 'std_footy_classic',
@@ -6544,9 +6715,9 @@
       var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
 
       var curCharSkin = isFooty
-        ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('skin_bb_') && eq.skin !== 'skin_solar' ? eq.skin : 'skin_rookie'))
-        : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('skin_bb_') || eq.skin === 'skin_solar') ? eq.skin : 'skin_bb_onyx'));
-      avatarBox.innerHTML = getCharacterDisplayHtml(curChar, curCharSkin);
+        ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('skin_bb_') && eq.skin !== 'skin_solar' ? eq.skin : 'footy_classic'))
+        : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('skin_bb_') || eq.skin === 'skin_solar') ? eq.skin : 'hoops_classic'));
+      updateWardrobeAvatar(curChar, curCharSkin);
       var activeBallId = isFooty
         ? (eq['ball.footy'] || (eq.ball && !eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_footy_classic'))
         : (eq['ball.hoops'] || (eq.ball && eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_hoops_street'));
@@ -6566,22 +6737,20 @@
         var unseenItems = (app.store && app.store.data && app.store.data.unseenItems) || [];
 
         var matching = baseCatalog.filter(function (it) {
-          if (it.category !== curSlot) return false;
-          if (curRarity !== 'all' && it.rarity !== curRarity) return false;
-          if (isFooty) {
-            // Footy only sees footy skins and footy balls
-            if (it.category === 'balls_hoops' || (it.slot && it.slot === 'ball.hoops') || it.mode === 'hoops' || it.id.indexOf('hoops') !== -1 || it.id === 'skin_solar' || it.id === 'skin_sunset' || it.id === 'skin_mars') {
-              return false;
-            }
+          if (curSlot === 'skins') {
+            if (it.category !== 'skins' || it.currency === 'star') return false;
+          } else if (curSlot === 'stars') {
+            if (it.category !== 'stars' && it.currency !== 'star') return false;
           } else {
-            // Hoops only sees hoops skins and hoops balls
-            if (it.category === 'balls_footy' || (it.slot && it.slot === 'ball.footy') || it.mode === 'footy' || it.id.indexOf('footy') !== -1 || it.id === 'skin_rookie' || it.id === 'skin_crimson' || it.id === 'skin_frost' || it.id === 'skin_astronaut') {
-              return false;
-            }
+            return false;
           }
+          if (curRarity !== 'all' && it.rarity !== curRarity) return false;
+          if (isFooty && it.mode !== 'footy') return false;
+          if (!isFooty && it.mode !== 'hoops') return false;
+
           var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) ||
-            (isFooty && (it.id === 'skin_rookie' || it.id === 'ball_classic' || it.id === 'ball_footy_classic')) ||
-            (!isFooty && (it.id === 'skin_bb_onyx' || it.id === 'skin_solar' || it.id === 'skin_hoops_street_legend' || it.id === 'ball_hoops_classic' || it.id === 'ball_hoops_street')) ||
+            (isFooty && (it.id === 'footy_classic' || it.id === 'footy_2_white' || it.id === 'skin_rookie')) ||
+            (!isFooty && (it.id === 'hoops_classic' || it.id === 'hoops_2_chicago' || it.id === 'skin_bb_onyx' || it.id === 'skin_solar')) ||
             (LEGACY_ITEM_ALIASES[it.id] && owned.indexOf(LEGACY_ITEM_ALIASES[it.id]) !== -1);
           return isOwned;
         });
@@ -6628,8 +6797,8 @@
 
         // Update left preview box & action button based on selected item
         if (selectedItem) {
-          if (selectedItem.category === 'skins') {
-            avatarBox.innerHTML = getCharacterDisplayHtml(curChar, selectedItem.id);
+          if (selectedItem.category === 'skins' || selectedItem.category === 'stars' || selectedItem.currency === 'star' || (selectedItem.id && (selectedItem.id.startsWith('footy_') || selectedItem.id.startsWith('hoops_')))) {
+            updateWardrobeAvatar(curChar, selectedItem.id);
           } else {
             avatarBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;padding:10px;box-sizing:border-box;">' + getDetailedBallSvg(selectedItem.id, 'large') + '</div>';
           }
@@ -6666,7 +6835,7 @@
             app.store.update(function (d) {
               if (!d.equipped) d.equipped = {};
               d.equipped[targetSlotKey] = itemToEquip.id;
-              if (itemToEquip.category === 'skins') {
+              if (itemToEquip.category === 'skins' || itemToEquip.category === 'stars' || itemToEquip.currency === 'star' || (itemToEquip.id && (itemToEquip.id.startsWith('footy_') || itemToEquip.id.startsWith('hoops_')))) {
                 d.equipped['skin.' + curChar] = itemToEquip.id;
                 d.equipped.skin = itemToEquip.id;
               }
@@ -7854,225 +8023,126 @@
     {
       id: 'bundle_footy_starter',
       category: 'bundles',
-      badge: 'STARTER PACK',
-      name: 'FOOTY Starter Bundle',
-      desc: 'Equip FOOTY with Cyber Strike jersey, Inferno ball, 500 coins and 2 Bronze Packs.',
-      originalValue: 2800,
-      coinsPrice: 1950,
-      discount: 30,
-      starsPrice: 150,
-      tonPrice: 0.9,
-      icon: '⚽🔥',
+      sport: 'footy',
+      mode: 'footy',
+      badge: '⚡ STARTER',
+      name: 'Стартовый набор Футболиста',
+      desc: 'Комплект Сапфир Страйкер и Неон Тренинг + 500 монет FvH.',
+      originalValue: 2350,
+      coinsPrice: 1200,
+      discount: 48,
+      starsPrice: 100,
+      tonPrice: 0.6,
+      icon: '⚽⚡',
       items: [
-        { id: 'skin_footy_cyber_strike', name: 'Cyber Strike', icon: '🎽', type: 'cosmetic' },
-        { id: 'ball_footy_inferno', name: 'Solar Inferno', icon: '🔥', type: 'cosmetic' },
-        { name: '500 Coins', icon: '🪙', type: 'coins', val: 500 },
-        { name: '2x Bronze Pack', icon: '🎁', type: 'pack', packId: 'footy', count: 2 }
+        { id: 'footy_1_sapphire', name: 'Сапфир Страйкер', icon: '👕', type: 'cosmetic' },
+        { id: 'footy_3_neon', name: 'Неон Тренинг', icon: '👕', type: 'cosmetic' },
+        { name: '500 Coins', icon: '🪙', type: 'coins', val: 500 }
       ]
     },
     {
       id: 'bundle_hoops_starter',
       category: 'bundles',
-      badge: 'STARTER PACK',
-      name: 'HOOPS Starter Bundle',
-      desc: 'Gear up HOOPS with Sunset Gold jersey, Midnight ball, 500 coins and 2 Pro Packs.',
-      originalValue: 2850,
-      coinsPrice: 1950,
-      discount: 32,
-      starsPrice: 150,
-      tonPrice: 0.9,
-      icon: '🏀✨',
+      sport: 'hoops',
+      mode: 'hoops',
+      badge: '⚡ STARTER',
+      name: 'Стартовый набор Баскетболиста',
+      desc: 'Майки Шарлотт Бриз и Восходящий Феникс + 500 монет FvH.',
+      originalValue: 2250,
+      coinsPrice: 1200,
+      discount: 46,
+      starsPrice: 100,
+      tonPrice: 0.6,
+      icon: '🏀⚡',
       items: [
-        { id: 'skin_sunset', name: 'Sunset Gold', icon: '🎽', type: 'cosmetic' },
-        { id: 'ball_hoops_midnight', name: 'Midnight Shadow', icon: '💫', type: 'cosmetic' },
-        { name: '500 Coins', icon: '🪙', type: 'coins', val: 500 },
-        { name: '2x Pro Pack', icon: '🎁', type: 'pack', packId: 'hoops', count: 2 }
+        { id: 'hoops_6_charlotte', name: 'Шарлотт Бриз', icon: '🎽', type: 'cosmetic' },
+        { id: 'hoops_7_phoenix', name: 'Восходящий Феникс', icon: '🎽', type: 'cosmetic' },
+        { name: '500 Coins', icon: '🪙', type: 'coins', val: 500 }
       ]
     },
     {
-      id: 'bundle_ocean_arena',
+      id: 'bundle_footy_legend',
       category: 'bundles',
-      badge: 'OCEAN WORLD',
-      name: 'Ocean Arena Collection',
-      desc: 'Abyssal Ocean Dome & Coastal Sunset Court with Tidal Wave ball, Frost Giant kit and 1,000 Coins.',
-      originalValue: 3480,
-      coinsPrice: 2400,
-      discount: 31,
+      sport: 'footy',
+      mode: 'footy',
+      badge: '👑 LEGEND',
+      name: 'Легендарный Футболист',
+      desc: 'Формы Обсидиановый Шиноби, Тиффани Оникс, Пламя Дракона + 2,500 монет FvH.',
+      originalValue: 9000,
+      coinsPrice: 4200,
+      discount: 53,
       starsPrice: 350,
-      tonPrice: 2.2,
-      icon: '🌊🏖️',
+      tonPrice: 2.1,
+      icon: '👑⚽',
       items: [
-        { id: 'std_underwater_dome', name: 'Abyssal Ocean Dome', icon: '🫧', type: 'cosmetic' },
-        { id: 'std_ocean_sunset', name: 'Coastal Sunset Court', icon: '🌅', type: 'cosmetic' },
-        { id: 'skin_frost', name: 'Frost Giant', icon: '🎽', type: 'cosmetic' },
-        { id: 'ball_tidal', name: 'Tidal Wave Ball', icon: '🌊', type: 'cosmetic' },
-        { name: '1000 Coins', icon: '🪙', type: 'coins', val: 1000 }
+        { id: 'footy_8_obsidian', name: 'Обсидиановый Шиноби', icon: '👕', type: 'cosmetic' },
+        { id: 'footy_0_tiffany', name: 'Тиффани Оникс', icon: '👕', type: 'cosmetic' },
+        { id: 'footy_9_dragon', name: 'Пламя Дракона', icon: '👕', type: 'cosmetic' },
+        { name: '2500 Coins', icon: '🪙', type: 'coins', val: 2500 }
       ]
     },
     {
-      id: 'bundle_mars_explorer',
+      id: 'bundle_hoops_legend',
       category: 'bundles',
-      badge: 'RED PLANET',
-      name: 'Mars Explorer Collection',
-      desc: 'Mars Bio-Dome Arena, Solar Blaze ball, Crimson Rover kit, 1,000 Coins and 2 Clash Packs.',
-      originalValue: 3820,
-      coinsPrice: 2600,
-      discount: 32,
-      starsPrice: 400,
-      tonPrice: 2.5,
-      icon: '🔴🪐',
+      sport: 'hoops',
+      mode: 'hoops',
+      badge: '👑 LEGEND',
+      name: 'Легендарный Баскетболист',
+      desc: 'Майки Чёрная Мамба, Майами Роуз, Гипер Зверь + 2,500 монет FvH.',
+      originalValue: 9100,
+      coinsPrice: 4200,
+      discount: 53,
+      starsPrice: 350,
+      tonPrice: 2.1,
+      icon: '👑🏀',
       items: [
-        { id: 'std_mars_dome', name: 'Mars Bio-Dome Arena', icon: '🪐', type: 'cosmetic' },
-        { id: 'ball_footy_solar', name: 'Solar Blaze Ball', icon: '☀️', type: 'cosmetic' },
-        { id: 'skin_mars', name: 'Mars Rover Kit', icon: '🚀', type: 'cosmetic' },
-        { name: '1000 Coins', icon: '🪙', type: 'coins', val: 1000 },
-        { name: '2x Ultimate Clash Pack', icon: '⚡', type: 'pack', packId: 'clash', count: 2 }
-      ]
-    },
-    {
-      id: 'bundle_lunar_champ',
-      category: 'bundles',
-      badge: 'APOLLO VIP',
-      name: 'Lunar Championship Collection',
-      desc: 'Apollo Lunar Arena, Earthrise match ball, Astronaut silver kit, 1,500 Coins and 2 Clash Packs.',
-      originalValue: 4780,
-      coinsPrice: 3200,
-      discount: 33,
-      starsPrice: 450,
-      tonPrice: 2.8,
-      icon: '🌕🚀',
-      items: [
-        { id: 'std_moon_crater', name: 'Apollo Lunar Arena', icon: '🌕', type: 'cosmetic' },
-        { id: 'ball_earthrise', name: 'Earthrise Ball', icon: '🌍', type: 'cosmetic' },
-        { id: 'skin_astronaut', name: 'Astronaut Kit', icon: '👨‍🚀', type: 'cosmetic' },
-        { name: '1500 Coins', icon: '🪙', type: 'coins', val: 1500 },
-        { name: '2x Ultimate Clash Pack', icon: '⚡', type: 'pack', packId: 'clash', count: 2 }
-      ]
-    },
-    {
-      id: 'bundle_cyber_neon',
-      category: 'bundles',
-      badge: 'CYBERPUNK',
-      name: 'Cyber Neon Collection',
-      desc: 'Neo Tokyo Megacity rooftop, Cyber Neon ball, Cyber Striker kit, Laser Trail and 2,000 Coins.',
-      originalValue: 5500,
-      coinsPrice: 3800,
-      discount: 31,
-      starsPrice: 500,
-      tonPrice: 3.2,
-      icon: '🏙️⚡',
-      items: [
-        { id: 'std_cyber_megacity', name: 'Neo Tokyo Megacity', icon: '🏙️', type: 'cosmetic' },
-        { id: 'ball_cyber_neon', name: 'Cyber Neon Ball', icon: '💫', type: 'cosmetic' },
-        { id: 'skin_neon_elite', name: 'Cyber Striker', icon: '🎽', type: 'cosmetic' },
-        { id: 'trail_laser', name: 'Laser Trail', icon: '⚡', type: 'cosmetic' },
-        { name: '2000 Coins', icon: '🪙', type: 'coins', val: 2000 }
-      ]
-    },
-    {
-      id: 'bundle_legendary_champs',
-      category: 'bundles',
-      badge: 'ALL-STAR MEGA',
-      name: 'Legendary Champions Bundle',
-      desc: 'All 4 signature jerseys, 4 premium balls, 5,000 coins and 5 Clash Packs.',
-      originalValue: 15240,
-      coinsPrice: 8500,
-      discount: 44,
-      starsPrice: 850,
-      tonPrice: 5.0,
-      icon: '👑🏆',
-      items: [
-        { id: 'std_space_orbit', name: 'Orbital Space Colosseum', icon: '🚀', type: 'cosmetic' },
-        { id: 'std_floating_islands', name: 'Aetheria Sky Islands', icon: '☁️', type: 'cosmetic' },
-        { id: 'std_volcano_caldera', name: 'Magma Caldera Arena', icon: '🌋', type: 'cosmetic' },
-        { id: 'skin_footy_golden_legend', name: 'Golden Legend', icon: '👑', type: 'cosmetic' },
-        { id: 'skin_footy_cyber_strike', name: 'Cyber Strike', icon: '🎽', type: 'cosmetic' },
-        { id: 'skin_footy_stealth_shadow', name: 'Stealth Shadow', icon: '🥷', type: 'cosmetic' },
-        { id: 'skin_frost', name: 'Frost Giant', icon: '❄️', type: 'cosmetic' },
-        { id: 'ball_footy_inferno', name: 'Solar Inferno', icon: '🔥', type: 'cosmetic' },
-        { id: 'ball_hoops_molten_fire', name: 'Molten Fire', icon: '💫', type: 'cosmetic' },
-        { id: 'ball_tidal', name: 'Tidal Wave Ball', icon: '🌊', type: 'cosmetic' },
-        { id: 'ball_earthrise', name: 'Earthrise Ball', icon: '🌍', type: 'cosmetic' },
-        { name: '5000 Coins', icon: '🪙', type: 'coins', val: 5000 },
-        { name: '5x Ultimate Clash Pack', icon: '⚡', type: 'pack', packId: 'clash', count: 5 }
+        { id: 'hoops_8_mamba', name: 'Чёрная Мамба', icon: '🎽', type: 'cosmetic' },
+        { id: 'hoops_1_miami', name: 'Майами Роуз', icon: '🎽', type: 'cosmetic' },
+        { id: 'hoops_9_beast', name: 'Гипер Зверь', icon: '🎽', type: 'cosmetic' },
+        { name: '2500 Coins', icon: '🪙', type: 'coins', val: 2500 }
       ]
     }
   ];
 
   // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
-  // Exactly 30 canonical, unique sports equipment items across Football and Basketball
-      function buildDefaultShopCatalog(curChar) {
+  // Master Equipment Catalog (20 Kits + 20 Balls with exact user rarities)
+  function buildDefaultShopCatalog(curChar) {
     return [
-      { id: 'skin_rookie', name: 'Classic Stripes', name_ru: 'Классические полосы', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'skin_plain_white', name: 'Pure Home', name_ru: 'Чистый домашний', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 150 },
-      { id: 'skin_training_bib', name: 'Neon Practice', name_ru: 'Неоновая тренировка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 180 },
-      { id: 'skin_casual_tee', name: 'Street Classic', name_ru: 'Уличная классика', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200 },
-      { id: 'skin_block_dual', name: 'Modern Dual Block', name_ru: 'Двойной блок', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 220 },
-      { id: 'skin_contrast_v', name: 'Contrast V-Neck', name_ru: 'Контрастный V-вырез', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 240 },
-      { id: 'skin_raglan_dual', name: 'Raglan Velocity', name_ru: 'Скоростной реглан', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 250 },
-      { id: 'skin_solar', name: 'Solar Flare', name_ru: 'Солнечная вспышка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 450 },
-      { id: 'skin_velocity', name: 'Neon Velocity', name_ru: 'Неоновая скорость', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 500 },
-      { id: 'skin_midnight', name: 'Midnight Shadow', name_ru: 'Полуночная тень', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 550 },
-      { id: 'skin_cyber', name: 'Cyber Strike', name_ru: 'Кибер-удар', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 580 },
-      { id: 'skin_pixel_camo', name: 'Arctic Camo', name_ru: 'Арктический камуфляж', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 600 },
-      { id: 'skin_electric', name: 'Electric Wave', name_ru: 'Электрическая волна', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 650 },
-      { id: 'skin_golden', name: 'Golden Crest', name_ru: 'Золотой герб', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1200 },
-      { id: 'skin_aurora', name: 'Aurora Borealis', name_ru: 'Северное сияние', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1350 },
-      { id: 'skin_matrix', name: 'Glitch Matrix', name_ru: 'Глитч-матрица', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1450 },
-      { id: 'skin_dynasty', name: 'Royal Dynasty', name_ru: 'Королевская династия', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1500 },
-      { id: 'skin_dragon', name: 'Dragon Flame', name_ru: 'Пламя дракона', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2600 },
-      { id: 'skin_phoenix', name: 'Phoenix Rebirth', name_ru: 'Возрождение феникса', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800 },
-      { id: 'skin_chrono', name: 'Chrono Sovereign', name_ru: 'Хроно-повелитель', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 3200 },
-      { id: 'skin_bb_onyx', name: 'Black Onyx Core', name_ru: 'Черный оникс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'skin_bb_white', name: 'Crisp White Home', name_ru: 'Белый домашний', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 150 },
-      { id: 'skin_bb_navy', name: 'Navy City Edition', name_ru: 'Городской темно-синий', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 180 },
-      { id: 'skin_bb_crimson', name: 'Crimson Classic', name_ru: 'Багровый классик', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200 },
-      { id: 'skin_bb_forest', name: 'Forest Green Hoops', name_ru: 'Лесной хупс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 220 },
-      { id: 'skin_bb_royal', name: 'Royal Baseline', name_ru: 'Королевская база', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 240 },
-      { id: 'skin_bb_sunset', name: 'Sunset Amber', name_ru: 'Янтарный закат', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 250 },
-      { id: 'skin_bb_miami', name: 'Vaporwave Miami', name_ru: 'Вайпорвейв Майами', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 480 },
-      { id: 'skin_bb_amber', name: 'High-Voltage Amber', name_ru: 'Вольтовый янтарь', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 520 },
-      { id: 'skin_bb_cyber', name: 'Stealth Cyberpunk', name_ru: 'Стелс-киберпанк', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 560 },
-      { id: 'skin_bb_mirage', name: 'Desert Mirage', name_ru: 'Пустынный мираж', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 580 },
-      { id: 'skin_bb_tropical', name: 'Tropical Breeze', name_ru: 'Тропический бриз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 620 },
-      { id: 'skin_bb_arctic', name: 'Arctic Frost', name_ru: 'Арктический мороз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 650 },
-      { id: 'skin_bb_gold', name: '24K Gold Dynasty', name_ru: 'Золотая династия 24K', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1250 },
-      { id: 'skin_bb_prism', name: 'Holographic Prism', name_ru: 'Голографическая призма', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1350 },
-      { id: 'skin_bb_noir', name: 'Dragon Scale Noir', name_ru: 'Чешуя дракона нуар', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1450 },
-      { id: 'skin_bb_tokyo', name: 'Neon Tokyo Drift', name_ru: 'Неоновый токийский дрифт', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1500 },
-      { id: 'skin_bb_nebula', name: 'Celestial Nebula', name_ru: 'Небесная туманность', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2700 },
-      { id: 'skin_bb_void', name: 'Void Walker', name_ru: 'Странник пустоты', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2900 },
-      { id: 'skin_bb_titan', name: 'Titan Vanguard', name_ru: 'Авангард титана', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 3200 },
-      { id: 'ball_classic', name: 'Classic Telstar', name_ru: 'Классический Телстар', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_training', name: 'Training Orange', name_ru: 'Тренировочный оранжевый', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 120 },
-      { id: 'ball_street', name: 'Street Concrete', name_ru: 'Уличный бетон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 150 },
-      { id: 'ball_slate', name: 'Monochrome Slate', name_ru: 'Монохромный сланец', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 180 },
-      { id: 'ball_pitch_white', name: 'Pitch Pro White', name_ru: 'Полевой белый', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200 },
-      { id: 'ball_vortex', name: 'Vortex Neon', name_ru: 'Вихревой неон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 380 },
-      { id: 'ball_solar', name: 'Solar Flare', name_ru: 'Солнечная вспышка', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 420 },
-      { id: 'ball_cyan_vector', name: 'Cyan Vector', name_ru: 'Бирюзовый вектор', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 460 },
-      { id: 'ball_cyber_hex', name: 'Cyber Hex', name_ru: 'Кибер-гексагон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500 },
-      { id: 'ball_gold_stitch', name: 'Golden Stitch', name_ru: 'Золотой шов', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 550 },
-      { id: 'ball_hyperdrive', name: 'Hyperdrive Energy', name_ru: 'Энергия гипердрайва', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 950 },
-      { id: 'ball_chromatic', name: 'Chromatic Prism', name_ru: 'Хроматическая призма', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1050 },
-      { id: 'ball_magma', name: 'Magma Core', name_ru: 'Ядро магмы', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1200 },
-      { id: 'ball_nebula', name: 'Nebula Cosmic Orb', name_ru: 'Космическая сфера туманности', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2100 },
-      { id: 'ball_sovereign', name: 'Sovereign Pure Gold', name_ru: 'Чистое золото суверена', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2600 },
-      { id: 'ball_hoops_classic', name: 'Classic Grain Leather', name_ru: 'Классическая зернистая кожа', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
-      { id: 'ball_hoops_rubber', name: 'Black Street Rubber', name_ru: 'Черная уличная резина', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 120 },
-      { id: 'ball_hoops_white', name: 'Pure White Court', name_ru: 'Чистый белый корт', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 150 },
-      { id: 'ball_hoops_asphalt', name: 'Asphalt Gripper', name_ru: 'Асфальтовый гриппер', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 180 },
-      { id: 'ball_hoops_navy', name: 'Navy Grip Edition', name_ru: 'Темно-синий хват', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 200 },
-      { id: 'ball_hoops_crimson', name: 'Crimson Street', name_ru: 'Багровая улица', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 220 },
-      { id: 'ball_hoops_lime', name: 'Electric Lime', name_ru: 'Электрический лайм', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 380 },
-      { id: 'ball_hoops_camo', name: 'Midnight Camo', name_ru: 'Полуночный камуфляж', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 420 },
-      { id: 'ball_hoops_sunset', name: 'Sunset Horizon', name_ru: 'Закатный горизонт', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 460 },
-      { id: 'ball_gold_groove', name: 'Golden Groove', name_ru: 'Золотая канавка', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 520 },
-      { id: 'ball_cyber_grid', name: 'Cyber Grid LED', name_ru: 'Кибер-сетка LED', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 950 },
-      { id: 'ball_molten', name: 'Molten Magma', name_ru: 'Расплавленная магма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1100 },
-      { id: 'ball_glitch', name: 'Glitch Hologram', name_ru: 'Глитч-голограмма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1250 },
-      { id: 'ball_supernova', name: 'Galactic Supernova', name_ru: 'Галактическая сверхновая', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2200 },
-      { id: 'ball_sovereign_bb', name: 'Sovereign Gold Ball', name_ru: 'Золотой мяч суверена', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2600 }
+      // FOOTY KITS (OFFICIAL KITS)
+      { id: 'footy_classic', name: 'Классика #10', name_ru: 'Классика #10', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Оригинальная клубная форма Footy: лазурный шеврон победы, номер 10 и белоснежные шорты.' },
+
+      { id: 'footy_2_white', name: 'Чистый Дом', name_ru: 'Чистый Дом', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Традиции клуба: белоснежная текстура жаккардового плетения с королевской диагональной лентой побед.' },
+      { id: 'footy_6_crimson', name: 'Багровый Гладиатор', name_ru: 'Багровый Гладиатор', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 250, badge: 'ОБЫЧНЫЙ', desc: 'Спартанский дух победы: золотой греческий меандр по контуру, античные линии анатомического доспеха.' },
+      { id: 'footy_7_gold', name: 'Золотой Владыка', name_ru: 'Золотой Владыка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300, badge: 'ОБЫЧНЫЙ', desc: 'Королевский триумф: золотая барочная филигрань в стиле Versace, чемпионские пятиконечные звезды славы.' },
+      { id: 'footy_1_sapphire', name: 'Сапфир Страйкер', name_ru: 'Сапфир Страйкер', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 550, badge: '⭐ РЕДКИЙ', desc: 'Сверхзвуковые кинетические шевроны цвета сапфира с неоново-лазурной окантовкой.' },
+      { id: 'footy_4_amber', name: 'Янтарный Сокол', name_ru: 'Янтарный Сокол', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 600, badge: '⭐ РЕДКИЙ', desc: 'Хищный удар: раскинутые крылья золотого сокола на груди и плечах с теплыми янтарными перьями.' },
+      { id: 'footy_5_amethyst', name: 'Аметист Туманность', name_ru: 'Аметист Туманность', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 650, badge: '⭐ РЕДКИЙ', desc: 'Космическое видение плеймейкера: фиолетовая звездная туманность со светящимися созвездиями.' },
+      { id: 'footy_9_dragon', name: 'Пламя Дракона', name_ru: 'Пламя Дракона', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1200, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Высшая первобытная мощь: золотой восточный дракон, обвивающий торс, пылающая золотая чешуя.' },
+      { id: 'footy_3_neon', name: 'Неон Тренинг', name_ru: 'Неон Тренинг', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1300, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Тактическая цифровая матрица: изумрудно-лаймовая сетка анализа поля со светящимися узлами.' },
+      { id: 'footy_8_obsidian', name: 'Обсидиановый Шиноби', name_ru: 'Обсидиановый Шиноби', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Призрачный скрытный дриблинг: нано-карбоновые соты, пульсирующие неоновые магистрали.' },
+      { id: 'footy_0_tiffany', name: 'Тиффани Оникс', name_ru: 'Тиффани Оникс', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Сбалансированный сплит: черный оникс (непробиваемость) и бирюзовый тиффани (скорость).' },
+
+      // FOOTY STAR KITS (3 EXCLUSIVE KITS ЗА ЗВЁЗДЫ)
+      { id: 'footy_kit_star_holiday', name: '🎄 Новогодняя 2027', name_ru: '🎄 Новогодняя 2027', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star', badge: '🎄 НОВОГОДНИЙ', desc: 'Эксклюзивный новогодний комплект: королевский алый бархат Санты, морозная белая опушка, вышитые золотые елочки, снежинки и номер 25.' },
+      { id: 'footy_kit_star_emperor', name: '🌌 Галактический Император', name_ru: '🌌 Галактический Император', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 500, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Царственный космический индиго-пурпур, золотой лавровый шеврон славы, переливающийся бирюзовый кант и чемпионский номер 1.' },
+      { id: 'footy_kit_star_samurai', name: '⚔️ Квантовый Самурай', name_ru: '⚔️ Квантовый Самурай', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 750, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Белоснежная нано-керамическая броня кибер-ронина со светящейся неоновой лазурью, японским орнаментом и номером 77.' },
+
+      // HOOPS KITS (10 OFFICIAL TANKS - МАЙКИ)
+      { id: 'hoops_2_chicago', name: 'Чикаго Классик 1998', name_ru: 'Чикаго Классик 1998', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Золотая эра 23 номера: бычий кармин с текстурой зерен баскетбольного мяча и золотыми звездами чемпионов.' },
+      { id: 'hoops_3_la', name: 'ЛА Династия', name_ru: 'ЛА Династия', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 250, badge: 'ОБЫЧНЫЙ', desc: 'Золото Голливуда и царский пурпур Лейкерс: солнечные лучи славы ShowTime и граненые кристаллы.' },
+      { id: 'hoops_4_boston', name: 'Бостон Прайд', name_ru: 'Бостон Прайд', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 300, badge: 'ОБЫЧНЫЙ', desc: 'Монолитная защита: изумрудные кельтские узлы бесконечности и кристаллическая огранка на груди.' },
+      { id: 'hoops_6_charlotte', name: 'Шарлотт Бриз', name_ru: 'Шарлотт Бриз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 550, badge: '⭐ РЕДКИЙ', desc: 'Морской владыка: чешуя океанского дракона с фиолетовыми переливами и ветвями неоновых кораллов.' },
+      { id: 'hoops_5_raptor', name: 'Коготь Раптора', name_ru: 'Коготь Раптора', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 600, badge: '⭐ РЕДКИЙ', desc: 'Хищный перехват мяча: тройной диагональный след когтей хищника, обнажающий светящийся слой.' },
+      { id: 'hoops_0_neon', name: 'Неон Сити', name_ru: 'Неон Сити', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 650, badge: '⭐ РЕДКИЙ', desc: 'Уличные ночные площадки: градиент ночного неба с неоновыми контурами небоскребов и геометрией сетки.' },
+      { id: 'hoops_7_phoenix', name: 'Восходящий Феникс', name_ru: 'Восходящий Феникс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1200, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Возрождение в клатч-моментах: огненные золотые крылья Феникса, взмывающие от пояса к плечам.' },
+      { id: 'hoops_9_beast', name: 'Гипер Зверь', name_ru: 'Гипер Зверь', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1300, badge: '👑 ЭПИЧЕСКИЙ', desc: 'Сокрушительный данк: яростная пасть кибер-титана, космическая туманность и золотые молнии Зевса.' },
+      { id: 'hoops_8_mamba', name: 'Чёрная Мамба', name_ru: 'Чёрная Мамба', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Инстинкт безжалостного финишера: рельефная змеиная чешуя с фиолетовым ядовитым отливом и клыками гадюки.' },
+      { id: 'hoops_1_miami', name: 'Майами Роуз', name_ru: 'Майами Роуз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2800, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Океанский закат Флориды: плавный закатный переход от фламинго к бирюзе с пальмовыми силуэтами Vice City.' },
+
+      // HOOPS STAR KITS (3 EXCLUSIVE TANKS ЗА ЗВЁЗДЫ)
+      { id: 'hoops_kit_star_holiday', name: '🎄 Новогодняя 2027', name_ru: '🎄 Новогодняя 2027', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star', badge: '🎄 НОВОГОДНИЙ', desc: 'Рождественская безрукавная майка Санты: алый бархат с изумрудными резинками, золотыми елочками, снежинками и номером 25.' },
+      { id: 'hoops_kit_star_astral', name: '🌌 Астральный Владыка', name_ru: '🌌 Астральный Владыка', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 500, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Полночный сапфировый и ультрафиолетовый шелк с золотыми созвездиями, золотыми окантовками пройм и номером 99.' },
+      { id: 'hoops_kit_star_phantom', name: '⚡ Неоновый Фантом', name_ru: '⚡ Неоновый Фантом', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 750, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Матовый ультра-черный карбон с двойными лазерными розово-бирюзовыми неоновыми полосами в стиле Vice City и номером 0.' }
     ];
   }
 
@@ -8154,14 +8224,9 @@
 
     function renderCategoryTabs() {
       catSeg.innerHTML = '';
-      var categories = (shopSport === 'footy') ? [
-        { id: 'skins', icon: 'cat_skins', label: tr('catSkins') },
-        { id: 'balls_footy', icon: 'nav_home_footy', label: tr('catFootballBalls') },
-        { id: 'bundles', icon: 'cat_packs', label: tr('catBundles') },
-        { id: 'coins', icon: 'coin', label: tr('catCoins') }
-      ] : [
-        { id: 'skins', icon: 'cat_skins', label: tr('catSkins') },
-        { id: 'balls_hoops', icon: 'nav_home_hoops', label: tr('catBasketballBalls') },
+      var categories = [
+        { id: 'skins', icon: 'cat_skins', label: (shopSport === 'footy' ? (getActiveLang() === 'ru' ? 'Формы' : 'Jerseys') : (getActiveLang() === 'ru' ? 'Майки' : 'Tanks')) },
+        { id: 'stars', icon: 'star', label: (getActiveLang() === 'ru' ? 'За Звёзды' : 'For Stars') },
         { id: 'bundles', icon: 'cat_packs', label: tr('catBundles') },
         { id: 'coins', icon: 'coin', label: tr('catCoins') }
       ];
@@ -8169,7 +8234,7 @@
         var btn = document.createElement('button');
         var cIconHtml = c.icon === 'coin' ? getFvhCoinSvg('inline') : getUiIconSvg(c.icon, 16);
         btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;">' + cIconHtml + '<span>' + c.label + '</span></span>';
-        if (c.id === curCategory || (c.id === 'balls_footy' && curCategory === 'balls') || (c.id === 'balls_hoops' && curCategory === 'balls')) {
+        if (c.id === curCategory) {
           btn.className = 'on';
         }
         btn.onclick = function () {
@@ -8186,6 +8251,37 @@
     renderCategoryTabs();
     body.appendChild(catSeg);
 
+    // Rarity Filter Bar
+    var curRarity = 'all';
+    var rarityBar = document.createElement('div');
+    rarityBar.className = 'fvh-rarity-filter-bar';
+    rarityBar.style.display = 'flex';
+    rarityBar.style.gap = '8px';
+    rarityBar.style.overflowX = 'auto';
+    rarityBar.style.paddingBottom = '8px';
+    rarityBar.style.marginBottom = '12px';
+    var rarities = [
+      { id: 'all', label: (getActiveLang() === 'ru' ? 'Все' : 'All') },
+      { id: 'common', label: (getActiveLang() === 'ru' ? 'Обычный' : 'Common'), cls: 'r-common' },
+      { id: 'rare', label: (getActiveLang() === 'ru' ? '⭐ Редкий' : '⭐ Rare'), cls: 'r-rare' },
+      { id: 'epic', label: (getActiveLang() === 'ru' ? '👑 Эпический' : '👑 Epic'), cls: 'r-epic' },
+      { id: 'legendary', label: (getActiveLang() === 'ru' ? '💎 Легендарный' : '💎 Legendary'), cls: 'r-legendary' }
+    ];
+    rarities.forEach(function (r) {
+      var btn = document.createElement('button');
+      btn.className = 'fvh-rarity-btn ' + (r.cls || '') + (r.id === curRarity ? ' active' : '');
+      btn.textContent = r.label;
+      btn.onclick = function () {
+        curRarity = r.id;
+        rarityBar.querySelectorAll('.fvh-rarity-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        app.audio.play('click');
+        renderShop();
+      };
+      rarityBar.appendChild(btn);
+    });
+    body.appendChild(rarityBar);
+
     // Product Catalogue Grid
     var catalogueGrid = document.createElement('div');
     catalogueGrid.className = 'fvh-catalogue-grid';
@@ -8195,12 +8291,18 @@
     container.appendChild(page);
 
     function updateWalletUI() {
-      var coins = app.store.data.coins || 0;
+      var coins = (app.store && app.store.data && app.store.data.coins) || 0;
+      var stars = (app.store && app.store.data && (app.store.data.stars !== undefined ? app.store.data.stars : 1500));
       walletBox.innerHTML =
-        '<button class="fvh-wallet-pill gold" style="cursor:pointer;" title="' + tr('catCoins') + '">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        '  <button class="fvh-wallet-pill gold" style="cursor:pointer;" title="' + tr('catCoins') + '">' +
         getFvhCoinSvg('inline') + ' <span>' + coins.toLocaleString() + '</span>' +
-        '</button>';
-      var btn = walletBox.querySelector('.fvh-wallet-pill');
+        '  </button>' +
+        '  <button class="fvh-wallet-pill stars" style="cursor:pointer;background:linear-gradient(135deg,rgba(250,204,21,0.2) 0%,rgba(217,119,6,0.2) 100%);border:1px solid rgba(250,204,21,0.5);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:900;color:#fde047;display:inline-flex;align-items:center;gap:4px;" title="Stars">' +
+        '⭐ <span>' + stars.toLocaleString() + '</span>' +
+        '  </button>' +
+        '</div>';
+      var btn = walletBox.querySelector('.fvh-wallet-pill.gold');
       if (btn) {
         btn.onclick = function () {
           curCategory = 'coins';
@@ -8439,43 +8541,43 @@
           '  <div style="font-size:32px;flex-shrink:0;">⭐</div>' +
           '  <div>' +
           '    <div style="font-weight:900;font-size:14px;color:#fde047;letter-spacing:0.5px;">' + (getActiveLang() === 'ru' ? 'МИСТЕРИ ПАКИ ЗА STARS' : 'STARS MYSTERY PACKS') + '</div>' +
-          '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + (getActiveLang() === 'ru' ? 'Мгновенные монеты FvH + гарантированные скины и мячи высокой редкости!' : 'Instant FvH Coins + guaranteed high-tier kits and balls!') + '</div>' +
+          '    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">' + (getActiveLang() === 'ru' ? 'Мгновенные монеты FvH + гарантированная эксклюзивная форма высокой редкости!' : 'Instant FvH Coins + guaranteed high-tier exclusive kits!') + '</div>' +
           '  </div>' +
           '</div>';
         catalogueGrid.appendChild(starsNotice);
 
-        // 3 Telegram Stars Mystery Packs
-        var starPacks = [
-          {
-            id: 'pack_stars_starter',
-            name: tr('packStarsStarter'),
-            desc: tr('packStarsStarterDesc'),
-            starsPrice: 50,
-            coinsAmount: 500,
-            badge: '⭐ STARTER',
-            rarity: 'rare',
-            highlight: (getActiveLang() === 'ru' ? 'Rare предмет + 500 Монет FvH' : 'Rare Guaranteed + 500 FvH')
-          },
-          {
-            id: 'pack_stars_champion',
-            name: tr('packStarsChampion'),
-            desc: tr('packStarsChampionDesc'),
-            starsPrice: 150,
-            coinsAmount: 2000,
-            badge: '💎 CHAMPION',
-            rarity: 'epic',
-            highlight: (getActiveLang() === 'ru' ? 'Epic предмет + 2,000 Монет FvH' : 'Epic Guaranteed + 2,000 FvH')
-          },
-          {
-            id: 'pack_stars_legend',
-            name: tr('packStarsLegend'),
-            desc: tr('packStarsLegendDesc'),
-            starsPrice: 350,
-            coinsAmount: 6000,
-            badge: '👑 LEGEND',
-            rarity: 'legendary',
-            highlight: (getActiveLang() === 'ru' ? 'Legendary / 50% Mythic + 6,000 Монет FvH' : 'Legendary / 50% Mythic + 6,000 FvH')
-          }
+        // 3 Telegram Stars Mystery Packs (Overhauled with Pure Sport Kits & Zero Balls)
+        var starPacks = [
+          {
+            id: 'pack_stars_starter',
+            name: tr('packStarsStarter'),
+            desc: tr('packStarsStarterDesc'),
+            starsPrice: 250,
+            coinsAmount: 1500,
+            badge: '⭐ STARTER',
+            rarity: 'rare',
+            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Редкая футбольная форма + 1,500 FvH' : 'Редкая баскетбольная майка + 1,500 FvH') : 'Rare Kit + 1,500 FvH')
+          },
+          {
+            id: 'pack_stars_champion',
+            name: tr('packStarsChampion'),
+            desc: tr('packStarsChampionDesc'),
+            starsPrice: 500,
+            coinsAmount: 4000,
+            badge: '💎 CHAMPION',
+            rarity: 'epic',
+            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Эпическая футбольная форма + 4,000 FvH' : 'Эпическая баскетбольная майка + 4,000 FvH') : 'Epic Kit + 4,000 FvH')
+          },
+          {
+            id: 'pack_stars_legend',
+            name: tr('packStarsLegend'),
+            desc: tr('packStarsLegendDesc'),
+            starsPrice: 750,
+            coinsAmount: 10000,
+            badge: '👑 LEGEND',
+            rarity: 'legendary',
+            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Легендарная футбольная форма + 10,000 FvH' : 'Легендарная баскетбольная майка + 10,000 FvH') : 'Legendary Kit + 10,000 FvH')
+          }
         ];
 
         starPacks.forEach(function (sp) {
@@ -8538,13 +8640,10 @@
           '</div>';
         catalogueGrid.appendChild(bundlesBanner);
 
-        // Strict Faction Isolation for Bundles
-        var bundlesToShow = BUNDLE_ITEMS.filter(function (b) {
-          if (shopSport === 'footy') {
-            return b.id !== 'bundle_hoops_starter';
-          } else {
-            return b.id !== 'bundle_footy_starter';
-          }
+        // Strict Faction Isolation for Bundles (Pure Sport Isolation)
+        var bundlesToShow = BUNDLE_ITEMS.filter(function (b) {
+          var bSport = b.sport || b.mode;
+          return bSport === shopSport;
         });
 
         bundlesToShow.forEach(function (bundle) {
@@ -8688,86 +8787,115 @@
         var rarKey = it.rarity || 'common';
         card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '');
 
-        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
-        var localizedItemName = trItem(it.name);
-
-        card.innerHTML =
-          '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
-          '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
-          '</div>' +
-          '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-          renderItemArtwork(it, 'thumb') +
-          '</div>' +
-          '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + localizedItemName + '</div>' +
-          '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:#facc15;margin-bottom:8px;">' +
-          (isOwned ? '' : (getFvhCoinSvg('inline') + ' ' + it.price.toLocaleString() + ' FvH')) +
-          '</div>' +
-          '<div class="fvh-card-action"></div>';
-
-        var actBox = card.querySelector('.fvh-card-action');
-        var actionBtn = document.createElement('button');
-        if (isEquipped) {
-          actionBtn.className = 'btn small block';
-          actionBtn.disabled = true;
-          actionBtn.textContent = tr('equippedState');
-        } else if (isOwned) {
-          actionBtn.className = 'btn small secondary block';
-          actionBtn.textContent = '✓ ' + (tr('ownedState') || 'Owned');
-          actionBtn.onclick = function (e) {
-            e.stopPropagation();
-            app.audio.play('click');
-            var targetSlot = (it.category === 'skins') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
-            app.go('characters', { char: curChar, slot: targetSlot });
-          };
-        } else {
-          actionBtn.className = 'btn small primary block';
-          actionBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + it.price;
-          actionBtn.onclick = function (e) {
-            e.stopPropagation();
-            if (isPurchasing) return;
-            var coins = app.store.data.coins || 0;
-            if (coins < it.price) {
-              app.audio.play('error');
-              showToast(tr('notEnoughCoins'));
-              return;
-            }
-            isPurchasing = true;
-            var pid = getAppPlayerId(app);
-            safeEconomyApi('/api/economy/purchase', {
-              playerId: pid,
-              itemId: it.id,
-              idempotencyKey: 'item_' + pid + '_' + it.id + '_' + Date.now()
-            }).then(function (res) {
-              isPurchasing = false;
-              if (res && res.ok) {
-                app.store.update(function (d) {
-                  d.coins = res.coins;
-                  d.xp = res.xp;
-                  d.owned = res.owned;
-                  if (!d.unseenItems) d.unseenItems = [];
-                  if (d.unseenItems.indexOf(it.id) === -1) d.unseenItems.push(it.id);
-                });
-                if (app.store && typeof app.store.flush === 'function') {
-                  app.store.flush();
-                }
-                app.audio.play('claim');
-                showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
-                renderShop();
-              } else {
-                app.audio.play('error');
-                var errMsg = tr('purchaseFailed');
-                if (res && res.error === 'insufficient_funds') {
-                  errMsg = tr('notEnoughCoins');
-                } else if (res && res.error === 'already_owned') {
-                  errMsg = tr('purchaseAlreadyOwned');
-                } else if (res && res.message) {
-                  errMsg = res.message;
-                }
-                showToast(errMsg);
-              }
-            });
-          };
+        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
+        var localizedItemName = trItem(it.name);
+        var isStarItem = (it.currency === 'star' || it.category === 'stars');
+        var priceDisplayHtml = isOwned ? '' : (isStarItem ? ('⭐ ' + it.price.toLocaleString() + ' Stars') : (getFvhCoinSvg('inline') + ' ' + it.price.toLocaleString() + ' FvH'));
+
+        card.innerHTML =
+          '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
+          '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
+          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
+          '</div>' +
+          '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+          renderItemArtwork(it, 'thumb') +
+          '</div>' +
+          '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + localizedItemName + '</div>' +
+          '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:' + (isStarItem ? '#fde047' : '#facc15') + ';margin-bottom:8px;">' +
+          priceDisplayHtml +
+          '</div>' +
+          '<div class="fvh-card-action"></div>';
+
+        var actBox = card.querySelector('.fvh-card-action');
+        var actionBtn = document.createElement('button');
+        if (isEquipped) {
+          actionBtn.className = 'btn small block';
+          actionBtn.disabled = true;
+          actionBtn.textContent = tr('equippedState');
+        } else if (isOwned) {
+          actionBtn.className = 'btn small secondary block';
+          actionBtn.textContent = '✓ ' + (tr('ownedState') || 'Owned');
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            app.audio.play('click');
+            var targetSlot = (it.category === 'skins' || it.category === 'stars') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
+            app.go('characters', { char: curChar, slot: targetSlot });
+          };
+        } else if (isStarItem) {
+          actionBtn.className = 'btn small primary block';
+          actionBtn.style.background = 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)';
+          actionBtn.style.color = '#000';
+          actionBtn.style.fontWeight = '900';
+          actionBtn.innerHTML = '⭐ ' + it.price + ' Stars';
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            if (isPurchasing) return;
+            openUniversalPaymentModal(app, {
+              productId: it.id,
+              title: localizedItemName,
+              starsPrice: it.price,
+              coinsAmount: 0,
+              onPurchased: function () {
+                app.audio.play('claim');
+                showToast('⭐ ' + localizedItemName + ' ' + (getActiveLang() === 'ru' ? 'успешно приобретён!' : 'unlocked!'));
+                app.store.update(function (d) {
+                  if (!d.owned) d.owned = [];
+                  if (d.owned.indexOf(it.id) === -1) d.owned.push(it.id);
+                  if (d.stars !== undefined && d.stars >= it.price) d.stars -= it.price;
+                });
+                if (app.store && typeof app.store.flush === 'function') app.store.flush();
+                renderShop();
+              }
+            });
+          };
+        } else {
+          actionBtn.className = 'btn small primary block';
+          actionBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + it.price;
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            if (isPurchasing) return;
+            var coins = app.store.data.coins || 0;
+            if (coins < it.price) {
+              app.audio.play('error');
+              showToast(tr('notEnoughCoins'));
+              return;
+            }
+            isPurchasing = true;
+            var pid = getAppPlayerId(app);
+            safeEconomyApi('/api/economy/purchase', {
+              playerId: pid,
+              itemId: it.id,
+              idempotencyKey: 'item_' + pid + '_' + it.id + '_' + Date.now()
+            }).then(function (res) {
+              isPurchasing = false;
+              if (res && res.ok) {
+                app.store.update(function (d) {
+                  d.coins = res.coins;
+                  d.xp = res.xp;
+                  d.owned = res.owned;
+                  if (!d.unseenItems) d.unseenItems = [];
+                  if (d.unseenItems.indexOf(it.id) === -1) d.unseenItems.push(it.id);
+                });
+                if (app.store && typeof app.store.flush === 'function') {
+                  app.store.flush();
+                }
+                app.audio.play('claim');
+                showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
+                renderShop();
+              } else {
+                app.audio.play('error');
+                var errMsg = tr('purchaseFailed');
+                if (res && res.error === 'insufficient_funds') {
+                  errMsg = tr('notEnoughCoins');
+                } else if (res && res.error === 'already_owned') {
+                  errMsg = tr('purchaseAlreadyOwned');
+                } else if (res && res.message) {
+                  errMsg = res.message;
+                }
+                showToast(errMsg);
+              }
+            });
+          };
         }
         actBox.appendChild(actionBtn);
 
@@ -13636,6 +13764,14 @@
       if (!d.equipped['stadium.hoops'] || d.equipped['stadium.hoops'] === 'std_volcano_caldera' || d.equipped['stadium.hoops'] === 'std_urban_rooftop' || ownedList.indexOf(d.equipped['stadium.hoops']) === -1) {
         d.equipped['stadium.hoops'] = 'std_hoops_street';
       }
+      if (ownedList.indexOf('footy_classic') === -1) ownedList.push('footy_classic');
+      if (ownedList.indexOf('hoops_classic') === -1) ownedList.push('hoops_classic');
+      if (!d.equipped['skin.footy'] || d.equipped['skin.footy'] === 'skin_rookie' || d.equipped['skin.footy'] === 'skin_default') {
+        d.equipped['skin.footy'] = 'footy_classic';
+      }
+      if (!d.equipped['skin.hoops'] || d.equipped['skin.hoops'] === 'skin_bb_onyx' || d.equipped['skin.hoops'] === 'skin_solar' || d.equipped['skin.hoops'] === 'skin_default') {
+        d.equipped['skin.hoops'] = 'hoops_classic';
+      }
       if (!d.equipped['stadium.footy'] || d.equipped['stadium.footy'] === 'std_classic_pitch' || ownedList.indexOf(d.equipped['stadium.footy']) === -1) {
         d.equipped['stadium.footy'] = 'std_footy_classic';
       }
@@ -13765,12 +13901,19 @@
   }
   // Legacy identifiers: tabGameplay tabSocialMedia tabInviteFriends q_sub_chat copyInviteLink
 
-  if (typeof window !== 'undefined') {
-    window.__fvhStore = {
-      buildDefaultShopCatalog: buildDefaultShopCatalog,
-      LEGACY_ITEM_ALIASES: LEGACY_ITEM_ALIASES,
-      getItemLabelById: getItemLabelById,
-      trItem: trItem,
+  if (typeof window !== 'undefined') {
+    window.buildShopPage = buildShopPage;
+    window.buildCharactersPage = buildCharactersPage;
+    window.buildQuestsPage = buildQuestsPage;
+    window.buildProfilePage = buildProfilePage;
+    window.buildSettingsPage = buildSettingsPage;
+    window.renderRedesignedMenu = renderRedesignedMenu;
+
+    window.__fvhStore = {
+      buildDefaultShopCatalog: buildDefaultShopCatalog,
+      LEGACY_ITEM_ALIASES: LEGACY_ITEM_ALIASES,
+      getItemLabelById: getItemLabelById,
+      trItem: trItem,
       tr: tr,
       getActiveLang: getActiveLang,
       setActiveLang: function(l) {

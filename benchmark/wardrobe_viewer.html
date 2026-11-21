@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D ШОУРУМ И ГАРДЕРОБ ФОРМ — FOOTY vs HOOPS</title>
+  <link rel="icon" type="image/png" href="/assets/emblem.png">
+  <style>
+    :root {
+      --bg: #070b14;
+      --card-bg: rgba(13, 20, 36, 0.88);
+      --card-border: rgba(56, 189, 248, 0.18);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --gold: #fbbf24;
+      --green: #4ade80;
+      --purple: #c084fc;
+      --red: #f87171;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100%; height: 100%; margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+    #gl-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      outline: none; z-index: 1;
+    }
+
+    /* Top Navigation Bar */
+    #top-nav {
+      position: absolute; top: 12px; left: 16px; right: 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 10; pointer-events: none;
+    }
+    .top-left, .top-right {
+      pointer-events: auto;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .brand-badge {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 8px 16px; border-radius: 14px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .brand-title {
+      font-size: 15px; font-weight: 800; letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand-sub { font-size: 11px; color: var(--muted); }
+
+    /* Athlete Switcher Tabs */
+    .athlete-tabs {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 4px; border-radius: 14px;
+      display: flex; gap: 4px;
+    }
+    .tab-btn {
+      background: transparent; border: none; outline: none;
+      color: var(--muted); padding: 8px 14px; border-radius: 10px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .tab-btn.active {
+      color: #040711; background: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+    }
+    .tab-btn.active.hoops {
+      background: #f97316;
+      box-shadow: 0 0 16px rgba(249, 115, 22, 0.5);
+    }
+    .tab-btn.active.keeper {
+      background: #10b981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+    }
+
+    /* Floating Camera Presets */
+    #cam-bar {
+      position: absolute; top: 76px; left: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 6px; border-radius: 12px;
+      display: flex; flex-direction: column; gap: 4px;
+      z-index: 10;
+    }
+    .cam-btn {
+      background: transparent; border: none; outline: none;
+      color: var(--muted); padding: 6px 10px; border-radius: 8px;
+      font-size: 11.5px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; text-align: left;
+      transition: all 0.15s ease;
+    }
+    .cam-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+    .cam-btn.active { color: #38bdf8; background: rgba(56, 189, 248, 0.15); }
+
+    /* Action & Animation Bar */
+    #anim-bar {
+      position: absolute; top: 76px; right: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 6px; border-radius: 12px;
+      display: flex; flex-direction: column; gap: 4px;
+      z-index: 10;
+    }
+    .anim-title {
+      font-size: 10.5px; font-weight: 800; color: #94a3b8;
+      text-transform: uppercase; padding: 4px 8px;
+    }
+    .anim-btn {
+      background: transparent; border: none; outline: none;
+      color: var(--muted); padding: 6px 12px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; text-align: left;
+      transition: all 0.15s ease;
+    }
+    .anim-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+    .anim-btn.active {
+      color: #fff; background: linear-gradient(135deg, #0284c7, #2563eb);
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Kit Inspector Card (Bottom Left) */
+    #kit-info {
+      position: absolute; bottom: 156px; left: 16px; width: 320px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 14px 16px; border-radius: 16px;
+      z-index: 10; pointer-events: none;
+      transition: all 0.25s ease;
+    }
+    .kit-badge-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .kit-rarity-pill {
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;
+    }
+    .pill-common { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    .pill-rare { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .pill-epic { background: rgba(192, 132, 252, 0.2); color: #c084fc; }
+    .pill-legendary { background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .kit-name { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .kit-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .kit-palette { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+
+    /* Bottom Kit Cards Carousel */
+    #kit-carousel-wrapper {
+      position: absolute; bottom: 14px; left: 16px; right: 16px;
+      z-index: 10;
+    }
+    .carousel-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px; padding: 0 4px;
+    }
+    .carousel-label {
+      font-size: 12px; font-weight: 800; letter-spacing: 0.5px;
+      color: #38bdf8; text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .carousel-hint { font-size: 11px; color: var(--muted); }
+    #kit-carousel {
+      display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
+      padding: 6px 2px 10px 2px;
+      scrollbar-width: thin; scrollbar-color: rgba(56,189,248,0.3) transparent;
+    }
+    #kit-carousel::-webkit-scrollbar { height: 6px; }
+    #kit-carousel::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.3); border-radius: 3px; }
+
+    .kit-card {
+      flex: 0 0 148px; height: 96px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(12px);
+      border-radius: 14px; padding: 10px;
+      cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
+    }
+    .kit-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(18, 28, 52, 0.95);
+    }
+    .kit-card.active {
+      border: 2px solid #38bdf8;
+      background: rgba(15, 30, 60, 0.95);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      transform: translateY(-4px);
+    }
+    .kit-card.active.legendary {
+      border-color: #fbbf24;
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+    }
+    .card-top { display: flex; justify-content: space-between; align-items: center; }
+    .card-dots { display: flex; gap: 4px; }
+    .card-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+    .card-num { font-size: 12px; font-weight: 900; color: rgba(255,255,255,0.4); }
+    .card-title { font-size: 12.5px; font-weight: 700; color: #fff; margin-top: 4px; line-height: 1.25; }
+    .card-rarity { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+
+    /* Interaction Hint Overlay */
+    #touch-hint {
+      position: absolute; bottom: 132px; right: 20px;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8; font-size: 11px; padding: 6px 12px; border-radius: 20px;
+      pointer-events: none; z-index: 9;
+    }
+
+    /* Embedded mode for Wardrobe in main app */
+    body.is-embedded #top-nav,
+    body.is-embedded #cam-bar,
+    body.is-embedded #anim-bar,
+    body.is-embedded #kit-carousel-wrapper,
+    body.is-embedded #kit-info,
+    body.is-embedded #touch-hint {
+      display: none !important;
+    }
+    body.is-embedded {
+      background: transparent !important;
+    }
+
+    /* Loading Overlay */
+    #loader {
+      position: absolute; inset: 0; background: #070b14;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; z-index: 100; transition: opacity 0.4s ease;
+    }
+    .spinner {
+      width: 44px; height: 44px; border: 4px solid rgba(56,189,248,0.2);
+      border-top-color: #38bdf8; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <script src="/assets/loaders/glb_loader.js"></script>
+</head>
+<body>
+  <!-- Loading Splash Screen -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="font-size:14px; font-weight:700; color:#38bdf8;">Загрузка 3D шоурума форм...</div>
+  </div>
+
+  <canvas id="gl-canvas"></canvas>
+
+  <!-- Top Navigation & Switchers -->
+  <div id="top-nav">
+    <div class="top-left">
+      <div class="brand-badge">
+        <span style="font-size: 20px;">👕</span>
+        <div>
+          <div class="brand-title">3D ШОУРУМ И ГАРДЕРОБ ФОРМ</div>
+          <div class="brand-sub">FOOTY vs HOOPS · 21 Официальный Комплект</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="top-right">
+      <div class="athlete-tabs">
+        <button class="tab-btn active" id="tab-footy" onclick="selectAthlete('footy')">⚽ FOOTY #10 (Нападающий)</button>
+        <button class="tab-btn" id="tab-hoops" onclick="selectAthlete('hoops')">🏀 HOOPS #23 (Защитник)</button>
+        <button class="tab-btn" id="tab-keeper" onclick="selectAthlete('keeper')">🧤 KEEPER #1 (Вратарь)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Camera Presets -->
+  <div id="cam-bar">
+    <span class="anim-title">Камера</span>
+    <button class="cam-btn active" id="cam-full" onclick="setCam('full')">🧍 В полный рост</button>
+    <button class="cam-btn" id="cam-jersey" onclick="setCam('jersey')">👕 Джерси (Спереди)</button>
+    <button class="cam-btn" id="cam-back" onclick="setCam('back')">🔄 Со спины (Номер и Узоры)</button>
+    <button class="cam-btn" id="cam-boots" onclick="setCam('boots')">👟 Шорты, Ноги и Гетры</button>
+    <button class="cam-btn" id="cam-face" onclick="setCam('face')">🔍 Лицо / Причёска</button>
+    <button class="cam-btn" id="cam-turntable" onclick="toggleTurntable()">🔄 Авто-вращение: ВЫКЛ</button>
+  </div>
+
+  <!-- Animation Motions -->
+  <div id="anim-bar">
+    <span class="anim-title">Анимация</span>
+    <div id="anim-buttons-mount"></div>
+  </div>
+
+  <!-- Kit Detail Card -->
+  <div id="kit-info">
+    <div class="kit-badge-row">
+      <span class="kit-rarity-pill pill-common" id="info-rarity">Common</span>
+      <span style="font-size:11px; color:#94a3b8;" id="info-slot">Комплект #0</span>
+    </div>
+    <div class="kit-name" id="info-name">Тиффани & Оникс</div>
+    <div class="kit-desc" id="info-desc">Премиальный бирюзовый сплит с графитовыми вставками и бирюзовыми бутсами.</div>
+    <div class="kit-palette" id="info-palette"></div>
+  </div>
+
+  <div id="touch-hint">👆 Вращайте 360° мышью / пальцем · Колёсико для зума</div>
+
+  <!-- Bottom Kit Cards Carousel -->
+  <div id="kit-carousel-wrapper">
+    <div class="carousel-header">
+      <div class="carousel-label">
+        <span>🎨 Выберите комплект формы (1-клик примерка):</span>
+      </div>
+      <div class="carousel-hint">Текстура наносится в реальном времени на 3D модель</div>
+    </div>
+    <div id="kit-carousel"></div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 21 OFFICIAL MASTER KITS DATA
+    // =========================================================================
+    const KITS_DATABASE = {
+      footy: [
+        {
+          id: 'footy_classic', name: 'Классика #10', rarity: 'common', num: '10',
+          desc: 'Оригинальная клубная форма Footy: лазурный шеврон победы, номер 10 и белоснежные шорты.',
+          primary: '#00d2ff', secondary: '#ffffff', accent: '#facc15',
+          texture: '/assets/kits/footy_kit_classic.png?v=20.0'
+        },
+
+        {
+          id: 'footy_kit_2_white', name: 'Чистый Дом', rarity: 'common', num: '10',
+          desc: 'Традиции клуба: белоснежная текстура жаккардового плетения с королевской диагональной лентой побед (Royal Sash).',
+          primary: '#f8fafc', secondary: '#e2e8f0', accent: '#0284c7',
+          texture: '/assets/kits/footy_kit_2_white.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_6_crimson', name: 'Багровый Гладиатор', rarity: 'common', num: '10',
+          desc: 'Спартанский дух победы: золотой греческий меандр по контуру, античные линии анатомического доспеха и алый кармин.',
+          primary: '#dc2626', secondary: '#7f1d1d', accent: '#fbbf24',
+          texture: '/assets/kits/footy_kit_6_crimson.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_7_gold', name: 'Золотой Владыка (24K)', rarity: 'common', num: '10',
+          desc: 'Королевский триумф: золотая барочная филигрань в стиле Versace, чемпионские пятиконечные звезды славы и лавровый венок.',
+          primary: '#eab308', secondary: '#713f12', accent: '#fef08a',
+          texture: '/assets/kits/footy_kit_7_gold.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_1_sapphire', name: 'Сапфир Страйкер', rarity: 'rare', num: '10',
+          desc: 'Сверхзвуковые кинетические шевроны (Sonic Wave) цвета сапфира с неоново-лазурной окантовкой для взрывного прорыва.',
+          primary: '#1e40af', secondary: '#0f172a', accent: '#00f2fe',
+          texture: '/assets/kits/footy_kit_1_sapphire.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_4_amber', name: 'Янтарный Сокол', rarity: 'rare', num: '10',
+          desc: 'Хищный удар: раскинутые крылья золотого сокола на груди и плечах с теплыми янтарными аэродинамическими перьями.',
+          primary: '#d97706', secondary: '#78350f', accent: '#fbbf24',
+          texture: '/assets/kits/footy_kit_4_amber.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_5_amethyst', name: 'Аметист Туманность', rarity: 'rare', num: '10',
+          desc: 'Космическое видение плеймейкера: фиолетовая звездная туманность со светящимися созвездиями и звездными узлами.',
+          primary: '#6b21a8', secondary: '#3b0764', accent: '#c084fc',
+          texture: '/assets/kits/footy_kit_5_amethyst.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_9_cyber', name: 'Пламя Дракона (Император)', rarity: 'epic', num: '10',
+          desc: 'Высшая первобытная мощь: золотой восточный дракон, обвивающий торс, пылающая золотая чешуя, когти и языки огня.',
+          primary: '#7f1d1d', secondary: '#450a0a', accent: '#ea580c',
+          texture: '/assets/kits/footy_kit_9_cyber.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_3_neon', name: 'Неон Тренинг', rarity: 'epic', num: '10',
+          desc: 'Тактическая цифровая матрица (Isometric Grid): изумрудно-лаймовая сетка анализа поля со светящимися узлами.',
+          primary: '#15803d', secondary: '#14532d', accent: '#4ade80',
+          texture: '/assets/kits/footy_kit_3_neon.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_8_obsidian', name: 'Обсидиановый Шиноби', rarity: 'legendary', num: '10',
+          desc: 'Призрачный скрытный дриблинг: нано-карбоновые соты, пульсирующие неоновые кибер-магистрали и темный оптический камуфляж.',
+          primary: '#090d16', secondary: '#020617', accent: '#38bdf8',
+          texture: '/assets/kits/footy_kit_8_obsidian.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_0_tiffany', name: 'Тиффани & Оникс', rarity: 'legendary', num: '10',
+          desc: 'Сбалансированный сплит: черный оникс (непробиваемость) и бирюзовый тиффани (скорость) с карбоновой ромбовидной сеткой.',
+          primary: '#0abab5', secondary: '#090d16', accent: '#0abab5',
+          texture: '/assets/kits/footy_kit_0_tiffany.png?v=15.0'
+        },
+        {
+          id: 'footy_kit_star_holiday', name: '🎄 Новогодняя Метель (2027)', rarity: 'legendary', num: '25',
+          desc: 'Праздничный комплект 2027: алый бархат Санты, морозная белая опушка, золотые снежинки и золотой номер 25.',
+          primary: '#dc2626', secondary: '#991b1b', accent: '#facc15',
+          texture: '/assets/kits/footy_kit_star_holiday.png?v=17.0'
+        },
+        {
+          id: 'footy_kit_star_emperor', name: '⭐ Галактический Император', rarity: 'legendary', num: '1',
+          desc: 'Царственный космический индиго-пурпур, золотой лавровый шеврон славы и переливающийся кант.',
+          primary: '#4c1d95', secondary: '#1e1b4b', accent: '#fbbf24',
+          texture: '/assets/kits/footy_kit_star_emperor.png?v=17.0'
+        },
+        {
+          id: 'footy_kit_star_samurai', name: '⚡ Квантовый Самурай (77)', rarity: 'legendary', num: '77',
+          desc: 'Белоснежная нано-керамическая броня кибер-ронина со светящейся неоновой лазурью и драконьим орнаментом.',
+          primary: '#f8fafc', secondary: '#334155', accent: '#00f0ff',
+          texture: '/assets/kits/footy_kit_star_samurai.png?v=17.0'
+        }
+      ],
+      hoops: [
+        {
+          id: 'hoops_classic', name: 'Классика #23', rarity: 'common', num: '23',
+          desc: 'Оригинальная майка Hoops: огненный оранжевый цвет, номер 23 All-Star и черные шорты.',
+          primary: '#f97316', secondary: '#0f172a', accent: '#ffffff',
+          texture: '/assets/kits/hoops_kit_classic.png?v=20.0'
+        },
+
+        {
+          id: 'hoops_kit_2_crimson', name: 'Чикаго Классик 1998', rarity: 'common', num: '23',
+          desc: 'Золотая эра 23 номера: бычий кармин с текстурой зерен баскетбольного кожаного мяча и золотыми звездами чемпионов.',
+          primary: '#dc2626', secondary: '#991b1b', accent: '#ffffff',
+          texture: '/assets/kits/hoops_kit_2_crimson.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_3_gold', name: 'ЛА Династия (Шоутайм)', rarity: 'common', num: '23',
+          desc: 'Золото Голливуда и царский пурпур Лейкерс: солнечные лучи славы и граненые кристаллы на боковых панелях.',
+          primary: '#eab308', secondary: '#581c87', accent: '#ffffff',
+          texture: '/assets/kits/hoops_kit_3_gold.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_4_emerald', name: 'Бостон Прайд (Кельтский Клевер)', rarity: 'common', num: '23',
+          desc: 'Монолитная защита: изумрудные кельтские узлы бесконечности и кристаллическая огранка на груди.',
+          primary: '#15803d', secondary: '#14532d', accent: '#ffffff',
+          texture: '/assets/kits/hoops_kit_4_emerald.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_6_cyan', name: 'Шарлотт Бриз (Атлантида)', rarity: 'rare', num: '23',
+          desc: 'Морской владыка: чешуя океанского дракона с фиолетовыми переливами и ветвями неоновых кораллов.',
+          primary: '#06b6d4', secondary: '#164e63', accent: '#a855f7',
+          texture: '/assets/kits/hoops_kit_6_cyan.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_5_amethyst', name: 'Коготь Раптора', rarity: 'rare', num: '23',
+          desc: 'Хищный перехват мяча: тройной диагональный след когтей хищника, обнажающий светящийся неоновый слой.',
+          primary: '#6b21a8', secondary: '#3b0764', accent: '#dc2626',
+          texture: '/assets/kits/hoops_kit_5_amethyst.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_0_neon', name: 'Неон Сити (Скайлайн)', rarity: 'rare', num: '23',
+          desc: 'Уличные ночные площадки: градиент ночного неба с неоновыми контурами небоскребов и геометрией баскетбольной сетки.',
+          primary: '#0284c7', secondary: '#0f172a', accent: '#38bdf8',
+          texture: '/assets/kits/hoops_kit_0_neon.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_7_amber', name: 'Восходящий Феникс', rarity: 'epic', num: '23',
+          desc: 'Возрождение в клатч-моментах: огненные золотые крылья Феникса, взмывающие от пояса к плечам, и сноп искр.',
+          primary: '#ea580c', secondary: '#581c87', accent: '#facc15',
+          texture: '/assets/kits/hoops_kit_7_amber.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_9_galaxy', name: 'Гипер Зверь (Небесный Титан)', rarity: 'epic', num: '23',
+          desc: 'Сокрушительный данк: яростная пасть кибер-титана, космическая туманность и золотые молнии Зевса.',
+          primary: '#312e81', secondary: '#1e1b4b', accent: '#38bdf8',
+          texture: '/assets/kits/hoops_kit_9_galaxy.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_8_stealth', name: 'Чёрная Мамба (Venom)', rarity: 'legendary', num: '23',
+          desc: 'Инстинкт безжалостного финишера: рельефная змеиная чешуя с фиолетовым ядовитым отливом и золотыми клыками гадюки.',
+          primary: '#18181b', secondary: '#09090b', accent: '#ffffff',
+          texture: '/assets/kits/hoops_kit_8_stealth.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_1_pink', name: 'Майами Роуз (Вайс)', rarity: 'legendary', num: '23',
+          desc: 'Океанский закат Флориды: плавный закатный переход от фламинго к бирюзе с пальмовыми силуэтами.',
+          primary: '#ec4899', secondary: '#831843', accent: '#38bdf8',
+          texture: '/assets/kits/hoops_kit_1_pink.png?v=15.0'
+        },
+        {
+          id: 'hoops_kit_star_holiday', name: '🎄 Новогодний Данк (2027)', rarity: 'legendary', num: '25',
+          desc: 'Рождественская безрукавная майка Санты: алый бархат с изумрудной резинкой, золотыми снежинками и номером 25.',
+          primary: '#dc2626', secondary: '#991b1b', accent: '#facc15',
+          texture: '/assets/kits/hoops_kit_star_holiday.png?v=17.0'
+        },
+        {
+          id: 'hoops_kit_star_astral', name: '⭐ Звёздный Властелин', rarity: 'legendary', num: '99',
+          desc: 'Полночный сапфир и ультрафиолетовый шелк с золотыми созвездиями и золотыми окантовками пройм.',
+          primary: '#1e1b4b', secondary: '#0f172a', accent: '#facc15',
+          texture: '/assets/kits/hoops_kit_star_astral.png?v=17.0'
+        },
+        {
+          id: 'hoops_kit_star_phantom', name: '⚡ Неоновый Фантом (0)', rarity: 'legendary', num: '0',
+          desc: 'Матовый глубокий карбон с двойными лазерными розово-бирюзовыми неоновыми полосами в стиле Vice City.',
+          primary: '#09090b', secondary: '#020617', accent: '#00f0ff',
+          texture: '/assets/kits/hoops_kit_star_phantom.png?v=17.0'
+        }
+      ],
+      keeper: [
+        {
+          id: 'keeper_kit_0_volt', name: 'Титан Щит (Эгида Вратаря)', rarity: 'legendary', num: '1',
+          desc: 'Непробиваемая стена ворот: тяжелые экзоскелетные пластины, силовое гексагональное поле и латексные перчатки Titan Grip.',
+          primary: '#090d16', secondary: '#020617', accent: '#00e676',
+          texture: '/assets/kits/keeper_kit_0_volt.png?v=15.0'
+        }
+      ]
+    };
+
+    // =========================================================================
+    // WEBGL 2.0 PBR ENGINE WITH GPU SKINNING
+    // =========================================================================
+    const VS_SRC = `#version 300 es
+    precision highp float;
+    layout(location = 0) in vec3 aPos;
+    layout(location = 1) in vec3 aNormal;
+    layout(location = 2) in vec2 aUv;
+    layout(location = 3) in vec4 aJoints;
+    layout(location = 4) in vec4 aWeights;
+
+    uniform mat4 uProj;
+    uniform mat4 uView;
+    uniform mat4 uModel;
+    uniform mat4 uBones[96];
+    uniform bool uUseSkinning;
+
+    out vec3 vWorldPos;
+    out vec3 vNormal;
+    out vec2 vUv;
+
+    void main() {
+      vUv = aUv;
+      vec4 localPos = vec4(aPos, 1.0);
+      vec3 localNorm = aNormal;
+
+      if (uUseSkinning) {
+        int j0 = int(aJoints.x);
+        int j1 = int(aJoints.y);
+        int j2 = int(aJoints.z);
+        int j3 = int(aJoints.w);
+
+        mat4 skinMat =
+          aWeights.x * uBones[j0] +
+          aWeights.y * uBones[j1] +
+          aWeights.z * uBones[j2] +
+          aWeights.w * uBones[j3];
+
+        localPos = skinMat * localPos;
+        localNorm = mat3(skinMat) * localNorm;
+      }
+
+      vec4 worldPos = uModel * localPos;
+      vWorldPos = worldPos.xyz;
+      vNormal = normalize(mat3(uModel) * localNorm);
+      gl_Position = uProj * uView * worldPos;
+    }`;
+
+    const FS_SRC = `#version 300 es
+    precision highp float;
+    in vec3 vWorldPos;
+    in vec3 vNormal;
+    in vec2 vUv;
+
+    uniform sampler2D uTex;
+    uniform bool uHasTex;
+    uniform vec4 uBaseColor;
+    uniform float uRoughness;
+    uniform float uMetallic;
+    uniform vec3 uEye;
+    uniform vec3 uSunDir;
+    uniform vec3 uSunColor;
+    uniform vec3 uSkyColor;
+    uniform vec3 uGroundColor;
+
+    out vec4 fragColor;
+
+    void main() {
+      vec4 base = uBaseColor;
+      if (uHasTex) {
+        base *= texture(uTex, vUv);
+      }
+
+      vec3 N = normalize(vNormal);
+      vec3 L = normalize(uSunDir);
+      vec3 V = normalize(uEye - vWorldPos);
+      vec3 H = normalize(L + V);
+
+      // Half-Lambert Wrapped Diffuse
+      float NdotL = dot(N, L);
+      float wrapped = NdotL * 0.42 + 0.58;
+      float direct = smoothstep(0.08, 0.92, wrapped);
+
+      // Subsurface Skin Scatter
+      float sss = pow(clamp(1.0 - NdotL, 0.0, 1.0), 2.2) * 0.22;
+      vec3 sssTint = base.rgb * vec3(1.22, 0.70, 0.52);
+
+      // Specular
+      float NdotH = max(dot(N, H), 0.0);
+      float spec = pow(NdotH, mix(32.0, 64.0, 1.0 - uRoughness)) * mix(0.18, 0.65, uMetallic);
+      vec3 specCol = uSunColor * spec;
+
+      // Hemispheric Ambient
+      float hemi = N.y * 0.5 + 0.5;
+      vec3 ambient = base.rgb * mix(uGroundColor, uSkyColor, hemi) * 1.05;
+
+      // Stadium Rim Light
+      float rim = pow(clamp(1.0 - max(dot(N, V), 0.0), 0.0, 1.0), 2.5);
+      vec3 rimCol = mix(vec3(0.85, 0.95, 1.0), vec3(1.0, 0.92, 0.80), hemi) * rim * 0.55;
+
+      vec3 finalCol = ambient * 0.65 + base.rgb * uSunColor * direct * (1.0 - uMetallic) * 0.75 + sssTint * sss + specCol * 0.35 + rimCol * 0.28;
+      fragColor = vec4(finalCol, base.a);
+    }`;
+
+    // Math Matrix Functions
+    function mat4Create() { return new Float32Array(16); }
+    function mat4Identity(out) { out.fill(0); out[0] = out[5] = out[10] = out[15] = 1; return out; }
+    function mat4Perspective(out, fovy, aspect, near, far) {
+      const f = 1.0 / Math.tan(fovy / 2);
+      out.fill(0);
+      out[0] = f / aspect; out[5] = f;
+      out[10] = (far + near) / (near - far); out[11] = -1;
+      out[14] = (2 * far * near) / (near - far);
+      return out;
+    }
+    function mat4LookAt(out, eye, center, up) {
+      let z0 = eye[0] - center[0], z1 = eye[1] - center[1], z2 = eye[2] - center[2];
+      let len = 1 / Math.hypot(z0, z1, z2);
+      z0 *= len; z1 *= len; z2 *= len;
+      let x0 = up[1] * z2 - up[2] * z1, x1 = up[2] * z0 - up[0] * z2, x2 = up[0] * z1 - up[1] * z0;
+      len = Math.hypot(x0, x1, x2);
+      if (len) { len = 1 / len; x0 *= len; x1 *= len; x2 *= len; }
+      let y0 = z1 * x2 - z2 * x1, y1 = z2 * x0 - z0 * x2, y2 = z0 * x1 - z1 * x0;
+      out[0] = x0; out[1] = y0; out[2] = z0; out[3] = 0;
+      out[4] = x1; out[5] = y1; out[6] = z1; out[7] = 0;
+      out[8] = x2; out[9] = y2; out[10] = z2; out[11] = 0;
+      out[12] = -(x0 * eye[0] + x1 * eye[1] + x2 * eye[2]);
+      out[13] = -(y0 * eye[0] + y1 * eye[1] + y2 * eye[2]);
+      out[14] = -(z0 * eye[0] + z1 * eye[1] + z2 * eye[2]);
+      out[15] = 1;
+      return out;
+    }
+
+    // App State
+    let gl, canvas, program, locs;
+    let isTransparentMode = new URLSearchParams(window.location.search).get('transparent') === '1';
+    let currentAthlete = 'footy';
+    let currentModel = null;
+    let modelBuffers = [];
+    let currentKitIndex = 0;
+    let currentKitTexture = null;
+    const textureCache = new Map();
+
+    // Camera & Orbit State
+    let camTarget = [0, 1.25, 0];
+    let camYaw = 0.0;
+    let camPitch = 0.12;
+    let camDist = 3.6;
+    let isDragging = false;
+    let lastX = 0, lastY = 0;
+    let isTurntable = false;
+
+    // Camera Preset Targets
+    const CAM_PRESETS = {
+      full: { target: [0, 1.25, 0], yaw: 0.0, pitch: 0.12, dist: 3.6 },
+      jersey: { target: [0, 1.48, 0], yaw: 0.0, pitch: 0.06, dist: 1.6 },
+      back: { target: [0, 1.46, 0], yaw: Math.PI, pitch: 0.06, dist: 1.8 },
+      boots: { target: [0, 0.55, 0], yaw: 0.15, pitch: 0.10, dist: 2.0 },
+      legs: { target: [0, 0.45, 0], yaw: 0.0, pitch: 0.08, dist: 1.55 },
+      face: { target: [0, 1.95, 0], yaw: 0.0, pitch: 0.02, dist: 1.1 },
+      head_back: { target: [0, 1.80, 0], yaw: Math.PI, pitch: 0.04, dist: 1.15 }
+    };
+
+    window.setCameraCustom = function(target, yaw, pitch, dist) {
+      if (target) camTarget = [...target];
+      if (yaw !== undefined) camYaw = yaw;
+      if (pitch !== undefined) camPitch = pitch;
+      if (dist !== undefined) camDist = dist;
+    };
+
+    function setCam(preset) {
+      document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById(`cam-${preset}`);
+      if (btn) btn.classList.add('active');
+      const p = CAM_PRESETS[preset];
+      if (!p) return;
+      camTarget = [...p.target];
+      camYaw = p.yaw;
+      camPitch = p.pitch;
+      camDist = p.dist;
+    }
+
+    function toggleTurntable() {
+      isTurntable = !isTurntable;
+      const b = document.getElementById('cam-turntable');
+      if (b) {
+        b.textContent = isTurntable ? '🔄 Авто-вращение: ВКЛ' : '🔄 Авто-вращение: ВЫКЛ';
+        b.classList.toggle('active', isTurntable);
+      }
+    }
+
+    // =========================================================================
+    // UI BUILDERS
+    // =========================================================================
+    function renderKitCarousel() {
+      const carousel = document.getElementById('kit-carousel');
+      carousel.innerHTML = '';
+      const kits = KITS_DATABASE[currentAthlete] || [];
+
+      kits.forEach((kit, idx) => {
+        const card = document.createElement('div');
+        card.className = `kit-card ${idx === currentKitIndex ? 'active' : ''} ${kit.rarity}`;
+        card.id = `kit-card-${idx}`;
+        card.onclick = () => selectKit(idx);
+
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-dots">
+              <span class="card-dot" style="background:${kit.primary}"></span>
+              <span class="card-dot" style="background:${kit.secondary}"></span>
+              <span class="card-dot" style="background:${kit.accent}"></span>
+            </div>
+            <span class="card-num">#${kit.num}</span>
+          </div>
+          <div class="card-title">${kit.name}</div>
+          <div class="card-rarity">${kit.rarity}</div>
+        `;
+        carousel.appendChild(card);
+      });
+
+      updateKitInfoCard();
+    }
+
+    function updateKitInfoCard() {
+      const kits = KITS_DATABASE[currentAthlete] || [];
+      const kit = kits[currentKitIndex];
+      if (!kit) return;
+
+      document.getElementById('info-name').textContent = kit.name;
+      document.getElementById('info-desc').textContent = kit.desc;
+      document.getElementById('info-slot').textContent = `Комплект #${currentKitIndex} · Номер ${kit.num}`;
+
+      const pill = document.getElementById('info-rarity');
+      pill.textContent = kit.rarity.toUpperCase();
+      pill.className = `kit-rarity-pill pill-${kit.rarity}`;
+
+      const palette = document.getElementById('info-palette');
+      palette.innerHTML = `
+        <span style="font-size:11px; color:#94a3b8; margin-right:4px;">Цвета:</span>
+        <span class="dot" style="background:${kit.primary};" title="Основной"></span>
+        <span class="dot" style="background:${kit.secondary};" title="Вторичный"></span>
+        <span class="dot" style="background:${kit.accent};" title="Акцент"></span>
+      `;
+    }
+
+    function selectKit(idx) {
+      currentKitIndex = idx;
+      document.querySelectorAll('.kit-card').forEach((c, i) => {
+        c.classList.toggle('active', i === idx);
+      });
+      updateKitInfoCard();
+
+      const kits = KITS_DATABASE[currentAthlete] || [];
+      const kit = kits[idx];
+      if (kit && kit.texture) {
+        applyTexture(kit.texture);
+      }
+    }
+
+    // Athlete Switching
+    async function selectAthlete(athleteId) {
+      currentAthlete = athleteId;
+      currentKitIndex = 0;
+
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active', 'hoops', 'keeper');
+      });
+      const activeBtn = document.getElementById(`tab-${athleteId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        if (athleteId === 'hoops') activeBtn.classList.add('hoops');
+        if (athleteId === 'keeper') activeBtn.classList.add('keeper');
+      }
+
+      renderKitCarousel();
+      renderAnimButtons();
+
+      document.getElementById('loader').style.display = 'flex';
+      document.getElementById('loader').style.opacity = '1';
+
+      let glbUrl = '/assets/characters/footy10.glb?v=35.0';
+      if (athleteId === 'hoops') glbUrl = '/assets/characters/hoops23.glb?v=35.0';
+      if (athleteId === 'keeper') glbUrl = '/assets/characters/keeper1.glb?v=35.0';
+
+      try {
+        const model = await GLBLoader.loadGLB(glbUrl);
+        currentModel = model;
+        modelBuffers = buildBuffers(model);
+        model.setAnimation('Idle');
+
+        // Apply selected or first kit texture
+        const kits = KITS_DATABASE[athleteId] || [];
+        const kitToApply = (currentKitIndex >= 0 && kits[currentKitIndex]) ? kits[currentKitIndex] : kits[0];
+        if (kitToApply && kitToApply.texture) {
+          await applyTexture(kitToApply.texture);
+        }
+      } catch (e) {
+        console.error('Error loading athlete model:', e);
+      } finally {
+        const l = document.getElementById('loader');
+        l.style.opacity = '0';
+        setTimeout(() => l.style.display = 'none', 300);
+      }
+    }
+
+    function renderAnimButtons() {
+      const mount = document.getElementById('anim-buttons-mount');
+      mount.innerHTML = '';
+
+      let anims = [];
+      if (currentAthlete === 'footy') {
+        anims = [
+          { label: '🧍 Стойка', clip: 'Idle' },
+          { label: '🏃 Бег', clip: 'Run' },
+          { label: '⚽ Удар подъемом', clip: 'Anim_EA_PowerStrike' },
+          { label: '🛡️ Подкат', clip: 'Anim_EA_SlideTackle' },
+          { label: '🎉 Празднование SIU', clip: 'Anim_Celebration' }
+        ];
+      } else if (currentAthlete === 'hoops') {
+        anims = [
+          { label: '🧍 Стойка', clip: 'Idle' },
+          { label: '🏃 Бег', clip: 'Run' },
+          { label: '💥 Данк двумя руками', clip: 'Anim_2K_SlamDunk' },
+          { label: '🏀 Бросок в прыжке', clip: 'Anim_2K_JumpShot' },
+          { label: '✋ Перехват', clip: 'Anim_2K_Steal' }
+        ];
+      } else {
+        anims = [
+          { label: '🧍 Стойка', clip: 'Idle' },
+          { label: '🏃 Бег', clip: 'Run' },
+          { label: '🧤 Сейв в падении', clip: 'Anim_EA_KeeperDive' },
+          { label: '🎉 Празднование', clip: 'Anim_Celebration' }
+        ];
+      }
+
+      anims.forEach((a, i) => {
+        const b = document.createElement('button');
+        b.className = `anim-btn ${i === 0 ? 'active' : ''}`;
+        b.textContent = a.label;
+        b.onclick = () => {
+          document.querySelectorAll('.anim-btn').forEach(btn => btn.classList.remove('active'));
+          b.classList.add('active');
+          if (currentModel) currentModel.setAnimation(a.clip);
+        };
+        mount.appendChild(b);
+      });
+    }
+
+    // =========================================================================
+    // TEXTURE MANAGEMENT
+    // =========================================================================
+    function applyTexture(url) {
+      return new Promise((resolve) => {
+        if (textureCache.has(url)) {
+          const tex = textureCache.get(url);
+          currentKitTexture = tex;
+          if (modelBuffers) {
+            modelBuffers.forEach(b => { b.texture = tex; });
+          }
+          resolve(tex);
+          return;
+        }
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const tex = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+          gl.generateMipmap(gl.TEXTURE_2D);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          textureCache.set(url, tex);
+          currentKitTexture = tex;
+          if (modelBuffers) {
+            modelBuffers.forEach(b => { b.texture = tex; });
+          }
+          resolve(tex);
+        };
+        img.onerror = () => {
+          console.warn('Failed to load texture:', url);
+          resolve(null);
+        };
+        img.src = url;
+      });
+    }
+
+    // =========================================================================
+    // VAO & BUFFER CREATION
+    // =========================================================================
+    function buildBuffers(model) {
+      const buffers = [];
+      model.primitives.forEach(prim => {
+        const vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
+
+        const pb = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, pb);
+        gl.bufferData(gl.ARRAY_BUFFER, prim.positions, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        if (prim.normals) {
+          const nb = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, nb);
+          gl.bufferData(gl.ARRAY_BUFFER, prim.normals, gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+        }
+
+        if (prim.uvs) {
+          const ub = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, ub);
+          gl.bufferData(gl.ARRAY_BUFFER, prim.uvs, gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+        }
+
+        if (prim.joints && prim.weights) {
+          const jb = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, jb);
+          gl.bufferData(gl.ARRAY_BUFFER, prim.joints, gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 0, 0);
+
+          const wb = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, wb);
+          gl.bufferData(gl.ARRAY_BUFFER, prim.weights, gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 4, gl.FLOAT, false, 0, 0);
+        }
+
+        const ib = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, prim.indices, gl.STATIC_DRAW);
+        gl.bindVertexArray(null);
+
+        let texture = currentKitTexture || null;
+        if (!texture) {
+          const matImg = prim.material && (prim.material.image || (prim.material.baseColorTexture && prim.material.baseColorTexture.image));
+          if (matImg) {
+            texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, matImg);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          }
+        }
+
+        buffers.push({
+          vao, count: prim.indices.length,
+          type: prim.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT,
+          material: prim.material, texture
+        });
+      });
+      return buffers;
+    }
+
+    // =========================================================================
+    // INITIALIZATION & RENDER LOOP
+    // =========================================================================
+    function initGL() {
+      canvas = document.getElementById('gl-canvas');
+      if (isTransparentMode) {
+        document.body.style.background = 'transparent';
+      }
+      gl = canvas.getContext('webgl2', { antialias: true, alpha: isTransparentMode, premultipliedAlpha: false, preserveDrawingBuffer: true });
+      if (!gl) return;
+
+      gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.CULL_FACE);
+      gl.cullFace(gl.BACK);
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function createShader(gl, type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      }
+      program = gl.createProgram();
+      gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, VS_SRC));
+      gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, FS_SRC));
+      gl.linkProgram(program);
+
+      locs = {
+        uProj: gl.getUniformLocation(program, 'uProj'),
+        uView: gl.getUniformLocation(program, 'uView'),
+        uModel: gl.getUniformLocation(program, 'uModel'),
+        uBones: gl.getUniformLocation(program, 'uBones'),
+        uUseSkinning: gl.getUniformLocation(program, 'uUseSkinning'),
+        uTex: gl.getUniformLocation(program, 'uTex'),
+        uHasTex: gl.getUniformLocation(program, 'uHasTex'),
+        uBaseColor: gl.getUniformLocation(program, 'uBaseColor'),
+        uRoughness: gl.getUniformLocation(program, 'uRoughness'),
+        uMetallic: gl.getUniformLocation(program, 'uMetallic'),
+        uEye: gl.getUniformLocation(program, 'uEye'),
+        uSunDir: gl.getUniformLocation(program, 'uSunDir'),
+        uSunColor: gl.getUniformLocation(program, 'uSunColor'),
+        uSkyColor: gl.getUniformLocation(program, 'uSkyColor'),
+        uGroundColor: gl.getUniformLocation(program, 'uGroundColor')
+      };
+
+      // Orbit interaction
+      canvas.addEventListener('mousedown', e => {
+        isDragging = true;
+        lastX = e.clientX; lastY = e.clientY;
+      });
+      window.addEventListener('mouseup', () => isDragging = false);
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        camYaw -= dx * 0.007;
+        camPitch = Math.max(-0.4, Math.min(0.8, camPitch + dy * 0.006));
+      });
+      canvas.addEventListener('wheel', e => {
+        camDist = Math.max(0.8, Math.min(6.5, camDist + e.deltaY * 0.003));
+      }, { passive: true });
+
+      // Touch interaction
+      canvas.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+        }
+      });
+      canvas.addEventListener('touchend', () => isDragging = false);
+      canvas.addEventListener('touchmove', e => {
+        if (!isDragging || e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - lastX;
+        const dy = e.touches[0].clientY - lastY;
+        lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+        camYaw -= dx * 0.008;
+        camPitch = Math.max(-0.4, Math.min(0.8, camPitch + dy * 0.007));
+      });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const isEmbedded = urlParams.get('embed') === '1';
+      if (isEmbedded) {
+        document.body.classList.add('is-embedded');
+        isTransparentMode = true;
+        camDist = 2.40;
+        camTarget = [0, 1.10, 0];
+        camPitch = 0.06;
+      }
+
+      function findKitIndex(sport, idOrTexture) {
+        if (!KITS_DATABASE[sport]) return -1;
+        const list = KITS_DATABASE[sport];
+        if (!idOrTexture) return 0;
+        const q = String(idOrTexture).toLowerCase().trim();
+
+        // 1. Direct match by id, texture or name
+        let idx = list.findIndex(k => 
+          k.id.toLowerCase() === q || 
+          (k.texture && k.texture.toLowerCase() === q) ||
+          (k.texture && k.texture.toLowerCase().includes(q)) ||
+          (k.name && k.name.toLowerCase() === q)
+        );
+        if (idx >= 0) return idx;
+
+        // 2. Classic / Rookie / Default check
+        if (q.includes('classic') || q.includes('rookie') || q.includes('solar') || q.includes('default') || q.includes('полосы')) {
+          const cIdx = list.findIndex(k => k.id.includes('classic') || k.id.includes('rookie') || k.name.includes('Классика'));
+          if (cIdx >= 0) return cIdx;
+        }
+
+        // 3. Aliases matching
+        const aliases = [
+          ['chicago', 'crimson'], ['boston', 'emerald'], ['la_dynasty', 'gold'], ['la', 'gold'],
+          ['charlotte', 'cyan'], ['raptor', 'amethyst'], ['neon', 'neon'],
+          ['phoenix', 'amber'], ['beast', 'galaxy'], ['mamba', 'stealth'],
+          ['miami', 'pink'], ['holiday', 'holiday'], ['astral', 'astral'],
+          ['phantom', 'phantom'], ['tiffany', 'tiffany'], ['white', 'white'],
+          ['sapphire', 'sapphire'], ['dragon', 'cyber'], ['obsidian', 'obsidian'],
+          ['samurai', 'samurai'], ['emperor', 'emperor'], ['gladiator', 'crimson']
+        ];
+        for (const [alias, target] of aliases) {
+          const matchPattern = (alias === 'la') ? /(^|_|\/|-|\s)la(_|\.|\/|-|\s|$)/i : new RegExp(alias, 'i');
+          if (matchPattern.test(q)) {
+            idx = list.findIndex(k => k.id.toLowerCase().includes(target) || (k.name && k.name.toLowerCase().includes(alias)));
+            if (idx >= 0) return idx;
+          }
+        }
+        return -1;
+      }
+
+      window.switchKit = async function(idOrUrl) {
+        const idx = findKitIndex(currentAthlete, idOrUrl);
+        if (idx >= 0) {
+          await selectKit(idx);
+        } else if (idOrUrl && (idOrUrl.endsWith('.png') || idOrUrl.includes('/assets/'))) {
+          await applyTexture(idOrUrl);
+        }
+      };
+
+      window.switchAthlete = async function(sport) {
+        if (sport && (sport === 'footy' || sport === 'hoops' || sport === 'keeper')) {
+          await selectAthlete(sport);
+        }
+      };
+
+      window.addEventListener('message', async (e) => {
+        if (!e.data || typeof e.data !== 'object') return;
+        if (e.data.action === 'changeKit') {
+          const target = e.data.texture || e.data.kit || e.data.kitId;
+          if (target) await window.switchKit(target);
+        } else if (e.data.action === 'changeAthlete') {
+          if (e.data.athlete) await window.switchAthlete(e.data.athlete);
+          if (e.data.kit || e.data.texture) await window.switchKit(e.data.kit || e.data.texture);
+        }
+      });
+
+      const initSport = urlParams.get('sport') || 'footy';
+      const targetKit = urlParams.get('kit');
+      if (targetKit && KITS_DATABASE[initSport]) {
+        const kIdx = findKitIndex(initSport, targetKit);
+        if (kIdx >= 0) currentKitIndex = kIdx;
+      }
+      selectAthlete(initSport).then(() => {
+        if (targetKit) {
+          window.switchKit(targetKit);
+        }
+      });
+    }
+
+    let lastTime = performance.now();
+    const proj = mat4Create();
+    const view = mat4Create();
+    const modelMat = mat4Create();
+
+    function renderLoop(now) {
+      requestAnimationFrame(renderLoop);
+      const dt = Math.min(0.06, (now - lastTime) / 1000);
+      lastTime = now;
+
+      if (isTurntable && !isDragging) {
+        camYaw += dt * 0.45;
+      }
+
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      if (isTransparentMode) {
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+      } else {
+        gl.clearColor(0.027, 0.043, 0.078, 1.0);
+      }
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      const aspect = canvas.width / canvas.height;
+      mat4Perspective(proj, 42 * Math.PI / 180, aspect, 0.1, 100.0);
+
+      const cx = camTarget[0] + Math.sin(camYaw) * Math.cos(camPitch) * camDist;
+      const cy = camTarget[1] + Math.sin(camPitch) * camDist;
+      const cz = camTarget[2] + Math.cos(camYaw) * Math.cos(camPitch) * camDist;
+      const camPos = [cx, cy, cz];
+      mat4LookAt(view, camPos, camTarget, [0, 1, 0]);
+
+      gl.useProgram(program);
+      gl.uniformMatrix4fv(locs.uProj, false, proj);
+      gl.uniformMatrix4fv(locs.uView, false, view);
+      gl.uniform3fv(locs.uEye, camPos);
+
+      // Studio Lighting
+      gl.uniform3f(locs.uSunDir, 0.45, 0.85, 0.50);
+      gl.uniform3f(locs.uSunColor, 1.25, 1.18, 1.10);
+      gl.uniform3f(locs.uSkyColor, 0.65, 0.75, 0.95);
+      gl.uniform3f(locs.uGroundColor, 0.18, 0.20, 0.28);
+
+      if (currentModel) {
+        currentModel.update(dt);
+        mat4Identity(modelMat);
+        gl.uniformMatrix4fv(locs.uModel, false, modelMat);
+
+        if (currentModel.boneMatrices) {
+          gl.uniformMatrix4fv(locs.uBones, false, currentModel.boneMatrices);
+          gl.uniform1i(locs.uUseSkinning, 1);
+        } else {
+          gl.uniform1i(locs.uUseSkinning, 0);
+        }
+
+        modelBuffers.forEach(b => {
+          gl.bindVertexArray(b.vao);
+          const mat = b.material;
+          gl.uniform4fv(locs.uBaseColor, (mat && mat.baseColorFactor) || [1, 1, 1, 1]);
+          gl.uniform1f(locs.uRoughness, mat && mat.roughnessFactor !== undefined ? mat.roughnessFactor : 0.55);
+          gl.uniform1f(locs.uMetallic, mat && mat.metallicFactor !== undefined ? mat.metallicFactor : 0.05);
+
+          const tex = currentKitTexture || b.texture;
+          if (tex) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.uniform1i(locs.uTex, 0);
+            gl.uniform1i(locs.uHasTex, 1);
+          } else {
+            gl.uniform1i(locs.uHasTex, 0);
+          }
+
+          gl.drawElements(gl.TRIANGLES, b.count, b.type, 0);
+        });
+        gl.bindVertexArray(null);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initGL();
+      requestAnimationFrame(renderLoop);
+    });
+  </script>
+</body>
+</html>

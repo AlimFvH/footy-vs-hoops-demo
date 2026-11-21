@@ -62,9 +62,21 @@ const DEFAULT_STARS_PRICES = {
   'pkg_coins_3000': 500,
   'pkg_coins_starter': 100,
   'pkg_coins_pro': 220,
-  'pack_stars_starter': 50,
-  'pack_stars_champion': 150,
-  'pack_stars_legend': 350
+  'pack_stars_starter': 250,
+  'pack_stars_champion': 500,
+  'pack_stars_legend': 750,
+  'footy_kit_star_holiday': 250,
+  'footy_kit_star_emperor': 500,
+  'footy_kit_star_samurai': 750,
+  'hoops_kit_star_holiday': 250,
+  'hoops_kit_star_astral': 500,
+  'hoops_kit_star_phantom': 750,
+  'footy_star_holiday': 250,
+  'footy_star_emperor': 500,
+  'footy_star_samurai': 750,
+  'hoops_star_holiday': 250,
+  'hoops_star_astral': 500,
+  'hoops_star_phantom': 750
 };
 
 let ENV_STARS_PRICES = {};
@@ -160,29 +172,29 @@ const PRODUCT_CATALOG = {
     type: 'currency'
   },
   // 3 Telegram Stars Mystery Packs
-  'pack_stars_starter': {
-    id: 'pack_stars_starter',
-    name: 'Star Starter Pack',
-    starsPrice: resolveStarsPrice('pack_stars_starter'),
-    coinsAmount: 500,
-    type: 'pack',
-    packId: 'stars_starter'
-  },
-  'pack_stars_champion': {
-    id: 'pack_stars_champion',
-    name: 'Star Champion Pack',
-    starsPrice: resolveStarsPrice('pack_stars_champion'),
-    coinsAmount: 2000,
-    type: 'pack',
-    packId: 'stars_champion'
-  },
-  'pack_stars_legend': {
-    id: 'pack_stars_legend',
-    name: 'Star Ultimate Legend Pack',
-    starsPrice: resolveStarsPrice('pack_stars_legend'),
-    coinsAmount: 6000,
-    type: 'pack',
-    packId: 'stars_legend'
+  'pack_stars_starter': {
+    id: 'pack_stars_starter',
+    name: 'Star Starter Pack',
+    starsPrice: resolveStarsPrice('pack_stars_starter'),
+    coinsAmount: 1500,
+    type: 'pack',
+    packId: 'stars_starter'
+  },
+  'pack_stars_champion': {
+    id: 'pack_stars_champion',
+    name: 'Star Champion Pack',
+    starsPrice: resolveStarsPrice('pack_stars_champion'),
+    coinsAmount: 4000,
+    type: 'pack',
+    packId: 'stars_champion'
+  },
+  'pack_stars_legend': {
+    id: 'pack_stars_legend',
+    name: 'Star Ultimate Legend Pack',
+    starsPrice: resolveStarsPrice('pack_stars_legend'),
+    coinsAmount: 10000,
+    type: 'pack',
+    packId: 'stars_legend'
   }
 };
 
@@ -230,6 +242,47 @@ const LEGACY_ITEM_ALIASES = {
 
 // Canonical Store Catalog (30 Distinct High-Quality Items across All Rarities)
 const ITEM_CATALOG = {
+  // OFFICIAL FOOTY KITS (EXACT RARITY TIERS)
+  'footy_2_white': { name: 'Чистый Дом', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200, isDefault: true },
+  'footy_6_crimson': { name: 'Багровый Гладиатор', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 250 },
+  'footy_7_gold': { name: 'Золотой Владыка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300 },
+  'footy_1_sapphire': { name: 'Сапфир Страйкер', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 550 },
+  'footy_4_amber': { name: 'Янтарный Сокол', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 600 },
+  'footy_5_amethyst': { name: 'Аметист Туманность', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 650 },
+  'footy_9_dragon': { name: 'Пламя Дракона', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1200 },
+  'footy_3_neon': { name: 'Неон Тренинг', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1300 },
+  'footy_8_obsidian': { name: 'Обсидиановый Шиноби', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
+  'footy_0_tiffany': { name: 'Тиффани Оникс', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800 },
+
+  // OFFICIAL FOOTY STAR KITS (ЗА ЗВЁЗДЫ)
+  'footy_kit_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star' },
+  'footy_kit_star_emperor': { name: '🌌 Галактический Император', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 500, currency: 'star' },
+  'footy_kit_star_samurai': { name: '⚔️ Квантовый Самурай', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 750, currency: 'star' },
+  'footy_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star' },
+  'footy_star_emperor': { name: '🌌 Галактический Император', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 500, currency: 'star' },
+  'footy_star_samurai': { name: '⚔️ Квантовый Самурай', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 750, currency: 'star' },
+
+  // OFFICIAL HOOPS KITS (EXACT RARITY TIERS)
+  'hoops_2_chicago': { name: 'Чикаго Классик 1998', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200, isDefault: true },
+  'hoops_3_la': { name: 'ЛА Династия', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 250 },
+  'hoops_4_boston': { name: 'Бостон Прайд', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 300 },
+  'hoops_6_charlotte': { name: 'Шарлотт Бриз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 550 },
+  'hoops_5_raptor': { name: 'Коготь Раптора', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 600 },
+  'hoops_0_neon': { name: 'Неон Сити', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 650 },
+  'hoops_7_phoenix': { name: 'Восходящий Феникс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1200 },
+  'hoops_9_beast': { name: 'Гипер Зверь', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1300 },
+  'hoops_8_mamba': { name: 'Чёрная Мамба', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
+  'hoops_1_miami': { name: 'Майами Роуз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2800 },
+
+  // OFFICIAL HOOPS STAR KITS (ЗА ЗВЁЗДЫ)
+  'hoops_kit_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star' },
+  'hoops_kit_star_astral': { name: '🌌 Астральный Владыка', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 500, currency: 'star' },
+  'hoops_kit_star_phantom': { name: '⚡ Неоновый Фантом', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 750, currency: 'star' },
+  'hoops_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star' },
+  'hoops_star_astral': { name: '🌌 Астральный Владыка', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 500, currency: 'star' },
+  'hoops_star_phantom': { name: '⚡ Неоновый Фантом', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 750, currency: 'star' },
+
+  // Legacy mappings preserved for backwards compatibility
   'skin_rookie': { name: 'Classic Stripes', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
   'skin_plain_white': { name: 'Pure Home', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 150 },
   'skin_training_bib': { name: 'Neon Practice', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 180 },
@@ -335,33 +388,73 @@ const ITEM_CATALOG = {
   'pack_footy': { name: 'Footy Striker Pack', category: 'packs', price: 250, type: 'pack', packId: 'footy' },
   'pack_hoops': { name: 'Hoops All-Star Pack', category: 'packs', price: 250, type: 'pack', packId: 'hoops' },
   'pack_clash': { name: 'Ultimate Clash Pack', category: 'packs', price: 500, type: 'pack', packId: 'clash' },
-  'pack_stars_starter': { name: 'Star Starter Pack', category: 'packs', price: 0, starsPrice: 50, type: 'stars_pack', packId: 'stars_starter' },
-  'pack_stars_champion': { name: 'Star Champion Pack', category: 'packs', price: 0, starsPrice: 150, type: 'stars_pack', packId: 'stars_champion' },
-  'pack_stars_legend': { name: 'Star Ultimate Legend Pack', category: 'packs', price: 0, starsPrice: 350, type: 'stars_pack', packId: 'stars_legend' }
+  'pack_stars_starter': { name: 'Star Starter Pack', category: 'packs', price: 0, starsPrice: 250, type: 'stars_pack', packId: 'stars_starter' },
+  'pack_stars_champion': { name: 'Star Champion Pack', category: 'packs', price: 0, starsPrice: 500, type: 'stars_pack', packId: 'stars_champion' },
+  'pack_stars_legend': { name: 'Star Ultimate Legend Pack', category: 'packs', price: 0, starsPrice: 750, type: 'stars_pack', packId: 'stars_legend' }
 };
 
-// Bundles Definition
+// Bundles Definition (Overhauled with exact kit items and strict sport isolation)
 const BUNDLE_CATALOG = {
   'bundle_footy_starter': {
     id: 'bundle_footy_starter',
-    name: 'FOOTY Starter Bundle',
-    coinsPrice: 1950,
+    name: 'Стартовый набор Футболиста',
+    mode: 'footy',
+    coinsPrice: 1200,
+    badge: '⚡ STARTER',
+    desc: 'Формы Сапфир Страйкер и Неон Тренинг + 500 монет FvH',
+    originalValue: 2350,
+    discount: 48,
     items: [
-      { id: 'skin_cyber', type: 'cosmetic' },
-      { id: 'ball_footy_inferno', type: 'cosmetic' },
-      { type: 'coins', val: 500 },
-      { type: 'pack', packId: 'footy', count: 2 }
+      { id: 'footy_1_sapphire', type: 'cosmetic' },
+      { id: 'footy_3_neon', type: 'cosmetic' },
+      { type: 'coins', val: 500 }
     ]
   },
   'bundle_hoops_starter': {
     id: 'bundle_hoops_starter',
-    name: 'HOOPS Starter Bundle',
-    coinsPrice: 1450,
+    name: 'Стартовый набор Баскетболиста',
+    mode: 'hoops',
+    coinsPrice: 1200,
+    badge: '⚡ STARTER',
+    desc: 'Майки Шарлотт Бриз и Восходящий Феникс + 500 монет FvH',
+    originalValue: 2250,
+    discount: 46,
     items: [
-      { id: 'skin_sunset', type: 'cosmetic' },
-      { id: 'ball_hoops_blaze', type: 'cosmetic' },
-      { type: 'coins', val: 500 },
-      { type: 'pack', packId: 'hoops', count: 2 }
+      { id: 'hoops_6_charlotte', type: 'cosmetic' },
+      { id: 'hoops_7_phoenix', type: 'cosmetic' },
+      { type: 'coins', val: 500 }
+    ]
+  },
+  'bundle_footy_legend': {
+    id: 'bundle_footy_legend',
+    name: 'Легендарный Футболист',
+    mode: 'footy',
+    coinsPrice: 4200,
+    badge: '👑 LEGEND',
+    desc: 'Формы Обсидиановый Шиноби, Тиффани Оникс, Пламя Дракона + 2,500 монет FvH',
+    originalValue: 9000,
+    discount: 53,
+    items: [
+      { id: 'footy_8_obsidian', type: 'cosmetic' },
+      { id: 'footy_0_tiffany', type: 'cosmetic' },
+      { id: 'footy_9_dragon', type: 'cosmetic' },
+      { type: 'coins', val: 2500 }
+    ]
+  },
+  'bundle_hoops_legend': {
+    id: 'bundle_hoops_legend',
+    name: 'Легендарный Баскетболист',
+    mode: 'hoops',
+    coinsPrice: 4200,
+    badge: '👑 LEGEND',
+    desc: 'Майки Чёрная Мамба, Майами Роуз, Гипер Зверь + 2,500 монет FvH',
+    originalValue: 9100,
+    discount: 53,
+    items: [
+      { id: 'hoops_8_mamba', type: 'cosmetic' },
+      { id: 'hoops_1_miami', type: 'cosmetic' },
+      { id: 'hoops_9_beast', type: 'cosmetic' },
+      { type: 'coins', val: 2500 }
     ]
   },
   'bundle_ocean_arena': {
@@ -499,11 +592,14 @@ function createDefaultPlayer(playerId) {
     selectedCharacter: null,
     teamChosen: false,
     coins: 350,
+    stars: 1500,
     xp: 0,
     transactions: [],
     unseenItems: [],
     initialSyncDone: false,
     owned: [
+      'footy_2_white',
+      'hoops_2_chicago',
       'skin_rookie',
       'skin_bb_onyx',
       'std_footy_classic',
@@ -516,9 +612,9 @@ function createDefaultPlayer(playerId) {
       'trail_default'
     ],
     equipped: {
-      skin: 'skin_rookie',
-      'skin.footy': 'skin_rookie',
-      'skin.hoops': 'skin_solar',
+      skin: 'footy_2_white',
+      'skin.footy': 'footy_2_white',
+      'skin.hoops': 'hoops_2_chicago',
       'ball.footy': 'ball_footy_classic',
       'ball.hoops': 'ball_hoops_street',
       'stadium.footy': 'std_footy_classic',
@@ -1520,6 +1616,63 @@ const server = http.createServer((req, res) => {
       uptime: process.uptime(),
       storageAdapter: storage ? storage.name : 'JsonStorageAdapter',
       timestamp: Date.now()
+    });
+  }
+
+  // Audio Customizer: Select Active Sound Variant
+  if (pathname === '/api/select-audio-variant' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err || !data || !data.action || !data.variant) {
+        return sendJson(res, 400, { ok: false, error: 'Missing action or variant' });
+      }
+      const map = {
+        kick: { src: `assets/audio/variants/kick_${data.variant}.wav`, dst: ['assets/audio/kick_power_strike.wav'] },
+        dunk: { src: `assets/audio/variants/dunk_${data.variant}.wav`, dst: ['assets/audio/dunk_slam.wav'] },
+        swish: { src: `assets/audio/variants/swish_${data.variant}.wav`, dst: ['assets/audio/shot_swish.wav'] },
+        slide: { src: `assets/audio/variants/slide_${data.variant}.wav`, dst: ['assets/audio/slide_tackle.wav'] },
+        steal: { src: `assets/audio/variants/steal_${data.variant}.wav`, dst: ['assets/audio/steal_swipe.wav'] },
+        celebrate: { src: `assets/audio/variants/celebrate_${data.variant}.wav`, dst: ['assets/audio/celebration.wav'] },
+        save: { src: `assets/audio/variants/save_${data.variant}.wav`, dst: ['assets/audio/keeper_save.wav'] },
+        whistle: { src: `assets/audio/variants/whistle_${data.variant}.wav`, dst: ['assets/audio/whistle.wav', 'assets/audio/referee_whistle.wav'] },
+        dribble: { src: `assets/audio/variants/dribble_${data.variant}.wav`, dst: ['assets/audio/ball_bounce.wav', 'assets/audio/dribble.wav'] },
+        squeak: { src: `assets/audio/variants/squeak_${data.variant}.wav`, dst: ['assets/audio/sneaker_squeak.wav'] }
+      };
+      const entry = map[data.action];
+      if (!entry) return sendJson(res, 400, { ok: false, error: 'Unknown action' });
+      const srcPath = path.join(__dirname, '..', entry.src);
+      if (!fs.existsSync(srcPath)) return sendJson(res, 404, { ok: false, error: 'Variant file not found' });
+      for (const d of entry.dst) {
+        fs.copyFileSync(srcPath, path.join(__dirname, '..', d));
+      }
+      return sendJson(res, 200, { ok: true, action: data.action, variant: data.variant });
+    });
+  }
+
+  // Audio Customizer: Upload Custom SFX
+  if (pathname === '/api/upload-custom-sfx' && req.method === 'POST') {
+    return readJsonBody(req, (err, data) => {
+      if (err || !data || !data.action || !data.audioBase64) {
+        return sendJson(res, 400, { ok: false, error: 'Missing action or audioBase64' });
+      }
+      const map = {
+        kick: ['assets/audio/kick_power_strike.wav'],
+        dunk: ['assets/audio/dunk_slam.wav'],
+        swish: ['assets/audio/shot_swish.wav'],
+        slide: ['assets/audio/slide_tackle.wav'],
+        steal: ['assets/audio/steal_swipe.wav'],
+        celebrate: ['assets/audio/celebration.wav'],
+        save: ['assets/audio/keeper_save.wav'],
+        whistle: ['assets/audio/whistle.wav'],
+        dribble: ['assets/audio/ball_bounce.wav', 'assets/audio/dribble.wav'],
+        squeak: ['assets/audio/sneaker_squeak.wav']
+      };
+      const dstList = map[data.action];
+      if (!dstList) return sendJson(res, 400, { ok: false, error: 'Unknown action' });
+      const buf = Buffer.from(data.audioBase64, 'base64');
+      for (const d of dstList) {
+        fs.writeFileSync(path.join(__dirname, '..', d), buf);
+      }
+      return sendJson(res, 200, { ok: true, action: data.action, bytes: buf.length });
     });
   }
 
@@ -3907,6 +4060,7 @@ const server = http.createServer((req, res) => {
       ok: true,
       playerId: player.playerId,
       coins: player.coins,
+      stars: player.stars !== undefined ? player.stars : 1500,
       xp: player.xp,
       owned: player.owned,
       equipped: player.equipped,
@@ -4211,6 +4365,7 @@ const server = http.createServer((req, res) => {
           success: true,
           txId: ledger.txId,
           coins: player.coins,
+          stars: player.stars !== undefined ? player.stars : 1500,
           xp: player.xp,
           owned: player.owned,
           unseenItems: player.unseenItems || [],
@@ -4246,12 +4401,19 @@ const server = http.createServer((req, res) => {
         }
       }
 
-      if (player.coins < catItem.price) {
-        return sendJson(res, 400, { ok: false, error: 'insufficient_funds', required: catItem.price, available: player.coins });
+      if (catItem.currency === 'star') {
+        const starCost = catItem.price;
+        const curStars = player.stars !== undefined ? player.stars : 1500;
+        if (curStars < starCost) {
+          return sendJson(res, 400, { ok: false, error: 'insufficient_stars', required: starCost, available: curStars });
+        }
+        player.stars = curStars - starCost;
+      } else {
+        if (player.coins < catItem.price) {
+          return sendJson(res, 400, { ok: false, error: 'insufficient_funds', required: catItem.price, available: player.coins });
+        }
+        player.coins -= catItem.price;
       }
-
-      // Atomically Deduct Balance
-      player.coins -= catItem.price;
 
       if (catItem.category === 'packs') {
         const packKey = catItem.packId || 'footy';
@@ -4793,13 +4955,18 @@ const server = http.createServer((req, res) => {
       const playerFaction = player.selectedTeam || player.selectedCharacter || 'footy';
       const isFootyPack = packId === 'footy' || (isStarPack && playerFaction === 'footy');
       const isHoopsPack = packId === 'hoops' || (isStarPack && playerFaction === 'hoops');
-      const exclusiveItem = isFootyPack ? 'skin_footy_mythic_titan' : (isHoopsPack ? 'skin_hoops_hyper_beast' : (Math.random() < 0.5 ? 'ball_footy_supernova' : 'ball_hoops_vortex'));
+      
+      const starFootyPool = ['footy_kit_star_holiday', 'footy_kit_star_emperor', 'footy_kit_star_samurai'];
+      const starHoopsPool = ['hoops_kit_star_holiday', 'hoops_kit_star_astral', 'hoops_kit_star_phantom'];
+      const exclusiveItem = isFootyPack 
+        ? starFootyPool[Math.floor(Math.random() * starFootyPool.length)]
+        : starHoopsPool[Math.floor(Math.random() * starHoopsPool.length)];
 
       const roll = Math.random();
       let chosenItemId = null;
       let isExclusive = false;
 
-      var exclChance = isStarLegend ? 0.50 : (isStarChampion ? 0.25 : (isStarStarter ? 0.10 : 0.05));
+      var exclChance = isStarLegend ? 0.60 : (isStarChampion ? 0.35 : (isStarStarter ? 0.15 : 0.05));
       if (roll < exclChance) {
         chosenItemId = exclusiveItem;
         isExclusive = true;
@@ -4808,12 +4975,12 @@ const server = http.createServer((req, res) => {
           const it = ITEM_CATALOG[id];
           if (it.isDefault) return false;
           if (it.packExclusive && id !== exclusiveItem) return false;
-          if (isFootyPack && it.mode === 'hoops') return false;
-          if (isHoopsPack && it.mode === 'footy') return false;
+          if (isFootyPack && it.mode !== 'footy') return false;
+          if (isHoopsPack && it.mode !== 'hoops') return false;
           if (isStarLegend && it.rarity !== 'legendary') return false;
           if (isStarChampion && it.rarity !== 'epic' && it.rarity !== 'legendary') return false;
           if (isStarStarter && it.rarity !== 'rare' && it.rarity !== 'epic' && it.rarity !== 'legendary') return false;
-          return it.category === 'skins' || it.category === 'balls';
+          return it.category === 'skins';
         });
 
         const unowned = candidates.filter(id => !player.owned.includes(id));
@@ -4826,17 +4993,17 @@ const server = http.createServer((req, res) => {
 
       // Duplicate compensation scaled directly by rarity
       const DUPLICATE_COMPENSATION_BY_RARITY = {
-        'common': 150,
-        'rare': 350,
-        'epic': 750,
-        'legendary': 1500
+        'common': 200,
+        'rare': 500,
+        'epic': 1000,
+        'legendary': 2000
       };
       const itemRarity = (itemObj && itemObj.rarity) || 'rare';
       let duplicateBonus = 0;
-      let baseCoins = Math.floor(Math.random() * 150) + 100;
-      if (isStarStarter) baseCoins = 500;
-      else if (isStarChampion) baseCoins = 2000;
-      else if (isStarLegend) baseCoins = 6000;
+      let baseCoins = Math.floor(Math.random() * 200) + 150;
+      if (isStarStarter) baseCoins = 1500;
+      else if (isStarChampion) baseCoins = 4000;
+      else if (isStarLegend) baseCoins = 10000;
 
       let coinReward = baseCoins;
       if (alreadyOwned) {
@@ -4898,8 +5065,16 @@ const server = http.createServer((req, res) => {
   // ==========================================
   // Static File Serving
   // ==========================================
-  let filePath = pathname === '/' ? '/index.html' : pathname;
-  const fullPath = path.join(__dirname, '..', filePath);
+  let decodedPath = pathname;
+  try { decodedPath = decodeURIComponent(pathname); } catch (e) {}
+  let filePath = pathname === '/' ? '/index.html' : decodedPath;
+  let fullPath = path.join(__dirname, '..', filePath);
+  if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
+    const publicCandidate = path.join(__dirname, '..', 'public', filePath);
+    if (fs.existsSync(publicCandidate) && fs.statSync(publicCandidate).isFile()) {
+      fullPath = publicCandidate;
+    }
+  }
 
   if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
     const ext = path.extname(fullPath).toLowerCase();
@@ -4923,12 +5098,12 @@ const server = http.createServer((req, res) => {
     const headers = { 'Content-Type': contentType };
 
     // High-Concurrency Asset Caching Strategy
-    if (ext === '.html') {
+    if (ext === '.html' || pathname.includes('/benchmark/') || pathname.includes('/scratch/') || pathname.includes('/assets/characters/')) {
       headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
       headers['Pragma'] = 'no-cache';
       headers['Expires'] = '0';
     } else if (['.glb', '.gltf', '.png', '.jpg', '.mp3', '.wav', '.ogg', '.svg', '.ico'].includes(ext)) {
-      headers['Cache-Control'] = 'public, max-age=604800, immutable';
+      headers['Cache-Control'] = 'no-cache, must-revalidate';
     } else if (['.js', '.css'].includes(ext)) {
       headers['Cache-Control'] = 'no-cache, must-revalidate';
     }
@@ -5164,6 +5339,6 @@ setInterval(() => {
   }
 }, 10000);
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`FOOTY vs HOOPS Master Game & Multiplayer Server running on port ${PORT}`);
 });

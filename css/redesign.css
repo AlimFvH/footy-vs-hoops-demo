@@ -1546,15 +1546,25 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar {
-  /* Baseline sizing clamp(290px, 45vh, 360px) and clamp(260px, 40vh, 320px) */
+  /* Dynamic 3D Real-time Wardrobe Viewport */
   width: 100% !important;
-  max-width: 290px !important;
-  height: clamp(205px, 28vh, 250px) !important;
+  max-width: 340px !important;
+  height: clamp(280px, 38vh, 340px) !important;
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   margin: 0 auto !important;
   position: relative !important;
+}
+
+.fvh-wardrobe-avatar iframe {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 270px !important;
+  border: none !important;
+  border-radius: 16px !important;
+  background: transparent !important;
 }
 
 .fvh-wardrobe-avatar svg {
@@ -3661,11 +3671,16 @@ img[src*="user_football"], img[src*="user_basketball"], img[src*="ball_"] {
     min-width: 0 !important;
   }
   .fvh-wardrobe-avatar {
-    /* Baseline mobile clamp(175px, 24vh, 215px) and clamp(145px, 20vh, 180px) */
-    height: clamp(175px, 24vh, 215px) !important;
-    max-width: 270px !important;
+    /* Responsive mobile 3D athlete stage */
+    height: clamp(260px, 35vh, 320px) !important;
+    max-width: 320px !important;
     width: 100% !important;
     margin: 0 auto !important;
+  }
+  .fvh-wardrobe-avatar iframe {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 250px !important;
   }
   .fvh-wardrobe-avatar svg {
     max-height: clamp(190px, 26vh, 235px) !important;
