@@ -9579,7 +9579,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const isStd = (id && id.startsWith('std_')) || (fallback && fallback.startsWith('std_'));
             const isTrail = (id && id.startsWith('trail_')) || (fallback && fallback.startsWith('trail_'));
             const isFrame = (id && id.startsWith('frame_')) || (fallback && fallback.startsWith('frame_'));
-            const isSkin = (id && id.startsWith('skin_')) || (fallback && fallback.startsWith('skin_'));
+            const isSkin = (id && (id.startsWith('skin_') || id.startsWith('footy_') || id.startsWith('hoops_'))) || (fallback && (fallback.startsWith('skin_') || fallback.startsWith('footy_') || fallback.startsWith('hoops_')));
             if (isStd) {
                 return Object.assign({}, isHoops ? { floor: 0x060810, woodA: 0xd99557, woodB: 0xe8a968, line: 0x00f0ff, paint: 0xd946ef, centerPaint: 0x06b6d4, rim: 0xff5500, fog: 0x0c0f1c } : { pitchA: 0x059669, pitchB: 0x10b981, line: 0x7dffe8, fog: 0x0c1a2e }, { id: fallback || id || (isHoops ? 'std_hoops_street' : 'std_footy_classic') });
             }
@@ -9602,6 +9602,12 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                     footy_3_neon: { primary: 0x84cc16, secondary: 0x06b6d4, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x22c55e, accent: 0x00f0ff, style: 'circuit' },
                     footy_8_obsidian: { primary: 0x18181b, secondary: 0x00f0ff, shorts: 0x09090b, skin: 0xdfa070, hair: 0x221810, boots: 0x22d3ee, accent: 0x00f0ff, style: 'stealth' },
                     footy_0_tiffany: { primary: 0x0d9488, secondary: 0x18181b, shorts: 0x042f2e, skin: 0xdfa070, hair: 0x221810, boots: 0x14b8a6, accent: 0x2dd4bf, style: 'split' },
+                    footy_star_holiday: { primary: 0xb91c1c, secondary: 0xffffff, shorts: 0x7f1d1d, skin: 0xf5cbb0, hair: 0x221810, boots: 0xffffff, accent: 0xfacc15, style: 'holiday' },
+                    footy_star_emperor: { primary: 0xfacc15, secondary: 0xca8a04, shorts: 0x171717, skin: 0xf5cbb0, hair: 0x221810, boots: 0xfde047, accent: 0xffffff, style: 'royal' },
+                    footy_star_samurai: { primary: 0x06b6d4, secondary: 0x0f172a, shorts: 0x0284c7, skin: 0xf5cbb0, hair: 0x221810, boots: 0x22d3ee, accent: 0x00f0ff, style: 'stealth' },
+                    hoops_star_holiday: { primary: 0xb91c1c, secondary: 0xffffff, shorts: 0x7f1d1d, skin: 0x6c4424, hair: 0x181412, boots: 0xffffff, accent: 0xfacc15, style: 'holiday' },
+                    hoops_star_astral: { primary: 0x7c3aed, secondary: 0xc084fc, shorts: 0x2e1065, skin: 0x6c4424, hair: 0x181412, boots: 0xa855f7, accent: 0xf472b6, style: 'cosmic' },
+                    hoops_star_phantom: { primary: 0x0284c7, secondary: 0x38bdf8, shorts: 0x0c4a6e, skin: 0x6c4424, hair: 0x181412, boots: 0x00f0ff, accent: 0x38bdf8, style: 'stealth' },
                     footy_kit_star_holiday: { primary: 0xb91c1c, secondary: 0xffffff, shorts: 0x7f1d1d, skin: 0xdfa070, hair: 0x221810, boots: 0xfacc15, accent: 0x22c55e, style: 'holiday' },
                     footy_kit_star_emperor: { primary: 0x312e81, secondary: 0xfacc15, shorts: 0x1e1b4b, skin: 0xdfa070, hair: 0x221810, boots: 0x38bdf8, accent: 0xfde047, style: 'emperor' },
                     footy_kit_star_samurai: { primary: 0xf8fafc, secondary: 0x00f0ff, shorts: 0x0f172a, skin: 0xdfa070, hair: 0x221810, boots: 0x00f0ff, accent: 0xef4444, style: 'samurai' },
@@ -9793,8 +9799,8 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.playerChar = playerChar;
             this.oppChar = oppChar;
             const charSkinId = playerChar === 'hoops'
-                ? (eq['skin.hoops'] || (eq.skin && !eq.skin.startsWith('skin_footy') && eq.skin !== 'skin_rookie' && eq.skin !== 'skin_crimson' && eq.skin !== 'skin_neon' && eq.skin !== 'skin_frost' && eq.skin !== 'skin_shadow' && eq.skin !== 'skin_gold' && eq.skin !== 'skin_cyber' && eq.skin !== 'skin_hydro' && eq.skin !== 'skin_astronaut' ? eq.skin : 'skin_bb_onyx'))
-                : (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_bb_onyx' && eq.skin !== 'skin_sunset' && eq.skin !== 'skin_mars' ? eq.skin : 'skin_rookie'));
+                ? (eq['skin.hoops'] || eq.hoops_kits || (eq.skin && (eq.skin.startsWith('hoops_') || eq.skin.startsWith('skin_bb_') || eq.skin === 'skin_solar') ? eq.skin : 'hoops_classic'))
+                : (eq['skin.footy'] || eq.footy_kits || (eq.skin && (eq.skin.startsWith('footy_') || eq.skin.startsWith('skin_footy') || eq.skin === 'skin_rookie') ? eq.skin : 'footy_classic'));
             let skin = Object.assign({}, visualOf(charSkinId, playerChar === 'hoops' ? 'skin_bb_onyx' : 'skin_rookie'));
             skin.id = charSkinId || (playerChar === 'hoops' ? 'skin_bb_onyx' : 'skin_rookie');
 
@@ -15842,7 +15848,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.hud.onToggleMute = () => this.audio.toggleMute();
             this.passiveBoostConsumed = false;
             this.turboSpentInMatch = false;
-            const playerFaction = (cfg.char || (save && (save.selectedTeam || save.selectedCharacter)) || 'footy');
+            const playerFaction = (cfg.char || (cfg.mode === 'hoops' ? 'hoops' : (cfg.mode === 'footy' ? 'footy' : ((save && (save.selectedTeam || save.selectedCharacter)) || 'footy'))));
             const oppFaction = (playerFaction === 'footy') ? 'hoops' : 'footy';
             const charPick = playerFaction;
             this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick, arenaId: cfg.arenaId || (online && online.info && online.info.arenaId) }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));

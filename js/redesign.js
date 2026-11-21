@@ -2343,45 +2343,45 @@
       var HERO_SKIN_PALETTES = {
     // Canonical 10 Football Kits
     
-    footy_classic: { h: 184, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Classic Blue #10', ru: 'Классика #10' },
-    footy_6_crimson: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Crimson Gladiator', ru: 'Багровый Гладиатор' },
-    footy_7_gold: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Golden Sovereign', ru: 'Золотая Владыка' },
-    footy_4_amber: { h: 35, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Amber Falcon', ru: 'Янтарный Сокол' },
-    footy_kit_star_emperor: { h: 250, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' },
-    footy_kit_star_samurai: { h: 190, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' },
-    footy_2_white: { h: 210, s: 0.15, lMult: 1.35, darkShorts: false, name: 'Clean Home', ru: 'Чистый Дом' },
+    footy_classic: { h: 184, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Classic Blue #10', ru: 'Классика #10' , rgb: [0, 200, 255]},
+    footy_6_crimson: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Crimson Gladiator', ru: 'Багровый Гладиатор' , rgb: [190, 25, 35]},
+    footy_7_gold: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Golden Sovereign', ru: 'Золотая Владыка' , rgb: [245, 195, 30]},
+    footy_4_amber: { h: 35, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Amber Falcon', ru: 'Янтарный Сокол' , rgb: [240, 140, 20]},
+    footy_kit_star_emperor: { h: 250, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' , rgb: [240, 185, 30]},
+    footy_kit_star_samurai: { h: 190, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' , rgb: [30, 210, 230]},
+    footy_2_white: { h: 210, s: 0.15, lMult: 1.35, darkShorts: false, name: 'Clean Home', ru: 'Чистый Дом' , rgb: [245, 248, 252]},
     footy_2_crimson: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Crimson Gladiator', ru: 'Багровый Гладиатор' },
     footy_2_gold: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'Golden Sovereign', ru: 'Золотая Владыка' },
-    footy_1_sapphire: { h: 218, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Sapphire Striker', ru: 'Сапфир Страйкер' },
+    footy_1_sapphire: { h: 218, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Sapphire Striker', ru: 'Сапфир Страйкер' , rgb: [25, 110, 240]},
     footy_7_amber: { h: 35, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Amber Falcon', ru: 'Янтарный Сокол' },
-    footy_5_amethyst: { h: 270, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Amethyst Nebula', ru: 'Аметист Туманность' },
-    footy_9_dragon: { h: 8, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Dragon Flame', ru: 'Пламя Дракона' },
-    footy_3_neon: { h: 140, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Neon Training', ru: 'Неон Тренинг' },
-    footy_8_obsidian: { h: 240, s: 0.20, lMult: 0.45, darkShorts: true, name: 'Obsidian Shinobi', ru: 'Обсидиановый Шиноби' },
-    footy_0_tiffany: { h: 175, s: 0.85, lMult: 1.05, darkShorts: true, name: 'Tiffany Onyx', ru: 'Тиффани Оникс' },
+    footy_5_amethyst: { h: 270, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Amethyst Nebula', ru: 'Аметист Туманность' , rgb: [140, 45, 215]},
+    footy_9_dragon: { h: 8, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Dragon Flame', ru: 'Пламя Дракона' , rgb: [220, 35, 20]},
+    footy_3_neon: { h: 140, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Neon Training', ru: 'Неон Тренинг' , rgb: [40, 210, 80]},
+    footy_8_obsidian: { h: 240, s: 0.20, lMult: 0.45, darkShorts: true, name: 'Obsidian Shinobi', ru: 'Обсидиановый Шиноби' , rgb: [35, 38, 45]},
+    footy_0_tiffany: { h: 175, s: 0.85, lMult: 1.05, darkShorts: true, name: 'Tiffany Onyx', ru: 'Тиффани Оникс' , rgb: [15, 180, 165]},
 
     // 3 Football Star Kits
-    footy_kit_star_holiday: { h: 142, s: 0.85, lMult: 0.9, darkShorts: true, name: 'Holiday 2027', ru: '🎄 Новогодняя 2027' },
+    footy_kit_star_holiday: { h: 142, s: 0.85, lMult: 0.9, darkShorts: true, name: 'Holiday 2027', ru: '🎄 Новогодняя 2027' , rgb: [190, 25, 30]},
     footy_kit_star_astral: { h: 250, s: 0.90, lMult: 0.95, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' },
     footy_kit_star_phantom: { h: 190, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' },
 
     // Canonical 10 Basketball Tanks
-    hoops_classic: { h: 25, s: 0.95, lMult: 0.95, darkShorts: true, name: 'Solar Flare #23', ru: 'Солнечная вспышка' },
-    hoops_2_chicago: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Chicago Classic', ru: 'Чикаго Классик' },
-    hoops_3_la: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'LA Dynasty', ru: 'ЛА Династия' },
-    hoops_4_boston: { h: 142, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Boston Pride', ru: 'Бостон Прайд' },
-    hoops_6_charlotte: { h: 175, s: 0.85, lMult: 1.0, darkShorts: true, name: 'Charlotte Breeze', ru: 'Шарлотт Бриз' },
-    hoops_5_raptor: { h: 330, s: 0.85, lMult: 0.8, darkShorts: true, name: 'Raptor Claw', ru: 'Коготь Раптора' },
-    hoops_0_neon: { h: 190, s: 0.95, lMult: 0.6, darkShorts: true, name: 'Neon City', ru: 'Неон Сити' },
-    hoops_7_phoenix: { h: 25, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Rising Phoenix', ru: 'Восходящий Феникс' },
-    hoops_9_beast: { h: 155, s: 0.95, lMult: 0.9, darkShorts: true, name: 'Hyper Beast', ru: 'Гипер Зверь' },
-    hoops_8_mamba: { h: 45, s: 0.95, lMult: 0.45, darkShorts: true, name: 'Black Mamba', ru: 'Черная Мамба' },
-    hoops_1_miami: { h: 335, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Miami Rose', ru: 'Майами Роуз' },
+    hoops_classic: { h: 25, s: 0.95, lMult: 0.95, darkShorts: true, name: 'Solar Flare #23', ru: 'Солнечная вспышка' , rgb: [249, 115, 22]},
+    hoops_2_chicago: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Chicago Classic', ru: 'Чикаго Классик' , rgb: [210, 25, 35]},
+    hoops_3_la: { h: 48, s: 0.95, lMult: 1.15, darkShorts: true, name: 'LA Dynasty', ru: 'ЛА Династия' , rgb: [245, 195, 30]},
+    hoops_4_boston: { h: 142, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Boston Pride', ru: 'Бостон Прайд' , rgb: [0, 135, 65]},
+    hoops_6_charlotte: { h: 175, s: 0.85, lMult: 1.0, darkShorts: true, name: 'Charlotte Breeze', ru: 'Шарлотт Бриз' , rgb: [0, 185, 195]},
+    hoops_5_raptor: { h: 330, s: 0.85, lMult: 0.8, darkShorts: true, name: 'Raptor Claw', ru: 'Коготь Раптора' , rgb: [175, 20, 95]},
+    hoops_0_neon: { h: 190, s: 0.95, lMult: 0.6, darkShorts: true, name: 'Neon City', ru: 'Неон Сити' , rgb: [0, 230, 220]},
+    hoops_7_phoenix: { h: 25, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Rising Phoenix', ru: 'Восходящий Феникс' , rgb: [235, 95, 20]},
+    hoops_9_beast: { h: 155, s: 0.95, lMult: 0.9, darkShorts: true, name: 'Hyper Beast', ru: 'Гипер Зверь' , rgb: [30, 195, 80]},
+    hoops_8_mamba: { h: 45, s: 0.95, lMult: 0.45, darkShorts: true, name: 'Black Mamba', ru: 'Черная Мамба' , rgb: [35, 32, 40]},
+    hoops_1_miami: { h: 335, s: 0.95, lMult: 1.05, darkShorts: true, name: 'Miami Rose', ru: 'Майами Роуз' , rgb: [240, 50, 120]},
 
     // 3 Basketball Star Tanks
-    hoops_kit_star_holiday: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Holiday 2027', ru: '🎄 Новогодняя 2027' },
-    hoops_kit_star_astral: { h: 250, s: 0.90, lMult: 0.85, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' },
-    hoops_kit_star_phantom: { h: 335, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' },
+    hoops_kit_star_holiday: { h: 0, s: 0.85, lMult: 0.85, darkShorts: true, name: 'Holiday 2027', ru: '🎄 Новогодняя 2027' , rgb: [195, 25, 30]},
+    hoops_kit_star_astral: { h: 250, s: 0.90, lMult: 0.85, darkShorts: true, name: 'Astral Sovereign', ru: '🪐 Астральный Владыка' , rgb: [120, 45, 215]},
+    hoops_kit_star_phantom: { h: 335, s: 0.95, lMult: 0.55, darkShorts: true, name: 'Neon Phantom', ru: '⚡ Неоновый Фантом' , rgb: [25, 180, 235]},
     skin_rookie: { h: 184, s: 0.90, lMult: 1.05, darkShorts: false, name: 'Classic Blue #10', ru: 'Классика #10' },
     skin_plain_white: { h: 210, s: 0.90, lMult: 1.25, darkShorts: true, name: 'Pure Home', ru: 'Чистый домашний' },
     skin_training_bib: { h: 84, s: 0.90, lMult: 1.05, darkShorts: true, name: 'Neon Practice', ru: 'Неоновая тренировка' },
@@ -2528,45 +2528,81 @@
         for (var y = 0; y < cvs.height; y++) {
           var yPct = y / cvs.height;
           if (isFooty) {
-            var isTorsoOrShorts = (yPct >= 0.16 && yPct <= 0.68);
-            if (!isTorsoOrShorts) continue;
+            var isTorso = (yPct >= 0.26 && yPct <= 0.52);
+            var isShorts = (yPct >= 0.50 && yPct <= 0.66);
+            var isSocks = (yPct >= 0.70 && yPct <= 0.86);
+            if (!isTorso && !isShorts && !isSocks) continue;
 
             for (var x = 0; x < cvs.width; x++) {
+              var xPct = x / cvs.width;
+              if (isTorso) {
+                if (xPct < 0.35 || xPct > 0.65) continue;
+                if (yPct < 0.28 && xPct >= 0.44 && xPct <= 0.56) continue;
+              }
+              if (isShorts && (xPct < 0.34 || xPct > 0.66)) continue;
+              if (isSocks && (xPct < 0.30 || xPct > 0.65)) continue;
+
               var idx = (y * cvs.width + x) * 4;
-              if (data[idx + 3] < 40) continue;
+              if (data[idx + 3] < 50) continue;
               var r = data[idx], g = data[idx + 1], b = data[idx + 2];
-              var hsl = heroRgbToHsl(r, g, b);
-              if (hsl.h >= 170 && hsl.h <= 245 && hsl.s >= 0.25 && hsl.l <= 0.85) {
-                var targetH = pal.h;
-                var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
-                var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
-                if (pal.darkShorts && yPct >= 0.48 && yPct <= 0.64) {
-                  targetL *= 0.65;
-                  targetS *= 0.8;
+
+              // Cyan kit fabric detection: protects skin, hair, soccer ball, cleats
+              if (b > 110 && (b > r * 1.25) && (g > r * 1.05)) {
+                var lum = (r * 0.299 + g * 0.587 + b * 0.114) / 140.0;
+                if (pal.rgb) {
+                  data[idx] = Math.min(255, Math.max(0, Math.round(pal.rgb[0] * lum)));
+                  data[idx + 1] = Math.min(255, Math.max(0, Math.round(pal.rgb[1] * lum)));
+                  data[idx + 2] = Math.min(255, Math.max(0, Math.round(pal.rgb[2] * lum)));
+                } else {
+                  var hsl = heroRgbToHsl(r, g, b);
+                  var targetH = pal.h;
+                  var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
+                  var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
+                  var newRgb = heroHslToRgb(targetH, targetS, targetL);
+                  data[idx] = newRgb.r; data[idx + 1] = newRgb.g; data[idx + 2] = newRgb.b;
                 }
-                var newRgb = heroHslToRgb(targetH, targetS, targetL);
-                data[idx] = newRgb.r; data[idx + 1] = newRgb.g; data[idx + 2] = newRgb.b;
               }
             }
           } else {
-            // HOOPS
-            var isJerseyOrShorts = (yPct >= 0.18 && yPct <= 0.70);
-            if (!isJerseyOrShorts) continue;
+            // HOOPS: strictly torso jersey and shorts. Arms, neck, hands, basketball, shoes are 100% protected
+            var isTorso = (yPct >= 0.24 && yPct < 0.48);
+            var isShorts = (yPct >= 0.48 && yPct <= 0.68);
+            if (!isTorso && !isShorts) continue;
 
             for (var x = 0; x < cvs.width; x++) {
-              var idx = (y * cvs.width + x) * 4;
-              if (data[idx + 3] < 40) continue;
               var xPct = x / cvs.width;
-              if (xPct < 0.22 || xPct > 0.78) continue;
+              // Exclude left hand resting on hip:
+              if (yPct >= 0.46 && yPct <= 0.52 && xPct >= 0.55) continue;
+              // Exclude neck / throat:
+              if (yPct < 0.29 && xPct >= 0.46 && xPct <= 0.54) continue;
 
+              if (isTorso) {
+                if (xPct < 0.38 || xPct > 0.62) continue;
+              }
+              if (isShorts) {
+                if (xPct < 0.37 || xPct > 0.63) continue;
+                if (yPct < 0.53 && xPct < 0.39) continue;
+              }
+
+              var idx = (y * cvs.width + x) * 4;
+              if (data[idx + 3] < 50) continue;
               var r = data[idx], g = data[idx + 1], b = data[idx + 2];
-              var hsl = heroRgbToHsl(r, g, b);
-              if ((hsl.h <= 45 || hsl.h >= 340) && hsl.s >= 0.30 && hsl.l <= 0.75) {
-                var targetH = pal.h;
-                var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
-                var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
-                var newRgb = heroHslToRgb(targetH, targetS, targetL);
-                data[idx] = newRgb.r; data[idx + 1] = newRgb.g; data[idx + 2] = newRgb.b;
+
+              // Orange jersey fabric detection: protects dark brown skin, black compression sleeve, and basketball
+              if (r > 120 && (r > b * 1.5) && (g > b * 1.1) && (g < r * 0.88)) {
+                var lum = (r * 0.299 + g * 0.587 + b * 0.114) / 140.0;
+                if (pal.rgb) {
+                  data[idx] = Math.min(255, Math.max(0, Math.round(pal.rgb[0] * lum)));
+                  data[idx + 1] = Math.min(255, Math.max(0, Math.round(pal.rgb[1] * lum)));
+                  data[idx + 2] = Math.min(255, Math.max(0, Math.round(pal.rgb[2] * lum)));
+                } else {
+                  var hsl = heroRgbToHsl(r, g, b);
+                  var targetH = pal.h;
+                  var targetS = Math.min(1, hsl.s * (pal.s || 1.0));
+                  var targetL = Math.min(0.95, hsl.l * (pal.lMult || 1.0));
+                  var newRgb = heroHslToRgb(targetH, targetS, targetL);
+                  data[idx] = newRgb.r; data[idx + 1] = newRgb.g; data[idx + 2] = newRgb.b;
+                }
               }
             }
           }
@@ -6489,6 +6525,40 @@
     var isFooty = (curChar === 'footy');
     var lang = getActiveLang();
 
+    // Athlete Switcher at top of Wardrobe (Instant switch between Footballer and Basketballer)
+    var charSwitchSeg = document.createElement('div');
+    charSwitchSeg.className = 'seg fvh-wardrobe-char-toggle';
+    charSwitchSeg.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
+    function renderCharSwitchSeg() {
+      charSwitchSeg.innerHTML = '';
+      var chars = [
+        { id: 'footy', label: '⚽ FOOTY (Футбол)' },
+        { id: 'hoops', label: '🏀 HOOPS (Баскетбол)' }
+      ];
+      chars.forEach(function (c) {
+        var btn = document.createElement('button');
+        btn.className = (curChar === c.id) ? 'on' : '';
+        btn.textContent = c.label;
+        btn.onclick = function () {
+          if (curChar === c.id) return;
+          curChar = c.id;
+          isFooty = (curChar === 'footy');
+          selectedItem = null;
+          app.store.update(function (d) {
+            d.selectedCharacter = curChar;
+            d.selectedTeam = curChar;
+          });
+          app.audio.play('click');
+          renderCharSwitchSeg();
+          renderWardrobeCategoryTabs();
+          updateView();
+        };
+        charSwitchSeg.appendChild(btn);
+      });
+    }
+    renderCharSwitchSeg();
+    body.appendChild(charSwitchSeg);
+
     // Wardrobe & Inspection Layout
     var layout = document.createElement('div');
     layout.className = 'fvh-wardrobe-grid';
@@ -6519,22 +6589,7 @@
     previewCol.appendChild(equipSlotList);
     previewCol.appendChild(selectBtn);
 
-    var tryonBtn = document.createElement('a');
-    tryonBtn.className = 'btn block fvh-3d-tryon-btn';
-    tryonBtn.href = '/benchmark/wardrobe_viewer.html';
-    tryonBtn.target = '_blank';
-    tryonBtn.style.marginTop = '8px';
-    tryonBtn.style.textDecoration = 'none';
-    tryonBtn.style.fontSize = '12px';
-    tryonBtn.style.display = 'flex';
-    tryonBtn.style.alignItems = 'center';
-    tryonBtn.style.justifyContent = 'center';
-    tryonBtn.style.gap = '6px';
-    tryonBtn.style.background = 'linear-gradient(135deg, rgba(56,189,248,0.22), rgba(251,146,60,0.22))';
-    tryonBtn.style.border = '1px solid rgba(255,255,255,0.25)';
-    tryonBtn.style.color = '#ffffff';
-    tryonBtn.innerHTML = '<span>🔄</span> <span>' + (lang === 'ru' ? '3D Примерочная 360°' : '3D Fitting Room 360°') + '</span>';
-    previewCol.appendChild(tryonBtn);
+    // 3D tryon iframe removed in favor of authentic stylized athlete
     layout.appendChild(previewCol);
 
     // Right Locker Items Column
@@ -6548,7 +6603,10 @@
     var slotSeg = document.createElement('div');
     slotSeg.className = 'seg fvh-wardrobe-seg';
     slotSeg.style.marginBottom = '8px';
-    var slots = [
+
+    function renderWardrobeCategoryTabs() {
+      slotSeg.innerHTML = '';
+      var slots = [
       { id: 'skins', icon: 'cat_skins', label: (isFooty ? (lang === 'ru' ? 'Формы' : 'Kits') : (lang === 'ru' ? 'Майки' : 'Tanks')) },
       { id: 'stars', icon: 'star', label: (lang === 'ru' ? 'За Звёзды' : 'For Stars') }
     ];
@@ -6566,6 +6624,8 @@
       };
       slotSeg.appendChild(sb);
     });
+    }
+    renderWardrobeCategoryTabs();
     itemsCol.appendChild(slotSeg);
 
     // Rarity Filter Bar (All, Common, Rare, Epic, Legendary)
@@ -6604,57 +6664,15 @@
     container.appendChild(page);
 
     function updateWardrobeAvatar(charId, kitId) {
-      var existingFrame = avatarBox.querySelector('#fvh-wardrobe-3d-frame');
       var eq = (app && app.store && app.store.data && app.store.data.equipped) || {};
       var defaultKit = (charId === 'hoops') ? 'hoops_classic' : 'footy_classic';
       var initialKit = kitId || eq['skin.' + charId] || eq.skin || defaultKit;
 
-      if (existingFrame && existingFrame.dataset.sport === charId) {
-        try {
-          if (existingFrame.contentWindow) {
-            existingFrame.contentWindow.postMessage({
-              action: 'changeKit',
-              kit: initialKit,
-              texture: initialKit
-            }, '*');
-          }
-        } catch (e) {}
-        var pal = HERO_SKIN_PALETTES[initialKit] || (charId === 'hoops' ? HERO_SKIN_PALETTES.hoops_classic : HERO_SKIN_PALETTES.footy_classic);
-        var tag = avatarBox.querySelector('.fvh-hero-active-jersey-tag');
-        if (tag && pal) {
-          tag.innerHTML = '<span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + ((lang === 'ru') ? pal.ru : pal.name) + '</span>';
-        }
-        return;
-      }
-
-      avatarBox.innerHTML = '';
-      var frame = document.createElement('iframe');
-      frame.id = 'fvh-wardrobe-3d-frame';
-      frame.dataset.sport = charId;
-      frame.src = '/benchmark/wardrobe_viewer.html?sport=' + charId + '&kit=' + initialKit + '&embed=1&transparent=1';
-      frame.setAttribute('allow', 'webgl');
-      frame.style.width = '100%';
-      frame.style.height = '100%';
-      frame.style.minHeight = '270px';
-      frame.style.border = 'none';
-      frame.style.borderRadius = '16px';
-      frame.style.background = 'transparent';
-      avatarBox.appendChild(frame);
-
-      var pal = HERO_SKIN_PALETTES[initialKit] || (charId === 'hoops' ? HERO_SKIN_PALETTES.hoops_classic : HERO_SKIN_PALETTES.footy_classic);
-      var tagDiv = document.createElement('div');
-      tagDiv.className = 'fvh-hero-active-jersey-tag';
-      tagDiv.style.cssText = 'position:relative;margin-top:6px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (charId === 'footy' ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (charId === 'footy' ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;';
-      tagDiv.innerHTML = '<span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + ((lang === 'ru') ? (pal ? pal.ru : initialKit) : (pal ? pal.name : initialKit)) + '</span>';
-      avatarBox.appendChild(tagDiv);
-
-      var hintDiv = document.createElement('div');
-      hintDiv.style.cssText = 'font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;letter-spacing:0.3px;';
-      hintDiv.textContent = (lang === 'ru' ? '👆 Вращайте 360° · Выберите форму ниже' : '👆 Rotate 360° · Select kit below');
-      avatarBox.appendChild(hintDiv);
+      avatarBox.innerHTML = getCharacterDisplayHtml(charId, initialKit, { showJerseyTag: true });
     }
 
     function updateView() {
+      isFooty = (curChar === 'footy');
       title.textContent = tr('lockerTitle', { char: curChar === 'footy' ? tr('footyChar') : tr('hoopsChar') });
 
       charName.textContent = curChar === 'footy' ? 'FOOTY' : 'HOOPS';
@@ -8197,25 +8215,34 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
 
-    // 0. Locked Faction Shop Header (Strictly displays player's faction items; other faction selector hidden)
-    var factionBadge = document.createElement('div');
-    factionBadge.className = 'fvh-shop-faction-badge fvh-shop-sport-switcher ' + shopSport;
-    factionBadge.style.display = 'flex';
-    factionBadge.style.alignItems = 'center';
-    factionBadge.style.justifyContent = 'space-between';
-    factionBadge.style.padding = '8px 14px';
-    factionBadge.style.marginBottom = '12px';
-    factionBadge.style.borderRadius = '12px';
-    factionBadge.style.background = (shopSport === 'footy' ? 'rgba(0, 240, 255, 0.08)' : 'rgba(249, 115, 22, 0.08)');
-    factionBadge.style.border = (shopSport === 'footy' ? '1.5px solid rgba(0, 240, 255, 0.3)' : '1.5px solid rgba(249, 115, 22, 0.3)');
-    factionBadge.innerHTML =
-      '<span style="font-size:12px;font-weight:900;letter-spacing:0.5px;color:#fff;text-transform:uppercase;">' +
-      (shopSport === 'footy' ? '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY BOUTIQUE</span></span>' : '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS BOUTIQUE</span></span>') +
-      '</span>' +
-      '<span style="font-size:11px;font-weight:700;color:var(--text-muted);">' +
-      (shopSport === 'footy' ? (getActiveLang() === 'ru' ? 'Экипировка для футбола' : 'Football Gear') : (getActiveLang() === 'ru' ? 'Экипировка для баскетбола' : 'Basketball Gear')) +
-      '</span>';
-    body.appendChild(factionBadge);
+    // 0. Interactive Faction Sport Switcher (Allows toggling between Football and Basketball boutiques)
+    var sportToggleRow = document.createElement('div');
+    sportToggleRow.className = 'seg fvh-shop-sport-toggle';
+    sportToggleRow.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
+
+    function renderSportToggle() {
+      sportToggleRow.innerHTML = '';
+      var sports = [
+        { id: 'footy', label: (getActiveLang() === 'ru' ? '⚽ FOOTY (Футбол)' : '⚽ FOOTY (Football)') },
+        { id: 'hoops', label: (getActiveLang() === 'ru' ? '🏀 HOOPS (Баскетбол)' : '🏀 HOOPS (Basketball)') }
+      ];
+      sports.forEach(function (s) {
+        var btn = document.createElement('button');
+        btn.className = (shopSport === s.id) ? 'on' : '';
+        btn.textContent = s.label;
+        btn.onclick = function () {
+          if (shopSport === s.id) return;
+          shopSport = s.id;
+          app.audio.play('click');
+          renderSportToggle();
+          renderCategoryTabs();
+          renderShop();
+        };
+        sportToggleRow.appendChild(btn);
+      });
+    }
+    renderSportToggle();
+    body.appendChild(sportToggleRow);
 
     // 1. Category Selector Tabs (Skins, Balls for chosen sport, Bundles, FvH Coins)
     var catSeg = document.createElement('div');
@@ -8739,6 +8766,12 @@
         if (it.packExclusive) return false;
         if (curCategory === 'skins') {
           return it.category === 'skins' && it.mode === shopSport;
+        }
+        if (curCategory === 'stars') {
+          return (it.category === 'stars' || it.currency === 'star') && it.mode === shopSport;
+        }
+        if (curCategory === 'bundles') {
+          return it.category === 'bundles' && (it.mode === shopSport || it.sport === shopSport);
         }
         if (curCategory === 'balls_footy') {
           return it.category === 'balls_footy' && shopSport === 'footy';
@@ -12286,7 +12319,7 @@
       }
       app.launch({
         mode: selSport,
-        char: playerChosenChar,
+        char: (selSport === 'hoops') ? 'hoops' : 'footy',
         difficulty: selDiff,
         minutes: selMinutes,
         arenaId: chosenArena,

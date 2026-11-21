@@ -1471,7 +1471,7 @@
 
       const list = [];
       const mode = matchView.mode;
-      const playerChar = matchView.playerChar || 'footy';
+      const playerChar = matchView.playerChar || (matchView.mode === 'hoops' ? 'hoops' : 'footy');
       const oppChar = matchView.oppChar || (playerChar === 'footy' ? 'hoops' : 'footy');
 
       matchView.chars.forEach(c => {
