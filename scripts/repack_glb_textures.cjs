@@ -97,9 +97,15 @@ function repackGLB(glbInPath, newPngPath, glbOutPath) {
   console.log(`✓ Wrote ${glbOutPath} (${outBuf.length} bytes) successfully!`);
 }
 
+const athleteTextures = {
+  footy10: 'assets/kits/footy_kit_classic.png',
+  hoops23: 'assets/kits/hoops_kit_classic.png',
+  keeper1: 'assets/characters/keeper1_refined_texture.png'
+};
+
 for (const athlete of ['footy10', 'hoops23', 'keeper1']) {
   const glbIn = `assets/characters/${athlete}.glb`;
-  const refinedPng = `assets/characters/${athlete}_refined_texture.png`;
+  const refinedPng = athleteTextures[athlete] || `assets/characters/${athlete}_refined_texture.png`;
   const glbOut = `assets/characters/${athlete}.glb`;
 
   // Backup original first if not backed up

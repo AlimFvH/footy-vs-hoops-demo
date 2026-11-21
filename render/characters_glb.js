@@ -105,32 +105,33 @@
     float NdotL = dot(N, L);
     float NdotV = max(dot(N, V), 0.001);
 
-    // Stylized Half-Lambert Wrapped Diffuse (eliminates harsh low-poly facet lines)
-    float wrappedL = NdotL * 0.42 + 0.58;
-    float directL = smoothstep(0.10, 0.90, wrappedL);
+    // Elevated Half-Lambert Wrapped Diffuse (eliminates harsh low-poly facet lines)
+    float wrappedL = NdotL * 0.44 + 0.56;
+    float directL = smoothstep(0.06, 0.94, wrappedL);
 
-    // Subsurface Skin Scatter (gives skin organic depth and eliminates polygon edges)
-    float sss = pow(clamp(1.0 - NdotL, 0.0, 1.0), 2.2) * 0.24;
-    vec3 sssTint = baseColor.rgb * vec3(1.25, 0.68, 0.50);
+    // Organic Subsurface Skin Scatter (vitality & warm skin tone depth)
+    float sss = pow(clamp(1.0 - NdotL, 0.0, 1.0), 2.0) * 0.28;
+    vec3 sssTint = baseColor.rgb * vec3(1.28, 0.72, 0.52);
 
-    // Hemispheric Ambient Lighting
-    vec3 ambient = mix(uGroundColor, uSkyColor, N.y * 0.45 + 0.55) * baseColor.rgb * 0.95;
+    // Hemispheric Ambient Lighting with stadium ground bounce
+    vec3 ambient = mix(uGroundColor, uSkyColor, N.y * 0.50 + 0.50) * baseColor.rgb * 1.05;
 
     // Diffuse Sunlight + SSS
     vec3 diffuse = baseColor.rgb * uSunColor * directL * (1.0 - uMetallic) + sssTint * sss;
 
-    // Stylized Soft Specular (Pixar / Fortnite smooth sheen)
-    float specPow = mix(18.0, 72.0, 1.0 - uRoughness);
-    float specInt = pow(max(dot(N, H), 0.0), specPow) * mix(0.18, 0.65, uMetallic);
+    // Stylized Soft Specular (Pixar / EA Sports smooth sheen)
+    float specPow = mix(24.0, 80.0, 1.0 - uRoughness);
+    float specInt = pow(max(dot(N, H), 0.0), specPow) * mix(0.20, 0.70, uMetallic);
     vec3 specular = uSunColor * specInt;
 
     // Broadcast Stadium Rim Light (heroic silhouette contour)
-    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 3.0);
-    vec3 rimColor = mix(vec3(0.85, 0.95, 1.0), vec3(1.0, 0.92, 0.80), N.y * 0.5 + 0.5);
-    vec3 rimLight = rim * rimColor * 0.45;
+    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.6);
+    vec3 rimColor = mix(vec3(0.85, 0.95, 1.0), vec3(1.0, 0.92, 0.82), N.y * 0.5 + 0.5);
+    vec3 rimLight = rim * rimColor * 0.48;
 
-    // Vibrant Balanced Final Color (preserves rich contrast & texture details without blowout)
-    vec3 finalRgb = ambient * 0.55 + diffuse * 0.60 + specular * 0.25 + rimLight * 0.20;
+    // Vibrant Balanced Final Color with gentle S-curve contrast
+    vec3 finalRgb = ambient * 0.58 + diffuse * 0.65 + specular * 0.30 + rimLight * 0.26;
+    finalRgb = pow(finalRgb, vec3(0.96));
     fragColor = vec4(finalRgb, baseColor.a);
   }
   `;
@@ -666,34 +667,50 @@
     'keeper_home': 'assets/kits/keeper_kit_0_volt.png'
   };
 
+  const _preloadedImages = new Map();
+  function preloadImage(url) {
+    if (_preloadedImages.has(url)) return _preloadedImages.get(url);
+    if (typeof Image === 'undefined') return null;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    _preloadedImages.set(url, img);
+    return img;
+  }
+
   function loadAtlasTexture(gl, url) {
     if (skinTextureCache.has(url)) return skinTextureCache.get(url);
     const tex = gl.createTexture();
     skinTextureCache.set(url, tex);
 
-    // Initial 1x1 fallback while image loads
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([30, 40, 60, 255]));
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    const img = preloadImage(url) || (typeof Image !== 'undefined' ? new Image() : null);
 
-    if (typeof Image !== 'undefined') {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
+    function uploadToGl(imageElement) {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imageElement);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      const aniso = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+      if (aniso) {
+        const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
+        gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
+      }
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    if (img && img.complete && img.naturalWidth > 0) {
+      uploadToGl(img);
+    } else if (img) {
+      // 1x1 neutral fallback while loading
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([200, 210, 225, 255]));
+      gl.bindTexture(gl.TEXTURE_2D, null);
+
       img.onload = function() {
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        const aniso = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
-        if (aniso) {
-          const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
-          gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
-        }
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        uploadToGl(img);
       };
-      img.src = url;
     }
     return tex;
   }
@@ -703,11 +720,17 @@
     if (isKeeper) {
       return loadAtlasTexture(gl, 'assets/kits/keeper_kit_0_volt.png');
     }
-    const defaultUrl = isFooty ? KIT_ATLAS_MAP['footy_classic'] : KIT_ATLAS_MAP['hoops_classic'];
-    if (!skin || !skin.id) {
-      return loadAtlasTexture(gl, defaultUrl);
+    const skId = (skin && skin.id) ? skin.id : (isFooty ? 'footy_classic' : 'hoops_classic');
+
+    // Default hero uniforms use the pristine embedded 2048x2048 atlas inside the GLB model directly!
+    if (isFooty && (skId === 'footy_classic' || skId === 'footy_2_white' || skId === 'skin_rookie')) {
+      return null;
     }
-    const atlasUrl = KIT_ATLAS_MAP[skin.id] || defaultUrl;
+    if (!isFooty && (skId === 'hoops_classic' || skId === 'hoops_2_crimson' || skId === 'hoops_2_chicago' || skId === 'skin_bb_onyx' || skId === 'skin_solar')) {
+      return null;
+    }
+
+    const atlasUrl = KIT_ATLAS_MAP[skId];
     if (atlasUrl) {
       return loadAtlasTexture(gl, atlasUrl);
     }

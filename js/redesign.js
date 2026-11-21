@@ -2650,10 +2650,10 @@
       : '';
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
-    var iframeSrc = 'benchmark/wardrobe_viewer.html?embed=1&sport=' + encodeURIComponent(charId) + '&kit=' + encodeURIComponent(skinId);
+    var iframeSrc = 'benchmark/wardrobe_viewer.html?embed=1&transparent=1&sport=' + encodeURIComponent(charId) + '&kit=' + encodeURIComponent(skinId);
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:hidden;border-radius:18px;">' +
-      '<iframe class="fvh-3d-athlete-frame" data-hero="' + charId + '" data-kit="' + skinId + '" src="' + iframeSrc + '" title="' + heroTitle + '" style="width:100%;height:100%;border:none;background:transparent;border-radius:18px;display:block;pointer-events:auto;" allow="autoplay" loading="eager"></iframe>' +
+      '<iframe class="fvh-3d-athlete-frame" allowtransparency="true" data-hero="' + charId + '" data-kit="' + skinId + '" src="' + iframeSrc + '" title="' + heroTitle + '" style="width:100%;height:100%;border:none;background:transparent;border-radius:18px;display:block;pointer-events:auto;" allow="autoplay" loading="eager"></iframe>' +
       tagHtml +
       '</div>';
   }
