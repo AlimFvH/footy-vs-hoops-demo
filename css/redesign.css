@@ -10147,3 +10147,480 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   overflow: hidden !important;
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
 }
+
+
+/* ==========================================================================
+   CYBER-ATHLETIC CHAMPIONSHIP TITANIUM & OBSIDIAN OVERHAUL (MASTER REDESIGN)
+   Style: High-End Console Cyber-Sports (EA Sports FC / NBA 2K Ultimate Style)
+   Shapes: Asymmetric Speed-Cut Chamfers & Diamond/Hex Facets (NO ROUND PILLS)
+   Colors: Obsidian Carbon (#06070a), Solar Amber / Trophy Gold (#ffd000), 
+           Hyper-Volt Emerald (#00f59b), Blazing Crimson (#ff2a55)
+   ========================================================================== */
+
+/* 1. Global Master Background & Surface Atmosphere */
+body, .screen, .menu-bg, .page-screen, .page, .page-body {
+  background: radial-gradient(ellipse 95% 65% at 50% 5%, #182034 0%, #0c101a 45%, #05070a 100%) !important;
+  color: #f8fafc !important;
+}
+
+/* Subtle High-Tech Sports Carbon Mesh Pattern */
+.screen::before, .menu-bg::before, .page::before {
+  content: '' !important;
+  position: fixed !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  background-image: 
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 6px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 6px) !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* 2. Asymmetric Speed-Cut Chamfered Buttons (NEW SHAPES & COLORS) */
+.btn {
+  border-radius: 14px 3px 14px 3px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease, filter 0.15s ease !important;
+}
+
+.btn:hover {
+  transform: translateY(-2px) !important;
+}
+
+.btn:active {
+  transform: translateY(2.5px) !important;
+}
+
+/* Primary Action Buttons: Solar Amber / Trophy Gold (NEW COLOR) */
+.btn.primary,
+.fvh-btn-start-practice,
+.fvh-btn-matchmaking,
+.fvh-btn-claim,
+.card.shopc > button.btn,
+.fvh-btn-retry-mm {
+  background: linear-gradient(135deg, #ffd000 0%, #ff8800 55%, #ea580c 100%) !important;
+  color: #0b0700 !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  border: 1px solid rgba(255, 235, 120, 0.7) !important;
+  border-radius: 16px 4px 16px 4px !important;
+  box-shadow: 0 5px 0 #9a3412, 0 12px 24px rgba(255, 136, 0, 0.42), inset 0 2px 0 rgba(255, 255, 255, 0.8) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.btn.primary:hover,
+.fvh-btn-start-practice:hover,
+.fvh-btn-matchmaking:hover,
+.fvh-btn-claim:hover,
+.card.shopc > button.btn:hover {
+  box-shadow: 0 7px 0 #9a3412, 0 16px 30px rgba(255, 136, 0, 0.55), inset 0 2px 0 rgba(255, 255, 255, 0.9) !important;
+  filter: brightness(1.08) !important;
+}
+
+.btn.primary:active,
+.fvh-btn-start-practice:active,
+.fvh-btn-matchmaking:active,
+.fvh-btn-claim:active,
+.card.shopc > button.btn:active {
+  box-shadow: 0 2px 0 #9a3412, 0 4px 10px rgba(255, 136, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Secondary & Back Buttons: Titanium Obsidian Chamfers */
+.btn:not(.primary):not(.fvh-btn-start-practice):not(.fvh-btn-matchmaking):not(.fvh-btn-play-hero),
+.btn.back,
+.fvh-btn-cancel-mm,
+.fvh-btn-back-lobby {
+  background: linear-gradient(145deg, #1b2336 0%, #0e1422 100%) !important;
+  color: #f1f5f9 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 14px 3px 14px 3px !important;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), inset 0 1.5px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+.btn.back {
+  border-radius: 12px 3px 12px 3px !important;
+}
+
+/* 3. Hero Main Play Button (DOMINANT ACTION CTA) */
+.fvh-btn-play-hero {
+  border-radius: 20px 4px 20px 4px !important;
+  background: linear-gradient(135deg, #ffd000 0%, #ff8000 55%, #ea580c 100%) !important;
+  border: 1.5px solid rgba(255, 240, 150, 0.8) !important;
+  box-shadow: 0 8px 0 #9a3412, 0 20px 38px rgba(255, 128, 0, 0.52), inset 0 2.5px 0 rgba(255, 255, 255, 0.85) !important;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease !important;
+}
+
+.fvh-btn-play-hero .play-text {
+  color: #0b0700 !important;
+  font-weight: 950 !important;
+  font-style: italic !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.fvh-btn-play-hero .play-icon {
+  background: #0b0700 !important;
+  color: #ffd000 !important;
+  border-radius: 8px 2px 8px 2px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.fvh-btn-play-hero .play-sub {
+  color: rgba(11, 7, 0, 0.82) !important;
+  font-weight: 800 !important;
+}
+
+.fvh-btn-play-hero:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 11px 0 #9a3412, 0 24px 44px rgba(255, 128, 0, 0.65), inset 0 2.5px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+.fvh-btn-play-hero:active {
+  transform: translateY(5px) !important;
+  box-shadow: 0 3px 0 #9a3412, 0 6px 14px rgba(255, 128, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.fvh-btn-play-hero.hoops {
+  background: linear-gradient(135deg, #ff9500 0%, #ff3b30 60%, #c026d3 100%) !important;
+  box-shadow: 0 8px 0 #881337, 0 20px 38px rgba(255, 59, 48, 0.5), inset 0 2.5px 0 rgba(255, 255, 255, 0.85) !important;
+}
+
+.fvh-btn-play-hero.hoops:hover {
+  box-shadow: 0 11px 0 #881337, 0 24px 44px rgba(255, 59, 48, 0.65), inset 0 2.5px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+.fvh-btn-play-hero.hoops:active {
+  box-shadow: 0 3px 0 #881337, 0 6px 14px rgba(255, 59, 48, 0.35) !important;
+}
+
+/* 4. Asymmetric Speed Cards: Mode Select, Shop, Quests, Hero Card */
+.fvh-mode-card,
+.card.shopc,
+.fvh-hero-card,
+.fvh-quest-item,
+.fvh-upgrades-hero-banner,
+.fvh-airdrop-banner,
+.fvh-hub-tile {
+  border-radius: 20px 5px 20px 5px !important;
+  background: linear-gradient(145deg, rgba(20, 26, 42, 0.92) 0%, rgba(10, 14, 24, 0.96) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.fvh-mode-card:hover,
+.card.shopc:hover,
+.fvh-quest-item:hover,
+.fvh-hub-tile:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(255, 208, 0, 0.45) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 208, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Mode Select Custom Styling */
+.fvh-mode-card.practice-card {
+  border-left: 4px solid #00f59b !important;
+}
+
+.fvh-mode-card.quick-card {
+  border-left: 4px solid #ff8800 !important;
+}
+
+.fvh-mode-badge {
+  border-radius: 6px 2px 6px 2px !important;
+  text-transform: uppercase !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.8px !important;
+}
+
+.fvh-mode-badge.practice {
+  background: rgba(0, 245, 155, 0.15) !important;
+  color: #00f59b !important;
+  border: 1px solid rgba(0, 245, 155, 0.4) !important;
+}
+
+.fvh-mode-instant-pill {
+  border-radius: 6px 2px 6px 2px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffd000 !important;
+  font-weight: 800 !important;
+}
+
+.fvh-practice-matchup {
+  border-radius: 10px 3px 10px 3px !important;
+  background: rgba(8, 12, 20, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 5. Angular Racing Segmented Tabs & Filter Pills (NO ROUND PILLS) */
+.seg,
+.seg-sport,
+.seg-diff,
+.seg-sport-online,
+.fvh-filter-bar,
+.fvh-wardrobe-seg,
+.fvh-shop-categories {
+  border-radius: 12px 3px 12px 3px !important;
+  background: rgba(10, 14, 24, 0.9) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 3px !important;
+}
+
+.seg button,
+.fvh-filter-bar button,
+.fvh-wardrobe-seg button,
+.fvh-shop-categories button,
+.fvh-cat-btn,
+.fvh-filter-pill {
+  border-radius: 9px 2px 9px 2px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  color: #94a3b8 !important;
+  border: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.seg button.on,
+.fvh-filter-bar button.on,
+.fvh-wardrobe-seg button.on,
+.fvh-shop-categories button.on,
+.fvh-cat-btn.active,
+.fvh-filter-pill.active {
+  background: linear-gradient(135deg, #ffd000 0%, #f59e0b 100%) !important;
+  color: #0b0700 !important;
+  font-weight: 950 !important;
+  box-shadow: 0 2px 0 #b45309, 0 4px 14px rgba(245, 158, 11, 0.45) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 6. Topbar: Titanium & Carbon Console Header */
+.fvh-topbar {
+  background: linear-gradient(180deg, rgba(14, 18, 30, 0.98) 0%, rgba(8, 10, 16, 0.95) 100%) !important;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.fvh-pill {
+  border-radius: 10px 2px 10px 2px !important;
+  background: linear-gradient(145deg, #182236 0%, #0d1220 100%) !important;
+  border: 1.2px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+  font-weight: 800 !important;
+}
+
+.fvh-pill.gold {
+  border-color: rgba(255, 208, 0, 0.4) !important;
+  color: #ffd000 !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 208, 0, 0.2) !important;
+}
+
+.fvh-btn-topbar-profile {
+  border-radius: 12px 3px 12px 3px !important;
+  background: linear-gradient(145deg, #1c263c 0%, #0f1626 100%) !important;
+  border: 1.2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 7. Floating Carbon Dock: Global Bottom Navigation (NEW SHAPE & STYLE) */
+.fvh-bottom-nav {
+  position: fixed !important;
+  bottom: max(var(--sab, 0px), 8px) !important;
+  left: 12px !important;
+  right: 12px !important;
+  width: calc(100% - 24px) !important;
+  max-width: 520px !important;
+  margin: 0 auto !important;
+  border-radius: 22px 5px 22px 5px !important;
+  background: linear-gradient(180deg, rgba(20, 26, 42, 0.96) 0%, rgba(9, 12, 20, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 208, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(24px) !important;
+  padding: 6px 8px !important;
+  z-index: 9999 !important;
+}
+
+.fvh-nav-item {
+  border-radius: 10px 2px 10px 2px !important;
+  transition: all 0.15s ease !important;
+}
+
+.fvh-nav-item.active {
+  color: #ffd000 !important;
+}
+
+.fvh-nav-item.active .fvh-nav-icon svg {
+  filter: drop-shadow(0 0 8px rgba(255, 208, 0, 0.7)) !important;
+  transform: scale(1.12) !important;
+}
+
+.fvh-nav-item.active::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 2px !important;
+  left: 50% !important;
+  transform: translateX(-50%) rotate(45deg) !important;
+  width: 5px !important;
+  height: 5px !important;
+  background: #ffd000 !important;
+  box-shadow: 0 0 8px #ffd000 !important;
+  border-radius: 1px !important;
+}
+
+/* 8. Shop Showcase Polish (Team Isolated & High-End Boutique) */
+.card.shopc {
+  border-radius: 18px 4px 18px 4px !important;
+  padding: 12px !important;
+  position: relative !important;
+}
+
+.card.shopc.rarity-legendary {
+  border-color: rgba(255, 208, 0, 0.6) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 208, 0, 0.2) !important;
+}
+
+.card.shopc.rarity-epic {
+  border-color: rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.2) !important;
+}
+
+.card.shopc.rarity-rare {
+  border-color: rgba(0, 245, 155, 0.6) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 245, 155, 0.2) !important;
+}
+
+.card.shopc.rarity-common {
+  border-color: rgba(100, 116, 139, 0.4) !important;
+}
+
+.card.shopc .thumbwrap {
+  border-radius: 12px 3px 12px 3px !important;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%) !important;
+}
+
+.card.shopc > button.btn {
+  border-radius: 12px 3px 12px 3px !important;
+}
+
+/* 9. Wardrobe / Locker Room Polish */
+.fvh-wardrobe-grid .card.shopc.equipped {
+  border-color: #00f59b !important;
+  box-shadow: 0 0 20px rgba(0, 245, 155, 0.35) !important;
+}
+
+.fvh-equipped-badge,
+.st.st-eq {
+  border-radius: 6px 2px 6px 2px !important;
+  background: linear-gradient(135deg, #00f59b 0%, #059669 100%) !important;
+  color: #04221a !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* 10. Quests & Season Pass Polish */
+.fvh-quest-item {
+  border-radius: 16px 4px 16px 4px !important;
+  border-left: 4px solid #ffd000 !important;
+}
+
+.fvh-quest-progress-bar,
+.pbar {
+  border-radius: 8px 2px 8px 2px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  overflow: hidden !important;
+}
+
+.fvh-quest-progress-bar i,
+.pbar i {
+  background: linear-gradient(90deg, #ffd000 0%, #00f59b 100%) !important;
+  box-shadow: 0 0 12px rgba(0, 245, 155, 0.6) !important;
+}
+
+/* 11. Modals & Overlays */
+.modal {
+  border-radius: 24px 6px 24px 6px !important;
+  background: linear-gradient(145deg, #141b2a 0%, #0a0d16 100%) !important;
+  border: 2px solid rgba(255, 208, 0, 0.5) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9), 0 0 35px rgba(255, 208, 0, 0.25) !important;
+}
+
+.modal-back {
+  background: rgba(3, 5, 8, 0.85) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+
+
+/* Additional Polish: Faction Switcher, Team Cards, and Home Elements */
+.fvh-rivalry-bar-symmetrical {
+  background: rgba(10, 14, 24, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px 3px 14px 3px !important;
+  padding: 4px !important;
+}
+
+.fvh-rival-side {
+  border-radius: 10px 2px 10px 2px !important;
+  transition: all 0.15s ease !important;
+}
+
+.fvh-rival-side.active.footy {
+  background: linear-gradient(135deg, rgba(0, 245, 155, 0.25) 0%, rgba(5, 150, 105, 0.3) 100%) !important;
+  border: 1.5px solid #00f59b !important;
+  box-shadow: 0 0 14px rgba(0, 245, 155, 0.35) !important;
+}
+
+.fvh-rival-side.active.hoops {
+  background: linear-gradient(135deg, rgba(255, 42, 85, 0.25) 0%, rgba(225, 29, 72, 0.3) 100%) !important;
+  border: 1.5px solid #ff2a55 !important;
+  box-shadow: 0 0 14px rgba(255, 42, 85, 0.35) !important;
+}
+
+.fvh-rivalry-center-badge {
+  border-radius: 6px 2px 6px 2px !important;
+  background: #ffd000 !important;
+  color: #0b0700 !important;
+  font-weight: 950 !important;
+  box-shadow: 0 0 10px rgba(255, 208, 0, 0.5) !important;
+}
+
+.fvh-team-card {
+  border-radius: 20px 4px 20px 4px !important;
+  background: linear-gradient(145deg, rgba(20, 26, 42, 0.95) 0%, rgba(10, 14, 24, 0.98) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+.fvh-team-card.footy.selected, .fvh-team-card.footy:hover {
+  border-color: #00f59b !important;
+  box-shadow: 0 0 24px rgba(0, 245, 155, 0.4) !important;
+}
+
+.fvh-team-card.hoops.selected, .fvh-team-card.hoops:hover {
+  border-color: #ff8800 !important;
+  box-shadow: 0 0 24px rgba(255, 136, 0, 0.4) !important;
+}
+
+.fvh-airdrop-banner {
+  border-radius: 16px 4px 16px 4px !important;
+  border-left: 4px solid #ffd000 !important;
+}
+
+.fvh-airdrop-banner-badge {
+  border-radius: 10px 2px 10px 2px !important;
+  background: linear-gradient(135deg, #ffd000 0%, #ff8800 100%) !important;
+  color: #0b0700 !important;
+  font-weight: 900 !important;
+  border: none !important;
+  box-shadow: 0 3px 0 #9a3412, 0 6px 14px rgba(255, 136, 0, 0.4) !important;
+}
+
+.fvh-equipped-preview-bar {
+  border-radius: 12px 3px 12px 3px !important;
+  background: rgba(8, 12, 20, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
