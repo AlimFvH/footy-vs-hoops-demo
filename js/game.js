@@ -5402,16 +5402,16 @@ define("data/ads", ["require", "exports"], function (require, exports) {
         hidden: 3.0,
         cycleTotal: 10.0,
         footySlides: [
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x00f0ff, color: 0xffffff },
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x10b981, color: 0xffffff },
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x38bdf8, color: 0xffffff },
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfacc15, color: 0xffffff }
+            { text: '⚡ FOOTY vs HOOPS · CHAMPIONS CUP 2026 ⚡', accent: 0x00f0ff, color: 0xffffff },
+            { text: '⚽ ULTRAS ARENA · GOAL STRIKE · PLAY TO WIN ⚽', accent: 0x10b981, color: 0xffffff },
+            { text: '🔥 HYPER STRIKER · EA SPORTS FC VIBES 🔥', accent: 0x38bdf8, color: 0xffffff },
+            { text: '⭐ TELEGRAM & TON GAMING SHOWDOWN ⭐', accent: 0xfacc15, color: 0xffffff }
         ],
         hoopsSlides: [
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xf97316, color: 0xffffff },
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xec4899, color: 0xffffff },
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfb923c, color: 0xffffff },
-            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfacc15, color: 0xffffff }
+            { text: '🏀 NBA ALL-STAR ARENA · HOOPS DYNASTY 2026 🏀', accent: 0xf97316, color: 0xffffff },
+            { text: '🔥 SLAM DUNK SHOWDOWN · 3-POINT CONTEST 🔥', accent: 0xec4899, color: 0xffffff },
+            { text: '⚡ STREETBALL SHOWTIME · NOTHING BUT NET ⚡', accent: 0xfb923c, color: 0xffffff },
+            { text: '👑 CHICAGO 23 · STREET LEGENDS ARENA 👑', accent: 0xfacc15, color: 0xffffff }
         ],
         slides: [
             { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x00f0ff, color: 0xffffff },
@@ -6199,19 +6199,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.fillRect(x0 + 12, H - 10, pw - 24, 2);
             g.shadowBlur = 0;
 
-            let slideText = s.text || 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА';
-            try {
-                let userLang = 'ru';
-                if (typeof window !== 'undefined') {
-                    if (window.app && window.app.store && window.app.store.data && window.app.store.data.language) {
-                        userLang = window.app.store.data.language;
-                    } else if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.language_code) {
-                        userLang = window.Telegram.WebApp.initDataUnsafe.user.language_code;
-                    }
-                }
-                const isEnglish = (userLang === 'en' || (typeof userLang === 'string' && userLang.toLowerCase().startsWith('en')));
-                slideText = isEnglish ? 'YOUR AD HERE' : 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА';
-            } catch (e) {}
+            let slideText = s.text || '⚡ FOOTY vs HOOPS · CHAMPIONS ARENA ⚡';
 
             // Main Text (Bold, ultra-crisp, high contrast with deep drop shadow & neon glow)
             let fs = s.sub ? 66 : 80;

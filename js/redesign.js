@@ -2634,8 +2634,8 @@
     var opts = options || {};
     var defaultSkin = isFooty ? 'footy_classic' : 'hoops_classic';
     var charSpecificSkin = isFooty
-      ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && eq.skin !== 'skin_solar' ? eq.skin : null))
-      : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin === 'skin_solar') ? eq.skin : null));
+      ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('hoops_') && eq.skin !== 'skin_solar' ? eq.skin : null))
+      : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('hoops_') || eq.skin === 'skin_solar') ? eq.skin : null));
     var skinId = specificSkinId || charSpecificSkin || defaultSkin;
     if (isFooty && (skinId.startsWith('skin_bb_') || skinId.startsWith('skin_hoops') || skinId.startsWith('hoops_') || skinId === 'skin_solar')) skinId = 'footy_classic';
     if (!isFooty && (skinId === 'skin_rookie' || skinId === 'footy_classic' || skinId === 'footy_2_white' || skinId.startsWith('footy_') || skinId.startsWith('skin_footy'))) skinId = 'hoops_classic';
@@ -2650,14 +2650,18 @@
       : '';
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
-    var iframeSrc = 'benchmark/wardrobe_viewer.html?embed=1&transparent=1&sport=' + encodeURIComponent(charId) + '&kit=' + encodeURIComponent(skinId);
+    var heroImgUrl = getRecoloredHeroUrl(charId, skinId);
 
-    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:hidden;border-radius:18px;">' +
-      '<iframe class="fvh-3d-athlete-frame" allowtransparency="true" data-hero="' + charId + '" data-kit="' + skinId + '" src="' + iframeSrc + '" title="' + heroTitle + '" style="width:100%;height:100%;border:none;background:transparent;border-radius:18px;display:block;pointer-events:auto;" allow="autoplay" loading="eager"></iframe>' +
+    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
+      '<div class="fvh-hero-3d-stage" onmousemove="var rect=this.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width-0.5,y=(event.clientY-rect.top)/rect.height-0.5,img=this.querySelector(\'.fvh-hero-real-img\');if(img){img.style.transform=\'perspective(800px) rotateY(\'+(x*14)+\'deg) rotateX(\'+(-y*10)+\'deg) scale(1.02)\';}" onmouseleave="var img=this.querySelector(\'.fvh-hero-real-img\');if(img){img.style.transform=\'perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)\';}" style="position:relative;width:100%;flex:1 1 auto;display:flex;align-items:center;justify-content:center;perspective:800px;background:transparent;cursor:grab;">' +
+        '<div class="fvh-hero-shadow" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:180px;height:24px;border-radius:50%;background:radial-gradient(ellipse at center, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 72%);pointer-events:none;"></div>' +
+        '<img class="fvh-hero-real-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + heroImgUrl + '" alt="' + heroTitle + '" style="position:relative;max-height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 28px rgba(0,0,0,0.55));transition:transform 0.15s ease-out;transform-style:preserve-3d;pointer-events:none;z-index:1;" />' +
+      '</div>' +
       tagHtml +
-      '</div>';
+    '</div>';
   }
-// Official FOOTY vs HOOPS Authentic Emblem (Square 1:1, transparent alpha PNG)
+
+  // Official FOOTY vs HOOPS Authentic Emblem (Square 1:1, transparent alpha PNG)
   function getOfficialEmblemHtml() {
     return '<img class="fvh-official-emblem" src="assets/emblem.png" alt="FOOTY vs HOOPS" width="38" height="38">';
   }
@@ -6632,14 +6636,12 @@
       var defaultKit = (charId === 'hoops') ? 'hoops_classic' : 'footy_classic';
       var initialKit = kitId || eq['skin.' + charId] || eq.skin || defaultKit;
 
-      var existingFrame = avatarBox.querySelector('.fvh-3d-athlete-frame');
-      if (existingFrame && existingFrame.contentWindow) {
-        try {
-          existingFrame.contentWindow.postMessage({ action: 'changeAthlete', athlete: charId, kit: initialKit }, '*');
-          existingFrame.contentWindow.postMessage({ action: 'changeKit', kit: initialKit }, '*');
-        } catch (e) {}
-        existingFrame.setAttribute('data-hero', charId);
-        existingFrame.setAttribute('data-kit', initialKit);
+      var img = avatarBox.querySelector('.fvh-hero-real-img');
+      if (img) {
+        var newSrc = getRecoloredHeroUrl(charId, initialKit);
+        img.src = newSrc;
+        img.setAttribute('data-skin', initialKit);
+        img.setAttribute('data-hero', charId);
         var pal = HERO_SKIN_PALETTES[initialKit] || ((charId === 'footy') ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
         var sLabel = (lang === 'ru') ? (pal && pal.ru) : (pal && pal.name);
         var tagSpan = avatarBox.querySelector('.fvh-hero-active-jersey-tag span:last-child');
@@ -8193,34 +8195,8 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-shop-container';
 
-    // 0. Interactive Faction Sport Switcher (Allows toggling between Football and Basketball boutiques)
-    var sportToggleRow = document.createElement('div');
-    sportToggleRow.className = 'seg fvh-shop-sport-toggle';
-    sportToggleRow.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
-
-    function renderSportToggle() {
-      sportToggleRow.innerHTML = '';
-      var sports = [
-        { id: 'footy', label: (getActiveLang() === 'ru' ? '⚽ FOOTY (Футбол)' : '⚽ FOOTY (Football)') },
-        { id: 'hoops', label: (getActiveLang() === 'ru' ? '🏀 HOOPS (Баскетбол)' : '🏀 HOOPS (Basketball)') }
-      ];
-      sports.forEach(function (s) {
-        var btn = document.createElement('button');
-        btn.className = (shopSport === s.id) ? 'on' : '';
-        btn.textContent = s.label;
-        btn.onclick = function () {
-          if (shopSport === s.id) return;
-          shopSport = s.id;
-          app.audio.play('click');
-          renderSportToggle();
-          renderCategoryTabs();
-          renderShop();
-        };
-        sportToggleRow.appendChild(btn);
-      });
-    }
-    renderSportToggle();
-    body.appendChild(sportToggleRow);
+    // Faction Sport strictly locked to player chosen team
+    var shopSport = curChar;
 
     // 1. Category Selector Tabs (Skins, Balls for chosen sport, Bundles, FvH Coins)
     var catSeg = document.createElement('div');
@@ -12377,61 +12353,8 @@
     grid.appendChild(quickCard);
 
     // -------------------------------------------------------------
-    // CARD 3: Friend Duel (Вызов друга на дуэль 1v1)
-    // -------------------------------------------------------------
-    var duelCard = document.createElement('div');
-    duelCard.className = 'fvh-mode-card duel-card';
-    var duelSport = curChar;
+    // Mode 3 (Play with friend) removed per user request
 
-    function renderDuelCard() {
-      var isFooty = (duelSport === 'footy');
-      duelCard.innerHTML =
-        '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge duel" style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.22);border:1.5px solid #ef4444;color:#fca5a5;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:900;">⚔️ <span>' + (lang === 'ru' ? 'ДУЭЛЬ С ДРУГОМ' : 'FRIEND DUEL') + '</span></span>' +
-          '<span class="fvh-mode-server-status"><span class="status-dot live"></span> Telegram 1v1</span>' +
-        '</div>' +
-        '<div class="fvh-mode-card-body">' +
-          '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Вызов на дуэль 1 на 1' : '1v1 Friend Duel') + '</div>' +
-          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Создайте закрытый матч, отправьте персональный вызов другу в Telegram и решите, кто сильнее — Футбол или Баскетбол!' : 'Create a private match, challenge a friend directly via Telegram, and prove which sport reigns supreme!') + '</div>' +
-          '<div class="fvh-ctrl-row" style="margin:10px 0 12px 0;">' +
-            '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
-            '<div class="seg seg-sport-duel">' +
-              '<button type="button" class="' + (isFooty ? 'on' : '') + '" data-sport="footy">⚽ FOOTY</button>' +
-              '<button type="button" class="' + (!isFooty ? 'on' : '') + '" data-sport="hoops">🏀 HOOPS</button>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="fvh-mode-card-actions" style="display:flex;flex-direction:column;gap:8px;">' +
-          '<button class="btn primary block fvh-btn-create-duel" style="background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;border:1.5px solid #f87171 !important;box-shadow:0 0 16px rgba(239,68,68,0.4) !important;">' +
-            '<span style="display:inline-flex;align-items:center;gap:6px;">⚔️ <span>' + (lang === 'ru' ? 'СОЗДАТЬ ДУЭЛЬ И ВЫЗВАТЬ ДРУГА' : 'CREATE DUEL & CHALLENGE FRIEND') + '</span></span>' +
-          '</button>' +
-          '<button class="btn small block fvh-btn-join-duel">' +
-            '<span style="display:inline-flex;align-items:center;gap:6px;">🔑 <span>' + (lang === 'ru' ? 'Войти по коду дуэли' : 'Join with Duel Code') + '</span></span>' +
-          '</button>' +
-        '</div>';
-
-      duelCard.querySelectorAll('.seg-sport-duel button').forEach(function (b) {
-        b.onclick = function () {
-          var sp = b.dataset.sport;
-          if (sp === duelSport) return;
-          duelSport = sp;
-          app.audio.play('click');
-          renderDuelCard();
-        };
-      });
-
-      duelCard.querySelector('.fvh-btn-create-duel').onclick = function () {
-        app.audio.play('click');
-        showCreateRoomModal(app, duelSport);
-      };
-
-      duelCard.querySelector('.fvh-btn-join-duel').onclick = function () {
-        app.audio.play('click');
-        showJoinRoomModal(app, duelSport);
-      };
-    }
-    renderDuelCard();
-    grid.appendChild(duelCard);
 
     body.appendChild(grid);
     page.appendChild(body);

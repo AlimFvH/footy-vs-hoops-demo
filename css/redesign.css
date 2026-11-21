@@ -717,10 +717,10 @@ html.is-telegram {
 }
 
 .fvh-wardrobe-avatar .fvh-hero-real-img {
-  max-height: clamp(170px, 24vh, 215px) !important;
+  max-height: clamp(230px, 33vh, 300px) !important;
   width: auto !important;
   object-fit: contain !important;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.85)) !important;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85)) !important;
 }
 
 .fvh-hero-avatar-box svg {
@@ -3686,7 +3686,7 @@ img[src*="user_football"], img[src*="user_basketball"], img[src*="ball_"] {
     max-height: clamp(190px, 26vh, 235px) !important;
   }
   .fvh-wardrobe-avatar .fvh-hero-real-img {
-    max-height: clamp(145px, 20vh, 180px) !important;
+    max-height: clamp(210px, 30vh, 275px) !important;
   }
   .fvh-equipped-list {
     margin: 6px 0 2px !important;
