@@ -6521,39 +6521,7 @@
     var isFooty = (curChar === 'footy');
     var lang = getActiveLang();
 
-    // Athlete Switcher at top of Wardrobe (Instant switch between Footballer and Basketballer)
-    var charSwitchSeg = document.createElement('div');
-    charSwitchSeg.className = 'seg fvh-wardrobe-char-toggle';
-    charSwitchSeg.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
-    function renderCharSwitchSeg() {
-      charSwitchSeg.innerHTML = '';
-      var chars = [
-        { id: 'footy', label: '⚽ FOOTY (Футбол)' },
-        { id: 'hoops', label: '🏀 HOOPS (Баскетбол)' }
-      ];
-      chars.forEach(function (c) {
-        var btn = document.createElement('button');
-        btn.className = (curChar === c.id) ? 'on' : '';
-        btn.textContent = c.label;
-        btn.onclick = function () {
-          if (curChar === c.id) return;
-          curChar = c.id;
-          isFooty = (curChar === 'footy');
-          selectedItem = null;
-          app.store.update(function (d) {
-            d.selectedCharacter = curChar;
-            d.selectedTeam = curChar;
-          });
-          app.audio.play('click');
-          renderCharSwitchSeg();
-          renderWardrobeCategoryTabs();
-          updateView();
-        };
-        charSwitchSeg.appendChild(btn);
-      });
-    }
-    renderCharSwitchSeg();
-    body.appendChild(charSwitchSeg);
+    // Locker athlete is strictly determined by player's selected hero on the Home Screen
 
     // Wardrobe & Inspection Layout
     var layout = document.createElement('div');
@@ -8329,14 +8297,10 @@
 
     function updateWalletUI() {
       var coins = (app.store && app.store.data && app.store.data.coins) || 0;
-      var stars = (app.store && app.store.data && (app.store.data.stars !== undefined ? app.store.data.stars : 1500));
       walletBox.innerHTML =
         '<div style="display:flex;align-items:center;gap:6px;">' +
         '  <button class="fvh-wallet-pill gold" style="cursor:pointer;" title="' + tr('catCoins') + '">' +
         getFvhCoinSvg('inline') + ' <span>' + coins.toLocaleString() + '</span>' +
-        '  </button>' +
-        '  <button class="fvh-wallet-pill stars" style="cursor:pointer;background:linear-gradient(135deg,rgba(250,204,21,0.2) 0%,rgba(217,119,6,0.2) 100%);border:1px solid rgba(250,204,21,0.5);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:900;color:#fde047;display:inline-flex;align-items:center;gap:4px;" title="Stars">' +
-        '⭐ <span>' + stars.toLocaleString() + '</span>' +
         '  </button>' +
         '</div>';
       var btn = walletBox.querySelector('.fvh-wallet-pill.gold');
@@ -8583,38 +8547,38 @@
           '</div>';
         catalogueGrid.appendChild(starsNotice);
 
-        // 3 Telegram Stars Mystery Packs (Overhauled with Pure Sport Kits & Zero Balls)
-        var starPacks = [
-          {
-            id: 'pack_stars_starter',
-            name: tr('packStarsStarter'),
-            desc: tr('packStarsStarterDesc'),
-            starsPrice: 250,
-            coinsAmount: 1500,
-            badge: '⭐ STARTER',
-            rarity: 'rare',
-            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Редкая футбольная форма + 1,500 FvH' : 'Редкая баскетбольная майка + 1,500 FvH') : 'Rare Kit + 1,500 FvH')
-          },
-          {
-            id: 'pack_stars_champion',
-            name: tr('packStarsChampion'),
-            desc: tr('packStarsChampionDesc'),
-            starsPrice: 500,
-            coinsAmount: 4000,
-            badge: '💎 CHAMPION',
-            rarity: 'epic',
-            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Эпическая футбольная форма + 4,000 FvH' : 'Эпическая баскетбольная майка + 4,000 FvH') : 'Epic Kit + 4,000 FvH')
-          },
-          {
-            id: 'pack_stars_legend',
-            name: tr('packStarsLegend'),
-            desc: tr('packStarsLegendDesc'),
-            starsPrice: 750,
-            coinsAmount: 10000,
-            badge: '👑 LEGEND',
-            rarity: 'legendary',
-            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Легендарная футбольная форма + 10,000 FvH' : 'Легендарная баскетбольная майка + 10,000 FvH') : 'Legendary Kit + 10,000 FvH')
-          }
+        // 3 Telegram Stars Mystery Packs (Overhauled with Pure Sport Kits & Zero Balls)
+        var starPacks = [
+          {
+            id: 'pack_stars_starter',
+            name: tr('packStarsStarter'),
+            desc: tr('packStarsStarterDesc'),
+            starsPrice: 250,
+            coinsAmount: 1500,
+            badge: '⭐ STARTER',
+            rarity: 'rare',
+            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Редкая футбольная форма + 1,500 FvH' : 'Редкая баскетбольная майка + 1,500 FvH') : 'Rare Kit + 1,500 FvH')
+          },
+          {
+            id: 'pack_stars_champion',
+            name: tr('packStarsChampion'),
+            desc: tr('packStarsChampionDesc'),
+            starsPrice: 500,
+            coinsAmount: 4000,
+            badge: '💎 CHAMPION',
+            rarity: 'epic',
+            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Эпическая футбольная форма + 4,000 FvH' : 'Эпическая баскетбольная майка + 4,000 FvH') : 'Epic Kit + 4,000 FvH')
+          },
+          {
+            id: 'pack_stars_legend',
+            name: tr('packStarsLegend'),
+            desc: tr('packStarsLegendDesc'),
+            starsPrice: 750,
+            coinsAmount: 10000,
+            badge: '👑 LEGEND',
+            rarity: 'legendary',
+            highlight: (getActiveLang() === 'ru' ? (shopSport === 'footy' ? 'Легендарная футбольная форма + 10,000 FvH' : 'Легендарная баскетбольная майка + 10,000 FvH') : 'Legendary Kit + 10,000 FvH')
+          }
         ];
 
         starPacks.forEach(function (sp) {
@@ -8677,10 +8641,10 @@
           '</div>';
         catalogueGrid.appendChild(bundlesBanner);
 
-        // Strict Faction Isolation for Bundles (Pure Sport Isolation)
-        var bundlesToShow = BUNDLE_ITEMS.filter(function (b) {
-          var bSport = b.sport || b.mode;
-          return bSport === shopSport;
+        // Strict Faction Isolation for Bundles (Pure Sport Isolation)
+        var bundlesToShow = BUNDLE_ITEMS.filter(function (b) {
+          var bSport = b.sport || b.mode;
+          return bSport === shopSport;
         });
 
         bundlesToShow.forEach(function (bundle) {
@@ -8830,115 +8794,115 @@
         var rarKey = it.rarity || 'common';
         card.className = 'fvh-catalogue-card r-' + rarKey + (isOwned ? ' owned' : '');
 
-        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
-        var localizedItemName = trItem(it.name);
-        var isStarItem = (it.currency === 'star' || it.category === 'stars');
-        var priceDisplayHtml = isOwned ? '' : (isStarItem ? ('⭐ ' + it.price.toLocaleString() + ' Stars') : (getFvhCoinSvg('inline') + ' ' + it.price.toLocaleString() + ' FvH'));
-
-        card.innerHTML =
-          '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
-          '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
-          '</div>' +
-          '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-          renderItemArtwork(it, 'thumb') +
-          '</div>' +
-          '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + localizedItemName + '</div>' +
-          '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:' + (isStarItem ? '#fde047' : '#facc15') + ';margin-bottom:8px;">' +
-          priceDisplayHtml +
-          '</div>' +
-          '<div class="fvh-card-action"></div>';
-
-        var actBox = card.querySelector('.fvh-card-action');
-        var actionBtn = document.createElement('button');
-        if (isEquipped) {
-          actionBtn.className = 'btn small block';
-          actionBtn.disabled = true;
-          actionBtn.textContent = tr('equippedState');
-        } else if (isOwned) {
-          actionBtn.className = 'btn small secondary block';
-          actionBtn.textContent = '✓ ' + (tr('ownedState') || 'Owned');
-          actionBtn.onclick = function (e) {
-            e.stopPropagation();
-            app.audio.play('click');
-            var targetSlot = (it.category === 'skins' || it.category === 'stars') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
-            app.go('characters', { char: curChar, slot: targetSlot });
-          };
-        } else if (isStarItem) {
-          actionBtn.className = 'btn small primary block';
-          actionBtn.style.background = 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)';
-          actionBtn.style.color = '#000';
-          actionBtn.style.fontWeight = '900';
-          actionBtn.innerHTML = '⭐ ' + it.price + ' Stars';
-          actionBtn.onclick = function (e) {
-            e.stopPropagation();
-            if (isPurchasing) return;
-            openUniversalPaymentModal(app, {
-              productId: it.id,
-              title: localizedItemName,
-              starsPrice: it.price,
-              coinsAmount: 0,
-              onPurchased: function () {
-                app.audio.play('claim');
-                showToast('⭐ ' + localizedItemName + ' ' + (getActiveLang() === 'ru' ? 'успешно приобретён!' : 'unlocked!'));
-                app.store.update(function (d) {
-                  if (!d.owned) d.owned = [];
-                  if (d.owned.indexOf(it.id) === -1) d.owned.push(it.id);
-                  if (d.stars !== undefined && d.stars >= it.price) d.stars -= it.price;
-                });
-                if (app.store && typeof app.store.flush === 'function') app.store.flush();
-                renderShop();
-              }
-            });
-          };
-        } else {
-          actionBtn.className = 'btn small primary block';
-          actionBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + it.price;
-          actionBtn.onclick = function (e) {
-            e.stopPropagation();
-            if (isPurchasing) return;
-            var coins = app.store.data.coins || 0;
-            if (coins < it.price) {
-              app.audio.play('error');
-              showToast(tr('notEnoughCoins'));
-              return;
-            }
-            isPurchasing = true;
-            var pid = getAppPlayerId(app);
-            safeEconomyApi('/api/economy/purchase', {
-              playerId: pid,
-              itemId: it.id,
-              idempotencyKey: 'item_' + pid + '_' + it.id + '_' + Date.now()
-            }).then(function (res) {
-              isPurchasing = false;
-              if (res && res.ok) {
-                app.store.update(function (d) {
-                  d.coins = res.coins;
-                  d.xp = res.xp;
-                  d.owned = res.owned;
-                  if (!d.unseenItems) d.unseenItems = [];
-                  if (d.unseenItems.indexOf(it.id) === -1) d.unseenItems.push(it.id);
-                });
-                if (app.store && typeof app.store.flush === 'function') {
-                  app.store.flush();
-                }
-                app.audio.play('claim');
-                showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
-                renderShop();
-              } else {
-                app.audio.play('error');
-                var errMsg = tr('purchaseFailed');
-                if (res && res.error === 'insufficient_funds') {
-                  errMsg = tr('notEnoughCoins');
-                } else if (res && res.error === 'already_owned') {
-                  errMsg = tr('purchaseAlreadyOwned');
-                } else if (res && res.message) {
-                  errMsg = res.message;
-                }
-                showToast(errMsg);
-              }
-            });
-          };
+        var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
+        var localizedItemName = trItem(it.name);
+        var isStarItem = (it.currency === 'star' || it.category === 'stars');
+        var priceDisplayHtml = isOwned ? '' : (isStarItem ? ('⭐ ' + it.price.toLocaleString() + ' Stars') : (getFvhCoinSvg('inline') + ' ' + it.price.toLocaleString() + ' FvH'));
+
+        card.innerHTML =
+          '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
+          '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
+          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
+          '</div>' +
+          '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+          renderItemArtwork(it, 'thumb') +
+          '</div>' +
+          '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + localizedItemName + '</div>' +
+          '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:' + (isStarItem ? '#fde047' : '#facc15') + ';margin-bottom:8px;">' +
+          priceDisplayHtml +
+          '</div>' +
+          '<div class="fvh-card-action"></div>';
+
+        var actBox = card.querySelector('.fvh-card-action');
+        var actionBtn = document.createElement('button');
+        if (isEquipped) {
+          actionBtn.className = 'btn small block';
+          actionBtn.disabled = true;
+          actionBtn.textContent = tr('equippedState');
+        } else if (isOwned) {
+          actionBtn.className = 'btn small secondary block';
+          actionBtn.textContent = '✓ ' + (tr('ownedState') || 'Owned');
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            app.audio.play('click');
+            var targetSlot = (it.category === 'skins' || it.category === 'stars') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
+            app.go('characters', { char: curChar, slot: targetSlot });
+          };
+        } else if (isStarItem) {
+          actionBtn.className = 'btn small primary block';
+          actionBtn.style.background = 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)';
+          actionBtn.style.color = '#000';
+          actionBtn.style.fontWeight = '900';
+          actionBtn.innerHTML = '⭐ ' + it.price + ' Stars';
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            if (isPurchasing) return;
+            openUniversalPaymentModal(app, {
+              productId: it.id,
+              title: localizedItemName,
+              starsPrice: it.price,
+              coinsAmount: 0,
+              onPurchased: function () {
+                app.audio.play('claim');
+                showToast('⭐ ' + localizedItemName + ' ' + (getActiveLang() === 'ru' ? 'успешно приобретён!' : 'unlocked!'));
+                app.store.update(function (d) {
+                  if (!d.owned) d.owned = [];
+                  if (d.owned.indexOf(it.id) === -1) d.owned.push(it.id);
+                  if (d.stars !== undefined && d.stars >= it.price) d.stars -= it.price;
+                });
+                if (app.store && typeof app.store.flush === 'function') app.store.flush();
+                renderShop();
+              }
+            });
+          };
+        } else {
+          actionBtn.className = 'btn small primary block';
+          actionBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + it.price;
+          actionBtn.onclick = function (e) {
+            e.stopPropagation();
+            if (isPurchasing) return;
+            var coins = app.store.data.coins || 0;
+            if (coins < it.price) {
+              app.audio.play('error');
+              showToast(tr('notEnoughCoins'));
+              return;
+            }
+            isPurchasing = true;
+            var pid = getAppPlayerId(app);
+            safeEconomyApi('/api/economy/purchase', {
+              playerId: pid,
+              itemId: it.id,
+              idempotencyKey: 'item_' + pid + '_' + it.id + '_' + Date.now()
+            }).then(function (res) {
+              isPurchasing = false;
+              if (res && res.ok) {
+                app.store.update(function (d) {
+                  d.coins = res.coins;
+                  d.xp = res.xp;
+                  d.owned = res.owned;
+                  if (!d.unseenItems) d.unseenItems = [];
+                  if (d.unseenItems.indexOf(it.id) === -1) d.unseenItems.push(it.id);
+                });
+                if (app.store && typeof app.store.flush === 'function') {
+                  app.store.flush();
+                }
+                app.audio.play('claim');
+                showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
+                renderShop();
+              } else {
+                app.audio.play('error');
+                var errMsg = tr('purchaseFailed');
+                if (res && res.error === 'insufficient_funds') {
+                  errMsg = tr('notEnoughCoins');
+                } else if (res && res.error === 'already_owned') {
+                  errMsg = tr('purchaseAlreadyOwned');
+                } else if (res && res.message) {
+                  errMsg = res.message;
+                }
+                showToast(errMsg);
+              }
+            });
+          };
         }
         actBox.appendChild(actionBtn);
 
@@ -11779,6 +11743,32 @@
         };
       }
 
+      // Room Code Pill Click To Copy
+      var codePill = modal.querySelector('.fvh-lobby-room-code-pill');
+      if (codePill) {
+        codePill.style.cursor = 'pointer';
+        codePill.onclick = function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(roomCode);
+          }
+          app.audio.play('click');
+          showToast((lang === 'ru' ? '🔑 Код комнаты скопирован: ' : '🔑 Room code copied: ') + roomCode);
+        };
+      }
+
+      // Room Code Pill Click To Copy
+      var codePill = modal.querySelector('.fvh-lobby-room-code-pill');
+      if (codePill) {
+        codePill.style.cursor = 'pointer';
+        codePill.onclick = function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(roomCode);
+          }
+          app.audio.play('click');
+          showToast((lang === 'ru' ? '🔑 Код комнаты скопирован: ' : '🔑 Room code copied: ') + roomCode);
+        };
+      }
+
       // Copy Link Button
       var copyBtn = modal.querySelector('.fvh-btn-copy-link');
       if (copyBtn) {
@@ -13944,19 +13934,19 @@
   }
   // Legacy identifiers: tabGameplay tabSocialMedia tabInviteFriends q_sub_chat copyInviteLink
 
-  if (typeof window !== 'undefined') {
-    window.buildShopPage = buildShopPage;
-    window.buildCharactersPage = buildCharactersPage;
-    window.buildQuestsPage = buildQuestsPage;
-    window.buildProfilePage = buildProfilePage;
-    window.buildSettingsPage = buildSettingsPage;
-    window.renderRedesignedMenu = renderRedesignedMenu;
-
-    window.__fvhStore = {
-      buildDefaultShopCatalog: buildDefaultShopCatalog,
-      LEGACY_ITEM_ALIASES: LEGACY_ITEM_ALIASES,
-      getItemLabelById: getItemLabelById,
-      trItem: trItem,
+  if (typeof window !== 'undefined') {
+    window.buildShopPage = buildShopPage;
+    window.buildCharactersPage = buildCharactersPage;
+    window.buildQuestsPage = buildQuestsPage;
+    window.buildProfilePage = buildProfilePage;
+    window.buildSettingsPage = buildSettingsPage;
+    window.renderRedesignedMenu = renderRedesignedMenu;
+
+    window.__fvhStore = {
+      buildDefaultShopCatalog: buildDefaultShopCatalog,
+      LEGACY_ITEM_ALIASES: LEGACY_ITEM_ALIASES,
+      getItemLabelById: getItemLabelById,
+      trItem: trItem,
       tr: tr,
       getActiveLang: getActiveLang,
       setActiveLang: function(l) {
