@@ -1056,7 +1056,7 @@
       const isEmbedded = urlParams.get('embed') === '1';
       if (isEmbedded) {
         document.body.classList.add('is-embedded');
-        isTransparentMode = true;
+        isTransparentMode = (urlParams.get('transparent') === '1');
         camDist = 2.40;
         camTarget = [0, 1.10, 0];
         camPitch = 0.06;

@@ -606,193 +606,112 @@
       console.warn('drawGlbJerseyPattern error', e);
     }
   }
-  function getOrCreateSkinTexture(gl, model, skin, isFooty) {
-    if (!gl || !model || !skin || !skin.id) return null;
-    // Default hero skins use the pristine embedded 1024x1024 atlas directly
-    if (skin.id === 'skin_rookie' || skin.id === 'skin_bb_onyx' || skin.id === 'footy_classic' || skin.id === 'hoops_classic') {
-      return null;
-    }
-    
+  const KIT_ATLAS_MAP = {
+    // Football Regular Kits
+    'footy_classic': 'assets/kits/footy_kit_classic.png',
+    'footy_2_white': 'assets/kits/footy_kit_2_white.png',
+    'skin_rookie': 'assets/kits/footy_kit_classic.png',
+    'footy_6_crimson': 'assets/kits/footy_kit_6_crimson.png',
+    'footy_2_crimson': 'assets/kits/footy_kit_6_crimson.png',
+    'footy_7_gold': 'assets/kits/footy_kit_7_gold.png',
+    'footy_2_gold': 'assets/kits/footy_kit_7_gold.png',
+    'footy_1_sapphire': 'assets/kits/footy_kit_1_sapphire.png',
+    'footy_4_amber': 'assets/kits/footy_kit_4_amber.png',
+    'footy_7_amber': 'assets/kits/footy_kit_4_amber.png',
+    'footy_5_amethyst': 'assets/kits/footy_kit_5_amethyst.png',
+    'footy_9_dragon': 'assets/kits/footy_kit_9_dragon.png',
+    'footy_3_neon': 'assets/kits/footy_kit_3_neon.png',
+    'footy_8_obsidian': 'assets/kits/footy_kit_8_obsidian.png',
+    'footy_0_tiffany': 'assets/kits/footy_kit_0_tiffany.png',
+    'footy_star_holiday': 'assets/kits/footy_kit_star_holiday.png',
+    'footy_kit_star_holiday': 'assets/kits/footy_kit_star_holiday.png',
+    'footy_star_emperor': 'assets/kits/footy_kit_star_emperor.png',
+    'footy_kit_star_emperor': 'assets/kits/footy_kit_star_emperor.png',
+    'footy_star_samurai': 'assets/kits/footy_kit_star_samurai.png',
+    'footy_kit_star_samurai': 'assets/kits/footy_kit_star_samurai.png',
 
-    const key = (isFooty ? 'footy_' : 'hoops_') + skin.id + '_' + (skin.primary || 0);
-    if (skinTextureCache.has(key)) {
-      return skinTextureCache.get(key);
-    }
+    // Basketball Regular Tanks
+    'hoops_classic': 'assets/kits/hoops_kit_classic.png',
+    'hoops_2_chicago': 'assets/kits/hoops_kit_2_crimson.png',
+    'hoops_2_crimson': 'assets/kits/hoops_kit_2_crimson.png',
+    'skin_solar': 'assets/kits/hoops_kit_classic.png',
+    'skin_bb_onyx': 'assets/kits/hoops_kit_classic.png',
+    'hoops_3_la': 'assets/kits/hoops_kit_3_gold.png',
+    'hoops_3_gold': 'assets/kits/hoops_kit_3_gold.png',
+    'hoops_4_boston': 'assets/kits/hoops_kit_4_emerald.png',
+    'hoops_4_emerald': 'assets/kits/hoops_kit_4_emerald.png',
+    'hoops_6_charlotte': 'assets/kits/hoops_kit_6_cyan.png',
+    'hoops_6_cyan': 'assets/kits/hoops_kit_6_cyan.png',
+    'hoops_5_raptor': 'assets/kits/hoops_kit_5_amethyst.png',
+    'hoops_5_amethyst': 'assets/kits/hoops_kit_5_amethyst.png',
+    'hoops_0_neon': 'assets/kits/hoops_kit_0_neon.png',
+    'hoops_7_phoenix': 'assets/kits/hoops_kit_7_amber.png',
+    'hoops_7_amber': 'assets/kits/hoops_kit_7_amber.png',
+    'hoops_9_beast': 'assets/kits/hoops_kit_9_galaxy.png',
+    'hoops_9_galaxy': 'assets/kits/hoops_kit_9_galaxy.png',
+    'hoops_8_mamba': 'assets/kits/hoops_kit_8_stealth.png',
+    'hoops_8_stealth': 'assets/kits/hoops_kit_8_stealth.png',
+    'hoops_1_miami': 'assets/kits/hoops_kit_1_pink.png',
+    'hoops_1_pink': 'assets/kits/hoops_kit_1_pink.png',
+    'hoops_star_holiday': 'assets/kits/hoops_kit_star_holiday.png',
+    'hoops_kit_star_holiday': 'assets/kits/hoops_kit_star_holiday.png',
+    'hoops_star_astral': 'assets/kits/hoops_kit_star_astral.png',
+    'hoops_kit_star_astral': 'assets/kits/hoops_kit_star_astral.png',
+    'hoops_star_phantom': 'assets/kits/hoops_kit_star_phantom.png',
+    'hoops_kit_star_phantom': 'assets/kits/hoops_kit_star_phantom.png',
 
-    if (!model.primitives || model.primitives.length === 0) return null;
-    const primWithImg = model.primitives.find(p => p.material && p.material.image && (p.material.image.naturalWidth || p.material.image.width));
-    if (!primWithImg) return null;
-    const srcImg = primWithImg.material.image;
+    // Keeper Kits
+    'keeper_0_volt': 'assets/kits/keeper_kit_0_volt.png',
+    'keeper_volt': 'assets/kits/keeper_kit_0_volt.png',
+    'keeper_home': 'assets/kits/keeper_kit_0_volt.png'
+  };
 
-    try {
-      const cvs = document.createElement('canvas');
-      const W = srcImg.naturalWidth || srcImg.width || 1024;
-      const H = srcImg.naturalHeight || srcImg.height || 1024;
-      cvs.width = W;
-      cvs.height = H;
-      const ctx = cvs.getContext('2d');
-      ctx.drawImage(srcImg, 0, 0);
+  function loadAtlasTexture(gl, url) {
+    if (skinTextureCache.has(url)) return skinTextureCache.get(url);
+    const tex = gl.createTexture();
+    skinTextureCache.set(url, tex);
 
-      const imgData = ctx.getImageData(0, 0, W, H);
-      const data = imgData.data;
+    // Initial 1x1 fallback while image loads
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([30, 40, 60, 255]));
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
-      const pCol = hexToRgb(skin.primary) || (isFooty ? [0, 200, 255] : [255, 107, 0]);
-      const sCol = hexToRgb(skin.secondary) || (isFooty ? [10, 30, 63] : [20, 21, 26]);
-      const shCol = hexToRgb(skin.shorts) || sCol;
-      const accCol = hexToRgb(skin.accent) || [255, 255, 255];
-      const bCol = hexToRgb(skin.boots) || pCol;
-
-      if (isFooty) {
-        // Striker #10 Texture Recoloring
-        for (let y = 0; y < H; y++) {
-          const v = y / H;
-          for (let x = 0; x < W; x++) {
-            const u = x / W;
-            const idx = (y * W + x) * 4;
-            const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-
-            // 1. Jersey (Front u < 0.5 & Back u >= 0.5, v < 0.5)
-            if (v < 0.5) {
-              // Blue jersey fabric (leave white chevron and gold collar trim and white #10 intact)
-              if (b > 120 && b > r + 35 && b > g - 25) {
-                const lum = (r * 0.15 + g * 0.35 + b * 0.5) / 165.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(pCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(pCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(pCol[2] * lum)));
-              }
-            }
-            // 2. Shorts (u < 0.5, 0.5 <= v < 0.75)
-            else if (u < 0.5 && v < 0.75) {
-              // White fabric
-              if (r > 200 && g > 200 && b > 200) {
-                const lum = (r * 0.3 + g * 0.59 + b * 0.11) / 250.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(shCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(shCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(shCol[2] * lum)));
-              }
-              // Cyan side stripe
-              else if (b > 180 && r < 100) {
-                data[idx] = accCol[0];
-                data[idx + 1] = accCol[1];
-                data[idx + 2] = accCol[2];
-              }
-            }
-            // 3. Socks & Limbs (u < 0.5, v >= 0.75)
-            else if (u < 0.5 && v >= 0.75) {
-              // Cyan sock stripes (r < 100, b > 160)
-              if (b > 160 && r < 100) {
-                const lum = b / 240.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(pCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(pCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(pCol[2] * lum)));
-              }
-            }
-            // 4. Cleats / Boots (u >= 0.5, v >= 0.75)
-            else if (u >= 0.5 && v >= 0.75) {
-              // Cyan upper boot body
-              if (b > 160 && r < 100) {
-                const lum = b / 235.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(bCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(bCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(bCol[2] * lum)));
-              }
-            }
-            // Face & hair (u >= 0.5, 0.5 <= v < 0.75) left untouched
-          }
+    if (typeof Image !== 'undefined') {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        const aniso = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+        if (aniso) {
+          const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
+          gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
         }
-      } else {
-        // All-Star #23 Texture Recoloring
-        for (let y = 0; y < H; y++) {
-          const v = y / H;
-          for (let x = 0; x < W; x++) {
-            const u = x / W;
-            const idx = (y * W + x) * 4;
-            const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-
-            // 1. Jersey (Front & Back, v < 0.5)
-            if (v < 0.5) {
-              // Orange jersey fabric (leave white piping, white wordmark and #23 number intact)
-              if (r > 150 && r > b + 60) {
-                const lum = (r * 0.5 + g * 0.4 + b * 0.1) / 180.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(pCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(pCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(pCol[2] * lum)));
-              }
-              // Flank panels (dark)
-              else if (r < 40 && g < 40 && b < 45 && !(r === g && g === b && r > 200)) {
-                const lum = (r + g + b) / 90.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(sCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(sCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(sCol[2] * lum)));
-              }
-            }
-            // 2. Shorts (u < 0.5, v >= 0.5)
-            else if (u < 0.5 && v >= 0.5) {
-              // Orange shorts fabric
-              if (r > 150 && r > b + 60) {
-                const lum = (r * 0.5 + g * 0.4 + b * 0.1) / 180.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(shCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(shCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(shCol[2] * lum)));
-              }
-              // Side panels
-              else if (r < 40 && g < 40 && b < 45) {
-                const lum = (r + g + b) / 90.0;
-                data[idx] = Math.min(255, Math.max(0, Math.round(sCol[0] * lum)));
-                data[idx + 1] = Math.min(255, Math.max(0, Math.round(sCol[1] * lum)));
-                data[idx + 2] = Math.min(255, Math.max(0, Math.round(sCol[2] * lum)));
-              }
-            }
-            // Face, hair, arms (u >= 0.5, v >= 0.5) left untouched
-          }
-        }
-      }
-
-      ctx.putImageData(imgData, 0, 0);
-
-      // Preserve pristine baked Fortnite face, neck skin, hair, and facial features from the embedded atlas!
-
-      // 4. Eyes (U: 0.78 to 0.86, V: 0.65 to 0.72)
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(W * 0.78, H * 0.65, W * 0.08, H * 0.07);
-      // Iris & pupil
-      ctx.fillStyle = isFooty ? '#1d4ed8' : '#451a03';
-      ctx.beginPath();
-      ctx.arc(W * 0.82, H * 0.685, W * 0.022, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(W * 0.82, H * 0.685, W * 0.012, 0, Math.PI * 2);
-      ctx.fill();
-      // White reflection dot
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(W * 0.825, H * 0.680, W * 0.005, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Render high-detail rarity patterns, club crest, and squad numbers onto uniform
-      drawGlbJerseyPattern(ctx, W, H, isFooty, skin.id, skin);
-
-      const skinTex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, skinTex);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cvs);
-      gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      const anisoExt = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
-      if (anisoExt) {
-        const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
-        gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
-      }
-      gl.bindTexture(gl.TEXTURE_2D, null);
-
-      skinTextureCache.set(key, skinTex);
-      return skinTex;
-    } catch (err) {
-      console.warn('[CharactersGLB] Error generating skin texture:', err);
-      return null;
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      };
+      img.src = url;
     }
+    return tex;
+  }
+
+  function getOrCreateSkinTexture(gl, model, skin, isFooty, isKeeper) {
+    if (!gl) return null;
+    if (isKeeper) {
+      return loadAtlasTexture(gl, 'assets/kits/keeper_kit_0_volt.png');
+    }
+    const defaultUrl = isFooty ? KIT_ATLAS_MAP['footy_classic'] : KIT_ATLAS_MAP['hoops_classic'];
+    if (!skin || !skin.id) {
+      return loadAtlasTexture(gl, defaultUrl);
+    }
+    const atlasUrl = KIT_ATLAS_MAP[skin.id] || defaultUrl;
+    if (atlasUrl) {
+      return loadAtlasTexture(gl, atlasUrl);
+    }
+    return null;
   }
 
   function getLoader() {
@@ -1606,10 +1525,9 @@
           inst.charRef.pivot.visible = false;
         }
 
-        // Lazy-generate custom skin texture whenever any custom kit is equipped
-        const isCustomSkin = Boolean(inst.skin && inst.skin.id && inst.skin.id !== 'skin_rookie' && inst.skin.id !== 'skin_bb_onyx' && inst.skin.id !== 'footy_classic' && inst.skin.id !== 'hoops_classic');
-        if (!inst.customTexture && isCustomSkin && !inst.isKeeper) {
-          inst.customTexture = getOrCreateSkinTexture(gl, inst.model, inst.skin, inst.isFooty);
+        // Bind custom kit texture whenever any kit is equipped
+        if (!inst.customTexture) {
+          inst.customTexture = getOrCreateSkinTexture(gl, inst.model, inst.skin, inst.isFooty, inst.isKeeper);
         }
 
         const buffers = getOrCreateBuffers(gl, inst.model);
