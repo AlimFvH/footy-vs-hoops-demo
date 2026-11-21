@@ -11244,7 +11244,7 @@
   }
 
   // Quick Match Search Modal (Real Matchmaking Server Integration - No Fake Opponents)
-  function showQuickMatchSearchModal(app, targetSport) {
+  function showQuickMatchSearchModal(app, curChar) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-back';
 
@@ -11254,9 +11254,6 @@
     var isCancelled = false;
     var timerId = null;
     var pollId = null;
-
-    var playerFaction = (app && app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
-    var curSport = (targetSport === 'hoops') ? 'hoops' : 'footy';
 
     var tabId = '';
     try {
@@ -11281,7 +11278,7 @@
         '<div class="fvh-mm-radar-ring r1"></div>' +
         '<div class="fvh-mm-radar-ring r2"></div>' +
         '<div class="fvh-mm-radar-ring r3"></div>' +
-        '<div class="fvh-mm-radar-center" style="display:flex;align-items:center;justify-content:center;">' + (playerFaction === 'footy' ? getUiIconSvg('nav_home_footy', 28) : getUiIconSvg('nav_home_hoops', 28)) + '</div>' +
+        '<div class="fvh-mm-radar-center" style="display:flex;align-items:center;justify-content:center;">' + (curChar === 'footy' ? getUiIconSvg('nav_home_footy', 28) : getUiIconSvg('nav_home_hoops', 28)) + '</div>' +
         '</div>' +
         '<div class="fvh-mm-status" id="fvh-mm-status-text">' + tr('searchingOpponent') + '</div>' +
         '<div class="fvh-mm-timer" id="fvh-mm-timer">00:01</div>' +
@@ -11358,8 +11355,8 @@
         body: JSON.stringify({
           playerId: playerId,
           playerName: playerName,
-          character: playerFaction,
-          mode: curSport
+          character: curChar,
+          mode: curChar
         })
       })
       .then(function (r) {
@@ -11441,7 +11438,7 @@
       clearInterval(timerId);
       if (pollId) clearInterval(pollId);
 
-      var opp = matchInfo.opponent || { name: 'Challenger', char: playerFaction === 'footy' ? 'hoops' : 'footy' };
+      var opp = matchInfo.opponent || { name: 'Challenger', char: curChar === 'footy' ? 'hoops' : 'footy' };
       statusEl.style.color = '#10b981';
       statusEl.innerHTML = '<b>' + tr('matchFoundTitle') + '</b><br><span style="font-size:13px;color:#fff;">vs ' + opp.name + ' (' + (opp.char === 'footy' ? '⚽ FOOTY' : '🏀 HOOPS') + ')</span>';
 
@@ -12216,27 +12213,9 @@
     var practiceCard = document.createElement('div');
     practiceCard.className = 'fvh-mode-card practice-card';
 
-    var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
-    var selSport = playerChosenChar;
+    var selSport = curChar;
     var selDiff = curSettings.difficulty || 'normal';
     var selMinutes = curSettings.matchMinutes || 2;
-
-    function getPracticeMatchupHtml(sport) {
-      var isPlayerFooty = (playerChosenChar === 'footy');
-      var youTeamName = isPlayerFooty ? 'FOOTY' : 'HOOPS';
-      var youTeamIcon = isPlayerFooty ? '⚽' : '🏀';
-      var youColor = isPlayerFooty ? '#00f59b' : '#ff2a55';
-      var cpuTeamName = isPlayerFooty ? 'HOOPS' : 'FOOTY';
-      var cpuTeamIcon = isPlayerFooty ? '🏀' : '⚽';
-      var cpuColor = isPlayerFooty ? '#ff2a55' : '#00f59b';
-      var sportText = (sport === 'footy') ? (lang === 'ru' ? '⚽ Дисциплина: Футбол' : '⚽ Discipline: Football') : (lang === 'ru' ? '🏀 Дисциплина: Баскетбол' : '🏀 Discipline: Basketball');
-      return '<div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">' +
-        '<span style="color:' + youColor + ';font-weight:900;">' + youTeamIcon + ' ' + tr('youTeam') + ': ' + youTeamName + '</span>' +
-        '<span style="color:#ffd000;font-weight:900;margin:0 4px;">⚔️ VS ⚔️</span>' +
-        '<span style="color:' + cpuColor + ';font-weight:900;">' + tr('cpuTeam') + ': ' + cpuTeamName + ' ' + cpuTeamIcon + '</span>' +
-        '</div>' +
-        '<div style="margin-top:3px;font-size:10.5px;color:#cbd5e1;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">' + sportText + '</div>';
-    }
 
     practiceCard.innerHTML =
       '<div class="fvh-mode-card-header">' +
@@ -12245,7 +12224,7 @@
       '</div>' +
       '<div class="fvh-mode-card-body">' +
         '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +
-        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь против компьютерного соперника за выбранную команду, оттачивайте мастерство и готовьтесь к предстоящему сезону!' : 'Battle against AI opponent for your chosen faction, master your skills, and prepare for the upcoming season!') + '</div>' +
+        '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Сражайтесь против компьютерного соперника, оттачивайте мастерство и готовьтесь к предстоящему сезону!' : 'Battle against AI opponent, master your skills, and prepare for the upcoming season!') + '</div>' +
         '<div class="fvh-mode-controls">' +
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('sportType') + ':</span>' +
@@ -12255,7 +12234,10 @@
             '</div>' +
           '</div>' +
           '<div class="fvh-practice-matchup" id="fvh-practice-matchup" style="margin-bottom:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:11.5px;font-weight:800;text-align:center;">' +
-            getPracticeMatchupHtml(selSport) +
+            (selSport === 'footy'
+              ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
+              : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
+            ) +
           '</div>' +
           '<div class="fvh-ctrl-row">' +
             '<span class="fvh-ctrl-label">' + tr('difficulty') + ':</span>' +
@@ -12279,7 +12261,10 @@
         selSport = b.dataset.sport;
         var pMatchup = practiceCard.querySelector('#fvh-practice-matchup');
         if (pMatchup) {
-          pMatchup.innerHTML = getPracticeMatchupHtml(selSport);
+          pMatchup.innerHTML = (selSport === 'footy'
+            ? '<span style="color:#00f0ff;">⚽ ' + tr('youTeam') + ': FOOTY</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#f97316;">' + tr('cpuTeam') + ': HOOPS 🏀</span>'
+            : '<span style="color:#f97316;">🏀 ' + tr('youTeam') + ': HOOPS</span> <span style="color:#f59e0b;margin:0 4px;">⚔️ VS ⚔️</span> <span style="color:#00f0ff;">' + tr('cpuTeam') + ': FOOTY ⚽</span>'
+          );
         }
         app.audio.play('click');
       };
@@ -12301,6 +12286,7 @@
         if (!d.settings) d.settings = {};
         d.settings.difficulty = selDiff;
       });
+      var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || 'footy';
       var eq = (app.store && app.store.data && app.store.data.equipped) || {};
       var ownedList = (app.store && app.store.data && app.store.data.owned) || [];
       var chosenArena = (selSport === 'hoops') ? (eq['stadium.hoops'] || 'std_hoops_street') : (eq['stadium.footy'] || 'std_footy_classic');
@@ -12309,7 +12295,7 @@
       }
       app.launch({
         mode: selSport,
-        char: playerChosenChar,
+        char: (selSport === 'hoops') ? 'hoops' : 'footy',
         difficulty: selDiff,
         minutes: selMinutes,
         arenaId: chosenArena,
@@ -12869,7 +12855,7 @@
       '    </div>' +
       '  </div>' +
       '</div>' +
-      '<div class="solo-avatar-box" style="width:100%;height:clamp(250px, 36vh, 320px);display:flex;align-items:center;justify-content:center;position:relative;margin:4px 0;">' +
+      '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
       charPortraitHtml +
       '</div>' +
       '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
@@ -13805,10 +13791,9 @@
       }, 350);
     } else if (targetLaunch) {
       setTimeout(function () {
-        var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || targetChar || 'footy';
         app.launch({
           mode: targetLaunch,
-          char: playerChosenChar,
+          char: targetLaunch,
           difficulty: 'normal',
           minutes: 2,
           boostId: null

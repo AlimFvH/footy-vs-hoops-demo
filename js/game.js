@@ -9782,7 +9782,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.arena.apply(this.scene);
             renderer.clearColor = (0, math_js_10.rgb)(stadium.fog);
             this.frame = visualOf(eq.frame, 'frame_default');
-            const playerChar = (opts && opts.char) ? opts.char : ((save && (save.selectedTeam || save.selectedCharacter)) || 'footy');
+            const playerChar = (opts && opts.char) ? opts.char : ((mode === 'hoops') ? 'hoops' : 'footy');
             const oppChar = (playerChar === 'footy') ? 'hoops' : 'footy';
             this.playerChar = playerChar;
             this.oppChar = oppChar;
@@ -15836,7 +15836,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.hud.onToggleMute = () => this.audio.toggleMute();
             this.passiveBoostConsumed = false;
             this.turboSpentInMatch = false;
-            const playerFaction = (cfg.char || ((save && (save.selectedTeam || save.selectedCharacter)) || 'footy'));
+            const playerFaction = (cfg.char || (cfg.mode === 'hoops' ? 'hoops' : (cfg.mode === 'footy' ? 'footy' : ((save && (save.selectedTeam || save.selectedCharacter)) || 'footy'))));
             const oppFaction = (playerFaction === 'footy') ? 'hoops' : 'footy';
             const charPick = playerFaction;
             this.view = new matchview_js_1.MatchView(this.renderer, sim, { equipped: save.equipped, quality: this.quality, reducedMotion: !save.settings.shake || cfg.demo === true, onEvent: (e) => this.onEvent(e), char: charPick, arenaId: cfg.arenaId || (online && online.info && online.info.arenaId) }, this.stage.clientWidth / Math.max(1, this.stage.clientHeight));
@@ -18077,8 +18077,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                     x.settings.difficulty = difficulty;
                     x.settings.matchMinutes = minutes;
                 });
-                const playerChar = (this.store && this.store.data && (this.store.data.selectedCharacter || this.store.data.selectedTeam)) || 'footy';
-                this.launch({ mode: this.selMode, char: playerChar, difficulty, minutes, boostId: this.store.data.armedBoost }, false);
+                this.launch({ mode: this.selMode, difficulty, minutes, boostId: this.store.data.armedBoost }, false);
             });
             const back = (0, dom_js_6.h)('button', { class: 'btn icon back', type: 'button', on: { click: () => (this.audio.play('click'), this.showMenu()) } }, document.documentElement.dir === 'rtl' ? '→' : '←');
             const el = (0, dom_js_6.h)('div', { class: 'screen solid page-screen has-nav' }, (0, dom_js_6.h)('div', { class: 'page mode-page' }, (0, dom_js_6.h)('div', { class: 'page-head' }, back, (0, dom_js_6.h)('h1', null, (0, index_js_7.t)('mode.title'))), (0, dom_js_6.h)('div', { class: 'page-body' }, (0, dom_js_6.h)('div', { class: 'modes' }, mkCard('footy'), mkCard('hoops')), (0, dom_js_6.h)('div', { class: 'opt-card' }, (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.difficulty')), (0, kit_js_4.seg)([{ value: 'easy', label: (0, index_js_7.t)('diff.easy') }, { value: 'normal', label: (0, index_js_7.t)('diff.normal') }, { value: 'hard', label: (0, index_js_7.t)('diff.hard') }], difficulty, (v) => (difficulty = v)), (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.duration')), (0, kit_js_4.seg)([1, 2, 3, 5].map((n) => ({ value: n, label: (0, index_js_7.t)('mode.minutes', { n }) })), minutes, (v) => (minutes = v)), (0, dom_js_6.h)('div', { class: 'boost-line' }, boostLine))), (0, dom_js_6.h)('div', { class: 'start-bar' }, startBtn, (0, dom_js_6.h)('button', { class: 'btn block online-entry', type: 'button', on: { click: () => this.showOnline(this.selMode) } }, '🌐 ', (0, index_js_7.t)('mode.online'))), (0, kit_js_4.bottomNav)(null, (n) => this.go(n))));
@@ -18185,8 +18184,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
         }
         launchOnline(session) {
             const i = session.info;
-            const playerChar = (this.store && this.store.data && (this.store.data.selectedCharacter || this.store.data.selectedTeam)) || 'footy';
-            this.launch({ mode: i.mode, char: playerChar, difficulty: 'normal', minutes: i.minutes, boostId: null, online: session }, false);
+            this.launch({ mode: i.mode, difficulty: 'normal', minutes: i.minutes, boostId: null, online: session }, false);
         }
         quitToMenu() {
             this.game.stop();
