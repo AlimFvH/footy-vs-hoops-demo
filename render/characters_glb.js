@@ -1453,7 +1453,7 @@
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
             const inst = new GLBCharacterInstance(c, 'assets/characters/keeper1.glb', {
-              scale: 2.38,
+              scale: 1.96,
               skin: c.skin,
               isFooty: true,
               isKeeper: true,
@@ -1462,7 +1462,7 @@
             list.push(inst);
           } else if (charSport === 'footy') {
             const inst = new GLBCharacterInstance(c, 'assets/characters/footy10.glb', {
-              scale: 2.38,
+              scale: 1.96,
               skin: c.skin,
               isFooty: true,
               isKeeper: false,
@@ -1471,7 +1471,7 @@
             list.push(inst);
           } else {
             const inst = new GLBCharacterInstance(c, 'assets/characters/hoops23.glb', {
-              scale: 2.48,
+              scale: 2.05,
               skin: c.skin,
               isFooty: false,
               isKeeper: false,
