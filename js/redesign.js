@@ -2817,26 +2817,22 @@
     return isFooty ? 'assets/hero_footy_real.png?v=3.6.0-authentic-3d' : 'assets/hero_hoops_real.png?v=3.6.0-authentic-3d';
   }
 
-  function getWardrobe3DViewerHtml(charId, specificSkinId) {
+  function getWardrobe3DViewerHtml(charId, specificSkinId, viewerOpts) {
     var isFooty = charId === 'footy';
     var defaultSkin = isFooty ? 'footy_classic' : 'hoops_classic';
     var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
     var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
     var skinId = canonItemId(specificSkinId || resolveEquippedItemId(eq, 'skins', charId) || defaultSkin);
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
-    var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
+    var lang = getActiveLang();
     var skinLabel = getItemLabelById(skinId, skinId);
-    var tagHtml = '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:6px;margin-bottom:4px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.92);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.38)' : 'rgba(251,146,60,0.38)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + escapeHtml(skinLabel) + '</span></div>';
-    var poseBtnsHtml = '<div class="fvh-wardrobe-pose-bar">' +
-      '<button type="button" class="fvh-pose-chip" data-anim="Idle">🧍 ' + (lang === 'ru' ? 'Стойка' : 'Idle') + '</button>' +
-      '<button type="button" class="fvh-pose-chip" data-anim="' + (isFooty ? 'Anim_EA_PowerStrike' : 'Anim_2K_SlamDunk') + '">' + (isFooty ? ('⚽ ' + (lang === 'ru' ? 'Удар' : 'Kick')) : ('🏀 ' + (lang === 'ru' ? 'Данк' : 'Dunk'))) + '</button>' +
-      '<button type="button" class="fvh-pose-chip" data-anim="Anim_Celebration">🎉 ' + (lang === 'ru' ? 'Эмоция' : 'Celebrate') + '</button>' +
-      '</div>';
-    var hintHtml = '<div class="fvh-3d-hint"><span>🔄</span> <span>' + (lang === 'ru' ? 'Вращайте модель 360°' : 'Rotate model 360°') + '</span></div>';
+    var vOpts = viewerOpts || {};
+    var hostHeight = vOpts.modal ? 'clamp(220px,34vh,300px)' : 'clamp(250px,36vh,360px)';
+    var tagHtml = vOpts.hideTag ? '' : ('<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:8px;margin-bottom:4px;font-size:11.5px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.92);backdrop-filter:blur(8px);border:1px solid ' + (isFooty ? 'rgba(56,189,248,0.34)' : 'rgba(251,146,60,0.34)') + ';border-radius:999px;padding:5px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.45);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + escapeHtml(skinLabel) + '</span></div>');
+    var hintHtml = '<div class="fvh-3d-hint"><span>↻</span> <span>' + (lang === 'ru' ? 'Потяните, чтобы покрутить 360°' : 'Drag to rotate 360°') + '</span></div>';
 
-    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:space-between;overflow:visible;border-radius:18px;background:transparent;">' +
-      '<div class="fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" aria-label="' + heroTitle + '" style="width:100%;height:clamp(240px,34vh,340px);position:relative;border-radius:16px;overflow:hidden;"></div>' +
-      poseBtnsHtml +
+    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:visible;border-radius:18px;background:transparent;">' +
+      '<div class="fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" aria-label="' + heroTitle + '" style="width:100%;height:' + hostHeight + ';position:relative;border-radius:16px;overflow:hidden;cursor:grab;"></div>' +
       tagHtml +
       hintHtml +
     '</div>';
@@ -2849,15 +2845,6 @@
     if (host && window.CharactersGLB && typeof window.CharactersGLB.mountWardrobePreview === 'function') {
       window.CharactersGLB.mountWardrobePreview(host, charId, canonItemId(kitId));
     }
-    containerEl.querySelectorAll('.fvh-pose-chip').forEach(function (btn) {
-      btn.onclick = function (e) {
-        e.stopPropagation();
-        var clip = btn.getAttribute('data-anim');
-        if (window.CharactersGLB && typeof window.CharactersGLB.playWardrobePreviewAnim === 'function') {
-          window.CharactersGLB.playWardrobePreviewAnim(clip);
-        }
-      };
-    });
   }
 
   function getCharacterDisplayHtml(charId, specificSkinId, options) {
@@ -5275,7 +5262,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.0.0-aaa" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.2.0-polish" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -6830,14 +6817,18 @@
     var charRole = document.createElement('div');
     charRole.className = 'note';
 
+    var previewNavRow = document.createElement('div');
+    previewNavRow.className = 'fvh-wrd-cycle-row';
+
     var equipSlotList = document.createElement('div');
     equipSlotList.className = 'fvh-equipped-list';
 
     var selectBtn = document.createElement('button');
     selectBtn.className = 'btn primary block';
-    selectBtn.style.marginTop = '14px';
+    selectBtn.style.marginTop = '12px';
 
     previewCol.appendChild(avatarBox);
+    previewCol.appendChild(previewNavRow);
     previewCol.appendChild(charName);
     previewCol.appendChild(charRole);
     previewCol.appendChild(equipSlotList);
@@ -7027,6 +7018,7 @@
         }
 
         // Update left preview box & action button based on selected item
+        previewNavRow.innerHTML = '';
         if (selectedItem) {
           var isBallSel = (selectedItem.category === 'balls' || selectedItem.category === 'balls_footy' || selectedItem.category === 'balls_hoops' || String(selectedItem.id).startsWith('ball_'));
           if (!isBallSel) {
@@ -7036,6 +7028,36 @@
               window.CharactersGLB.unmountWardrobePreview();
             }
             avatarBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;padding:10px;box-sizing:border-box;">' + renderItemArtwork(selectedItem, 'large') + '</div>';
+          }
+          if (matching.length > 1) {
+            var curIdx = matching.findIndex(function (m) { return canonItemId(m.id) === canonItemId(selectedItem.id); });
+            if (curIdx < 0) curIdx = 0;
+            var prevBtn = document.createElement('button');
+            prevBtn.type = 'button';
+            prevBtn.className = 'btn small secondary fvh-wrd-cycle-btn';
+            prevBtn.textContent = '‹';
+            prevBtn.title = lang === 'ru' ? 'Предыдущая форма' : 'Previous kit';
+            prevBtn.onclick = function () {
+              app.audio.play('click');
+              selectedItem = matching[(curIdx - 1 + matching.length) % matching.length];
+              updateView();
+            };
+            var counterSpan = document.createElement('span');
+            counterSpan.className = 'fvh-wrd-cycle-count';
+            counterSpan.textContent = (curIdx + 1) + ' / ' + matching.length;
+            var nextBtn = document.createElement('button');
+            nextBtn.type = 'button';
+            nextBtn.className = 'btn small secondary fvh-wrd-cycle-btn';
+            nextBtn.textContent = '›';
+            nextBtn.title = lang === 'ru' ? 'Следующая форма' : 'Next kit';
+            nextBtn.onclick = function () {
+              app.audio.play('click');
+              selectedItem = matching[(curIdx + 1) % matching.length];
+              updateView();
+            };
+            previewNavRow.appendChild(prevBtn);
+            previewNavRow.appendChild(counterSpan);
+            previewNavRow.appendChild(nextBtn);
           }
           var selSlotKey = isBallSel ? ('ball.' + curChar) : ('skin.' + curChar);
           var isSelEquipped = canonItemId(selectedItem.id) === expectedEqCanonId;
@@ -7328,7 +7350,7 @@
                 productId: pk.id,
                 title: pk.name,
                 starsPrice: pk.starsCost,
-                coinsAmount: pk.id === 'pack_stars_starter' ? 500 : (pk.id === 'pack_stars_champion' ? 2000 : 6000),
+                coinsAmount: pk.id === 'pack_stars_starter' ? 1500 : (pk.id === 'pack_stars_champion' ? 4000 : 10000),
                 onPurchased: function () {
                   app.audio.play('claim');
                   openPackWithCinematicAnimation(app, pk.id, updateView);
@@ -7772,8 +7794,82 @@
       updateStatsDom(totalInvited, qualifiedFriends, earnedCoins);
       contentArea.appendChild(statsBox);
 
+      // 4. Referral Milestones Section
+      var milestonesWrap = document.createElement('div');
+      milestonesWrap.style.marginTop = '12px';
+      milestonesWrap.style.display = 'flex';
+      milestonesWrap.style.flexDirection = 'column';
+      milestonesWrap.style.gap = '8px';
+      contentArea.appendChild(milestonesWrap);
+
+      var DEFAULT_MILESTONES = [
+        { friends: 1, coins: 500, xp: 150 },
+        { friends: 3, coins: 1500, xp: 300 },
+        { friends: 5, coins: 3000, xp: 500 },
+        { friends: 10, coins: 7500, xp: 1000 }
+      ];
+      function renderMilestones(list, qCount, claimedList, activeRefCode) {
+        milestonesWrap.innerHTML = '';
+        var hdr = document.createElement('div');
+        hdr.style.fontSize = '12px';
+        hdr.style.fontWeight = '800';
+        hdr.style.color = '#cbd5e1';
+        hdr.style.letterSpacing = '0.03em';
+        hdr.textContent = lang === 'ru' ? 'НАГРАДЫ ЗА ПРИГЛАШЕНИЯ' : 'REFERRAL MILESTONES';
+        milestonesWrap.appendChild(hdr);
+
+        (list || DEFAULT_MILESTONES).forEach(function (m) {
+          var isClaimed = Array.isArray(claimedList) && claimedList.indexOf(m.friends) !== -1;
+          var ready = !isClaimed && qCount >= m.friends;
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,0.04);border:1px solid ' + (ready ? 'rgba(34,197,94,0.45)' : 'rgba(255,255,255,0.08)') + ';';
+          var meta = document.createElement('div');
+          meta.style.cssText = 'display:flex;flex-direction:column;gap:2px;min-width:0;';
+          meta.innerHTML =
+            '<div style="font-size:12.5px;font-weight:800;color:#fff;">' + m.friends + ' ' + (lang === 'ru' ? (m.friends === 1 ? 'друг' : (m.friends < 5 ? 'друга' : 'друзей')) : (m.friends === 1 ? 'Friend' : 'Friends')) +
+            ' <span style="font-size:11px;color:#94a3b8;font-weight:700;">(' + Math.min(qCount, m.friends) + '/' + m.friends + ')</span></div>' +
+            '<div style="font-size:11px;font-weight:800;color:#facc15;display:flex;align-items:center;gap:4px;">' + getFvhCoinSvg('inline') + ' +' + m.coins + ' · +' + m.xp + ' XP</div>';
+          row.appendChild(meta);
+
+          var btn = document.createElement('button');
+          btn.style.cssText = 'padding:7px 12px;border-radius:9px;border:none;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap;' +
+            (isClaimed ? 'background:rgba(148,163,184,0.14);color:#94a3b8;cursor:default;' :
+             ready ? 'background:linear-gradient(135deg,#22c55e,#16a34a);color:#04120a;box-shadow:0 3px 10px rgba(34,197,94,0.3);' :
+                     'background:rgba(255,255,255,0.06);color:#64748b;cursor:default;');
+          btn.disabled = !ready;
+          btn.textContent = isClaimed ? (lang === 'ru' ? 'Получено ✓' : 'Claimed ✓') : (ready ? (lang === 'ru' ? 'Забрать' : 'Claim') : (lang === 'ru' ? 'Закрыто' : 'Locked'));
+          if (ready) {
+            btn.onclick = function () {
+              btn.disabled = true;
+              fetch('/api/referrals/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refCode: activeRefCode, userId: pid, playerId: pid, milestone: m.friends })
+              }).then(function (r) { return r.json(); }).then(function (cr) {
+                if (cr && cr.ok) {
+                  app.audio.play('claim');
+                  if (app.store && app.store.data) {
+                    app.store.data.coins = (typeof cr.coins === 'number') ? cr.coins : ((app.store.data.coins || 0) + (m.coins || 0));
+                    app.store.data.xp = (typeof cr.xp === 'number') ? cr.xp : ((app.store.data.xp || 0) + (m.xp || 0));
+                    if (typeof app.store.save === 'function') app.store.save();
+                  }
+                  try { if (typeof updateTopbar === 'function') updateTopbar(); } catch (_) {}
+                  showToast((lang === 'ru' ? 'Получено +' : 'Claimed +') + m.coins + ' FvH Coins!');
+                  renderMilestones(list, qCount, (claimedList || []).concat([m.friends]), activeRefCode);
+                } else {
+                  btn.disabled = false;
+                }
+              }).catch(function () { btn.disabled = false; });
+            };
+          }
+          row.appendChild(btn);
+          milestonesWrap.appendChild(row);
+        });
+      }
+      renderMilestones(DEFAULT_MILESTONES, qualifiedFriends, [], myRefCode);
+
       // Query authoritative referral stats from server
-      fetch('/api/referrals/stats?playerId=' + encodeURIComponent(myRefCode))
+      fetch('/api/referrals/stats?refCode=' + encodeURIComponent(myRefCode) + '&playerId=' + encodeURIComponent(pid))
         .then(function (res) { return res.json(); })
         .then(function (s) {
           if (s && s.ok) {
@@ -7782,6 +7878,7 @@
             qualifiedFriends = (st.qualified !== undefined ? st.qualified : st.qualifiedCount) || qualifiedFriends;
             earnedCoins = qualifiedFriends * 100;
             updateStatsDom(totalInvited, qualifiedFriends, earnedCoins);
+            renderMilestones(s.milestones || DEFAULT_MILESTONES, qualifiedFriends, s.claimedMilestones || [], s.refCode || myRefCode);
           }
         })
         .catch(function () {});
@@ -8557,12 +8654,12 @@
       }
     }
 
-    // Modal Item Inspector
+    // Modal Item Inspector with Interactive 3D Kit Try-On Preview
     function openItemInspector(item) {
       var overlay = document.createElement('div');
       overlay.className = 'modal-back fvh-sheet-back';
       var modal = document.createElement('div');
-      modal.className = 'modal fvh-item-modal';
+      modal.className = 'modal fvh-item-modal fvh-item-modal-3d';
 
       var owned = (app.store && app.store.data && app.store.data.owned) || [];
       var isBallModal = (item.category === 'balls' || item.category === 'balls_footy' || item.category === 'balls_hoops' || String(item.id).startsWith('ball_'));
@@ -8573,65 +8670,120 @@
       var rarKey = item.rarity || 'common';
       var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
       var localizedItemName = trItem(item.name);
+      var isStarItem = (item.currency === 'star' || item.category === 'stars');
+      var isSkinModal = !isBallModal && (item.category === 'skins' || item.category === 'stars' || String(item.id).startsWith('footy_') || String(item.id).startsWith('hoops_') || String(item.id).startsWith('skin_'));
+      var targetHero = (item.mode === 'hoops' || String(item.id).includes('hoops')) ? 'hoops' : ((item.mode === 'footy' || String(item.id).includes('footy')) ? 'footy' : curChar);
+      var lang = getActiveLang();
 
       var categoryLabel = '';
-      if (item.category === 'skins') categoryLabel = tr('catSkins');
-      else if (item.category === 'balls_footy') categoryLabel = tr('catFootballBalls');
-      else if (item.category === 'balls_hoops') categoryLabel = tr('catBasketballBalls');
+      if (isStarItem) categoryLabel = (lang === 'ru' ? 'Эксклюзив Telegram Stars' : 'Telegram Stars Exclusive');
+      else if (item.category === 'skins') categoryLabel = tr('catSkins');
       else categoryLabel = tr('storeSub');
+
+      var previewBodyHtml = isSkinModal
+        ? getWardrobe3DViewerHtml(targetHero, item.id, { modal: true, hideTag: true })
+        : renderItemArtwork(item, 'large');
 
       modal.innerHTML =
         '<div class="fvh-sheet-handle"></div>' +
         '<div class="fvh-item-modal-head">' +
-        '<span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-        '<button class="modal-close-x" aria-label="Close">✕</button>' +
+        '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
+        '  <button class="modal-close-x" aria-label="Close">✕</button>' +
         '</div>' +
-        '<div class="fvh-item-modal-preview r-' + rarKey + '" style="display:flex;align-items:center;justify-content:center;padding:16px;">' +
-        renderItemArtwork(item, 'large') +
+        '<div class="fvh-item-modal-preview r-' + rarKey + (isSkinModal ? ' is-3d-stage' : '') + '">' +
+        previewBodyHtml +
         '</div>' +
         '<h2 class="fvh-item-modal-title">' + localizedItemName + '</h2>' +
         '<div class="fvh-item-modal-category">' + categoryLabel + '</div>' +
-        '<p class="fvh-item-modal-desc">' + (item.desc || (localizedItemName + ' — ' + tr('storeSub'))) + '</p>' +
         '<div class="fvh-item-modal-actions"></div>';
 
-      modal.querySelector('.modal-close-x').onclick = function () { overlay.remove(); };
+      function closeInspector() {
+        if (isSkinModal && window.CharactersGLB && typeof window.CharactersGLB.unmountWardrobePreview === 'function') {
+          window.CharactersGLB.unmountWardrobePreview();
+        }
+        overlay.remove();
+      }
+
+      modal.querySelector('.modal-close-x').onclick = function () {
+        app.audio.play('click');
+        closeInspector();
+      };
       overlay.onclick = function (e) {
         if (e.target === overlay) {
           app.audio.play('click');
-          overlay.remove();
+          closeInspector();
         }
       };
 
       var actionsBox = modal.querySelector('.fvh-item-modal-actions');
       if (isEquipped) {
         var eqBtn = document.createElement('button');
-        eqBtn.className = 'btn block';
+        eqBtn.className = 'btn block fvh-btn-eq-state';
         eqBtn.disabled = true;
         eqBtn.textContent = tr('equippedState');
         actionsBox.appendChild(eqBtn);
       } else if (isOwned) {
-        var ownedBtn = document.createElement('button');
-        ownedBtn.className = 'btn block';
-        ownedBtn.disabled = true;
-        ownedBtn.textContent = '✓ ' + (tr('ownedState') || 'Owned');
-        actionsBox.appendChild(ownedBtn);
+        var equipNowBtn = document.createElement('button');
+        equipNowBtn.className = 'btn primary block';
+        equipNowBtn.textContent = tr('equipAction') + ': ' + localizedItemName;
+        equipNowBtn.onclick = function () {
+          var pid = getAppPlayerId(app);
+          var cId = canonItemId(item.id);
+          var canonicalSlot = 'skin.' + targetHero;
+          app.store.update(function (d) {
+            if (!d.equipped) d.equipped = {};
+            d.equipped[canonicalSlot] = cId;
+            d.equipped.skin = cId;
+          });
+          if (app.store && typeof app.store.flush === 'function') app.store.flush();
+          app.audio.play('claim');
+          showToast(tr('equippedState') + ': ' + localizedItemName);
+          safeEconomyApi('/api/economy/equip', { playerId: pid, slot: canonicalSlot, itemId: cId });
+          closeInspector();
+          renderShop();
+        };
+        actionsBox.appendChild(equipNowBtn);
 
         var openWardrobeBtn = document.createElement('button');
-        openWardrobeBtn.className = 'btn primary block';
+        openWardrobeBtn.className = 'btn secondary block';
         openWardrobeBtn.style.marginTop = '8px';
-        openWardrobeBtn.textContent = '🎒 ' + tr('toWardrobe');
+        openWardrobeBtn.textContent = tr('toWardrobe');
         openWardrobeBtn.onclick = function () {
-          overlay.remove();
+          closeInspector();
           app.audio.play('click');
-          var targetSlot = isBallModal ? 'balls' : (item.currency === 'star' || item.category === 'stars' ? 'stars' : 'skins');
-          // app.showCharacters(curChar, targetSlot)
-          app.go('characters', { char: curChar, slot: targetSlot });
+          var targetSlot = (item.currency === 'star' || item.category === 'stars') ? 'stars' : 'skins';
+          app.go('characters', { char: targetHero, slot: targetSlot });
         };
         actionsBox.appendChild(openWardrobeBtn);
+      } else if (isStarItem) {
+        var buyStarBtn = document.createElement('button');
+        buyStarBtn.className = 'btn star block';
+        buyStarBtn.innerHTML = '⭐ ' + item.price.toLocaleString() + ' Stars';
+        buyStarBtn.onclick = function () {
+          if (isPurchasing) return;
+          openUniversalPaymentModal(app, {
+            productId: item.id,
+            title: localizedItemName,
+            starsPrice: item.price,
+            coinsAmount: 0,
+            onPurchased: function () {
+              app.audio.play('claim');
+              showToast('⭐ ' + localizedItemName + ' ' + (lang === 'ru' ? 'успешно приобретён!' : 'unlocked!'));
+              app.store.update(function (d) {
+                if (!d.owned) d.owned = [];
+                if (d.owned.indexOf(item.id) === -1) d.owned.push(item.id);
+              });
+              if (app.store && typeof app.store.flush === 'function') app.store.flush();
+              closeInspector();
+              renderShop();
+            }
+          });
+        };
+        actionsBox.appendChild(buyStarBtn);
       } else {
         var buyItemBtn = document.createElement('button');
         buyItemBtn.className = 'btn primary block';
-        buyItemBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price;
+        buyItemBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + item.price.toLocaleString();
         buyItemBtn.onclick = function () {
           if (isPurchasing) return;
           var coins = (app.store && app.store.data && app.store.data.coins) || 0;
@@ -8661,7 +8813,7 @@
               }
               app.audio.play('claim');
               showToast(tr('purchaseSuccess') + ': ' + localizedItemName);
-              overlay.remove();
+              closeInspector();
               renderShop();
             } else {
               app.audio.play('error');
@@ -8682,6 +8834,9 @@
 
       overlay.appendChild(modal);
       document.body.appendChild(overlay);
+      if (isSkinModal) {
+        mountWardrobe3DIntoContainer(modal, targetHero, item.id);
+      }
     }
 
     function renderShop() {
@@ -9047,8 +9202,9 @@
           '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
           (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#34d399;font-size:10.5px;font-weight:700;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
           '</div>' +
-          '<div class="fvh-card-thumb-wrap" style="height:80px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+          '<div class="fvh-card-thumb-wrap" style="position:relative;height:80px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
           renderItemArtwork(it, 'thumb') +
+          '<span class="fvh-card-3d-pill">3D</span>' +
           '</div>' +
           '<div class="fvh-card-title" style="font-size:13px;font-weight:700;color:var(--text-pure);margin-bottom:8px;">' + localizedItemName + '</div>' +
           '<div class="fvh-card-action"></div>';
@@ -11949,7 +12105,7 @@
       }
 
       function getDuelInviteLink() {
-        var botUser = 'FootyVsHoopsBot';
+        var botUser = 'FootyHoopsGameBot';
         if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.bot) {
           botUser = window.Telegram.WebApp.initDataUnsafe.bot.username || botUser;
         }
@@ -13310,62 +13466,106 @@
       var isHoopsMode = (self.mode === 'hoops');
       var lang = getActiveLang();
 
-      // Live match snapshot score
       var scoreText = '0 : 0';
       try {
         if (self.sim && self.sim.score) {
-          scoreText = self.sim.score[0] + '  :  ' + self.sim.score[1];
+          scoreText = self.sim.score[0] + ' : ' + self.sim.score[1];
         } else if (self.game && self.game.sim && self.game.sim.score) {
-          scoreText = self.game.sim.score[0] + '  :  ' + self.game.sim.score[1];
+          scoreText = self.game.sim.score[0] + ' : ' + self.game.sim.score[1];
         }
       } catch (e) {}
 
-      var matchBadge = isHoopsMode
-        ? (lang === 'ru' ? '🏀 МАТЧ ПО БАСКЕТБОЛУ' : '🏀 BASKETBALL MATCH')
-        : (lang === 'ru' ? '⚽ МАТЧ ПО ФУТБОЛУ' : '⚽ FOOTBALL MATCH');
+      var modeTitle = isHoopsMode
+        ? (lang === 'ru' ? 'БАСКЕТБОЛ 1v1' : 'BASKETBALL 1v1')
+        : (lang === 'ru' ? 'ФУТБОЛ 1v1' : 'FOOTBALL 1v1');
 
       var overlay = document.createElement('div');
       overlay.className = 'screen dim fvh-pause-overlay';
-      overlay.style.cssText = 'z-index:99999 !important; pointer-events:auto !important; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); background:rgba(6,10,18,0.84);';
+      overlay.style.cssText = 'z-index:99999 !important; pointer-events:auto !important; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); background:rgba(6,10,18,0.82);';
 
       var panel = document.createElement('div');
-      panel.className = 'panel pause-panel fvh-pause-card';
+      panel.className = 'panel pause-panel fvh-pause-card fvh-pause-modern';
 
-      // 1. Live Match Status Banner
-      var statusBox = document.createElement('div');
-      statusBox.className = 'fvh-pause-match-status';
-      statusBox.innerHTML =
-        '<div class="fvh-pause-arena-tag">' + matchBadge + '</div>' +
-        '<div class="fvh-pause-score-row">' +
-        '  <span class="fvh-pause-team-badge" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_footy', 14) + ' <span>' + (isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span></span>' +
-        '  <span class="fvh-pause-score-nums">' + scoreText + '</span>' +
-        '  <span class="fvh-pause-team-badge" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('nav_home_hoops', 14) + ' <span>' + (!isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span></span>' +
-        '</div>';
-      panel.appendChild(statusBox);
+      var icoBox = document.createElement('div');
+      icoBox.className = 'pause-ico fvh-pause-ico-svg';
+      icoBox.innerHTML = '<span class="pi-svg"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1.2"/><rect x="14" y="4" width="4" height="16" rx="1.2"/></svg></span>';
+      panel.appendChild(icoBox);
 
-      // 2. High-Tech 3D Pause Artwork Picture
-      var artBox = document.createElement('div');
-      artBox.className = 'fvh-pause-artwork';
-      artBox.innerHTML = getPauseArtworkSvg(curChar);
-      panel.appendChild(artBox);
+      var statusPill = document.createElement('div');
+      statusPill.className = 'fvh-pause-meta-pill';
+      statusPill.innerHTML =
+        '<span style="display:inline-flex;align-items:center;gap:6px;">' +
+        getUiIconSvg(isHoopsMode ? 'nav_home_hoops' : 'nav_home_footy', 14) +
+        '<span>' + modeTitle + '</span>' +
+        '<span style="opacity:0.45;">·</span>' +
+        '<span style="color:#fff;">' + (isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + ' ' + scoreText + ' ' + (!isFooty ? (lang === 'ru' ? 'Вы' : 'You') : (lang === 'ru' ? 'Бот' : 'CPU')) + '</span>' +
+        '</span>';
+      panel.appendChild(statusPill);
 
-      // 3. Pause Title
       var title = document.createElement('h2');
       title.className = 'pause-title fvh-pause-title';
       title.textContent = tr('pauseTitle') || (lang === 'ru' ? 'МАТЧ НА ПАУЗЕ' : 'MATCH PAUSED');
       panel.appendChild(title);
 
-      // Helper to build touch buttons
-      function createPauseBtn(label, icon, cls, onClick) {
+      // Quick Audio & Music Toggle Chips
+      var stSets = (self.store && self.store.data && self.store.data.settings) || {};
+      var sfxOn = stSets.sfx !== 0 && (!self.audio || self.audio.sfxVol > 0.01);
+      var musOn = stSets.music !== 0 && (!self.audio || self.audio.musicVol > 0.01);
+      var audioRow = document.createElement('div');
+      audioRow.className = 'fvh-pause-audio-row';
+
+      var sfxChip = document.createElement('button');
+      sfxChip.type = 'button';
+      sfxChip.className = 'fvh-pause-audio-chip' + (sfxOn ? ' on' : '');
+      function syncSfxLabel() {
+        sfxChip.className = 'fvh-pause-audio-chip' + (sfxOn ? ' on' : '');
+        sfxChip.textContent = (lang === 'ru' ? 'Звуки: ' : 'SFX: ') + (sfxOn ? (lang === 'ru' ? 'Вкл' : 'On') : (lang === 'ru' ? 'Выкл' : 'Off'));
+      }
+      syncSfxLabel();
+      sfxChip.onclick = function () {
+        sfxOn = !sfxOn;
+        var v = sfxOn ? 0.8 : 0;
+        if (self.store && typeof self.store.update === 'function') {
+          self.store.update(function (sd) { sd.settings = sd.settings || {}; sd.settings.sfx = v; });
+        }
+        if (self.audio && typeof self.audio.setSfxEnabled === 'function') self.audio.setSfxEnabled(sfxOn);
+        if (sfxOn && self.audio) self.audio.play('click');
+        syncSfxLabel();
+      };
+
+      var musChip = document.createElement('button');
+      musChip.type = 'button';
+      musChip.className = 'fvh-pause-audio-chip' + (musOn ? ' on' : '');
+      function syncMusLabel() {
+        musChip.className = 'fvh-pause-audio-chip' + (musOn ? ' on' : '');
+        musChip.textContent = (lang === 'ru' ? 'Музыка: ' : 'Music: ') + (musOn ? (lang === 'ru' ? 'Вкл' : 'On') : (lang === 'ru' ? 'Выкл' : 'Off'));
+      }
+      syncMusLabel();
+      musChip.onclick = function () {
+        musOn = !musOn;
+        var mv = musOn ? 0.35 : 0;
+        if (self.store && typeof self.store.update === 'function') {
+          self.store.update(function (sd) { sd.settings = sd.settings || {}; sd.settings.music = mv; });
+        }
+        if (self.audio && typeof self.audio.setMusicEnabled === 'function') self.audio.setMusicEnabled(musOn);
+        if (self.audio) self.audio.play('click');
+        syncMusLabel();
+      };
+      audioRow.appendChild(sfxChip);
+      audioRow.appendChild(musChip);
+      panel.appendChild(audioRow);
+
+      function createPauseBtn(label, svgHtml, cls, onClick) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'btn block pause-btn fvh-pause-btn ' + cls;
-        btn.style.cssText = 'touch-action:manipulation; -webkit-tap-highlight-color:transparent; min-height:48px;';
-        btn.innerHTML = '<span class="pi" style="font-size:17px;margin-right:8px;">' + icon + '</span><span class="pl">' + label + '</span>';
+        btn.style.cssText = 'touch-action:manipulation; -webkit-tap-highlight-color:transparent;';
+        btn.innerHTML = '<span class="pi"><span class="pi-svg">' + svgHtml + '</span></span><span class="pl">' + label + '</span>';
         var triggered = false;
         function fire(e) {
           if (triggered) return;
           triggered = true;
+          setTimeout(function () { triggered = false; }, 220);
           if (e && e.preventDefault && e.cancelable) e.preventDefault();
           if (e && e.stopPropagation) e.stopPropagation();
           self.audio.play('click');
@@ -13382,27 +13582,27 @@
       var settingsLabel = tr('pauseSettings') || (lang === 'ru' ? 'Настройки' : 'Settings');
       var quitLabel = tr('pauseQuit') || (lang === 'ru' ? 'Выйти в меню' : 'Quit to Menu');
 
-      // 1. Resume (dominant primary glowing)
-      panel.appendChild(createPauseBtn(resumeLabel, getUiIconSvg('play', 16), 'primary fvh-pause-resume-btn', function () {
+      var svgPlay = '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
+      var svgRestart = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+      var svgExit = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
+
+      panel.appendChild(createPauseBtn(resumeLabel, svgPlay, 'primary fvh-pause-resume-btn', function () {
         self.setPause(false);
       }));
 
-      // 2. Restart (offline singleplayer)
       if (!self.game || !self.game.cfg || !self.game.cfg.online) {
-        panel.appendChild(createPauseBtn(restartLabel, '↻', 'fvh-pause-secondary-btn', function () {
+        panel.appendChild(createPauseBtn(restartLabel, svgRestart, 'fvh-pause-secondary-btn', function () {
           self.closePause();
           if (self.game) self.game.setPaused(false);
           self.launchAgain();
         }));
       }
 
-      // 3. Settings
-      panel.appendChild(createPauseBtn(settingsLabel, getUiIconSvg('settings', 16), 'fvh-pause-secondary-btn', function () {
+      panel.appendChild(createPauseBtn(settingsLabel, getUiIconSvg('settings', 17), 'fvh-pause-secondary-btn', function () {
         self.pages.settingsOverlay(function () {});
       }));
 
-      // 4. Quit to Menu
-      panel.appendChild(createPauseBtn(quitLabel, '🚪', 'danger fvh-pause-danger-btn', function () {
+      panel.appendChild(createPauseBtn(quitLabel, svgExit, 'danger fvh-pause-danger-btn', function () {
         self.closePause();
         if (self.game) {
           try { self.game.stop(); } catch (e) {}

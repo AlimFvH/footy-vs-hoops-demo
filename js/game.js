@@ -205,10 +205,12 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
+                        const AUDIO_VERSION = '4.2.0-polish';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
-                                decodedUrlPromises.set(url, fetch(url)
+                                const fetchUrl = url.includes('?') ? url : (url + '?v=' + AUDIO_VERSION);
+                                decodedUrlPromises.set(url, fetch(fetchUrl)
                                     .then(res => res.ok ? res.arrayBuffer() : null)
                                     .then(buf => (buf && this.ctx) ? this.ctx.decodeAudioData(buf) : null)
                                     .catch(() => null));
@@ -348,17 +350,17 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
 
-                    // Per-action RMS gain calibration (tames loud whistles & steps, punches kicks & dunks)
+                    // Per-action RMS gain calibration tuned for remastered studio WAVs
                     const gainMap = {
-                        whistle: 0.25, whistleStart: 0.24, whistleEnd: 0.26, whistleRestart: 0.22,
-                        step: 0.34, squeak: 0.42, tackle: 0.56, swish: 0.68,
-                        steal: 0.74, save: 0.80, dribble: 0.72, dribble_court: 0.78,
-                        bounce: 0.76, kick: 0.92, shot: 0.98, dunk: 1.05,
-                        goal: 0.82, score: 0.80, win: 0.82, celebration: 0.80
+                        whistle: 0.56, whistleStart: 0.54, whistleEnd: 0.58, whistleRestart: 0.50,
+                        step: 0.42, squeak: 0.38, tackle: 0.68, swish: 0.72,
+                        steal: 0.78, save: 0.84, dribble: 0.74, dribble_court: 0.80,
+                        bounce: 0.76, kick: 0.88, shot: 0.94, dunk: 1.00,
+                        goal: 0.84, score: 0.82, win: 0.84, celebration: 0.82
                     };
                     const lpFreqMap = {
-                        whistle: 4400, whistleStart: 4400, whistleEnd: 4400, whistleRestart: 4400,
-                        step: 2600, tackle: 3000, swish: 5200, dribble: 3200, bounce: 3000
+                        whistle: 5800, whistleStart: 5800, whistleEnd: 5800, whistleRestart: 5800,
+                        step: 3400, tackle: 4200, swish: 7200, dribble: 4400, bounce: 4200
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.84);
@@ -4064,7 +4066,11 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             b.vy = vy;
             b.lastTouch = a;
             a.pickupLock = 0.55;
-            a.kickT = 0.28;
+            if (kind === 'shot') {
+                a.shotT = 0.44;
+            } else {
+                a.kickT = 0.28;
+            }
             this.onGround = false;
             this.shotReleaseState = {
                 kickerId: a.id,
@@ -18131,18 +18137,25 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             if (this.hud && this.hud.touch) {
                 this.hud.touch.style.pointerEvents = 'none';
             }
-            const b = (label, fn, cls = '', icon = '') => {
+            const mkSvg = (d, size = 18) => {
+                const wrap = document.createElement('span');
+                wrap.className = 'pi-svg';
+                wrap.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+                return wrap;
+            };
+            const b = (label, fn, cls = '', svgPath = '') => {
                 let triggered = false;
                 const fire = (e) => {
                     if (triggered) return;
                     triggered = true;
+                    window.setTimeout(() => { triggered = false; }, 220);
                     if (e && e.preventDefault && e.cancelable) e.preventDefault();
                     if (e && e.stopPropagation) e.stopPropagation();
                     this.audio.play('click');
                     fn();
                 };
                 return (0, dom_js_6.h)('button', {
-                    class: `btn block pause-btn ${cls}`,
+                    class: `btn block pause-btn fvh-pause-btn ${cls}`,
                     type: 'button',
                     style: 'touch-action: manipulation; -webkit-tap-highlight-color: transparent;',
                     on: {
@@ -18150,13 +18163,65 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                         touchend: fire,
                         pointerup: fire
                     }
-                }, (0, dom_js_6.h)('span', { class: 'pi' }, icon), (0, dom_js_6.h)('span', { class: 'pl' }, label));
+                }, (0, dom_js_6.h)('span', { class: 'pi' }, mkSvg(svgPath, 18)), (0, dom_js_6.h)('span', { class: 'pl' }, label));
             };
-            const el = (0, dom_js_6.h)('div', { class: 'screen dim', style: 'z-index:99999 !important; pointer-events:auto !important;' }, (0, dom_js_6.h)('div', { class: 'panel pause-panel' }, (0, dom_js_6.h)('div', { class: 'pause-ico' }, '⏸'), (0, dom_js_6.h)('h2', { class: 'pause-title' }, (0, index_js_7.t)('pause.title')), b((0, index_js_7.t)('pause.resume'), () => this.setPause(false), 'primary', '▶'), ((_a = this.game.cfg) === null || _a === void 0 ? void 0 : _a.online) ? null : b((0, index_js_7.t)('pause.restart'), () => { this.closePause(); this.game.setPaused(false); this.launchAgain(); }, '', '↻'), b((0, index_js_7.t)('pause.settings'), () => this.pages.settingsOverlay(() => undefined), '', '⚙'), b((0, index_js_7.t)('pause.quit'), async () => {
-                if (await (0, kit_js_4.confirmDialog)(el, { title: (0, index_js_7.t)('pause.quit'), text: (0, index_js_7.t)('pause.quitConfirm'), danger: true })) {
-                    this.quitToMenu();
+            const sim = (this.game && this.game.sim) || null;
+            const sc = (sim && sim.score) ? `${sim.score[0]} : ${sim.score[1]}` : '0 : 0';
+            const isHoops = Boolean(this.game && this.game.cfg && this.game.cfg.mode === 'hoops');
+            const lang = ((this.store && this.store.data && this.store.data.settings && this.store.data.settings.lang) || 'ru');
+            const modeLabel = isHoops ? (lang === 'ru' ? 'БАСКЕТБОЛ 1v1' : 'BASKETBALL 1v1') : (lang === 'ru' ? 'ФУТБОЛ 1v1' : 'FOOTBALL 1v1');
+            const stSets = (this.store && this.store.data && this.store.data.settings) || {};
+            let sfxOn = stSets.sfx !== 0 && this.audio.sfxVol > 0.01;
+            let musOn = stSets.music !== 0 && this.audio.musicVol > 0.01;
+
+            const sfxChip = (0, dom_js_6.h)('button', {
+                class: `fvh-pause-audio-chip ${sfxOn ? 'on' : ''}`,
+                type: 'button',
+                on: {
+                    click: () => {
+                        sfxOn = !sfxOn;
+                        const sVal = sfxOn ? 0.8 : 0;
+                        this.store.update((d) => { d.settings = d.settings || {}; d.settings.sfx = sVal; });
+                        this.audio.setSfxEnabled(sfxOn);
+                        if (sfxOn) this.audio.play('click');
+                        sfxChip.classList.toggle('on', sfxOn);
+                        sfxChip.textContent = (lang === 'ru' ? 'Звуки: ' : 'SFX: ') + (sfxOn ? (lang === 'ru' ? 'Вкл' : 'On') : (lang === 'ru' ? 'Выкл' : 'Off'));
+                    }
                 }
-            }, 'danger', '⏻')));
+            }, (lang === 'ru' ? 'Звуки: ' : 'SFX: ') + (sfxOn ? (lang === 'ru' ? 'Вкл' : 'On') : (lang === 'ru' ? 'Выкл' : 'Off')));
+
+            const musChip = (0, dom_js_6.h)('button', {
+                class: `fvh-pause-audio-chip ${musOn ? 'on' : ''}`,
+                type: 'button',
+                on: {
+                    click: () => {
+                        musOn = !musOn;
+                        const mVal = musOn ? 0.35 : 0;
+                        this.store.update((d) => { d.settings = d.settings || {}; d.settings.music = mVal; });
+                        this.audio.setMusicEnabled(musOn);
+                        this.audio.play('click');
+                        musChip.classList.toggle('on', musOn);
+                        musChip.textContent = (lang === 'ru' ? 'Музыка: ' : 'Music: ') + (musOn ? (lang === 'ru' ? 'Вкл' : 'On') : (lang === 'ru' ? 'Выкл' : 'Off'));
+                    }
+                }
+            }, (lang === 'ru' ? 'Музыка: ' : 'Music: ') + (musOn ? (lang === 'ru' ? 'Вкл' : 'On') : (lang === 'ru' ? 'Выкл' : 'Off')));
+
+            const el = (0, dom_js_6.h)('div', { class: 'screen dim', style: 'z-index:99999 !important; pointer-events:auto !important;' },
+                (0, dom_js_6.h)('div', { class: 'panel pause-panel fvh-pause-modern' },
+                    (0, dom_js_6.h)('div', { class: 'pause-ico fvh-pause-ico-svg' }, mkSvg('<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>', 22)),
+                    (0, dom_js_6.h)('div', { class: 'fvh-pause-meta-pill' }, `${isHoops ? '🏀' : '⚽'} ${modeLabel} · ${sc}`),
+                    (0, dom_js_6.h)('h2', { class: 'pause-title fvh-pause-title' }, (0, index_js_7.t)('pause.title')),
+                    (0, dom_js_6.h)('div', { class: 'fvh-pause-audio-row' }, sfxChip, musChip),
+                    b((0, index_js_7.t)('pause.resume'), () => this.setPause(false), 'primary', '<polygon points="6 4 20 12 6 20 6 4"/>'),
+                    ((_a = this.game.cfg) === null || _a === void 0 ? void 0 : _a.online) ? null : b((0, index_js_7.t)('pause.restart'), () => { this.closePause(); this.game.setPaused(false); this.launchAgain(); }, 'secondary', '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>'),
+                    b((0, index_js_7.t)('pause.settings'), () => this.pages.settingsOverlay(() => undefined), 'secondary', '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+                    b((0, index_js_7.t)('pause.quit'), async () => {
+                        if (await (0, kit_js_4.confirmDialog)(el, { title: (0, index_js_7.t)('pause.quit'), text: (0, index_js_7.t)('pause.quitConfirm'), danger: true })) {
+                            this.quitToMenu();
+                        }
+                    }, 'danger', '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>')
+                )
+            );
             this.pauseEl = el;
             this.ui.append(el);
         }

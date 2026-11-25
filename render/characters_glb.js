@@ -122,12 +122,13 @@
       baseColor.a *= tex.a;
     }
 
-    // Subtle procedural woven jersey micro-grain on athletic apparel (role < 0.5)
+    // Subtle procedural woven jersey micro-grain & highlight preservation on athletic apparel (role < 0.5)
     if (uMatRole < 0.5) {
-      float weaveX = sin(vUv.x * 640.0);
-      float weaveY = sin(vUv.y * 640.0);
-      float weave = 1.0 + (weaveX * weaveY) * 0.022;
-      baseColor.rgb *= weave;
+      float weaveX = sin(vUv.x * 680.0);
+      float weaveY = sin(vUv.y * 680.0);
+      float weave = 1.0 + (weaveX * weaveY) * 0.026;
+      float clothLum = dot(baseColor.rgb, vec3(0.299, 0.587, 0.114));
+      baseColor.rgb *= weave * mix(1.0, 0.87, smoothstep(0.54, 0.95, clothLum));
     }
 
     float NdotL = dot(N, L);
@@ -139,7 +140,7 @@
     float ao = groundAo * cavityAo;
 
     // Warm wrapped diffuse tailored by material role (higher wrap on skin & cloth)
-    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.56 : 0.44;
+    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.58 : 0.44;
     float wrappedL = clamp((NdotL + wrapAmt) / (1.0 + wrapAmt), 0.0, 1.0);
     float directL = smoothstep(0.03, 0.96, wrappedL);
 
@@ -147,7 +148,7 @@
     vec3 sssContrib = vec3(0.0);
     if (uMatRole > 0.5 && uMatRole < 1.5) {
       float backRim = pow(clamp(1.0 - max(NdotL, 0.0), 0.0, 1.0), 2.1) * (0.35 + 0.65 * fillDiff);
-      sssContrib = baseColor.rgb * vec3(1.28, 0.68, 0.48) * backRim * 0.24;
+      sssContrib = baseColor.rgb * vec3(1.22, 0.60, 0.40) * backRim * 0.22;
     }
 
     // Linearized hemispheric ambient + stadium bounce fill
@@ -156,7 +157,7 @@
     vec3 sunLin = pow(max(uSunColor, vec3(0.001)), vec3(1.6));
     vec3 hemi = mix(gndLin, skyLin, N.y * 0.50 + 0.50);
     vec3 bounceFill = vec3(0.28, 0.36, 0.50) * fillDiff * 0.36;
-    vec3 ambient = baseColor.rgb * (hemi * 0.65 + bounceFill) * ao;
+    vec3 ambient = baseColor.rgb * (hemi * 0.64 + bounceFill) * ao;
 
     // Direct Stadium / Key Light
     vec3 diffuse = baseColor.rgb * sunLin * directL * (1.0 - uMetallic * 0.72) * mix(0.88, 1.0, ao) + sssContrib;
@@ -166,22 +167,22 @@
     float specStrength = 0.06;
     if (uMatRole > 2.5 && uMatRole < 3.5) {
       // Wet cornea catchlight
-      specPow = 140.0;
-      specStrength = 0.72;
+      specPow = 156.0;
+      specStrength = 0.78;
     } else if (uMatRole > 1.5 && uMatRole < 2.5) {
       // Satin hair crown highlight (anisotropic shifted half-vector)
       vec3 hairH = normalize(H + vec3(0.0, 0.22, 0.0));
-      float hSpec = pow(max(dot(N, hairH), 0.0), 30.0);
+      float hSpec = pow(max(dot(N, hairH), 0.0), 32.0);
       specStrength = 0.16;
-      diffuse += vec3(1.0, 0.95, 0.88) * hSpec * 0.14;
+      diffuse += vec3(1.0, 0.95, 0.88) * hSpec * 0.15;
     } else if (uMatRole > 3.5) {
       // Cleats / Sneakers / Keeper Latex & Gold Trim
       specPow = mix(36.0, 96.0, 1.0 - uRoughness);
       specStrength = mix(0.26, 0.65, uMetallic);
     } else if (uMatRole > 0.5 && uMatRole < 1.5) {
-      // Subtle skin sheen
-      specPow = 28.0;
-      specStrength = 0.08;
+      // Subtle warm skin sheen
+      specPow = 32.0;
+      specStrength = 0.06;
     }
     float specInt = pow(max(dot(N, H), 0.0), specPow) * specStrength;
     vec3 specTint = mix(sunLin, baseColor.rgb * 1.18, uMetallic);
@@ -190,12 +191,12 @@
     // Clean Broadcast Rim Light
     float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.8);
     vec3 rimColor = mix(vec3(0.60, 0.80, 1.0), vec3(1.0, 0.90, 0.76), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
-    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.12 : 0.20;
+    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.13 : 0.22;
     vec3 rimLight = rim * rimColor * rimBoost * ao;
 
     // Linear HDR -> ACES Filmic Curve -> sRGB Gamma Output
-    vec3 hdrColor = ambient * 0.92 + diffuse * 0.95 + specular * 0.88 + rimLight;
-    vec3 finalLin = acesFilm(hdrColor * 1.06);
+    vec3 hdrColor = ambient * 0.90 + diffuse * 0.93 + specular * 0.88 + rimLight;
+    vec3 finalLin = acesFilm(hdrColor * 1.00);
     vec3 finalSrgb = pow(clamp(finalLin, 0.0, 1.0), vec3(1.0 / 2.2));
     fragColor = vec4(finalSrgb, baseColor.a);
   }
@@ -775,12 +776,13 @@
   };
 
   const _preloadedImages = new Map();
+  const ATLAS_VERSION = '4.2.0-polish';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = url;
+    img.src = url.includes('?') ? url : (url + '?v=' + ATLAS_VERSION);
     _preloadedImages.set(url, img);
     return img;
   }
@@ -1163,33 +1165,37 @@
         const breath = Math.sin(t * 2.1);
         const shift = Math.sin(t * 1.05);
         _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, isHoops ? 0.05 : 0.03);
+        _rotCharAxis(nodes, rig, b.Torso, 0, 1, 0, 0.022 * shift);
         _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.025 * breath);
         _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.035 * shift);
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.04 * shift);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.045 * shift);
         _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.02 * breath);
 
         // Relaxed athletic shoulder abduct & natural forearm bend
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.065);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.065);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.075);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.075);
         _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.06 + 0.03 * breath);
         _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.08 - 0.03 * breath);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.32 - 0.04 * breath);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.34 + 0.04 * breath);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.34 - 0.04 * breath);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.36 + 0.04 * breath);
         return;
       }
 
-      // 3. Athletic Run & Sprint Symmetry + Gaze Stabilization
-      if (action === 'run' || action === 'walk') {
+      // 3. Athletic Run, Walk & Football Dribble Symmetry + Gaze Stabilization
+      if (action === 'run' || action === 'walk' || action === 'fdribble') {
         const stride = Math.sin(runPhase);
-        const spK = Math.min(1.0, speed / 3.2);
-        // Counter-stabilize excessive 42deg head bob inside raw Run clip & tighten forward athletic posture
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.08 * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.08 * stride * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, 0.06 * spK);
-        // Symmetric athletic runner arm drive (balances 70deg L / 18deg R discrepancy in raw Run)
+        const spK = Math.min(1.0, speed / 3.0);
+        const isFDrib = (action === 'fdribble');
+        // Counter-stabilize excessive head bob inside raw Run clip & tighten forward athletic posture
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, isFDrib ? -0.10 * spK : -0.06 * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (isFDrib ? -0.10 : -0.08) * stride * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (isFDrib ? 0.09 : 0.06) * spK);
+        // Symmetric athletic runner arm drive & wide agility balance when dribbling football
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isFDrib ? 0.16 : 0.09) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isFDrib ? -0.16 : -0.09) * spK);
         _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (-0.36 + 0.28 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.52 - 0.14 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.42 + 0.10 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.54 - 0.14 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.46 + 0.12 * stride) * spK);
         return;
       }
 
@@ -1416,16 +1422,16 @@
     }
 
     _pickLocomotionClip(vx, vz, speed) {
-      if (speed <= 0.22) return { clip: 'Idle', rate: 1.0 };
-      if (speed <= 1.35) {
-        return { clip: 'Walk', rate: Math.max(0.74, Math.min(1.52, speed / 1.48)) };
+      if (speed <= 0.20) return { clip: 'Idle', rate: 1.0 };
+      if (speed <= 1.20) {
+        return { clip: 'Walk', rate: Math.max(0.78, Math.min(1.45, speed / 1.32)) };
       }
       const fwdX = Math.sin(this.yaw);
       const fwdZ = Math.cos(this.yaw);
       const invS = 1 / (speed || 1);
       const dotF = (vx * fwdX + vz * fwdZ) * invS;
       const dotR = (vx * fwdZ - vz * fwdX) * invS;
-      const rate = Math.max(0.92, Math.min(2.05, speed / 3.05));
+      const rate = Math.max(0.96, Math.min(2.35, speed / 2.45));
       if (dotF < -0.52) return { clip: 'Run_Back', rate };
       if (dotR > 0.72 && dotF < 0.48) return { clip: 'Run_Right', rate };
       if (dotR < -0.72 && dotF < 0.48) return { clip: 'Run_Left', rate };
@@ -1466,11 +1472,11 @@
       while (dy > Math.PI) dy -= Math.PI * 2;
       while (dy < -Math.PI) dy += Math.PI * 2;
 
-      // Angular deadband: eliminate small floating point jitter
-      if (Math.abs(dy) < 0.04) {
+      // Angular deadband: eliminate small floating point jitter while turning snappily
+      if (Math.abs(dy) < 0.025) {
         dy = 0;
       }
-      this.yaw += dy * Math.min(1, dt * 8.5);
+      this.yaw += dy * Math.min(1, dt * 13.5);
 
       // 2. Fortnite-Style Kinetic Animation Tracks & Procedural Motion Mechanics
       // A. Dynamic body bank & cornering lean (lean into turns at speed like Fortnite & Rocket League)
@@ -1666,7 +1672,13 @@
           bio.action = 'celeb';
           this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
         }
-        // 6. Directional Strafe / Sprint / Walk / Idle
+        // 6. Football Ball-Carrier Agility Dribble vs Directional Run / Walk / Idle
+        else if (isBallCarrier && speed > 0.35) {
+          bio.action = 'fdribble';
+          const dribCadence = Math.max(1.06, Math.min(2.30, speed / 2.35));
+          this.setAnimation('Run', dribCadence, 0.10);
+          targetPitch = 0.14 * Math.min(1.0, speed / 3.2);
+        }
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
           bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
@@ -2359,8 +2371,8 @@
               headNode && headNode.worldMatrix ? headNode.worldMatrix[13] + 0.22 : 0,
               handR && handR.worldMatrix ? handR.worldMatrix[13] + 0.14 : 0
             );
-            if (topY > 1.82) {
-              rawLift = Math.max(0, Math.min(2.2, topY - 1.78));
+            if (topY > 1.72) {
+              rawLift = Math.max(0, Math.min(2.2, topY - 1.68));
             } else if (hipsNode && hipsNode.worldMatrix) {
               rawLift = Math.max(0, Math.min(2.2, hipsNode.worldMatrix[13] - 0.96));
             }
@@ -2414,10 +2426,10 @@
           gl.uniformMatrix4fv(l.uProj, false, st.proj);
           gl.uniformMatrix4fv(l.uView, false, st.view);
           gl.uniform3fv(l.uEye, eye);
-          gl.uniform3f(l.uSunDir, 0.45, 0.85, 0.55);
-          gl.uniform3f(l.uSunColor, 1.30, 1.24, 1.15);
-          gl.uniform3f(l.uSkyColor, 0.72, 0.82, 0.98);
-          gl.uniform3f(l.uGroundColor, 0.30, 0.34, 0.42);
+          gl.uniform3f(l.uSunDir, 0.48, 0.82, 0.60);
+          gl.uniform3f(l.uSunColor, 1.18, 1.13, 1.06);
+          gl.uniform3f(l.uSkyColor, 0.68, 0.78, 0.94);
+          gl.uniform3f(l.uGroundColor, 0.34, 0.36, 0.44);
 
           makeTransformMatrix(st.modelMat, 0, 0, 0, 0, 1.0, 1.0, 1.0);
           gl.uniformMatrix4fv(l.uModel, false, st.modelMat);

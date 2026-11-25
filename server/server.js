@@ -198,6 +198,22 @@ const PRODUCT_CATALOG = {
   }
 };
 
+// Telegram Stars Exclusive Kits registered into PRODUCT_CATALOG cleanly
+Object.assign(PRODUCT_CATALOG, {
+  'footy_star_holiday': { id: 'footy_star_holiday', name: '🎄 Новогодняя 2027 (FOOTY)', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'footy', starsPrice: resolveStarsPrice('footy_star_holiday') },
+  'footy_kit_star_holiday': { id: 'footy_kit_star_holiday', name: '🎄 Новогодняя 2027 (FOOTY)', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'footy', starsPrice: resolveStarsPrice('footy_kit_star_holiday') },
+  'footy_star_emperor': { id: 'footy_star_emperor', name: '🌌 Галактический Император', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'footy', starsPrice: resolveStarsPrice('footy_star_emperor') },
+  'footy_kit_star_emperor': { id: 'footy_kit_star_emperor', name: '🌌 Галактический Император', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'footy', starsPrice: resolveStarsPrice('footy_kit_star_emperor') },
+  'footy_star_samurai': { id: 'footy_star_samurai', name: '⚔️ Квантовый Самурай', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'footy', starsPrice: resolveStarsPrice('footy_star_samurai') },
+  'footy_kit_star_samurai': { id: 'footy_kit_star_samurai', name: '⚔️ Квантовый Самурай', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'footy', starsPrice: resolveStarsPrice('footy_kit_star_samurai') },
+  'hoops_star_holiday': { id: 'hoops_star_holiday', name: '🎄 Новогодняя 2027 (HOOPS)', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'hoops', starsPrice: resolveStarsPrice('hoops_star_holiday') },
+  'hoops_kit_star_holiday': { id: 'hoops_kit_star_holiday', name: '🎄 Новогодняя 2027 (HOOPS)', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'hoops', starsPrice: resolveStarsPrice('hoops_kit_star_holiday') },
+  'hoops_star_astral': { id: 'hoops_star_astral', name: '🌌 Астральный Владыка', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'hoops', starsPrice: resolveStarsPrice('hoops_star_astral') },
+  'hoops_kit_star_astral': { id: 'hoops_kit_star_astral', name: '🌌 Астральный Владыка', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'hoops', starsPrice: resolveStarsPrice('hoops_kit_star_astral') },
+  'hoops_star_phantom': { id: 'hoops_star_phantom', name: '⚡ Неоновый Фантом', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'hoops', starsPrice: resolveStarsPrice('hoops_star_phantom') },
+  'hoops_kit_star_phantom': { id: 'hoops_kit_star_phantom', name: '⚡ Неоновый Фантом', type: 'cosmetic', category: 'skins', slot: 'skin', mode: 'hoops', starsPrice: resolveStarsPrice('hoops_kit_star_phantom') }
+});
+
 // Authoritative In-Game Cosmetic Items Catalog
 // Canonical Equipment Catalog & Legacy Aliases
 // Preserves ownership of deprecated duplicate items while surfacing only distinct canonical items
@@ -741,16 +757,32 @@ function creditPurchasedProduct(playerId, productId, paymentType = 'stars') {
       player.updatedAt = Date.now();
       addLedgerEntry(player.playerId, 'payment_credit', bonusCoins, 0, player.coins, 'Purchased bundle: ' + prod.name, productId, { paymentType });
     }
-  } else if (prod.type === 'pack') {
+  } else if (prod.type === 'pack' || prod.type === 'stars_pack') {
     if (!player.packs) player.packs = { free: {}, paid: {} };
     if (!player.packs.paid) player.packs.paid = {};
-    player.packs.paid[productId] = (player.packs.paid[productId] || 0) + 1;
+    const packKey = prod.packId || productId;
+    player.packs.paid[packKey] = (player.packs.paid[packKey] || 0) + 1;
     const bonusCoins = prod.coinsAmount || 0;
     if (bonusCoins > 0) {
       player.coins += bonusCoins;
     }
     player.updatedAt = Date.now();
     addLedgerEntry(player.playerId, 'payment_credit', bonusCoins, 0, player.coins, 'Purchased stars pack: ' + prod.name, productId, { paymentType });
+  } else if (prod.type === 'cosmetic' || prod.category === 'skins' || prod.slot === 'skin' || prod.category === 'stadiums') {
+    if (!player.owned) player.owned = [];
+    if (!player.unseenItems) player.unseenItems = [];
+    const idsToGrant = [productId];
+    const canon = LEGACY_ITEM_ALIASES[productId] || productId;
+    if (canon && !idsToGrant.includes(canon)) idsToGrant.push(canon);
+    for (const k in LEGACY_ITEM_ALIASES) {
+      if (LEGACY_ITEM_ALIASES[k] === canon && !idsToGrant.includes(k)) idsToGrant.push(k);
+    }
+    idsToGrant.forEach(gid => {
+      if (!player.owned.includes(gid)) player.owned.push(gid);
+      if (!player.unseenItems.includes(gid)) player.unseenItems.push(gid);
+    });
+    player.updatedAt = Date.now();
+    addLedgerEntry(player.playerId, 'payment_credit', 0, 0, player.coins, 'Purchased star item: ' + prod.name, productId, { paymentType });
   }
   persistState();
   return player;
@@ -2584,15 +2616,21 @@ const server = http.createServer((req, res) => {
 
   // 1. Get Referral Status & Milestones
   if (pathname === '/api/referrals/stats' && req.method === 'GET') {
-    const rawRef = parsedUrl.query.refCode || parsedUrl.query.userId || parsedUrl.query.playerId;
+    const explicitPlayerId = parsedUrl.query.playerId ? String(parsedUrl.query.playerId).trim() : '';
+    const rawRef = parsedUrl.query.refCode || parsedUrl.query.userId || explicitPlayerId;
     const norm = normalizeRefCode(rawRef);
 
-    const refData = state.referrals[norm] || {
-      ownerId: norm,
-      referred: [],
-      claimedMilestones: [],
-      totalCommissionCoins: 0
-    };
+    if (!state.referrals[norm]) {
+      state.referrals[norm] = {
+        ownerId: explicitPlayerId || norm,
+        referred: [],
+        claimedMilestones: [],
+        totalCommissionCoins: 0
+      };
+    } else if (explicitPlayerId && (!state.referrals[norm].ownerId || state.referrals[norm].ownerId === norm)) {
+      state.referrals[norm].ownerId = explicitPlayerId;
+    }
+    const refData = state.referrals[norm];
 
     const qualifiedCount = refData.referred.filter(r => r.qualified).length;
     const totalCount = refData.referred.length;
@@ -2753,7 +2791,7 @@ const server = http.createServer((req, res) => {
     return readJsonBody(req, (err, data) => {
       if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
 
-      const rawCode = data.refCode || data.userId;
+      const rawCode = data.refCode || data.userId || data.playerId;
       const milestone = Number(data.milestone || data.milestoneTarget);
 
       const norm = normalizeRefCode(rawCode);
@@ -2780,7 +2818,6 @@ const server = http.createServer((req, res) => {
       }
 
       refData.claimedMilestones.push(milestone);
-      persistState();
 
       const rewards = {
         1: { coins: 500, xp: 150 },
@@ -2789,12 +2826,24 @@ const server = http.createServer((req, res) => {
         10: { coins: 7500, xp: 1000 },
         25: { coins: 20000, xp: 3000 }
       };
+      const reward = rewards[milestone] || { coins: 500, xp: 150 };
+      const ownerId = refData.ownerId || norm;
+      const ownerPlayer = getPlayer(ownerId);
+      if (ownerPlayer) {
+        ownerPlayer.coins = (ownerPlayer.coins || 0) + reward.coins;
+        ownerPlayer.xp = (ownerPlayer.xp || 0) + reward.xp;
+        ownerPlayer.updatedAt = Date.now();
+        addLedgerEntry(ownerPlayer.playerId, 'referral_milestone', reward.coins, reward.xp, ownerPlayer.coins, `Referral milestone ${milestone} friends reward`, null, { milestone });
+      }
+      persistState();
 
       return sendJson(res, 200, {
         ok: true,
         success: true,
         milestone,
-        reward: rewards[milestone] || { coins: 500, xp: 150 }
+        reward,
+        coins: ownerPlayer ? ownerPlayer.coins : undefined,
+        xp: ownerPlayer ? ownerPlayer.xp : undefined
       });
     });
   }
@@ -2873,7 +2922,7 @@ const server = http.createServer((req, res) => {
             description: `FOOTY vs HOOPS - ${prod.name}`,
             payload: orderId,
             currency: 'XTR',
-            prices: [{ label: prod.name, amount: prod.starsPrice }]
+            prices: [{ label: prod.name, amount: effectiveStarsPrice }]
           });
           const tgReq = https.request({
             hostname: 'api.telegram.org',
@@ -2897,7 +2946,7 @@ const server = http.createServer((req, res) => {
                     invoiceId: orderId,
                     invoiceLink: tgParsed.result,
                     productId,
-                    starsAmount: prod.starsPrice,
+                    starsAmount: effectiveStarsPrice,
                     title: prod.name,
                     currency: 'XTR'
                   });
@@ -2943,7 +2992,7 @@ const server = http.createServer((req, res) => {
         invoiceId: orderId,
         invoiceLink: null,
         productId,
-        starsAmount: prod.starsPrice,
+        starsAmount: effectiveStarsPrice,
         title: prod.name,
         currency: 'XTR',
         botConfigured: false
@@ -3690,14 +3739,14 @@ const server = http.createServer((req, res) => {
       const p = state.players[pid];
       const pStats = p.stats || {};
       const hasName = Boolean(p.playerName || p.telegramUser);
-      const hasStats = Boolean(pStats.wins > 0 || pStats.goals > 0 || pStats.baskets > 0);
+      const hasStats = Boolean((pStats.wins || 0) > 0 || (pStats.played || 0) > 0 || (pStats.goals || 0) > 0 || (pStats.baskets || 0) > 0 || (p.xp || 0) > 0);
       const isQueryUser = Boolean(qPlayerId && pid === qPlayerId);
       if (!hasName && !hasStats && !isQueryUser) {
         return;
       }
-      const curChar = (p.equipped && p.equipped.skin && p.equipped.skin.includes('hoops')) 
-        ? 'hoops' 
-        : (p.selectedCharacter || 'footy');
+      const curChar = (p.selectedCharacter || p.selectedTeam)
+        ? (p.selectedCharacter || p.selectedTeam)
+        : ((p.equipped && ((p.equipped['skin.hoops'] && !p.equipped['skin.footy']) || (p.equipped.skin && p.equipped.skin.includes('hoops')))) ? 'hoops' : 'footy');
       
       const displayName = p.playerName || (p.telegramUser && (p.telegramUser.first_name || p.telegramUser.username)) || ('Athlete ' + pid.slice(4, 8).toUpperCase());
       const totalWins = pStats.wins || 0;
