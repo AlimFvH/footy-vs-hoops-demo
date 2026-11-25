@@ -2897,7 +2897,7 @@
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var genericFallback = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
-    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.5.0-release';
+    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.6.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
       '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
@@ -5295,7 +5295,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.5.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.6.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -9046,7 +9046,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.5.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.6.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -9162,7 +9162,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=4.5.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=4.6.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -10903,6 +10903,10 @@
     var lvl = (d.profile && d.profile.level) ? d.profile.level : (d.level || 1);
 
     var base = 100;
+    var matchesPts = (matches * 10) + (wins * 25);
+    var goalsPts = (goals * 6) + (baskets * 3);
+    var refPts = (refCount * 50);
+    var progPts = (upLevels * 30) + (lvl * 20);
     var walletAddr = d.tonWalletAddress || (d.profile && d.profile.tonAddress) || '';
     var hasWallet = Boolean(walletAddr);
     var walletBonus = hasWallet ? 150 : 0;
@@ -10911,21 +10915,51 @@
 
     var tierKey = 'airdropTierRookie';
     var multiplier = '1.0x';
+    var tierMin = 0;
+    var nextTierPts = 300;
+    var nextTierKey = 'airdropTierContender';
+    var nextTierMult = '1.5x';
     if (pts >= 2500) {
       tierKey = 'airdropTierLegend';
       multiplier = '3.0x';
+      tierMin = 2500;
+      nextTierPts = null;
+      nextTierKey = null;
+      nextTierMult = '3.0x';
     } else if (pts >= 800) {
       tierKey = 'airdropTierPro';
       multiplier = '2.0x';
+      tierMin = 800;
+      nextTierPts = 2500;
+      nextTierKey = 'airdropTierLegend';
+      nextTierMult = '3.0x';
     } else if (pts >= 300) {
       tierKey = 'airdropTierContender';
       multiplier = '1.5x';
+      tierMin = 300;
+      nextTierPts = 800;
+      nextTierKey = 'airdropTierPro';
+      nextTierMult = '2.0x';
     }
+
+    var pctToNext = nextTierPts
+      ? Math.max(4, Math.min(100, Math.round(((pts - tierMin) / Math.max(1, nextTierPts - tierMin)) * 100)))
+      : 100;
 
     return {
       pts: pts,
       tierKey: tierKey,
       multiplier: multiplier,
+      nextTierPts: nextTierPts,
+      nextTierKey: nextTierKey,
+      nextTierMult: nextTierMult,
+      pctToNext: pctToNext,
+      basePts: base,
+      matchesPts: matchesPts,
+      goalsPts: goalsPts,
+      refPts: refPts,
+      progPts: progPts,
+      walletPts: walletBonus,
       hasWallet: hasWallet,
       walletAddress: walletAddr,
       wins: wins,
@@ -11015,12 +11049,15 @@
   function buildAirdropPage(app) {
     var d = app.store.data;
     var lang = getActiveLang();
+    var isRu = (lang === 'ru');
     var curChar = d.selectedCharacter || 'footy';
     var isFooty = (curChar === 'footy');
     var tokenSym = isFooty ? '$FOOTY' : '$HOOPS';
-    var tokenColor = isFooty ? '#00f0ff' : '#f97316';
+    var tokenColor = isFooty ? '#38bdf8' : '#fb923c';
 
     var stats = calculateAirdropStats(d);
+    var estimatedTokens = Math.round(stats.pts * parseFloat(stats.multiplier || '1.0') * 10);
+    var shortWallet = stats.hasWallet ? (stats.walletAddress.slice(0, 6) + '...' + stats.walletAddress.slice(-4)) : '';
 
     var container = document.createElement('div');
     container.className = 'screen solid page-screen has-nav fvh-airdrop-page';
@@ -11049,188 +11086,275 @@
     var body = document.createElement('div');
     body.className = 'page-body fvh-airdrop-container';
 
-    // 2.1 Hero Card
+    // 2.1 Clear Overview Hero Card (Points + Rank Progress + Currency Legend)
+    var ptsLeft = stats.nextTierPts ? Math.max(0, stats.nextTierPts - stats.pts) : 0;
+    var progressLabel = stats.nextTierPts
+      ? (isRu
+          ? ('Ещё <b>' + ptsLeft.toLocaleString() + ' Drop PTS</b> до ранга «' + tr(stats.nextTierKey) + '» (множитель <b>' + stats.nextTierMult + '</b>)')
+          : ('<b>' + ptsLeft.toLocaleString() + ' Drop PTS</b> left for ' + tr(stats.nextTierKey) + ' (<b>' + stats.nextTierMult + '</b> boost)'))
+      : (isRu ? '👑 Максимальный ранг достигнут (множитель 3.0x)' : '👑 Maximum Tier Unlocked (3.0x Boost)');
+
     var heroCard = document.createElement('div');
-    heroCard.className = 'fvh-airdrop-page-hero';
-    heroCard.style.borderColor = isFooty ? 'rgba(0,240,255,0.4)' : 'rgba(249,115,22,0.4)';
+    heroCard.className = 'fvh-airdrop-page-hero ' + (isFooty ? 'footy' : 'hoops');
     heroCard.innerHTML =
-      '<div class="fvh-airdrop-hero-art-container" style="margin-bottom:8px;">' +
-      getAirdropHeroGraphicSvg(curChar) +
+      '<div class="fvh-ad-hero-top">' +
+      '  <span class="fvh-ad-faction-pill" style="color:' + tokenColor + ';border-color:' + (isFooty ? 'rgba(56,189,248,0.45)' : 'rgba(251,146,60,0.45)') + ';">' +
+      (isFooty ? '⚽ ' : '🏀 ') + (isRu ? 'Твой токен на TON: ' : 'Your TON Token: ') + '<b>' + tokenSym + '</b>' +
+      '  </span>' +
+      '  <span class="fvh-ad-status-pill">' + (stats.hasWallet ? (isRu ? '✓ Кошелёк готов' : '✓ Wallet Ready') : (isRu ? 'Pre-TGE Фарминг' : 'Pre-TGE Active')) + '</span>' +
       '</div>' +
-      '<div class="fvh-airdrop-hero-emblem" style="display:none;">' + (isFooty ? '⚽' : '🏀') + '</div>' +
-      '<div style="font-size:13px;font-weight:900;color:' + tokenColor + ';text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">' +
-      (isFooty ? (lang === 'ru' ? 'Токен Фракции Футбола' : 'Team Football Faction Token') : (lang === 'ru' ? 'Токен Фракции Баскетбола' : 'Team Basketball Faction Token')) + ' · <b>' + tokenSym + '</b>' +
+      '<div class="fvh-ad-score-row">' +
+      '  <div class="fvh-ad-hero-coin">' + getAirdropHeroGraphicSvg(curChar) + '</div>' +
+      '  <div class="fvh-ad-score-main">' +
+      '    <div class="fvh-airdrop-pts-value">' + stats.pts.toLocaleString() + ' <span>Drop PTS</span></div>' +
+      '    <div class="fvh-ad-plain-explain">' +
+      (isRu
+        ? 'Очки превратятся в реальные токены <b>' + tokenSym + '</b> на TON при запуске (TGE).'
+        : 'Points convert into real <b>' + tokenSym + '</b> tokens on TON at TGE launch.') +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="fvh-ad-est-box fvh-airdrop-calc-box">' +
+      '    <span class="fvh-ad-est-lbl">' + (isRu ? 'Оценка TGE' : 'Est. Drop') + '</span>' +
+      '    <b class="fvh-ad-est-val" style="color:' + tokenColor + ';">~' + estimatedTokens.toLocaleString() + ' ' + tokenSym + '</b>' +
+      '  </div>' +
       '</div>' +
-      '<div class="fvh-airdrop-pts-value">' + stats.pts.toLocaleString() + ' <span style="font-size:18px;color:#38bdf8;">Drop PTS</span></div>' +
-      '<div class="fvh-airdrop-pts-label">' + tr('airdropPtsLabel') + '</div>' +
-      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px;">' +
-      '  <span class="fvh-airdrop-tier-chip">👑 ' + tr(stats.tierKey) + '</span>' +
-      '  <span class="fvh-airdrop-tier-chip" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.35);color:#38bdf8;">⚡ ' + tr('airdropMultiplierBadge') + ' (' + stats.multiplier + ')</span>' +
+      '<div class="fvh-ad-rank-wrap">' +
+      '  <div class="fvh-ad-rank-badges">' +
+      '    <span class="fvh-airdrop-tier-chip">👑 ' + tr(stats.tierKey) + '</span>' +
+      '    <span class="fvh-airdrop-tier-chip mult">⚡ ' + (isRu ? 'Множитель: ' : 'Boost: ') + stats.multiplier + ' (до 3.0x)</span>' +
+      '  </div>' +
+      '  <div class="fvh-ad-progress-track"><div class="fvh-ad-progress-fill" style="width:' + stats.pctToNext + '%;"></div></div>' +
+      '  <div class="fvh-ad-progress-caption">' + progressLabel + '</div>' +
+      '</div>' +
+      '<div class="fvh-ad-currency-strip">' +
+      '  <div>🪙 <b>FvH Монеты</b> — ' + (isRu ? 'для скинов и улучшений в магазине' : 'in-game currency for kits & upgrades') + '</div>' +
+      '  <div>💎 <b>Drop PTS</b> — ' + (isRu ? 'твой рейтинг и доля в аирдропе ' + tokenSym : 'your qualification score for ' + tokenSym + ' airdrop') + '</div>' +
       '</div>';
     body.appendChild(heroCard);
 
-    // 2.1.1 Real-time Token Estimation Box
-    var estimatedTokens = Math.round(stats.pts * parseFloat(stats.multiplier || '1.0') * 10);
-    var calcCard = document.createElement('div');
-    calcCard.className = 'fvh-card-panel fvh-airdrop-calc-box';
-    calcCard.style.padding = '12px 16px';
-    calcCard.style.marginBottom = '12px';
-    calcCard.style.background = 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%)';
-    calcCard.style.border = '1px solid rgba(250, 204, 21, 0.35)';
-    calcCard.style.boxShadow = '0 4px 16px rgba(0,0,0,0.35)';
-    calcCard.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">' +
-      '  <div>' +
-      '    <div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">' + (lang === 'ru' ? '📊 Расчетная аллокация на TGE:' : '📊 Estimated TGE Allocation:') + '</div>' +
-      '    <div style="font-size:22px;font-weight:950;color:#facc15;margin-top:2px;">~' + estimatedTokens.toLocaleString() + ' <span style="font-size:14px;color:' + tokenColor + ';">' + tokenSym + '</span></div>' +
-      '  </div>' +
-      '  <div style="text-align:right;">' +
-      '    <span style="font-size:11px;background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.35);color:#fde047;padding:5px 10px;border-radius:20px;font-weight:800;display:inline-flex;align-items:center;gap:5px;">' +
-      '      💎 ' + (lang === 'ru' ? 'Начисление на TON' : 'TON Network Drop') +
-      '    </span>' +
-      '  </div>' +
-      '</div>' +
-      '<div style="font-size:10.5px;color:#94a3b8;margin-top:6px;line-height:1.4;">' +
-      (lang === 'ru' ? 'ℹ️ Токены распределяются пропорционально вашим Drop PTS и множителю Лидерборда во время TGE.' : 'ℹ️ Tokens will be distributed proportionally based on your Drop PTS and Leaderboard multiplier upon TGE.') +
-      '</div>';
-    body.appendChild(calcCard);
+    // 2.2 Crystal-Clear 3-Step Visual Guide ("Как это работает за 10 секунд")
+    var flowTitle = document.createElement('div');
+    flowTitle.className = 'fvh-ad-section-title';
+    flowTitle.textContent = isRu ? '🚀 Как это работает — 3 шага' : '🚀 How It Works — 3 Simple Steps';
+    body.appendChild(flowTitle);
 
-    // 2.2 Wallet Connection Status Card
-    var walletCard = document.createElement('div');
-    walletCard.className = 'fvh-card-panel';
-    walletCard.style.background = stats.hasWallet
-      ? 'linear-gradient(135deg, rgba(0, 152, 234, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)'
-      : 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)';
-    walletCard.style.border = stats.hasWallet ? '1.5px solid rgba(0, 152, 234, 0.45)' : '1.5px solid rgba(245, 158, 11, 0.4)';
-    walletCard.style.padding = '14px 16px';
-    walletCard.style.marginBottom = '14px';
-
-    var shortWallet = stats.hasWallet
-      ? (stats.walletAddress.slice(0, 5) + '...' + stats.walletAddress.slice(-4))
-      : '';
-
-    walletCard.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-      '  <span style="font-size:22px;flex-shrink:0;">💎</span>' +
-      '  <div style="min-width:0;">' +
-      '    <div style="font-size:13px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tr('profileTgeWalletTitle') + '</div>' +
-      '    <div style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (stats.hasWallet ? escapeHtml(shortWallet) : (lang === 'ru' ? 'Снимок (Snapshot) для начисления' : 'Snapshot destination')) + '</div>' +
-      '  </div>' +
-      '</div>' +
-      '<button type="button" class="btn small fvh-btn-airdrop-manage-wallet" style="width:100%;font-size:12px;font-weight:900;padding:9px 14px;background:' + (stats.hasWallet ? 'rgba(255,255,255,0.08)' : '#0098ea') + ';border:' + (stats.hasWallet ? '1px solid rgba(255,255,255,0.2)' : 'none') + ';color:#fff;cursor:pointer;border-radius:10px;text-align:center;box-sizing:border-box;">' +
-      (stats.hasWallet ? tr('airdropBtnWalletChange') : tr('airdropBtnWallet')) +
-      '</button>' +
-      (stats.hasWallet
-        ? '<div style="font-size:11px;color:#22c55e;font-weight:800;display:flex;align-items:center;gap:4px;margin-top:8px;"><span>✓</span> <span>' + tr('profileTgeWalletConnected') + ' (+150 Drop PTS)</span></div>'
-        : '<div style="font-size:11px;color:#fbbf24;font-weight:700;margin-top:8px;">' + (lang === 'ru' ? '💡 Привяжи Tonkeeper или Telegram Wallet и получи бонус +150 Drop PTS!' : '💡 Link Tonkeeper or Telegram Wallet to claim +150 Drop PTS bonus!') + '</div>');
-
-    walletCard.querySelector('.fvh-btn-airdrop-manage-wallet').onclick = function () {
-      if (stats.hasWallet) {
-        app.go('profile');
-      } else {
-        showTonWalletModal(app, function () {
-          app.show(buildAirdropPage(app), 'airdrop');
-        });
-      }
-    };
-    body.appendChild(walletCard);
-
-    // 2.3 Quick Actions Bar
-    var actionsBar = document.createElement('div');
-    actionsBar.className = 'fvh-airdrop-quick-actions';
-    actionsBar.innerHTML =
-      '<button type="button" class="btn primary fvh-airdrop-action-btn" id="fvh-airdrop-btn-play">' + tr('airdropBtnPlay') + '</button>' +
-      '<button type="button" class="btn fvh-airdrop-action-btn" id="fvh-airdrop-btn-invite" style="background:rgba(250,204,21,0.14);border:1px solid rgba(250,204,21,0.35);color:#facc15;">' + tr('airdropBtnInvite') + '</button>';
-
-    actionsBar.querySelector('#fvh-airdrop-btn-play').onclick = function () {
-      app.audio.play('click');
-      app.showModeSelect();
-    };
-    actionsBar.querySelector('#fvh-airdrop-btn-invite').onclick = function () {
-      app.audio.play('click');
-      app.go('quests', { tab: 'referrals' });
-    };
-    body.appendChild(actionsBar);
-
-    // 2.4 How it Works Header
-    var howTitle = document.createElement('div');
-    howTitle.style.fontSize = '14px';
-    howTitle.style.fontWeight = '900';
-    howTitle.style.color = '#fff';
-    howTitle.style.letterSpacing = '0.3px';
-    howTitle.style.margin = '4px 0 10px';
-    howTitle.innerHTML = '🪙 ' + tr('airdropHowItWorks');
-    body.appendChild(howTitle);
-
-    // 2.5 The 4 Earning Pillars
-    var pillarsGrid = document.createElement('div');
-    pillarsGrid.className = 'fvh-airdrop-pillars-grid';
-
-    var pillars = [
-      {
-        icon: '⚔️',
-        title: tr('airdropPillarMatchesTitle'),
-        desc: tr('airdropPillarMatchesDesc'),
-        meta: (lang === 'ru' ? 'Ваши победы: ' + stats.wins + ' · Голы: ' + stats.goals : 'Your wins: ' + stats.wins + ' · Goals: ' + stats.goals)
-      },
-      {
-        icon: '🏆',
-        title: tr('airdropPillarLeaderboardTitle'),
-        desc: tr('airdropPillarLeaderboardDesc'),
-        meta: (lang === 'ru' ? 'Текущий множитель: ' + stats.multiplier : 'Current Multiplier: ' + stats.multiplier)
-      },
-      {
-        icon: '👥',
-        title: tr('airdropPillarSquadTitle'),
-        desc: tr('airdropPillarSquadDesc'),
-        meta: (lang === 'ru' ? 'В вашем отряде: ' + stats.refCount + ' чел.' : 'Teammates in squad: ' + stats.refCount)
-      },
-      {
-        icon: '💎',
-        title: tr('airdropPillarWalletTitle'),
-        desc: tr('airdropPillarWalletDesc'),
-        meta: (stats.hasWallet ? (lang === 'ru' ? '✓ Кошелек готов к TGE' : '✓ Wallet ready for TGE') : (lang === 'ru' ? '⚠️ Кошелек пока не привязан' : '⚠️ Wallet not linked'))
-      }
-    ];
-
-    pillars.forEach(function (p) {
-      var card = document.createElement('div');
-      card.className = 'fvh-airdrop-pillar-card';
-      card.innerHTML =
-        '<div class="fvh-airdrop-pillar-icon">' + p.icon + '</div>' +
-        '<div class="fvh-airdrop-pillar-info">' +
-        '  <div class="fvh-airdrop-pillar-title">' + p.title + '</div>' +
-        '  <div class="fvh-airdrop-pillar-desc">' + p.desc + '</div>' +
-        '  <div style="font-size:11px;color:#38bdf8;font-weight:800;margin-top:4px;">' + p.meta + '</div>' +
-        '</div>';
-      pillarsGrid.appendChild(card);
+    var flowGrid = document.createElement('div');
+    flowGrid.className = 'fvh-ad-flow-grid';
+    var steps = isRu
+      ? [
+          { num: '1', title: 'Копи Drop PTS', desc: 'Играй матчи, забивай голы и зови друзей по ссылке.' },
+          { num: '2', title: 'Подними буст', desc: 'Занимай Топ в рейтинге (до 3.0x) и привяжи TON-кошелёк (+150 PTS).' },
+          { num: '3', title: 'Получи ' + tokenSym, desc: 'В день запуска (TGE) токены придут на твой TON-кошелёк.' }
+        ]
+      : [
+          { num: '1', title: 'Earn Drop PTS', desc: 'Play matches, score goals/dunks, and invite friends.' },
+          { num: '2', title: 'Boost Multiplier', desc: 'Climb leaderboard (up to 3.0x) & link TON wallet (+150 PTS).' },
+          { num: '3', title: 'Claim ' + tokenSym, desc: 'At TGE launch, PTS convert into tokens on TON.' }
+        ];
+    steps.forEach(function (s) {
+      var stEl = document.createElement('div');
+      stEl.className = 'fvh-ad-flow-step';
+      stEl.innerHTML =
+        '<div class="fvh-ad-flow-num">' + s.num + '</div>' +
+        '<div class="fvh-ad-flow-txt"><b>' + s.title + '</b><span>' + s.desc + '</span></div>';
+      flowGrid.appendChild(stEl);
     });
-    body.appendChild(pillarsGrid);
+    body.appendChild(flowGrid);
 
-    // 2.6 Security & Economy Disclaimers
-    var secBox = document.createElement('div');
-    secBox.style.background = 'rgba(239, 68, 68, 0.08)';
-    secBox.style.border = '1px solid rgba(239, 68, 68, 0.25)';
-    secBox.style.borderRadius = '12px';
-    secBox.style.padding = '10px 14px';
-    secBox.style.marginBottom = '10px';
-    secBox.style.fontSize = '11px';
-    secBox.style.color = '#fca5a5';
-    secBox.style.lineHeight = '1.45';
-    secBox.innerHTML = tr('airdropSecurityNote');
-    body.appendChild(secBox);
+    // 2.3 Actionable Checklist ("Что нужно сделать сейчас")
+    var checkTitle = document.createElement('div');
+    checkTitle.className = 'fvh-ad-section-title';
+    checkTitle.textContent = isRu ? '✅ Что нужно сделать сейчас' : '✅ Your Airdrop Checklist';
+    body.appendChild(checkTitle);
 
-    var infoBox = document.createElement('div');
-    infoBox.style.background = 'rgba(255, 255, 255, 0.04)';
-    infoBox.style.border = '1px solid rgba(255, 255, 255, 0.08)';
-    infoBox.style.borderRadius = '12px';
-    infoBox.style.padding = '10px 14px';
-    infoBox.style.marginBottom = '14px';
-    infoBox.style.fontSize = '11px';
-    infoBox.style.color = '#94a3b8';
-    infoBox.style.lineHeight = '1.45';
-    infoBox.innerHTML = tr('airdropDisclaimer');
-    body.appendChild(infoBox);
+    var checkList = document.createElement('div');
+    checkList.className = 'fvh-ad-checklist fvh-airdrop-pillars-grid';
+
+    function makeCheckRow(opts) {
+      var row = document.createElement('div');
+      row.className = 'fvh-ad-check-row ' + (opts.done ? 'is-done' : (opts.highlight ? 'is-priority' : ''));
+      row.innerHTML =
+        '<div class="fvh-ad-check-icon">' + opts.icon + '</div>' +
+        '<div class="fvh-ad-check-body">' +
+        '  <div class="fvh-ad-check-head">' +
+        '    <span class="fvh-ad-check-name">' + opts.title + '</span>' +
+        '    <span class="fvh-ad-check-badge ' + (opts.done ? 'ok' : 'todo') + '">' + opts.badge + '</span>' +
+        '  </div>' +
+        '  <div class="fvh-ad-check-desc">' + opts.desc + '</div>' +
+        '</div>' +
+        '<button type="button" class="fvh-ad-check-btn' + (opts.btnPrimary ? ' primary' : '') + (opts.btnClass ? (' ' + opts.btnClass) : '') + '">' + opts.btnText + '</button>';
+      row.querySelector('.fvh-ad-check-btn').onclick = opts.onClick;
+      return row;
+    }
+
+    // Step 1: Faction Choice
+    checkList.appendChild(makeCheckRow({
+      icon: isFooty ? '⚽' : '🏀',
+      done: true,
+      title: isRu ? '1. Команда и токен (' + tokenSym + ')' : '1. Team & Token (' + tokenSym + ')',
+      badge: isRu ? '✓ Выбрано' : '✓ Done',
+      desc: isRu
+        ? 'Очки идут в токен <b>' + tokenSym + '</b>. Команду можно сменить в любой момент.'
+        : 'Earning toward <b>' + tokenSym + '</b>. You can switch anytime.',
+      btnText: isRu ? 'Сменить' : 'Switch',
+      onClick: function () {
+        app.audio.play('click');
+        showTeamSelectionModal(app, true);
+      }
+    }));
+
+    // Step 2: Public TON Wallet
+    checkList.appendChild(makeCheckRow({
+      icon: '💎',
+      done: stats.hasWallet,
+      highlight: !stats.hasWallet,
+      title: '2. ' + tr('airdropPillarWalletTitle').replace(/^\d+\.\s*/, ''),
+      badge: stats.hasWallet ? (escapeHtml(shortWallet) + ' · +150 PTS') : '+150 Drop PTS',
+      desc: stats.hasWallet
+        ? (isRu ? 'Кошелёк Tonkeeper / Telegram Wallet сохранён для снимка (Snapshot).' : 'Public TON address saved for the TGE Snapshot.')
+        : (isRu ? 'Нужен <b>ТОЛЬКО публичный адрес</b> (EQ.../UQ...). Сид-фраза и пароли НИКОГДА не нужны!' : 'Enter <b>ONLY public address</b> (EQ.../UQ...). Never enter seed phrases!'),
+      btnText: stats.hasWallet ? (isRu ? 'Изменить' : 'Manage') : (isRu ? 'Привязать' : 'Link Wallet'),
+      btnPrimary: !stats.hasWallet,
+      btnClass: 'fvh-btn-airdrop-manage-wallet',
+      onClick: function () {
+        if (stats.hasWallet) {
+          app.go('profile');
+        } else {
+          showTonWalletModal(app, function () {
+            app.show(buildAirdropPage(app), 'airdrop');
+          });
+        }
+      }
+    }));
+
+    // Step 3: Play Matches
+    checkList.appendChild(makeCheckRow({
+      icon: '⚔️',
+      done: stats.matches > 0,
+      title: '3. ' + tr('airdropPillarMatchesTitle').replace(/^\d+\.\s*/, ''),
+      badge: isRu ? ('Матчей: ' + stats.matches + ' · Побед: ' + stats.wins) : (stats.matches + ' Matches · ' + stats.wins + ' Wins'),
+      desc: isRu
+        ? '<b>+25 PTS</b> за победу · <b>+10 PTS</b> за матч · <b>+6 PTS</b> за гол (<b>+3 PTS</b> за бросок).'
+        : '<b>+25 PTS</b> per win · <b>+10 PTS</b> per match · <b>+6 PTS</b> per goal (<b>+3 PTS</b> basket).',
+      btnText: isRu ? 'Играть' : 'Play',
+      btnPrimary: true,
+      onClick: function () {
+        app.audio.play('click');
+        app.showModeSelect();
+      }
+    }));
+
+    // Step 4: Leaderboard Boost
+    checkList.appendChild(makeCheckRow({
+      icon: '🏆',
+      done: parseFloat(stats.multiplier || '1.0') > 1.0,
+      title: '4. ' + tr('airdropPillarLeaderboardTitle').replace(/^\d+\.\s*/, ''),
+      badge: isRu ? ('Буст: ' + stats.multiplier) : ('Boost: ' + stats.multiplier),
+      desc: isRu
+        ? 'Топ-100 игроков получают <b>1.5x</b>, Топ-50 — <b>2.0x</b>, а Топ-10 — <b>3.0x</b> на TGE!'
+        : 'Top 100 earn <b>1.5x</b>, Top 50 earn <b>2.0x</b>, and Top 10 earn <b>3.0x</b> at TGE!',
+      btnText: isRu ? 'Топ' : 'Ranks',
+      onClick: function () {
+        app.audio.play('click');
+        app.go('leaderboard');
+      }
+    }));
+
+    // Step 5: Invite Friends
+    checkList.appendChild(makeCheckRow({
+      icon: '👥',
+      done: stats.refCount > 0,
+      title: '5. ' + tr('airdropPillarSquadTitle').replace(/^\d+\.\s*/, ''),
+      badge: isRu ? ('Друзей: ' + stats.refCount) : (stats.refCount + ' Friends'),
+      desc: isRu
+        ? 'За каждого друга: <b>+50 Drop PTS</b> к аирдропу и <b>+100 FvH монет</b> в магазин!'
+        : 'Per friend: <b>+50 Drop PTS</b> for airdrop + <b>+100 FvH Coins</b> bonus!',
+      btnText: isRu ? 'Пригласить' : 'Invite',
+      onClick: function () {
+        app.audio.play('click');
+        app.go('quests', { tab: 'referrals' });
+      }
+    }));
+
+    body.appendChild(checkList);
+
+    // 2.4 Transparent Points Breakdown Ledger ("Откуда мои очки")
+    var ledgerTitle = document.createElement('div');
+    ledgerTitle.className = 'fvh-ad-section-title';
+    ledgerTitle.textContent = isRu ? '📊 Откуда ваши Drop PTS' : '📊 Your Points Breakdown';
+    body.appendChild(ledgerTitle);
+
+    var ledgerCard = document.createElement('div');
+    ledgerCard.className = 'fvh-card-panel fvh-ad-ledger';
+    var ledgerRows = [
+      { lbl: isRu ? 'Стартовый бонус игрока' : 'Starter Welcome Bonus', val: '+' + stats.basePts + ' PTS' },
+      { lbl: isRu ? 'Матчи и победы (' + stats.matches + ' / ' + stats.wins + ')' : 'Matches & Wins (' + stats.matches + ' / ' + stats.wins + ')', val: '+' + stats.matchesPts + ' PTS' },
+      { lbl: isRu ? 'Голы и данки (' + stats.goals + ')' : 'Goals & Baskets (' + stats.goals + ')', val: '+' + stats.goalsPts + ' PTS' },
+      { lbl: isRu ? 'Уровень и прокачка (Lvl ' + stats.lvl + ')' : 'Level & Upgrades (Lvl ' + stats.lvl + ')', val: '+' + stats.progPts + ' PTS' },
+      { lbl: isRu ? 'Отряд друзей (' + stats.refCount + ' чел.)' : 'Referral Squad (' + stats.refCount + ')', val: '+' + stats.refPts + ' PTS' },
+      { lbl: isRu ? 'Бонус за TON-кошелёк' : 'TON Wallet Link Bonus', val: stats.hasWallet ? '+150 PTS' : (isRu ? '0 PTS (не привязан)' : '0 PTS (unlinked)') }
+    ];
+    ledgerCard.innerHTML =
+      ledgerRows.map(function (r) {
+        return '<div class="fvh-ad-ledger-row"><span>' + r.lbl + '</span><b>' + r.val + '</b></div>';
+      }).join('') +
+      '<div class="fvh-ad-ledger-total">' +
+      '  <span>' + (isRu ? 'Итого: ' + stats.pts.toLocaleString() + ' PTS × ' + stats.multiplier + ' буст' : 'Total: ' + stats.pts.toLocaleString() + ' PTS × ' + stats.multiplier) + '</span>' +
+      '  <b style="color:' + tokenColor + ';">~' + estimatedTokens.toLocaleString() + ' ' + tokenSym + '</b>' +
+      '</div>';
+    body.appendChild(ledgerCard);
+
+    // 2.5 Clear Accordion FAQ ("Частые вопросы и безопасность")
+    var faqTitle = document.createElement('div');
+    faqTitle.className = 'fvh-ad-section-title';
+    faqTitle.textContent = isRu ? '❓ Частые вопросы' : '❓ FAQ & Security';
+    body.appendChild(faqTitle);
+
+    var faqWrap = document.createElement('div');
+    faqWrap.className = 'fvh-ad-faq-list';
+    var faqs = isRu
+      ? [
+          {
+            q: 'Когда я получу реальные токены $FOOTY / $HOOPS?',
+            a: 'Токены будут распределены после завершения сезона на официальном TGE (листинге) в сети TON пропорционально вашим накопленным Drop PTS и множителю.'
+          },
+          {
+            q: 'Чем FvH Монеты отличаются от Drop PTS?',
+            a: 'FvH Монеты — обычная игровая валюта для покупки форм, бустов и стадионов. Drop PTS — очки рейтинга, которые определяют ваш будущий аирдроп токенов.'
+          },
+          {
+            q: 'Безопасно ли подключать TON-кошелёк?',
+            a: 'Да. Мы просим только публичный адрес получения (EQ.../UQ... из Tonkeeper или Telegram Wallet). Никогда никому не передавайте сид-фразу из 24 слов!'
+          }
+        ]
+      : [
+          {
+            q: 'When will real $FOOTY / $HOOPS tokens be distributed?',
+            a: 'Tokens are distributed after Season completion during official TGE on the TON blockchain, proportional to your verified Drop PTS and Leaderboard multiplier.'
+          },
+          {
+            q: 'What is the difference between FvH Coins and Drop PTS?',
+            a: 'FvH Coins are for in-game cosmetics and skill upgrades. Drop PTS track your qualification share for the post-TGE token airdrop.'
+          },
+          {
+            q: 'Is linking my TON wallet safe?',
+            a: 'Yes. We only store your public receiving address (EQ.../UQ...). We will NEVER ask for your 24-word seed phrase or private key.'
+          }
+        ];
+    faqs.forEach(function (f, idx) {
+      var det = document.createElement('details');
+      det.className = 'fvh-ad-faq-item';
+      if (idx === 0) det.open = true;
+      det.innerHTML = '<summary>' + f.q + '</summary><p>' + f.a + '</p>';
+      faqWrap.appendChild(det);
+    });
+    body.appendChild(faqWrap);
+
+    // 2.6 Clear Official Security & Non-Crypto Coin Guarantee
+    var legalNote = document.createElement('div');
+    legalNote.className = 'fvh-ad-legal-note';
+    legalNote.innerHTML = '<div>' + tr('airdropSecurityNote') + '</div><div>' + tr('airdropDisclaimer') + '</div>';
+    body.appendChild(legalNote);
 
     page.appendChild(body);
     page.appendChild(createScrollBottomSpacer());
@@ -12918,71 +13042,199 @@
     var playerChosenChar = (app.store && app.store.data && (app.store.data.selectedCharacter || app.store.data.selectedTeam)) || curChar || 'footy';
     var selSport = playerChosenChar;
     var selDiff = curSettings.difficulty || 'normal';
-    var selMinutes = curSettings.matchMinutes || 2;
+    var selMinutes = Number(curSettings.matchMinutes) || 2;
     var isPlayerFooty = (playerChosenChar === 'footy');
     var youTeamName = isPlayerFooty ? 'FOOTY' : 'HOOPS';
     var cpuTeamName = isPlayerFooty ? 'HOOPS' : 'FOOTY';
     var youColor = isPlayerFooty ? '#38bdf8' : '#fb923c';
     var cpuColor = isPlayerFooty ? '#fb923c' : '#38bdf8';
 
-    // Top Unified Discipline Lobby Bar (no repeated sport pickers per card!)
+    function resolveActiveArenaInfo(sp) {
+      var eq = (app.store && app.store.data && app.store.data.equipped) || {};
+      var ownedList = (app.store && app.store.data && app.store.data.owned) || [];
+      var defId = (sp === 'hoops') ? 'std_hoops_street' : 'std_footy_classic';
+      var arenaId = (sp === 'hoops') ? (eq['stadium.hoops'] || defId) : (eq['stadium.footy'] || defId);
+      if (arenaId !== defId && ownedList.indexOf(arenaId) === -1) arenaId = defId;
+      var defName = (sp === 'hoops') ? trItem('Street Classic') : trItem('Classic Grass');
+      var found = (Array.isArray(SCENIC_ARENAS_CATALOG)) ? SCENIC_ARENAS_CATALOG.find(function (a) { return a.id === arenaId; }) : null;
+      return {
+        id: arenaId,
+        name: found ? trItem(found.name) : defName,
+        icon: found ? (found.icon || '🏟️') : (sp === 'hoops' ? '🏀' : '🏟️')
+      };
+    }
+
+    // Top Unified Sport Switch + Quick Arena Picker Strip
     var lobbyHero = document.createElement('div');
     lobbyHero.className = 'fvh-mode-lobby-hero ' + selSport;
 
-    function getMatchupBannerHtml(sp) {
-      var spLabel = (sp === 'footy') ? (lang === 'ru' ? 'ФУТБОЛ · 1v1' : 'FOOTBALL · 1v1') : (lang === 'ru' ? 'БАСКЕТБОЛ · 1v1' : 'BASKETBALL · 1v1');
-      var spColor = (sp === 'footy') ? '#38bdf8' : '#fb923c';
-      var spIcon = getUiIconSvg(sp === 'footy' ? 'nav_home_footy' : 'nav_home_hoops', 16);
-      return '<div class="fvh-mode-matchup-pill">' +
-        '<span class="fvh-mu-side" style="color:' + youColor + ';">' + getUiIconSvg(isPlayerFooty ? 'nav_home_footy' : 'nav_home_hoops', 15) + ' <span>' + tr('youTeam') + ': ' + youTeamName + '</span></span>' +
-        '<span class="fvh-mu-vs">VS</span>' +
-        '<span class="fvh-mu-side" style="color:' + cpuColor + ';"><span>' + tr('cpuTeam') + ': ' + cpuTeamName + '</span> ' + getUiIconSvg(isPlayerFooty ? 'nav_home_hoops' : 'nav_home_footy', 15) + '</span>' +
-      '</div>' +
-      '<div class="fvh-mode-sport-sub" style="color:' + spColor + ';">' + spIcon + ' <span>' + spLabel + '</span></div>';
-    }
+    function renderLobbyHero() {
+      var sp = selSport;
+      var arenaInfo = resolveActiveArenaInfo(sp);
+      lobbyHero.className = 'fvh-mode-lobby-hero ' + sp;
+      lobbyHero.innerHTML =
+        '<div class="fvh-mode-sport-switch">' +
+        '  <button type="button" class="fvh-sport-tab footy' + (sp === 'footy' ? ' on' : '') + '" data-sport="footy">' +
+        getUiIconSvg('nav_home_footy', 18) + ' <span>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</span>' +
+        '  </button>' +
+        '  <button type="button" class="fvh-sport-tab hoops' + (sp === 'hoops' ? ' on' : '') + '" data-sport="hoops">' +
+        getUiIconSvg('nav_home_hoops', 18) + ' <span>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</span>' +
+        '  </button>' +
+        '</div>' +
+        '<div class="fvh-mode-lobby-meta">' +
+        '  <div class="fvh-mode-matchup-pill">' +
+        '    <span class="fvh-mu-side" style="color:' + youColor + ';">' + getUiIconSvg(isPlayerFooty ? 'nav_home_footy' : 'nav_home_hoops', 14) + ' <span>' + youTeamName + '</span></span>' +
+        '    <span class="fvh-mu-vs">VS</span>' +
+        '    <span class="fvh-mu-side" style="color:' + cpuColor + ';"><span>' + cpuTeamName + '</span> ' + getUiIconSvg(isPlayerFooty ? 'nav_home_hoops' : 'nav_home_footy', 14) + '</span>' +
+        '  </div>' +
+        '  <button type="button" class="fvh-mode-arena-pill" id="fvh-mode-pick-arena">' +
+        '    <span class="fvh-arena-pill-dot">' + arenaInfo.icon + '</span>' +
+        '    <span class="fvh-arena-pill-label">' + (lang === 'ru' ? 'Арена:' : 'Arena:') + ' <b>' + escapeHtml(arenaInfo.name) + '</b></span>' +
+        '    <span class="fvh-arena-pill-change">' + (lang === 'ru' ? 'Сменить ▾' : 'Change ▾') + '</span>' +
+        '  </button>' +
+        '</div>';
 
-    lobbyHero.innerHTML =
-      '<div class="fvh-mode-sport-switch">' +
-      '  <button type="button" class="fvh-sport-tab footy' + (selSport === 'footy' ? ' on' : '') + '" data-sport="footy">' + getUiIconSvg('nav_home_footy', 18) + ' <span>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</span></button>' +
-      '  <button type="button" class="fvh-sport-tab hoops' + (selSport === 'hoops' ? ' on' : '') + '" data-sport="hoops">' + getUiIconSvg('nav_home_hoops', 18) + ' <span>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</span></button>' +
-      '</div>' +
-      '<div class="fvh-mode-matchup-wrap" id="fvh-lobby-matchup">' + getMatchupBannerHtml(selSport) + '</div>';
+      lobbyHero.querySelectorAll('.fvh-sport-tab').forEach(function (btn) {
+        btn.onclick = function () {
+          var nextSp = btn.dataset.sport;
+          if (nextSp === selSport) return;
+          selSport = nextSp;
+          app.audio.play('click');
+          renderLobbyHero();
+          renderQuickCard();
+          renderPrivateCard();
+          renderPracticeCard();
+        };
+      });
+
+      var arenaBtn = lobbyHero.querySelector('#fvh-mode-pick-arena');
+      if (arenaBtn) {
+        arenaBtn.onclick = function () {
+          app.audio.play('click');
+          app.showArenas();
+        };
+      }
+    }
 
     body.appendChild(lobbyHero);
 
-    // Mode Grid Container (2 clean Pro-Arcade Cards: Practice vs AI & Online 1v1)
+    // Responsive Ergonomic Grid: Top row Online PvP + Friend Duel, Bottom wide row Practice vs AI
     var grid = document.createElement('div');
-    grid.className = 'fvh-mode-grid fvh-mode-grid--dual';
+    grid.className = 'fvh-mode-grid fvh-mode-grid--hub';
 
-    // -------------------------------------------------------------
-    // CARD 1: Single Match vs AI (Одиночный матч)
-    // -------------------------------------------------------------
+    // 1. Quick Match (Online 1v1 PvP)
+    var quickCard = document.createElement('div');
+    quickCard.className = 'fvh-mode-card quick-card';
+
+    function renderQuickCard() {
+      var isFooty = (selSport === 'footy');
+      quickCard.innerHTML =
+        '<div class="fvh-mode-card-header">' +
+          '<span class="fvh-mode-badge online">' + getUiIconSvg('lightning', 13) + ' <span>' + tr('quickMatchBadge') + '</span></span>' +
+          '<span class="fvh-mode-server-status"><span class="status-dot live"></span> 1v1 Live</span>' +
+        '</div>' +
+        '<div class="fvh-mode-card-body">' +
+          '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
+          '<div class="fvh-mode-desc">' +
+          (lang === 'ru'
+            ? 'Матч с живым игроком в реальном времени (' + (isFooty ? '⚽ Футбол' : '🏀 Баскетбол') + '). <b>+25 Drop PTS</b> за победу!'
+            : 'Real-time 1v1 match against a live opponent (' + (isFooty ? '⚽ Football' : '🏀 Basketball') + '). <b>+25 Drop PTS</b> per win!') +
+          '</div>' +
+        '</div>' +
+        '<div class="fvh-mode-card-actions">' +
+          '<button type="button" class="btn primary block fvh-btn-matchmaking">' +
+            getUiIconSvg('lightning', 14) + ' <span>' + (lang === 'ru' ? 'НАЙТИ СОПЕРНИКА' : 'FIND OPPONENT') + '</span>' +
+          '</button>' +
+        '</div>';
+
+      quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
+        app.audio.play('click');
+        showQuickMatchSearchModal(app, selSport);
+      };
+    }
+
+    // 2. Private Match (Duel with a Friend via Room Code / Invite)
+    var privateCard = document.createElement('div');
+    privateCard.className = 'fvh-mode-card private-card';
+
+    function renderPrivateCard() {
+      privateCard.innerHTML =
+        '<div class="fvh-mode-card-header">' +
+          '<span class="fvh-mode-badge private">' + getUiIconSvg('share', 13) + ' <span>' + (lang === 'ru' ? 'С ДРУГОМ' : 'WITH FRIEND') + '</span></span>' +
+          '<span class="fvh-mode-instant-pill">' + (lang === 'ru' ? 'КОД / ССЫЛКА' : 'CODE / LINK') + '</span>' +
+        '</div>' +
+        '<div class="fvh-mode-card-body">' +
+          '<div class="fvh-mode-title">' + tr('privateMatchTitle') + '</div>' +
+          '<div class="fvh-mode-desc">' +
+          (lang === 'ru'
+            ? 'Создайте приватную комнату и пригласите друга или брата по коду <b>FVH-XXXX</b>.'
+            : 'Create a private room and invite a friend using a <b>FVH-XXXX</b> room code.') +
+          '</div>' +
+        '</div>' +
+        '<div class="fvh-mode-card-actions two-btn">' +
+          '<button type="button" class="btn primary block fvh-btn-create-room">' + (lang === 'ru' ? '+ Создать комнату' : '+ Create Room') + '</button>' +
+          '<button type="button" class="btn block fvh-btn-join-room">' + (lang === 'ru' ? 'Войти по коду' : 'Join Code') + '</button>' +
+        '</div>';
+
+      privateCard.querySelector('.fvh-btn-create-room').onclick = function () {
+        app.audio.play('click');
+        showCreateRoomModal(app, selSport);
+      };
+      privateCard.querySelector('.fvh-btn-join-room').onclick = function () {
+        app.audio.play('click');
+        showJoinRoomModal(app, selSport);
+      };
+    }
+
+    // 3. Practice vs AI (Single Match with quick Difficulty & Match Duration controls)
     var practiceCard = document.createElement('div');
-    practiceCard.className = 'fvh-mode-card practice-card';
+    practiceCard.className = 'fvh-mode-card practice-card fvh-mode-card--wide';
+
+    function getDiffRewardText(dKey) {
+      if (dKey === 'easy') return tr('diffEasyReward');
+      if (dKey === 'hard') return tr('diffHardReward');
+      return tr('diffNormalReward');
+    }
 
     function renderPracticeCard() {
       var isFootyMode = (selSport === 'footy');
       practiceCard.innerHTML =
         '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge practice" style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('bot', 14) + ' <span>' + tr('practiceAITitle') + '</span></span>' +
-          '<span class="fvh-mode-instant-pill" style="display:inline-flex;align-items:center;gap:4px;">' + getUiIconSvg('lightning', 12) + ' <span>' + (lang === 'ru' ? 'ОФФЛАЙН' : 'OFFLINE') + '</span></span>' +
+          '<span class="fvh-mode-badge practice">' + getUiIconSvg('bot', 14) + ' <span>' + tr('practiceAITitle') + '</span></span>' +
+          '<span class="fvh-mode-instant-pill">' + getUiIconSvg('lightning', 12) + ' <span>' + (lang === 'ru' ? 'МГНОВЕННЫЙ СТАРТ' : 'INSTANT PLAY') + '</span></span>' +
         '</div>' +
-        '<div class="fvh-mode-card-body">' +
-          '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч (против ИИ)' : 'Single Match (vs AI)') + '</div>' +
-          '<div class="fvh-mode-desc">' + (isFootyMode ? (lang === 'ru' ? 'Футбольная арена против компьютерного соперника.' : 'Football arena against AI.') : (lang === 'ru' ? 'Баскетбольный корт 1 на 1 против ИИ.' : 'Basketball court 1v1 against AI.')) + '</div>' +
-          '<div class="fvh-mode-controls">' +
+        '<div class="fvh-mode-card-body fvh-practice-layout">' +
+          '<div class="fvh-practice-info">' +
+            '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч против ИИ' : 'Single Match vs AI') + '</div>' +
+            '<div class="fvh-mode-desc">' +
+              (isFootyMode ? (lang === 'ru' ? 'Футбольный матч против умного вратаря и бота.' : 'Football match against smart AI & keeper.') : (lang === 'ru' ? 'Динамичный баскетбол 1 на 1 против ИИ.' : 'Fast-paced 1v1 basketball against AI.')) +
+            '</div>' +
+            '<div class="fvh-practice-reward-hint" id="fvh-mode-diff-hint">' + getDiffRewardText(selDiff) + '</div>' +
+          '</div>' +
+          '<div class="fvh-mode-controls fvh-practice-controls">' +
             '<div class="fvh-ctrl-row">' +
-              '<span class="fvh-ctrl-label">' + tr('difficulty') + ':</span>' +
+              '<span class="fvh-ctrl-label">' + tr('difficulty') + '</span>' +
               '<div class="seg seg-diff">' +
                 '<button type="button" class="' + (selDiff === 'easy' ? 'on' : '') + '" data-diff="easy">' + tr('easy') + '</button>' +
                 '<button type="button" class="' + (selDiff === 'normal' ? 'on' : '') + '" data-diff="normal">' + tr('normal') + '</button>' +
                 '<button type="button" class="' + (selDiff === 'hard' ? 'on' : '') + '" data-diff="hard">' + tr('hard') + '</button>' +
               '</div>' +
             '</div>' +
+            '<div class="fvh-ctrl-row">' +
+              '<span class="fvh-ctrl-label">' + (lang === 'ru' ? 'Таймер' : 'Duration') + '</span>' +
+              '<div class="seg seg-mins">' +
+                '<button type="button" class="' + (selMinutes === 1 ? 'on' : '') + '" data-mins="1">' + (lang === 'ru' ? '1 мин' : '1m') + '</button>' +
+                '<button type="button" class="' + (selMinutes === 2 ? 'on' : '') + '" data-mins="2">' + (lang === 'ru' ? '2 мин' : '2m') + '</button>' +
+                '<button type="button" class="' + (selMinutes === 3 ? 'on' : '') + '" data-mins="3">' + (lang === 'ru' ? '3 мин' : '3m') + '</button>' +
+                '<button type="button" class="' + (selMinutes === 5 ? 'on' : '') + '" data-mins="5">' + (lang === 'ru' ? '5 мин' : '5m') + '</button>' +
+              '</div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<div class="fvh-mode-card-actions">' +
-          '<button class="btn primary block fvh-btn-start-practice"><span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('play', 13) + ' <span>' + (lang === 'ru' ? 'НАЧАТЬ МАТЧ' : 'START MATCH') + '</span></span></button>' +
+          '<button type="button" class="btn primary block fvh-btn-start-practice">' +
+            getUiIconSvg('play', 14) + ' <span>' + (lang === 'ru' ? 'ИГРАТЬ ПРОТИВ ИИ' : 'PLAY VS AI') + '</span>' +
+          '</button>' +
         '</div>';
 
       practiceCard.querySelectorAll('.seg-diff button').forEach(function (b) {
@@ -12990,6 +13242,17 @@
           practiceCard.querySelectorAll('.seg-diff button').forEach(function (x) { x.classList.remove('on'); });
           b.classList.add('on');
           selDiff = b.dataset.diff;
+          var hintEl = practiceCard.querySelector('#fvh-mode-diff-hint');
+          if (hintEl) hintEl.innerHTML = getDiffRewardText(selDiff);
+          app.audio.play('click');
+        };
+      });
+
+      practiceCard.querySelectorAll('.seg-mins button').forEach(function (b) {
+        b.onclick = function () {
+          practiceCard.querySelectorAll('.seg-mins button').forEach(function (x) { x.classList.remove('on'); });
+          b.classList.add('on');
+          selMinutes = Number(b.dataset.mins) || 2;
           app.audio.play('click');
         };
       });
@@ -12999,74 +13262,28 @@
         app.store.update(function (d) {
           if (!d.settings) d.settings = {};
           d.settings.difficulty = selDiff;
+          d.settings.matchMinutes = selMinutes;
         });
-        var eq = (app.store && app.store.data && app.store.data.equipped) || {};
-        var ownedList = (app.store && app.store.data && app.store.data.owned) || [];
-        var chosenArena = (selSport === 'hoops') ? (eq['stadium.hoops'] || 'std_hoops_street') : (eq['stadium.footy'] || 'std_footy_classic');
-        if (chosenArena === 'std_volcano_caldera' || chosenArena === 'std_urban_rooftop' || chosenArena === 'std_classic_pitch' || (ownedList.indexOf(chosenArena) === -1 && chosenArena !== 'std_hoops_street' && chosenArena !== 'std_footy_classic')) {
-          chosenArena = (selSport === 'hoops') ? 'std_hoops_street' : 'std_footy_classic';
-        }
+        var arenaInfo = resolveActiveArenaInfo(selSport);
         app.launch({
           mode: selSport,
           char: playerChosenChar,
           difficulty: selDiff,
           minutes: selMinutes,
-          arenaId: chosenArena,
+          arenaId: arenaInfo.id,
           boostId: null
         }, false);
       };
     }
 
-    // -------------------------------------------------------------
-    // CARD 2: Quick Match (Быстрый матч - Онлайн 1v1)
-    // -------------------------------------------------------------
-    var quickCard = document.createElement('div');
-    quickCard.className = 'fvh-mode-card quick-card';
-
-    function renderQuickCard() {
-      var isFooty = (selSport === 'footy');
-      quickCard.innerHTML =
-        '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge online" style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('lightning', 13) + ' <span>' + tr('quickMatchBadge') + '</span></span>' +
-          '<span class="fvh-mode-server-status"><span class="status-dot live"></span> 1v1 PvP</span>' +
-        '</div>' +
-        '<div class="fvh-mode-card-body">' +
-          '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
-          '<div class="fvh-mode-desc">' + (lang === 'ru' ? 'Онлайн матч в реальном времени против живого игрока за команду <b style="color:' + youColor + ';">' + youTeamName + '</b>.' : 'Real-time online match against a live opponent for <b style="color:' + youColor + ';">' + youTeamName + '</b>.') + '</div>' +
-        '</div>' +
-        '<div class="fvh-mode-card-actions">' +
-          '<button class="btn primary block fvh-btn-matchmaking"><span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('lightning', 14) + ' <span>' + (isFooty ? (lang === 'ru' ? 'ИСКАТЬ МАТЧ (ФУТБОЛ)' : 'SEARCH MATCH (FOOTY)') : (lang === 'ru' ? 'ИСКАТЬ МАТЧ (БАСКЕТБОЛ)' : 'SEARCH MATCH (HOOPS)')) + '</span></span></button>' +
-        '</div>';
-
-      quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
-        app.audio.play('click');
-        showQuickMatchSearchModal(app, selSport);
-      };
-    }
-
-    lobbyHero.querySelectorAll('.fvh-sport-tab').forEach(function (btn) {
-      btn.onclick = function () {
-        var sp = btn.dataset.sport;
-        if (sp === selSport) return;
-        selSport = sp;
-        lobbyHero.className = 'fvh-mode-lobby-hero ' + selSport;
-        lobbyHero.querySelectorAll('.fvh-sport-tab').forEach(function (x) { x.classList.toggle('on', x.dataset.sport === selSport); });
-        var mu = lobbyHero.querySelector('#fvh-lobby-matchup');
-        if (mu) mu.innerHTML = getMatchupBannerHtml(selSport);
-        renderPracticeCard();
-        renderQuickCard();
-        app.audio.play('click');
-      };
-    });
-
+    renderLobbyHero();
     renderQuickCard();
+    renderPrivateCard();
     renderPracticeCard();
+
     grid.appendChild(quickCard);
+    grid.appendChild(privateCard);
     grid.appendChild(practiceCard);
-
-    // -------------------------------------------------------------
-    // Mode 3 (Play with friend) removed per user request
-
 
     body.appendChild(grid);
     page.appendChild(body);
@@ -13559,7 +13776,7 @@
       '    </div>' +
       '  </div>' +
       '</div>' +
-      '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
+      '<div class="solo-avatar-box" style="width:100%;height:clamp(225px, 32vh, 285px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
       charPortraitHtml +
       '</div>' +
       '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.32);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
@@ -13631,9 +13848,11 @@
       '<div class="fvh-airdrop-banner-left">' +
       '  <div class="fvh-airdrop-banner-icon">' + getUiIconSvg('coin', 26) + '</div>' +
       '  <div class="fvh-airdrop-banner-text">' +
-      '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'ЗАРАБОТАЙ ' + airdropTokenTag : 'EARN ' + airdropTokenTag) + '</div>' +
+      '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'PLAY-TO-AIRDROP · ' + airdropTokenTag : 'PLAY-TO-AIRDROP · ' + airdropTokenTag) + '</div>' +
       '    <div class="fvh-airdrop-banner-sub">' +
-      (lang === 'ru' ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b>' : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b>') +
+      (lang === 'ru'
+        ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b> · ' + (airdropStats.hasWallet ? '💎 Кошелёк ок' : 'Как получить? →')
+        : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b> · ' + (airdropStats.hasWallet ? '💎 Wallet OK' : 'How to claim →')) +
       '    </div>' +
       '  </div>' +
       '</div>' +

@@ -211,7 +211,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.5.0-release';
+                        const AUDIO_VERSION = '4.6.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -8511,7 +8511,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CameraRig = exports.CLOSE_UP = void 0;
     const NDC_LIMIT = 0.9;
-    exports.CLOSE_UP = { footy: 0.85, hoops: 0.98 };
+    exports.CLOSE_UP = { footy: 0.70, hoops: 0.74 };
     class CameraRig {
         constructor(mode, aspect, halfW, halfL) {
             this.mode = mode;
@@ -8519,14 +8519,14 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.cam = new scene_js_2.Camera();
             this.fx = 0;
             this.fz = 0;
-            this.dist = 30;
+            this.dist = 24;
             this.shakeAmt = 0;
             this.shakeT = 0;
             this.snap = true;
             this.zoom = 1;
-            this.cam.fov = mode === 'footy' ? 44 : 42;
-            this.elev = ((mode === 'footy' ? 40 : 42) * Math.PI) / 180;
-            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 16.2 : 12.0);
+            this.cam.fov = mode === 'footy' ? 38 : 36;
+            this.elev = ((mode === 'footy' ? 32 : 33) * Math.PI) / 180;
+            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 10.6 : 9.4) : (aspect < 0.9 ? 9.6 : 7.8);
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
             this.limitZ = halfL;
@@ -8537,7 +8537,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         setAspect(aspect) {
             this.aspect = aspect;
             this.cam.aspect = aspect;
-            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 15.2 : 12.5) : (aspect < 0.9 ? 16.2 : 12.0);
+            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 10.6 : 9.4) : (aspect < 0.9 ? 9.6 : 7.8);
             this.snap = true;
         }
         shake(amount) {
@@ -8545,27 +8545,26 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         }
         halfExtents() {
             const hz = this.fitHalfZ * this.zoom;
-            let hx = Math.min(this.maxHalfX, hz * this.aspect * 0.95, this.mode === 'footy' ? 15 : 7.4);
-            hx = Math.max(hx, this.mode === 'footy' ? 9 : 5.2);
+            let hx = Math.min(this.maxHalfX, hz * this.aspect * 0.95, this.mode === 'footy' ? 12.5 : 6.6);
+            hx = Math.max(hx, this.mode === 'footy' ? 7.6 : 4.8);
             if (this.aspect < 0.9) {
                 if (this.mode === 'footy') {
-                    // Mobile iPhone responsive tactical framing:
-                    // Frames player, ball, direction of attack, and nearby play comfortably (d ~ 62-68)
-                    hx = Math.min(this.maxHalfX, Math.max(10.2, this.fitHalfZ * this.aspect * 1.32));
+                    // Mobile portrait close-up broadcast framing: keeps characters ~35-45% larger
+                    hx = Math.min(this.maxHalfX, Math.max(7.8, this.fitHalfZ * this.aspect * 1.25));
                 } else {
-                    hx = this.maxHalfX;
+                    hx = Math.min(this.maxHalfX, 7.6);
                 }
             }
-            const hzAdj = (this.aspect < 0.9 && this.mode !== 'footy') ? Math.max(hz, hx / Math.max(this.aspect, 0.3) * 0.46) : hz;
+            const hzAdj = (this.aspect < 0.9 && this.mode !== 'footy') ? Math.max(hz, hx / Math.max(this.aspect, 0.32) * 0.44) : hz;
             const close = exports.CLOSE_UP[this.mode];
-            return [hx * this.zoom * close, Math.min(hzAdj, this.limitZ + 8) * close];
+            return [hx * this.zoom * close, Math.min(hzAdj, this.limitZ + 6) * close];
         }
         fits(tx, tz, d, hx, hz) {
             const c = this.cam;
             const dy = Math.sin(this.elev);
             const dz = Math.cos(this.elev);
             c.position = [tx, dy * d, tz + dz * d];
-            c.target = [tx, 0.75, tz];
+            c.target = [tx, 0.9, tz];
             c.update();
             for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
                 const p = (0, math_js_7.project)(c.viewProj, tx + sx * hx, 0, tz + sz * hz);
@@ -8575,18 +8574,21 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             const p = (0, math_js_7.project)(c.viewProj, tx, 2.8, tz + hz);
             if (Math.abs(p.y) > 0.97) return false;
             if (this.mode === 'hoops' && this.aspect < 0.9) {
-                // Ensure top basket and backboard at z = -12.6, y = 3.6 clear HUD scoreboard (NDC y <= 0.65)
-                const topBasket = (0, math_js_7.project)(c.viewProj, 0, 3.6, -12.6);
-                if (topBasket.w > 0 && topBasket.y > 0.65) return false;
-                // Ensure bottom basket clears joystick area
-                const botBasket = (0, math_js_7.project)(c.viewProj, 0, 3.6, 12.6);
-                if (botBasket.w > 0 && botBasket.y < -0.72) return false;
+                // Ensure the active basket clears HUD scoreboard/joystick without forcing full-court pull-back
+                if (tz - hz <= -9.5) {
+                    const topBasket = (0, math_js_7.project)(c.viewProj, 0, 3.6, -12.6);
+                    if (topBasket.w > 0 && topBasket.y > 0.66) return false;
+                }
+                if (tz + hz >= 9.5) {
+                    const botBasket = (0, math_js_7.project)(c.viewProj, 0, 3.6, 12.6);
+                    if (botBasket.w > 0 && botBasket.y < -0.74) return false;
+                }
             }
             return true;
         }
         fitDistance(tx, tz, hx, hz) {
             let lo = 6;
-            let hi = 160;
+            let hi = 140;
             for (let i = 0; i < 18; i++) {
                 const mid = (lo + hi) / 2;
                 if (this.fits(tx, tz, mid, hx, hz))
@@ -8599,10 +8601,10 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         update(dt, ball, human, forceFull = false) {
             const [hx, hz] = this.halfExtents();
             let tx = ball.x * 0.65 + human.x * 0.35;
-            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 3.0 : 2.0);
+            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 2.6 : 1.6);
             const maxX = Math.max(0, this.limitX - hx * 0.55);
             tx = Math.max(-maxX, Math.min(maxX, tx));
-            const maxZ = this.limitZ - hz * 0.6;
+            const maxZ = Math.max(2.0, this.limitZ - hz * 0.66);
             tz = Math.max(-maxZ, Math.min(maxZ, tz));
             if (forceFull) {
                 tx = 0;
@@ -8623,7 +8625,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             const dy = Math.sin(this.elev);
             const dz = Math.cos(this.elev);
             c.position = [this.fx + ox, dy * this.dist + oy, this.fz + dz * this.dist];
-            c.target = [this.fx + ox * 0.6, 0.75, this.fz];
+            c.target = [this.fx + ox * 0.6, 0.9, this.fz];
             c.update();
         }
     }
@@ -10101,7 +10103,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             this.scene.time = this.time;
             this.scene.crowdWave = 0.04 + this.excite * 0.35;
             this.arena.update(dt, sim, this.excite);
-            const targetZoom = sim.phase === 'celebrate' ? 1.18 : (sim.phase === 'countdown' ? 0.92 : 1.0);
+            const targetZoom = sim.phase === 'celebrate' ? 1.10 : (sim.phase === 'countdown' ? 0.94 : 1.0);
             this.rig.zoom += (targetZoom - this.rig.zoom) * Math.min(1, dt * 2);
             this.rig.update(dt, b, sim.human, sim.phase === 'ended');
             const s = this.scene.shadow;

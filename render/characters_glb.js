@@ -228,7 +228,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=4.5.0-release', '/assets/characters/hoops23.glb?v=4.5.0-release', '/assets/characters/keeper1.glb?v=4.5.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=4.6.0-release', '/assets/characters/hoops23.glb?v=4.6.0-release', '/assets/characters/keeper1.glb?v=4.6.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -807,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '4.5.0-release';
+  const ATLAS_VERSION = '4.6.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -2036,8 +2036,8 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.5.0-release', {
-              scale: 1.96,
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.6.0-release', {
+              scale: 2.15,
               skin: c.skin,
               isFooty: true,
               isKeeper: true,
@@ -2045,8 +2045,8 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.5.0-release', {
-              scale: 1.96,
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.6.0-release', {
+              scale: 2.15,
               skin: c.skin,
               isFooty: true,
               isKeeper: false,
@@ -2054,8 +2054,8 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.5.0-release', {
-              scale: 2.05,
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.6.0-release', {
+              scale: 2.22,
               skin: c.skin,
               isFooty: false,
               isKeeper: false,
@@ -2324,7 +2324,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.5.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.5.0-release' : '/assets/characters/footy10.glb?v=4.5.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.6.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.6.0-release' : '/assets/characters/footy10.glb?v=4.6.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2445,7 +2445,7 @@
       modelsByChar: {},
       model: null, customTexture: null,
       _bioState: { action: 'idle', isHoops: false, isKeeper: false, dt: 0.016, speed: 0, runPhase: 0, clock: 0 },
-      baseYaw: 0.22, yaw: 0.22, pitch: 0.06, dist: 3.12, target: [0, 0.94, 0], hideShadow: false,
+      baseYaw: 0.22, yaw: 0.22, pitch: 0.05, dist: 2.86, target: [0, 0.89, 0], hideShadow: false,
       camLift: 0, dragging: false, lastX: 0, lastY: 0, autoSpin: true,
       rafId: 0, lastT: performance.now(), animResetAt: 0,
       proj: new Float32Array(16), view: new Float32Array(16), modelMat: new Float32Array(16),
@@ -2479,7 +2479,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.5.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.5.0-release' : '/assets/characters/footy10.glb?v=4.5.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.6.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.6.0-release' : '/assets/characters/footy10.glb?v=4.6.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };
@@ -2569,9 +2569,9 @@
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
           const aspect = canvas.width / Math.max(1, canvas.height);
-          const fitDist = (aspect < 0.85 ? st.dist / Math.max(0.68, aspect) * 0.88 : st.dist) * (1.0 + st.camLift * 0.44);
+          const fitDist = (aspect < 0.85 ? st.dist / Math.max(0.78, aspect) * 0.86 : st.dist) * (1.0 + st.camLift * 0.44);
           const camTarget = [st.target[0], st.target[1] + st.camLift * 0.72, st.target[2]];
-          _mat4Perspective(st.proj, 38 * Math.PI / 180, aspect, 0.1, 40.0);
+          _mat4Perspective(st.proj, 37 * Math.PI / 180, aspect, 0.1, 40.0);
           const eye = [
             camTarget[0] + Math.sin(st.yaw) * Math.cos(st.pitch) * fitDist,
             camTarget[1] + Math.sin(st.pitch) * fitDist,
