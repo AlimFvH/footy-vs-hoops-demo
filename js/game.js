@@ -205,7 +205,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.2.0-polish';
+                        const AUDIO_VERSION = '4.3.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -5547,16 +5547,14 @@ define("data/ads", ["require", "exports"], function (require, exports) {
         hidden: 3.0,
         cycleTotal: 10.0,
         footySlides: [
-            { text: '⚡ FOOTY vs HOOPS · CHAMPIONS CUP 2026 ⚡', accent: 0x00f0ff, color: 0xffffff },
-            { text: '⚽ ULTRAS ARENA · GOAL STRIKE · PLAY TO WIN ⚽', accent: 0x10b981, color: 0xffffff },
-            { text: '🔥 HYPER STRIKER · EA SPORTS FC VIBES 🔥', accent: 0x38bdf8, color: 0xffffff },
-            { text: '⭐ TELEGRAM & TON GAMING SHOWDOWN ⭐', accent: 0xfacc15, color: 0xffffff }
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x38bdf8, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x10b981, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfacc15, color: 0xffffff }
         ],
         hoopsSlides: [
-            { text: '🏀 NBA ALL-STAR ARENA · HOOPS DYNASTY 2026 🏀', accent: 0xf97316, color: 0xffffff },
-            { text: '🔥 SLAM DUNK SHOWDOWN · 3-POINT CONTEST 🔥', accent: 0xec4899, color: 0xffffff },
-            { text: '⚡ STREETBALL SHOWTIME · NOTHING BUT NET ⚡', accent: 0xfb923c, color: 0xffffff },
-            { text: '👑 CHICAGO 23 · STREET LEGENDS ARENA 👑', accent: 0xfacc15, color: 0xffffff }
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xf97316, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xfbbf24, color: 0xffffff },
+            { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0xec4899, color: 0xffffff }
         ],
         slides: [
             { text: 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА', accent: 0x00f0ff, color: 0xffffff },
@@ -6325,78 +6323,95 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         list.forEach((s, i) => {
             var _a;
             const x0 = i * pw;
-            const grad = g.createLinearGradient(0, 0, 0, H);
-            grad.addColorStop(0, 'rgba(15, 25, 45, 0.95)');
-            grad.addColorStop(0.5, 'rgba(8, 14, 28, 0.98)');
-            grad.addColorStop(1, 'rgba(4, 8, 18, 1.0)');
+            const grad = g.createLinearGradient(x0, 0, x0, H);
+            grad.addColorStop(0, '#0b1326');
+            grad.addColorStop(0.5, '#070d1c');
+            grad.addColorStop(1, '#040812');
             g.fillStyle = grad;
             g.fillRect(x0 + 2, 2, pw - 4, H - 4);
-            
-            // Ultra-vibrant Neon accent bars (top and bottom double rails)
-            const accentHex = hex(s.accent || 0x00f0ff);
+
+            const accentHex = hex(s.accent || 0x38bdf8);
+            // Diagonal ambient cyber-mesh stripe sheen inside LED cabinet
+            g.fillStyle = 'rgba(255,255,255,0.025)';
+            for (let dx = -120; dx < pw + 120; dx += 48) {
+                g.beginPath();
+                g.moveTo(x0 + dx, H);
+                g.lineTo(x0 + dx + 18, H);
+                g.lineTo(x0 + dx + 88, 0);
+                g.lineTo(x0 + dx + 70, 0);
+                g.closePath();
+                g.fill();
+            }
+
+            // Sleek Pro Broadcast Neon Top & Bottom Frame Rails
             g.fillStyle = accentHex;
             g.shadowColor = accentHex;
-            g.shadowBlur = 14;
-            g.fillRect(x0 + 8, 6, pw - 16, 7);
-            g.fillRect(x0 + 8, H - 13, pw - 16, 7);
-
-            // Inner pin-stripe rail
-            g.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            g.fillRect(x0 + 12, 8, pw - 24, 2);
-            g.fillRect(x0 + 12, H - 10, pw - 24, 2);
+            g.shadowBlur = 10;
+            g.fillRect(x0 + 10, 6, pw - 20, 5);
+            g.fillRect(x0 + 10, H - 11, pw - 20, 5);
             g.shadowBlur = 0;
 
-            let slideText = s.text || '⚡ FOOTY vs HOOPS · CHAMPIONS ARENA ⚡';
+            g.fillStyle = 'rgba(255, 255, 255, 0.72)';
+            g.fillRect(x0 + 16, 7.5, pw - 32, 1.5);
+            g.fillRect(x0 + 16, H - 9, pw - 32, 1.5);
 
-            // Main Text (Bold, ultra-crisp, high contrast with deep drop shadow & neon glow)
-            let fs = s.sub ? 66 : 80;
+            // Tech corner L-brackets
+            g.strokeStyle = accentHex;
+            g.lineWidth = 3;
+            g.beginPath();
+            g.moveTo(x0 + 24, 34); g.lineTo(x0 + 24, 20); g.lineTo(x0 + 52, 20);
+            g.moveTo(x0 + pw - 24, 34); g.lineTo(x0 + pw - 24, 20); g.lineTo(x0 + pw - 52, 20);
+            g.moveTo(x0 + 24, H - 34); g.lineTo(x0 + 24, H - 20); g.lineTo(x0 + 52, H - 20);
+            g.moveTo(x0 + pw - 24, H - 34); g.lineTo(x0 + pw - 24, H - 20); g.lineTo(x0 + pw - 52, H - 20);
+            g.stroke();
+
+            let slideText = s.text || 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА';
+
+            let fs = s.sub ? 62 : 76;
             g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
-            while (g.measureText(slideText).width > pw - 260 && fs > 26) {
+            while (g.measureText(slideText).width > pw - 250 && fs > 28) {
                 fs -= 2;
                 g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
             }
             g.textAlign = 'center';
             g.textBaseline = 'middle';
-            const textY = s.sub ? 58 : H / 2;
+            const textY = s.sub ? 58 : H / 2 + 1;
 
-            // Deep background outline for extreme legibility from all camera distances
-            g.lineWidth = 8;
+            g.lineWidth = 7;
             g.strokeStyle = '#020610';
             g.strokeText(slideText, x0 + pw / 2, textY);
 
-            // Neon outer bloom
             g.shadowColor = accentHex;
-            g.shadowBlur = 24;
+            g.shadowBlur = 14;
             g.fillStyle = hex((_a = s.color) !== null && _a !== void 0 ? _a : 0xffffff);
             g.fillText(slideText, x0 + pw / 2, textY);
 
-            // Crisp inner text pass for 100% sharp readability
             g.shadowBlur = 0;
             g.fillText(slideText, x0 + pw / 2, textY);
 
-            // Fortnite esports chevron speed wings flanking the text
+            // Crisp vector angled accent bars flanking text
             const textHalfW = g.measureText(slideText).width / 2;
+            const lwX = Math.max(x0 + 68, (x0 + pw / 2) - textHalfW - 46);
+            const rwX = Math.min(x0 + pw - 68, (x0 + pw / 2) + textHalfW + 46);
             g.fillStyle = accentHex;
-            g.font = '900 44px system-ui, -apple-system, sans-serif';
-            g.shadowColor = accentHex;
-            g.shadowBlur = 16;
-            const leftWingX = Math.max(x0 + 44, (x0 + pw / 2) - textHalfW - 60);
-            const rightWingX = Math.min(x0 + pw - 44, (x0 + pw / 2) + textHalfW + 60);
-            g.fillText('««', leftWingX, textY);
-            g.fillText('»»', rightWingX, textY);
-            g.shadowBlur = 0;
+            [[-10, 0], [8, 0]].forEach(([dx]) => {
+                g.beginPath();
+                g.moveTo(lwX + dx, textY + 18); g.lineTo(lwX + dx + 8, textY + 18);
+                g.lineTo(lwX + dx + 20, textY - 18); g.lineTo(lwX + dx + 12, textY - 18);
+                g.closePath(); g.fill();
+                g.beginPath();
+                g.moveTo(rwX - dx, textY + 18); g.lineTo(rwX - dx - 8, textY + 18);
+                g.lineTo(rwX - dx - 20, textY - 18); g.lineTo(rwX - dx - 12, textY - 18);
+                g.closePath(); g.fill();
+            });
 
-            // Subtitle / Slogan
             if (s.sub) {
-                g.shadowColor = accentHex;
-                g.shadowBlur = 10;
-                g.font = '800 30px system-ui, -apple-system, sans-serif';
+                g.font = '800 28px system-ui, -apple-system, sans-serif';
                 g.lineWidth = 5;
                 g.strokeStyle = '#020610';
                 g.strokeText(s.sub, x0 + pw / 2, 116);
                 g.fillStyle = accentHex;
                 g.fillText(s.sub, x0 + pw / 2, 116);
-                g.shadowBlur = 0;
             }
         });
 
@@ -7282,11 +7297,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                         'ru';
         const isEnglish = curLang.startsWith('en');
         const slides = rawSlides.map(function(s) {
-            let txt = s.text;
-            if (txt && (false)) {
-                txt = sportType === 'hoops' ? '🔥 ALL-STAR HOOPS #23 🔥' : '⚡ FOOTY vs HOOPS ⚡';
-            }
-            return Object.assign({}, s, { text: txt });
+            return Object.assign({}, s, { text: s.text || 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА' });
         });
         // Pre-create textures for all rotated slides
         const textures = slides.map(function(s) {
@@ -7294,12 +7305,12 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         });
         const defaultTex = textures[0];
         const k = ads_js_1.AD_CONFIG.brightness;
-        const mk = (rep) => (0, scene_js_1.material)({ texture: defaultTex, unlit: true, fog: false, receiveShadow: false, castShadow: false, uvScale: [rep, 1], emissive: [0.15 * k, 0.15 * k, 0.15 * k], color: [k, k, k] });
+        const mk = (rep) => (0, scene_js_1.material)({ texture: defaultTex, unlit: true, fog: false, receiveShadow: false, castShadow: false, uvScale: [rep, 1], emissive: [0.22 * k, 0.22 * k, 0.22 * k], color: [k, k, k] });
         const reps = (len) => Math.max(1, Math.round(len / (1.0 * 16)));
         const long = mk(reps(longLen));
         const end = mk(reps(endLen));
         const largeEnd = mk(1);
-        const frame = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x080c14), spec: 0.4, shininess: 60, receiveShadow: false });
+        const frame = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x050912), spec: 0.45, shininess: 64, receiveShadow: false });
         return { long, end, largeEnd, frame, all: [long, end, largeEnd], textures: textures, currentSlide: 0 };
     }
     function ledBoard(root, mats, alongZ, len, x, z, faceSign, height = 1.0, isLarge = false, customTilt = null) {
@@ -7635,78 +7646,56 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             root.add(wall, rail);
         }
 
-        // 2. Complete Enclosing Arena Perimeter Bowl Wall (eliminates black outer void along horizon!)
+        // 2. Clean Low-Profile Arena Concourse Perimeter Bowl (keeps top view unobstructed behind baskets!)
         const outerX = W + APRON + 18.0;
         const outerZ = L + APRON + 18.5;
-        const wallH = 14.0;
+        const wallH = 6.5;
         for (const s of [-1, 1]) {
             const sideBowl = new scene_js_1.Node(G.box(1.2, wallH, outerZ * 2 + 4), wallConcreteMat);
             sideBowl.setPos(s * outerX, wallH * 0.5 - 0.5, 0);
             const endBowl = new scene_js_1.Node(G.box(outerX * 2 + 4, wallH, 1.2), wallConcreteMat);
             endBowl.setPos(0, wallH * 0.5 - 0.5, s * outerZ);
-            const sideFascia = new scene_js_1.Node(G.box(1.3, 0.35, outerZ * 2 + 2), accentCyanMat);
-            sideFascia.setPos(s * (outerX - 0.4), wallH - 1.2, 0);
-            const endFascia = new scene_js_1.Node(G.box(outerX * 2 + 2, 0.35, 1.3), accentWarmMat);
-            endFascia.setPos(0, wallH - 1.2, s * (outerZ - 0.4));
-            root.add(sideBowl, endBowl, sideFascia, endFascia);
+            const sideFascia = new scene_js_1.Node(G.box(1.3, 0.22, outerZ * 2 + 2), accentCyanMat);
+            sideFascia.setPos(s * (outerX - 0.4), wallH - 0.7, 0);
+            root.add(sideBowl, endBowl, sideFascia);
         }
 
-        // 3. Elevated Corner Arena Structural Towers & Spot Light Rigs
+        // 3. Sleek Corner Decks (removed overhead pylons, glowing white lamp blocks & overhead ceiling bars!)
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
-                const cornerDeck = new scene_js_1.Node(G.box(9.5, 5.2, 9.5), wallConcreteMat);
-                cornerDeck.setPos(sx * (W + APRON + 9.2), 2.5, sz * (L + APRON + 9.2));
-                const pylon = new scene_js_1.Node();
-                pylon.setPos(sx * (W + APRON + 6.5), 0, sz * (L + APRON + 6.0));
-                const column = new scene_js_1.Node(G.cylinder(0.28, 0.36, 15.0, 8), trussMat);
-                column.setPos(0, 7.5, 0);
-                const lamp = new scene_js_1.Node(G.box(1.8, 0.65, 0.65), ceilingLampMat);
-                lamp.setPos(0, 15.1, 0);
-                lamp.rotation = [0.42, Math.atan2(-sx, -sz) + Math.PI, 0];
-                pylon.add(column, lamp);
-                root.add(cornerDeck, pylon);
+                const cornerDeck = new scene_js_1.Node(G.box(9.5, 3.2, 9.5), wallConcreteMat);
+                cornerDeck.setPos(sx * (W + APRON + 9.2), 1.5, sz * (L + APRON + 9.2));
+                root.add(cornerDeck);
             }
         }
 
-        // 4. Overhead Arena Roof Trusses & Suspended Light Halo (cleanly high above court sightlines)
-        for (const rz of [-L * 0.65, 0, L * 0.65]) {
-            const trussBeam = new scene_js_1.Node(G.box(outerX * 2, 0.55, 0.65), trussMat);
-            trussBeam.setPos(0, 17.8, rz);
-            const spotBar = new scene_js_1.Node(G.box(W * 1.4, 0.14, 0.32), ceilingLampMat);
-            spotBar.setPos(0, 17.45, rz);
-            root.add(trussBeam, spotBar);
-        }
-
-        // 5. Sleek Courtside Scorer Table & Player Bench (clean dark matte w/ hairline LED accent, NO neon blocks!)
+        // 5. Sleek Courtside Scorer Table & Player Bench (clean dark matte w/ hairline LED accent)
         const benchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0f172a), spec: 0.55 });
         for (const s of [-1, 1]) {
-            const desk = new scene_js_1.Node(G.box(0.55, 0.68, 9.2), benchMat);
-            desk.setPos(s * (W + APRON + 1.0), 0.34, 0);
+            const desk = new scene_js_1.Node(G.box(0.55, 0.62, 9.2), benchMat);
+            desk.setPos(s * (W + APRON + 1.0), 0.31, 0);
             const deskEdge = new scene_js_1.Node(G.box(0.58, 0.04, 9.2), s < 0 ? accentCyanMat : accentWarmMat);
-            deskEdge.setPos(s * (W + APRON + 1.0), 0.69, 0);
+            deskEdge.setPos(s * (W + APRON + 1.0), 0.63, 0);
             root.add(desk, deskEdge);
         }
 
-        // 6. Dual-Tier Championship Arena Stands (Seamless Elevated Upper Mezzanine Tier across ALL 4 sides!)
+        // 6. Balanced Arena Bowl Stands (clean 4-row baseline tiers so top hoop & HUD stay crystal clear!)
         const deckMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x162033), spec: 0.3, receiveShadow: false });
         for (const s of [-1, 1]) {
-            const sd = new scene_js_1.Node(G.box(5.2, 0.4, 2 * (L + APRON) + 14), deckMat);
-            sd.setPos(s * (W + APRON + 6.4), 3.7, 0);
-            const ed = new scene_js_1.Node(G.box(2 * (W + APRON) + 18, 0.4, 5.2), deckMat);
-            ed.setPos(0, 3.7, s * (L + APRON + 6.6));
-            root.add(sd, ed);
+            const sd = new scene_js_1.Node(G.box(5.0, 0.36, 2 * (L + APRON) + 12), deckMat);
+            sd.setPos(s * (W + APRON + 6.2), 3.3, 0);
+            root.add(sd);
         }
         const stands = [
-            // Lower bowl
-            { alongX: true, sign: -1, offset: L + APRON + 2.5, length: 2 * (W + APRON) + 6, rows: 5, center: 0, noWall: true },
-            { alongX: true, sign: 1, offset: L + APRON + 2.5, length: 2 * (W + APRON) + 6, rows: 5, center: 0, noWall: true },
-            { alongX: false, sign: -1, offset: W + APRON + 2.3, length: 2 * (L + APRON) + 4, rows: 5, center: 0, noWall: true },
-            { alongX: false, sign: 1, offset: W + APRON + 2.3, length: 2 * (L + APRON) + 4, rows: 5, center: 0, noWall: true },
-            // Upper Bowl Mezzanine Tier (elevated seamlessly above lower bowl!)
-            { alongX: true, sign: -1, offset: L + APRON + 7.5, length: 2 * (W + APRON) + 16, rows: 5, center: 0, baseY: 3.8 },
-            { alongX: true, sign: 1, offset: L + APRON + 7.5, length: 2 * (W + APRON) + 16, rows: 5, center: 0, baseY: 3.8 },
-            { alongX: false, sign: -1, offset: W + APRON + 7.3, length: 2 * (L + APRON) + 14, rows: 5, center: 0, baseY: 3.8 },
-            { alongX: false, sign: 1, offset: W + APRON + 7.3, length: 2 * (L + APRON) + 14, rows: 5, center: 0, baseY: 3.8 }
+            // Baseline end stands kept clean & low so top hoop sightline is unobstructed
+            { alongX: true, sign: -1, offset: L + APRON + 2.8, length: 2 * (W + APRON) + 6, rows: 4, center: 0, noWall: true },
+            { alongX: true, sign: 1, offset: L + APRON + 2.8, length: 2 * (W + APRON) + 6, rows: 4, center: 0, noWall: true },
+            // Lower sideline stands
+            { alongX: false, sign: -1, offset: W + APRON + 2.3, length: 2 * (L + APRON) + 4, rows: 4, center: 0, noWall: true },
+            { alongX: false, sign: 1, offset: W + APRON + 2.3, length: 2 * (L + APRON) + 4, rows: 4, center: 0, noWall: true },
+            // Sideline upper bowl gallery (NO clutter behind baseline backboards!)
+            { alongX: false, sign: -1, offset: W + APRON + 7.2, length: 2 * (L + APRON) + 10, rows: 4, center: 0, baseY: 3.4 },
+            { alongX: false, sign: 1, offset: W + APRON + 7.2, length: 2 * (L + APRON) + 10, rows: 4, center: 0, baseY: 3.4 }
         ];
 
         // Preserved crowd geometry tokens for test suite assertions:
@@ -8242,7 +8231,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 }
             }
             for (const e of [-1, 1]) {
-                ledBoard(root, led, false, 12.0, 0, e * (L + GD + 2.2), e, 1.8, true);
+                ledBoard(root, led, false, 11.4, 0, e * (L + GD + 2.4), e, 1.35, true);
             }
         }
 
@@ -8437,15 +8426,12 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             for (const s of [-1, 1]) {
                 ledBoard(root, led, true, 2 * L, s * (W + APRON + 0.3), 0, s);
             }
-            // 2. High-visibility Courtside Baseline LED boards directly under both hoops!
+            // 2. Clean Courtside Baseline LED boards flanking both hoops (no distracting double-stacked upper ribbon behind backboard!)
             for (const e of [-1, 1]) {
-                const bz = e * (L + APRON + 0.42);
-                const segW = 6.2;
-                // Flanking left and right of the hoop stanchion base
-                ledBoard(root, led, false, segW, -4.3, bz, e, 1.05);
-                ledBoard(root, led, false, segW, 4.3, bz, e, 1.05);
-                // Center elevated digital ribbon board directly behind hoop stanchion
-                ledBoard(root, led, false, 8.5, 0, e * (L + APRON + 1.6), e, 1.25, true);
+                const bz = e * (L + APRON + 0.55);
+                const segW = 5.8;
+                ledBoard(root, led, false, segW, -4.4, bz, e, 0.92);
+                ledBoard(root, led, false, segW, 4.4, bz, e, 0.92);
             }
         }
 
@@ -13882,42 +13868,37 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
     function getHudActionSvg(action, isHoops) {
         if (action === 'shoot') {
             if (isHoops) {
-                // Minimalist crisp vector hoop & ball arc
-                return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                    '<circle cx="16" cy="10" r="5.5" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.14)"/>' +
-                    '<path d="M11.2 10 H20.8 M16 4.6 V15.4" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>' +
-                    '<ellipse cx="16" cy="21" rx="8.5" ry="2.4" stroke="#fb923c" stroke-width="2.2"/>' +
-                    '<path d="M10 22.5 L12.5 28.5 H19.5 L22 22.5 M13.5 22.5 L14.8 28.5 M18.5 22.5 L17.2 28.5" stroke="rgba(255,255,255,0.78)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+                return '<svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="16" cy="11" r="6" stroke="#ffffff" stroke-width="2.1" fill="rgba(255,255,255,0.16)"/>' +
+                    '<path d="M10.5 11 H21.5 M16 5 V17" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>' +
+                    '<ellipse cx="16" cy="22" rx="9" ry="2.5" stroke="#fdba74" stroke-width="2.2"/>' +
+                    '<path d="M9.5 23.2 L12.2 29 H19.8 L22.5 23.2 M13.5 23.2 L14.6 29 M18.5 23.2 L17.4 29" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
                     '</svg>';
             }
-            // Minimalist crisp vector soccer strike
-            return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                '<path d="M5 25 L11 19 M4 19 L8 15 M11 27 L15 23" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"/>' +
-                '<circle cx="20" cy="13" r="8" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.14)"/>' +
+            return '<svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M4.5 25.5 L11.5 18.5 M3.5 19.5 L8.5 14.5 M11 27.5 L16 22.5" stroke="rgba(255,255,255,0.72)" stroke-width="2" stroke-linecap="round"/>' +
+                '<circle cx="20" cy="13" r="8.2" stroke="#ffffff" stroke-width="2.1" fill="rgba(255,255,255,0.16)"/>' +
                 '<polygon points="20,9.2 23.4,11.7 22.1,15.6 17.9,15.6 16.6,11.7" fill="#ffffff"/>' +
-                '<path d="M20 5 V9.2 M27.5 11 L23.4 11.7 M24.8 19.2 L22.1 15.6 M15.2 19.2 L17.9 15.6 M12.5 11 L16.6 11.7" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>' +
+                '<path d="M20 5 V9.2 M27.5 11 L23.4 11.7 M24.8 19.2 L22.1 15.6 M15.2 19.2 L17.9 15.6 M12.5 11 L16.6 11.7" stroke="#ffffff" stroke-width="1.35" stroke-linecap="round"/>' +
                 '</svg>';
         }
         if (action === 'tackle') {
             if (isHoops) {
-                // Minimalist crisp vector steal / swipe
-                return '<svg width="26" height="26" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                    '<circle cx="14" cy="14" r="6" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.12)"/>' +
+                return '<svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="14" cy="14" r="6.2" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.14)"/>' +
                     '<path d="M8.5 14 H19.5 M14 8.5 V19.5" stroke="#ffffff" stroke-width="1.4"/>' +
-                    '<path d="M5 8 L9 12 M5 12 H9 M23 20 L19 16 M23 16 H19" stroke="#fda4af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                    '<path d="M4.5 8.5 L8.5 12 M4.5 12 H8.5 M23.5 19.5 L19.5 16 M23.5 16 H19.5" stroke="#fecdd3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
                     '</svg>';
             }
-            // Minimalist crisp vector slide tackle chevrons
-            return '<svg width="26" height="26" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                '<path d="M4 21 H24" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>' +
-                '<path d="M6 16 L13 16 L21 10" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<path d="M16 10 H21 V15" stroke="#fda4af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<circle cx="22" cy="19" r="2.6" fill="#ffffff"/>' +
+            return '<svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M4 21.5 H24" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>' +
+                '<path d="M5.5 16.5 L13.5 16.5 L21.5 9.5" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<path d="M16 9.5 H21.5 V15" stroke="#fecdd3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<circle cx="22.5" cy="19.5" r="2.5" fill="#ffffff"/>' +
                 '</svg>';
         }
-        // Minimalist crisp vector turbo sprint chevrons
-        return '<svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-            '<path d="M6 8 L12 14 L6 20" stroke="rgba(255,255,255,0.65)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        return '<svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M6.5 8 L12.5 14 L6.5 20" stroke="rgba(255,255,255,0.7)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
             '<path d="M14 7 L21 14 L14 21" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
             '</svg>';
     }

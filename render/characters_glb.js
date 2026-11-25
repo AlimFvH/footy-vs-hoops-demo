@@ -236,8 +236,28 @@
         }));
       }
     });
+    // Preload active equipped kit atlases + keeper immediately so 3D skin uploads with zero stall
+    try {
+      preloadImage('assets/kits/keeper_kit_0_volt.png');
+      preloadImage('assets/kits/footy_kit_classic.png');
+      preloadImage('assets/kits/hoops_kit_classic.png');
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('fvh.save.v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const eq = parsed && parsed.equipped;
+          const activeChar = (parsed && (parsed.selectedCharacter || parsed.selectedTeam)) || 'footy';
+          const footyKit = (eq && eq['skin.footy']) || (eq && eq.skin) || 'footy_classic';
+          const hoopsKit = (eq && eq['skin.hoops']) || 'hoops_classic';
+          if (KIT_ATLAS_MAP[footyKit]) preloadImage(KIT_ATLAS_MAP[footyKit]);
+          if (KIT_ATLAS_MAP[hoopsKit]) preloadImage(KIT_ATLAS_MAP[hoopsKit]);
+          const activeKit = activeChar === 'hoops' ? hoopsKit : footyKit;
+          const thumbImg = preloadImage('/store/items/kit3d_' + activeKit + '.png');
+          if (thumbImg) thumbImg.dataset && (thumbImg.dataset.preloaded = '1');
+        }
+      }
+    } catch (_) {}
   }
-  if (typeof setTimeout === 'function') setTimeout(preloadGLBModels, 50);
 
 
   let glbEmblemImg = null;
@@ -724,6 +744,8 @@
     'skin_footy_stealth_shadow': 'assets/kits/footy_kit_6_midnight.png',
     'skin_footy_neon_matrix': 'assets/kits/footy_kit_3_neon.png',
     'skin_footy_mythic_titan': 'assets/kits/footy_kit_star_emperor.png',
+    'footy_excl_solar_volt': 'assets/kits/footy_kit_excl_volt.png',
+    'footy_excl_eclipse_royal': 'assets/kits/footy_kit_excl_eclipse.png',
 
     // Basketball Regular Tanks
     'hoops_classic': 'assets/kits/hoops_kit_classic.png',
@@ -768,6 +790,8 @@
     'skin_hoops_street_legend': 'assets/kits/hoops_kit_2_brooklyn.png',
     'skin_hoops_phantom_black': 'assets/kits/hoops_kit_8_stealth.png',
     'skin_hoops_hyper_beast': 'assets/kits/hoops_kit_9_beast.png',
+    'hoops_excl_inferno_dusk': 'assets/kits/hoops_kit_excl_dusk.png',
+    'hoops_excl_cosmos_apex': 'assets/kits/hoops_kit_excl_cosmos.png',
 
     // Keeper Kits
     'keeper_0_volt': 'assets/kits/keeper_kit_0_volt.png',
@@ -776,7 +800,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '4.2.0-polish';
+  const ATLAS_VERSION = '4.3.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -791,11 +815,13 @@
     const st = getGLState(gl);
     if (st.skinTextureCache.has(url)) return st.skinTextureCache.get(url);
     const tex = gl.createTexture();
+    tex._fvhLoaded = false;
     st.skinTextureCache.set(url, tex);
 
     const img = preloadImage(url) || (typeof Image !== 'undefined' ? new Image() : null);
 
     function uploadToGl(imageElement) {
+      if (tex._fvhLoaded) return;
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imageElement);
@@ -808,6 +834,7 @@
         gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
       }
       gl.bindTexture(gl.TEXTURE_2D, null);
+      tex._fvhLoaded = true;
     }
 
     if (img && img.complete && img.naturalWidth > 0) {
@@ -817,9 +844,9 @@
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([200, 210, 225, 255]));
       gl.bindTexture(gl.TEXTURE_2D, null);
 
-      img.onload = function() {
+      img.addEventListener('load', function() {
         uploadToGl(img);
-      };
+      }, { once: true });
     }
     return tex;
   }
@@ -861,10 +888,10 @@
       roughness = Math.max(0.58, roughness);
       metallic = Math.min(0.05, metallic);
       const sk = String(skinId || '').toLowerCase();
-      if (sk.includes('gold') || sk.includes('championship') || sk.includes('emperor')) {
-        role = 5.0; metallic = 0.42; roughness = 0.30;
-      } else if (sk.includes('neon') || sk.includes('cyber') || sk.includes('dragon')) {
-        metallic = 0.22; roughness = 0.42;
+      if (sk.includes('gold') || sk.includes('championship') || sk.includes('emperor') || sk.includes('eclipse')) {
+        role = 5.0; metallic = 0.44; roughness = 0.28;
+      } else if (sk.includes('neon') || sk.includes('cyber') || sk.includes('dragon') || sk.includes('volt') || sk.includes('cosmos') || sk.includes('dusk')) {
+        metallic = 0.24; roughness = 0.40;
       } else if (sk.includes('frost') || sk.includes('tiffany') || sk.includes('sapphire')) {
         metallic = 0.12; roughness = 0.46;
       }
@@ -1154,122 +1181,157 @@
       const prog = Math.max(0, Math.min(1, clipTime / dur));
 
       // 1. Natural relaxed finger curl across all fingers (no splayed mannequin paddles)
-      const baseCurl = (action === 'dunk' || action === 'shot' || action === 'dribble' || action === 'dive') ? 0.34 : 0.22;
+      const baseCurl = (action === 'dunk' || action === 'shot' || action === 'dribble' || action === 'dive') ? 0.36 : 0.22;
       for (let i = 0; i < rig.fingerChain.length; i++) {
         const fc = rig.fingerChain[i];
         _rotCharAxis(nodes, rig, fc.idx, 0, 0, 1, fc.sign * baseCurl * fc.weight);
       }
 
-      // 2. Lifelike Idle / Showcase Stance (fixes stiff <3deg zombie arms)
+      // 2. Lifelike Idle / Showcase Stance (expressive athletic ready bounce, gaze scan & natural guard poise)
       if (action === 'idle') {
-        const breath = Math.sin(t * 2.1);
-        const shift = Math.sin(t * 1.05);
-        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, isHoops ? 0.05 : 0.03);
-        _rotCharAxis(nodes, rig, b.Torso, 0, 1, 0, 0.022 * shift);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.025 * breath);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.035 * shift);
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.045 * shift);
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.02 * breath);
+        const breath = Math.sin(t * 2.25);
+        const shift = Math.sin(t * 1.15);
+        const sway = Math.cos(t * 1.4);
+        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, (isHoops ? 0.075 : 0.045) + 0.014 * Math.abs(breath));
+        _rotCharAxis(nodes, rig, b.Torso, 0, 1, 0, 0.036 * shift);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.032 * breath);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.055 * shift);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.024 * sway);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.075 * shift + 0.03 * Math.sin(t * 0.72));
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.025 * breath - 0.02);
 
-        // Relaxed athletic shoulder abduct & natural forearm bend
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.075);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.075);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.06 + 0.03 * breath);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.08 - 0.03 * breath);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.34 - 0.04 * breath);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.36 + 0.04 * breath);
+        // Relaxed athletic shoulder abduct & dynamic forearm guard poise
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isHoops ? 0.11 : 0.09) + 0.025 * sway);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isHoops ? -0.11 : -0.09) - 0.025 * sway);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, (isHoops ? -0.16 : -0.08) + 0.045 * breath);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (isHoops ? -0.18 : -0.10) - 0.045 * breath);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (isHoops ? -0.46 : -0.36) - 0.06 * breath);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (isHoops ? -0.48 : -0.38) + 0.06 * breath);
         return;
       }
 
       // 3. Athletic Run, Walk & Football Dribble Symmetry + Gaze Stabilization
       if (action === 'run' || action === 'walk' || action === 'fdribble') {
         const stride = Math.sin(runPhase);
-        const spK = Math.min(1.0, speed / 3.0);
+        const strideCos = Math.cos(runPhase);
+        const spK = Math.min(1.0, speed / 2.8);
         const isFDrib = (action === 'fdribble');
-        // Counter-stabilize excessive head bob inside raw Run clip & tighten forward athletic posture
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, isFDrib ? -0.10 * spK : -0.06 * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (isFDrib ? -0.10 : -0.08) * stride * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (isFDrib ? 0.09 : 0.06) * spK);
-        // Symmetric athletic runner arm drive & wide agility balance when dribbling football
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isFDrib ? 0.16 : 0.09) * spK);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isFDrib ? -0.16 : -0.09) * spK);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (-0.36 + 0.28 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.54 - 0.14 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.46 + 0.12 * stride) * spK);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, (isFDrib ? -0.12 : -0.07) * spK);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, 0.05 * strideCos * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (isFDrib ? -0.15 : -0.11) * stride * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (isFDrib ? 0.12 : 0.08) * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, (isFDrib ? 0.06 : 0.03) * strideCos * spK);
+        // Snappy diagonal sprinter/dribbler arm drive & balanced shoulder roll
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isFDrib ? 0.20 : 0.11) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isFDrib ? -0.20 : -0.11) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (-0.38 + 0.36 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, (-0.38 - 0.32 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.58 - 0.18 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.56 + 0.16 * stride) * spK);
         return;
       }
 
-      // 4. True Basketball Dribble (Right hand active dribble pump + left defender shield arm)
+      // 4. True Basketball Dribble (Rhythmic crossover palm slap & defender shield arm)
       if (action === 'dribble') {
-        const freq = speed > 0.35 ? 11.2 : 6.8;
+        const freq = speed > 0.35 ? 12.2 : 7.4;
         const drib = Math.sin(t * freq);
-        const push = Math.max(0, -drib); // downward bounce push
-        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.09);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.08 * Math.sin(t * freq * 0.5));
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.07);
-        // Right dribbling arm: raised forward with rhythmic pump & crisp wrist slap
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.14);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.58 + 0.26 * push);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.78 + 0.48 * push);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.32 * push - 0.12);
-        // Left defender shield forearm across body
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.18);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.45);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.72);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 0, 1, 0, -0.45);
+        const push = Math.max(0, -drib);
+        const crossSway = Math.sin(t * freq * 0.5);
+        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.11);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.12 * crossSway);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.04 * crossSway);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.09);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.06 * crossSway);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.17);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.60 + 0.30 * push);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.82 + 0.54 * push);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.36 * push - 0.14);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.22);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.50);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.78);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 0, 1, 0, -0.48);
         return;
       }
 
-      // 5. Hoops Jump Shot (True asymmetric shooting arm + crisp wrist flick release)
+      // 5. Hoops Jump Shot (True asymmetric shooting arm + crisp gooseneck wrist flick release)
       if (action === 'shot' && isHoops) {
-        const release = Math.min(1, Math.max(0, (prog - 0.18) / 0.45));
+        const gather = Math.min(1, prog / 0.25);
+        const release = Math.min(1, Math.max(0, (prog - 0.18) / 0.42));
         const smoothRel = release * release * (3 - 2 * release);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.12 * smoothRel);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.08 * Math.sin(prog * Math.PI));
-        // Dominant right shooting arm follows through cleanly overhead; off-hand releases wide
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.55 * smoothRel);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, 0.32 * smoothRel - 0.22);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.52 * smoothRel);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.22 * smoothRel);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.25 * (1 - smoothRel));
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.14 * smoothRel);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.10 * Math.sin(prog * Math.PI));
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.12 * gather);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.65 * smoothRel);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, 0.42 * smoothRel - 0.26);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.62 * smoothRel);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.25 * smoothRel);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.28 * (1 - smoothRel));
         return;
       }
 
-      // 6. Hoops Slam Dunk (Explosive 1-hand rim hammer & follow-through arch)
+      // 6. Hoops Slam Dunk (Explosive 1-hand cock-back & rim hammer arch)
       if (action === 'dunk') {
-        const cock = Math.sin(Math.min(1, prog * 2.1) * Math.PI * 0.5);
-        const slam = Math.max(0, Math.min(1, (prog - 0.32) / 0.45));
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.18 * cock + 0.36 * slam);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.14 * cock + 0.24 * slam);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.55 * cock + 0.95 * slam);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.35 * cock + 0.45 * slam);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.48 * slam);
-        // Left arm sweeps back cleanly for mid-air balance
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, 0.52 * slam);
+        const cock = Math.sin(Math.min(1, prog * 2.2) * Math.PI * 0.5);
+        const slam = Math.max(0, Math.min(1, (prog - 0.30) / 0.44));
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.24 * cock + 0.42 * slam);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.18 * cock + 0.28 * slam);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.16 * cock + 0.10 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.66 * cock + 1.06 * slam);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.40 * cock + 0.52 * slam);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.56 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, 0.58 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.32);
+        return;
+      }
+
+      // 7. Footy Power Strike & Crisp Pass (Whip hip/torso torque & follow-through arm snap)
+      if (action === 'kick' || action === 'pass') {
+        const wind = Math.sin(Math.min(0.5, prog) * Math.PI);
+        const whip = Math.max(0, Math.min(1, (prog - 0.22) / 0.52));
+        const powerMul = action === 'kick' ? 1.15 : 0.68;
+        _rotCharAxis(nodes, rig, b.Abdomen, 0, 1, 0, (-0.15 * wind + 0.28 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (-0.20 * wind + 0.36 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (-0.12 * wind + 0.18 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.30 * powerMul);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, 0.25 * whip * powerMul);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.48);
+        return;
+      }
+
+      // 8. Turf Slide Tackle & Hoops Lunge Steal
+      if (action === 'slide' || action === 'steal') {
+        const snap = Math.sin(Math.min(1, prog) * Math.PI * 0.85);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (action === 'steal' ? 0.34 : -0.26) * snap);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (action === 'steal' ? 0.26 : -0.22) * snap);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (action === 'steal' ? -0.78 : 0.42) * snap);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.22 * snap);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.35 * snap);
+        return;
+      }
+
+      // 9. Expressive Celebration Emote (Joyful fist pump & chest lift)
+      if (action === 'celeb') {
+        const pump = Math.abs(Math.sin(t * 7.5));
+        const pulse = Math.sin(t * 5.0);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.10 - 0.08 * pump);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.12 * pulse);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.58 - 0.24 * pump);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.28);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.52 + 0.22 * pump);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.34 - 0.16 * (1 - pump));
         _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.28);
         return;
       }
 
-      // 7. Footy Power Strike & Pass (Adds torso twist & counter-balance arm snap)
-      if (action === 'kick' || action === 'pass') {
-        const wind = Math.sin(Math.min(0.5, prog) * Math.PI);
-        const whip = Math.max(0, Math.min(1, (prog - 0.25) / 0.55));
-        const powerMul = action === 'kick' ? 1.0 : 0.62;
-        _rotCharAxis(nodes, rig, b.Abdomen, 0, 1, 0, (-0.12 * wind + 0.22 * whip) * powerMul);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (-0.16 * wind + 0.30 * whip) * powerMul);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (-0.10 * wind + 0.14 * whip) * powerMul);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.24 * powerMul);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.42);
-        return;
-      }
-
-      // 8. Goalkeeper Dive (Symmetrical twin-glove extended save reach)
+      // 10. Goalkeeper Dive (Symmetrical twin-glove extended save reach)
       if (action === 'dive') {
-        const stretch = Math.sin(Math.min(1, prog) * Math.PI * 0.7);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.14 * stretch);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -1.25 * stretch);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.35 * stretch);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.25 * stretch);
+        const stretch = Math.sin(Math.min(1, prog) * Math.PI * 0.72);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.18 * stretch);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.10 * stretch);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -1.32 * stretch);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.36 * stretch);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -1.10 * stretch);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.28 * stretch);
       }
     };
   }
@@ -2100,14 +2162,30 @@
       const preview = ensureWardrobeStage();
       if (!preview || !preview.gl) return false;
 
+      const poster = containerEl.querySelector('.fvh-hero-real-img');
       if (preview.canvas.parentElement !== containerEl) {
-        containerEl.innerHTML = '';
+        containerEl.querySelectorAll('canvas.fvh-wardrobe-3d-canvas').forEach(c => c.remove());
         containerEl.appendChild(preview.canvas);
       }
+      preview.posterEl = poster || null;
       preview.resize(containerEl);
       preview.setSubject(charId || 'footy', kitId || (charId === 'hoops' ? 'hoops_classic' : 'footy_classic'), opts);
+
+      const texReady = !preview.customTexture || preview.customTexture._fvhLoaded;
+      if (preview.model && texReady) {
+        preview.canvas.style.opacity = '1';
+        if (preview.posterEl) preview.posterEl.style.opacity = '0';
+        preview.drawFrame(0.016);
+      } else {
+        preview.canvas.style.opacity = poster ? '0' : '1';
+        if (preview.posterEl) preview.posterEl.style.opacity = '1';
+      }
       preview.start();
       return true;
+    },
+
+    preloadKitAtlas(kitId) {
+      if (kitId && KIT_ATLAS_MAP[kitId]) preloadImage(KIT_ATLAS_MAP[kitId]);
     },
 
     setWardrobePreviewKit(charId, kitId) {
@@ -2218,7 +2296,7 @@
 
     const canvas = document.createElement('canvas');
     canvas.className = 'fvh-wardrobe-3d-canvas';
-    canvas.style.cssText = 'width:100%;height:100%;display:block;background:transparent;touch-action:none;cursor:grab;outline:none;';
+    canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;background:transparent;touch-action:none;cursor:grab;outline:none;z-index:2;transition:opacity 0.16s ease;';
 
     const gl = canvas.getContext('webgl2', { antialias: true, alpha: true, premultipliedAlpha: false, depth: true });
     if (!gl) return null;
@@ -2463,6 +2541,12 @@
           });
           gl.bindVertexArray(null);
           gl.useProgram(null);
+          if (!st.customTexture || st.customTexture._fvhLoaded) {
+            if (canvas.style.opacity !== '1') canvas.style.opacity = '1';
+            if (st.posterEl && st.posterEl.isConnected && st.posterEl.style.opacity !== '0') {
+              st.posterEl.style.opacity = '0';
+            }
+          }
       },
 
       start() {
@@ -2590,6 +2674,7 @@
     if (document.readyState === 'loading') {
       window.addEventListener('DOMContentLoaded', tryHook);
     }
+    preloadGLBModels();
   }
 
   exports.CharactersGLB = CharactersGLB;

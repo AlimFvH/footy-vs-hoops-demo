@@ -297,6 +297,8 @@ const ITEM_CATALOG = {
   'footy_3_neon': { name: 'Неон Тренинг', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1300 },
   'footy_8_obsidian': { name: 'Обсидиановый Шиноби', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
   'footy_0_tiffany': { name: 'Тиффани Оникс', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800 },
+  'footy_excl_solar_volt': { name: 'Солнечный Вольт', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true },
+  'footy_excl_eclipse_royal': { name: 'Император Затмение', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true },
 
   // OFFICIAL FOOTY STAR KITS (ЗА ЗВЁЗДЫ)
   'footy_kit_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star' },
@@ -318,6 +320,8 @@ const ITEM_CATALOG = {
   'hoops_9_beast': { name: 'Гипер Зверь', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 1300 },
   'hoops_8_mamba': { name: 'Чёрная Мамба', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
   'hoops_1_miami': { name: 'Майами Роуз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2800 },
+  'hoops_excl_inferno_dusk': { name: 'Багряный Рассвет', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true },
+  'hoops_excl_cosmos_apex': { name: 'Космос Апекс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true },
 
   // OFFICIAL HOOPS STAR KITS (ЗА ЗВЁЗДЫ)
   'hoops_kit_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star' },
@@ -444,60 +448,60 @@ const BUNDLE_CATALOG = {
     id: 'bundle_footy_starter',
     name: 'Стартовый набор Футболиста',
     mode: 'footy',
-    coinsPrice: 1200,
-    badge: '⚡ STARTER',
-    desc: 'Формы Сапфир Страйкер и Неон Тренинг + 500 монет FvH',
-    originalValue: 2350,
-    discount: 48,
+    coinsPrice: 1400,
+    badge: '⚡ STARTER EXCLUSIVE',
+    desc: 'Эксклюзивная форма «Солнечный Вольт» (не продаётся отдельно!), форма «Сапфир Страйкер» + 600 монет FvH',
+    originalValue: 2950,
+    discount: 52,
     items: [
+      { id: 'footy_excl_solar_volt', type: 'cosmetic', exclusive: true },
       { id: 'footy_1_sapphire', type: 'cosmetic' },
-      { id: 'footy_3_neon', type: 'cosmetic' },
-      { type: 'coins', val: 500 }
+      { type: 'coins', val: 600 }
     ]
   },
   'bundle_hoops_starter': {
     id: 'bundle_hoops_starter',
     name: 'Стартовый набор Баскетболиста',
     mode: 'hoops',
-    coinsPrice: 1200,
-    badge: '⚡ STARTER',
-    desc: 'Майки Шарлотт Бриз и Восходящий Феникс + 500 монет FvH',
-    originalValue: 2250,
-    discount: 46,
+    coinsPrice: 1400,
+    badge: '⚡ STARTER EXCLUSIVE',
+    desc: 'Эксклюзивная майка «Багряный Рассвет» (не продаётся отдельно!), майка «Шарлотт Бриз» + 600 монет FvH',
+    originalValue: 2950,
+    discount: 52,
     items: [
+      { id: 'hoops_excl_inferno_dusk', type: 'cosmetic', exclusive: true },
       { id: 'hoops_6_charlotte', type: 'cosmetic' },
-      { id: 'hoops_7_phoenix', type: 'cosmetic' },
-      { type: 'coins', val: 500 }
+      { type: 'coins', val: 600 }
     ]
   },
   'bundle_footy_legend': {
     id: 'bundle_footy_legend',
-    name: 'Легендарный Футболист',
+    name: 'Набор Мифической Легенды',
     mode: 'footy',
     coinsPrice: 4200,
-    badge: '👑 LEGEND',
-    desc: 'Формы Обсидиановый Шиноби, Тиффани Оникс, Пламя Дракона + 2,500 монет FvH',
-    originalValue: 9000,
-    discount: 53,
+    badge: '👑 MYTHIC EXCLUSIVE',
+    desc: 'Мифический эксклюзив «Император Затмение» + «Обсидиановый Шиноби», «Пламя Дракона» и 2,500 монет FvH',
+    originalValue: 9600,
+    discount: 56,
     items: [
+      { id: 'footy_excl_eclipse_royal', type: 'cosmetic', exclusive: true },
       { id: 'footy_8_obsidian', type: 'cosmetic' },
-      { id: 'footy_0_tiffany', type: 'cosmetic' },
       { id: 'footy_9_dragon', type: 'cosmetic' },
       { type: 'coins', val: 2500 }
     ]
   },
   'bundle_hoops_legend': {
     id: 'bundle_hoops_legend',
-    name: 'Легендарный Баскетболист',
+    name: 'Набор Короля Данков',
     mode: 'hoops',
     coinsPrice: 4200,
-    badge: '👑 LEGEND',
-    desc: 'Майки Чёрная Мамба, Майами Роуз, Гипер Зверь + 2,500 монет FvH',
-    originalValue: 9100,
-    discount: 53,
+    badge: '👑 MYTHIC EXCLUSIVE',
+    desc: 'Мифический эксклюзив «Космос Апекс» + «Чёрная Мамба», «Гипер Зверь» и 2,500 монет FvH',
+    originalValue: 9600,
+    discount: 56,
     items: [
+      { id: 'hoops_excl_cosmos_apex', type: 'cosmetic', exclusive: true },
       { id: 'hoops_8_mamba', type: 'cosmetic' },
-      { id: 'hoops_1_miami', type: 'cosmetic' },
       { id: 'hoops_9_beast', type: 'cosmetic' },
       { type: 'coins', val: 2500 }
     ]
@@ -5071,7 +5075,7 @@ const server = http.createServer((req, res) => {
       } else {
         const candidates = Object.keys(ITEM_CATALOG).filter(id => {
           const it = ITEM_CATALOG[id];
-          if (it.isDefault) return false;
+          if (it.isDefault || it.bundleOnly) return false;
           if (it.packExclusive && id !== exclusiveItem) return false;
           if (isFootyPack && it.mode !== 'footy') return false;
           if (isHoopsPack && it.mode !== 'hoops') return false;
