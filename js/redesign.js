@@ -2897,7 +2897,7 @@
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var genericFallback = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
-    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.4.0-release';
+    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.5.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
       '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
@@ -5295,7 +5295,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.4.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.5.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -9046,7 +9046,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.4.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.5.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -9162,7 +9162,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=4.4.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=4.5.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -11564,71 +11564,103 @@
     }
   ];
 
-  // High-Performance Native WebSocket & Optimized Throttled Relay Link
+  // High-Performance Native WebSocket & Optimized Coalescing Relay Link
+  function resolveWsRelayUrl(matchId, role) {
+    var rel = '/ws/match?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role);
+    var resolved = getApiUrl(rel);
+    if (resolved && (resolved.indexOf('https://') === 0 || resolved.indexOf('http://') === 0)) {
+      return resolved.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://');
+    }
+    var wsProto = (window.location && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+    var host = (window.location && window.location.host) ? window.location.host : 'localhost:8099';
+    return wsProto + '//' + host + (resolved && resolved.charAt(0) === '/' ? resolved : rel);
+  }
+
   function RelayLink(matchId, role) {
     this.matchId = matchId;
     this.role = role;
     this.h = {};
     this.open = true;
     this.closed = false;
-    this.rtt = 18;
+    this.rtt = 22;
+    this.transport = 'WS';
     this.ws = null;
     this.wsOpen = false;
     this.outQueue = [];
     this.lastPostTime = 0;
     this.pendingPost = null;
     this.pollInterval = null;
+    this.pollBusy = false;
     this.lastMsgAt = Date.now();
+    this.reconnectAttempts = 0;
     var self = this;
 
     this.pingInterval = setInterval(function () {
       if (self.closed) return;
       self.sendCtl({ k: 'ping', t: Date.now() });
-      if (self.lastMsgAt && (Date.now() - self.lastMsgAt > 8000)) {
+      if (self.lastMsgAt && (Date.now() - self.lastMsgAt > 7000)) {
         if (self.h && self.h.onStatusChange) self.h.onStatusChange('reconnecting');
       }
-    }, 2500);
+    }, 1500);
+
+    function dispatchMsg(raw) {
+      if (self.closed || !raw) return;
+      try {
+        var parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        var m = parsed.packet || parsed;
+        if (!m.k && parsed.type) {
+          m = { k: parsed.type, i: parsed.data, s: parsed.data, l: parsed.data };
+        }
+        self.lastMsgAt = Date.now();
+        if (m.k === 'ping') {
+          self.sendCtl({ k: 'pong', t: m.t });
+          return;
+        }
+        if (m.k === 'pong') {
+          var sample = Math.max(1, Math.min(999, Math.round(Date.now() - Number(m.t || Date.now()))));
+          if (!self.rtt || self._pongCount < 2) {
+            self._pongCount = (self._pongCount || 0) + 1;
+            self.rtt = sample;
+          } else {
+            var w = (sample > self.rtt * 2.4 && sample > 140) ? 0.15 : 0.45;
+            self.rtt = Math.round(self.rtt * (1 - w) + sample * w);
+          }
+          return;
+        }
+        if (m.k === '_rtc') {
+          if (self.onRtcSignal) self.onRtcSignal(m);
+          return;
+        }
+        if (self.h.onMessage) self.h.onMessage(m, 'fast');
+      } catch (e) {}
+    }
 
     function connectWs() {
       if (self.closed) return;
       try {
         if (typeof WebSocket !== 'undefined') {
-          var wsProto = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
-          var wsUrl = wsProto + '//' + window.location.host + '/ws/match?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role);
+          var wsUrl = resolveWsRelayUrl(matchId, role);
           var ws = new WebSocket(wsUrl);
           self.ws = ws;
 
           ws.onopen = function () {
             if (self.closed) { ws.close(); return; }
             self.wsOpen = true;
+            self.transport = 'WS';
+            self.reconnectAttempts = 0;
             self.lastMsgAt = Date.now();
-            self.sendCtl({ k: 'ping', t: Date.now() });
+            setTimeout(function () { if (!self.closed && self.wsOpen) self.sendCtl({ k: 'ping', t: Date.now() }); }, 400);
+            if (self.h && self.h.onWsReady) self.h.onWsReady();
             if (self.h && self.h.onStatusChange) self.h.onStatusChange('connected');
             if (self.pollInterval) {
               clearInterval(self.pollInterval);
               self.pollInterval = null;
             }
+            if (self.outQueue.length) self.flushHttp();
           };
 
           ws.onmessage = function (evt) {
-            if (self.closed) return;
-            try {
-              var parsed = JSON.parse(evt.data);
-              var m = parsed.packet || parsed;
-              if (!m.k && parsed.type) {
-                m = { k: parsed.type, i: parsed.data, s: parsed.data, l: parsed.data };
-              }
-              self.lastMsgAt = Date.now();
-              if (m.k === 'ping') {
-                self.sendCtl({ k: 'pong', t: m.t });
-                return;
-              }
-              if (m.k === 'pong') {
-                self.rtt = Math.max(1, Math.round(Date.now() - Number(m.t || Date.now())));
-                return;
-              }
-              if (self.h.onMessage) self.h.onMessage(m, 'fast');
-            } catch (e) {}
+            dispatchMsg(evt.data);
           };
 
           ws.onerror = function () {
@@ -11639,10 +11671,15 @@
           ws.onclose = function () {
             self.wsOpen = false;
             if (!self.closed) {
+              self.transport = 'HTTP';
               startHttpFallback();
-              setTimeout(connectWs, 1500);
+              var backoff = Math.min(2500, 450 + self.reconnectAttempts * 350);
+              self.reconnectAttempts++;
+              setTimeout(connectWs, backoff);
             }
           };
+        } else {
+          startHttpFallback();
         }
       } catch (e) {
         self.wsOpen = false;
@@ -11652,29 +11689,28 @@
 
     function startHttpFallback() {
       if (self.pollInterval || self.closed) return;
-      // Controlled 10Hz polling (100ms) - completely eliminates network flooding!
+      self.transport = 'HTTP';
+      // 25Hz responsive non-overlapping HTTP fallback ONLY while WebSocket is unavailable
       self.pollInterval = setInterval(function () {
-        if (self.closed || self.wsOpen) return;
+        if (self.closed || self.wsOpen || self.pollBusy) return;
+        self.pollBusy = true;
         fetch(getApiUrl('/api/match/relay?matchId=' + encodeURIComponent(matchId) + '&role=' + encodeURIComponent(role)))
           .then(function (r) { return r.json(); })
           .then(function (res) {
+            self.pollBusy = false;
             if (res && res.ok && Array.isArray(res.messages)) {
-              res.messages.forEach(function (msg) {
-                var m = msg.packet || msg;
-                if (!m.k && msg.type) {
-                  m = { k: msg.type, i: msg.data, s: msg.data, l: msg.data };
-                }
-                if (self.h.onMessage) self.h.onMessage(m, 'fast');
-              });
+              for (var idx = 0; idx < res.messages.length; idx++) {
+                dispatchMsg(res.messages[idx]);
+              }
             }
-          }).catch(function () {});
-      }, 100);
+          }).catch(function () { self.pollBusy = false; });
+      }, 42);
     }
 
     connectWs();
     setTimeout(function () {
       if (!self.wsOpen && !self.closed) startHttpFallback();
-    }, 600);
+    }, 900);
   }
 
   RelayLink.prototype.sendCtl = function (m) {
@@ -11687,24 +11723,37 @@
         this.wsOpen = false;
       }
     }
-    // Batch HTTP sends to max 10 requests/sec when WS is down
     var now = Date.now();
+    // Coalesce unacknowledged 'snap' and 'in' packets while waiting for HTTP flush
+    if (m && (m.k === 'snap' || m.k === 'in')) {
+      for (var i = this.outQueue.length - 1; i >= 0; i--) {
+        if (this.outQueue[i] && this.outQueue[i].k === m.k) {
+          this.outQueue.splice(i, 1);
+        }
+      }
+    }
     this.outQueue.push(m);
     var self = this;
-    if (now - this.lastPostTime > 90) {
+    if (now - this.lastPostTime > 36) {
       this.flushHttp();
     } else if (!this.pendingPost) {
       this.pendingPost = setTimeout(function () {
         self.pendingPost = null;
         self.flushHttp();
-      }, 95);
+      }, 36);
     }
   };
 
   RelayLink.prototype.flushHttp = function () {
     if (this.closed || !this.outQueue.length) return;
-    var batch = this.outQueue.slice();
-    this.outQueue = [];
+    if (this.ws && this.wsOpen && this.ws.readyState === WebSocket.OPEN) {
+      var wsBatch = this.outQueue.splice(0, this.outQueue.length);
+      for (var j = 0; j < wsBatch.length; j++) {
+        try { this.ws.send(JSON.stringify(wsBatch[j])); } catch (e) {}
+      }
+      return;
+    }
+    var batch = this.outQueue.splice(0, this.outQueue.length);
     this.lastPostTime = Date.now();
     fetch(getApiUrl('/api/match/relay'), {
       method: 'POST',
@@ -11714,10 +11763,23 @@
   };
 
   RelayLink.prototype.sendFast = function (m) {
+    if (this.closed) return;
+    if (this.ws && this.wsOpen && this.ws.readyState === WebSocket.OPEN) {
+      // Drop stale intermediate world snapshots if TCP write buffer backs up (>8KB)
+      if (m && m.k === 'snap' && this.ws.bufferedAmount > 8192) {
+        return;
+      }
+      try {
+        this.ws.send(JSON.stringify(m));
+        return;
+      } catch (e) {
+        this.wsOpen = false;
+      }
+    }
     this.sendCtl(m);
   };
 
-  RelayLink.prototype.close = function () {
+  RelayLink.prototype.close = function (skipRoomCancel) {
     this.closed = true;
     this.open = false;
     if (this.pingInterval) {
@@ -11735,7 +11797,7 @@
     if (this.ws) {
       try { this.ws.close(); } catch (e) {}
     }
-    if (this.matchId) {
+    if (this.matchId && !skipRoomCancel) {
       try {
         fetch(getApiUrl('/api/room/cancel'), {
           method: 'POST',
@@ -11748,7 +11810,7 @@
   };
   window.RelayLink = RelayLink;
 
-  // Helper to establish WebRTC or Resilient Server Relay Session between two players
+  // Dual-Track Multiplayer Session: Instant WebSocket Launch + Parallel Background UDP WebRTC P2P Upgrade
   function startWebRTCSession(app, role, roomCode, myName, oppName, modeOrOpts, onConnect, onError) {
     window.startWebRTCSession = startWebRTCSession;
     if (typeof window.require !== 'function') {
@@ -11761,165 +11823,134 @@
         var minutes = typeof modeOrOpts === 'object' ? (modeOrOpts.minutes || 2) : 2;
         var seed = typeof modeOrOpts === 'object' ? (modeOrOpts.seed || ((Math.random() * 1e9) | 0)) : ((Math.random() * 1e9) | 0);
         var arenaId = typeof modeOrOpts === 'object' ? (modeOrOpts.arenaId || null) : null;
-        var isStarted = false;
-        var relayFallbackTimer = null;
+        var isConnected = false;
 
-        function startWithRelay() {
-          if (isStarted) return;
-          isStarted = true;
-          if (relayFallbackTimer) clearTimeout(relayFallbackTimer);
-          var rLink = new RelayLink(roomCode, role);
+        // 1. Launch immediately over low-latency WebSocket Relay (zero-wait entry for both players!)
+        var rLink = new RelayLink(roomCode, role);
+        var p2pLink = null;
+        var p2pPromoted = false;
+        var p2pStarted = false;
 
-          var launchSession = function (effMode, effSeed, effArena) {
-            var finalMode = effMode || mode;
-            var finalSeed = (effSeed !== undefined && effSeed !== null) ? effSeed : seed;
-            var finalArena = effArena || arenaId || (finalMode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
-            var info = { role: role, mode: finalMode, minutes: minutes, seed: finalSeed, arenaId: finalArena, myName: myName, oppName: oppName, matchId: roomCode };
-            var session = new sessionMod.OnlineSession(rLink, info);
-            onConnect(session);
-          };
+        function finalizeStart(effMode, effSeed, effArena) {
+          if (isConnected) return;
+          isConnected = true;
+          var finalMode = effMode || mode;
+          var finalSeed = (effSeed !== undefined && effSeed !== null) ? effSeed : seed;
+          var finalArena = effArena || arenaId || (finalMode === 'hoops' ? 'std_hoops_street' : 'std_footy_classic');
+          var info = { role: role, mode: finalMode, minutes: minutes, seed: finalSeed, arenaId: finalArena, myName: myName, oppName: oppName, matchId: roomCode };
+          var session = new sessionMod.OnlineSession(rLink, info);
 
-          if (role === 'guest') {
-            // Authoritative server room sync to prevent sport mismatch
-            fetch(getApiUrl('/api/room/status?code=' + encodeURIComponent(roomCode)))
-              .then(function (r) { return r.json(); })
-              .then(function (st) {
-                if (st && st.room && st.room.mode) {
-                  launchSession(st.room.mode, st.room.seed, st.room.arenaId);
-                } else {
-                  launchSession(mode, seed, arenaId);
-                }
-              }).catch(function () {
-                launchSession(mode, seed, arenaId);
-              });
-          } else {
-            launchSession(mode, seed, arenaId);
-          }
-        }
-
-        // Try WebRTC PeerLink first
-        var link = null;
-        try {
-          link = new linkMod.PeerLink();
-        } catch (e) {
-          console.log('Direct WebRTC PeerLink not supported, using Server Relay Link', e);
-          startWithRelay();
-          return;
-        }
-
-        // Fast-track WebRTC negotiation or fall back to Server RelayLink smoothly within 1.2s
-        relayFallbackTimer = setTimeout(function () {
-          if (!isStarted) {
-            console.log('WebRTC negotiation fallback (1.2s), fast-tracking Server Relay Link');
-            if (link) {
-              try { link.close(); } catch (e) {}
-            }
-            startWithRelay();
-          }
-        }, 1200);
-
-        link.h.onClose = function () {
-          if (!isStarted) startWithRelay();
-        };
-
-        if (role === 'host') {
-          link.createOffer({ mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, name: myName }).then(function (offerStr) {
-            return fetch(getApiUrl('/api/room/signal'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ code: roomCode, from: myName, role: 'host', signal: { type: 'offer', data: offerStr } })
-            });
-          }).then(function () {
-            var pollAnswerInterval = setInterval(function () {
-              if (isStarted || link.closed) {
-                clearInterval(pollAnswerInterval);
-                return;
-              }
-              fetch(getApiUrl('/api/room/signals?code=' + encodeURIComponent(roomCode) + '&role=host'))
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                  if (data.ok && data.signals) {
-                    var ans = data.signals.find(function (s) { return s.type === 'answer'; });
-                    if (ans) {
-                      clearInterval(pollAnswerInterval);
-                      link.acceptAnswer(ans.data).then(function (res) {
-                        link.h.onOpen = function () {
-                          if (isStarted) return;
-                          isStarted = true;
-                          if (relayFallbackTimer) clearTimeout(relayFallbackTimer);
-                          link.h.onMessage = function (m) {
-                            if (m.k === 'ready') {
-                              var info = { role: 'host', mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, myName: myName, oppName: oppName, matchId: roomCode };
-                              onConnect(new sessionMod.OnlineSession(link, info));
-                            }
-                          };
-                          link.sendCtl({ k: 'start', mode: mode, minutes: minutes, seed: seed, arenaId: arenaId, host: myName, guest: oppName });
-                        };
-                        if (link.open && link.h.onOpen) link.h.onOpen();
-                      }).catch(function (e) {
-                        startWithRelay();
-                      });
-                    }
-                  }
-                }).catch(function () {});
-            }, 120);
-          }).catch(function (e) {
-            startWithRelay();
-          });
-        } else {
-          // Guest role
-          var pollOfferInterval = setInterval(function () {
-            if (isStarted || link.closed) {
-              clearInterval(pollOfferInterval);
+          // 2. Parallel Background UDP WebRTC P2P Negotiation via ALREADY-OPEN WebSocket
+          function attemptP2PUpgrade() {
+            if (p2pStarted || p2pPromoted || rLink.closed || session.ending) return;
+            p2pStarted = true;
+            try {
+              p2pLink = new linkMod.PeerLink();
+            } catch (err) {
               return;
             }
-            fetch(getApiUrl('/api/room/signals?code=' + encodeURIComponent(roomCode) + '&role=guest'))
-              .then(function (r) { return r.json(); })
-              .then(function (data) {
-                if (data.ok && data.signals) {
-                  var off = data.signals.find(function (s) { return s.type === 'offer'; });
-                  if (off) {
-                    clearInterval(pollOfferInterval);
-                    link.acceptOffer(off.data, myName).then(function (r) {
-                      if (!r) { startWithRelay(); return; }
-                      fetch(getApiUrl('/api/room/signal'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code: roomCode, from: myName, role: 'guest', signal: { type: 'answer', data: r.reply } })
-                      }).then(function () {
-                        link.h.onOpen = function () {
-                          if (isStarted) return;
-                          isStarted = true;
-                          if (relayFallbackTimer) clearTimeout(relayFallbackTimer);
-                          link.h.onMessage = function (m) {
-                            if (m.k === 'start') {
-                              link.sendCtl({ k: 'ready' });
-                              var resolvedMode = m.mode || mode;
-                              var resolvedSeed = (m.seed !== undefined && m.seed !== null) ? m.seed : seed;
-                              var resolvedMinutes = m.minutes || minutes;
-                              var resolvedArena = m.arenaId || arenaId;
-                              var info = { role: 'guest', mode: resolvedMode, minutes: resolvedMinutes, seed: resolvedSeed, arenaId: resolvedArena, myName: myName, oppName: oppName, matchId: roomCode };
-                              onConnect(new sessionMod.OnlineSession(link, info));
-                            }
-                          };
-                        };
-                        if (link.open && link.h.onOpen) link.h.onOpen();
-                      }).catch(function (e) {
-                        startWithRelay();
-                      });
-                    }).catch(function (e) {
-                      startWithRelay();
-                    });
-                  }
+
+            function relayRtcSignal(sigKind, sigData) {
+              if (!rLink.closed && !p2pPromoted) {
+                rLink.sendCtl({ k: '_rtc', kind: sigKind, data: sigData });
+                if (!rLink.wsOpen) {
+                  fetch(getApiUrl('/api/room/signal'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: roomCode, from: myName, role: role, signal: { type: sigKind, data: sigData } })
+                  }).catch(function () {});
                 }
+              }
+            }
+
+            rLink.onRtcSignal = function (msg) {
+              if (!p2pLink || p2pPromoted || p2pLink.closed) return;
+              if (msg.kind === 'offer' && role === 'guest') {
+                p2pLink.acceptOffer(msg.data, myName).then(function (ans) {
+                  if (ans && ans.reply) relayRtcSignal('answer', ans.reply);
+                }).catch(function () {});
+              } else if (msg.kind === 'answer' && role === 'host') {
+                p2pLink.acceptAnswer(msg.data).catch(function () {});
+              }
+            };
+
+            p2pLink.h.onOpen = function () {
+              if (p2pPromoted || session.ending || !p2pLink || p2pLink.closed) return;
+              p2pPromoted = true;
+              p2pLink.transport = 'P2P';
+              p2pLink.sendCtl({ k: 'ready' });
+              if (typeof session.upgradeLink === 'function') {
+                session.upgradeLink(p2pLink);
+              }
+              setTimeout(function () {
+                if (rLink && !rLink.closed) {
+                  rLink.h.onClose = null;
+                  rLink.close(true); // Skip room cancel on clean P2P promotion!
+                }
+              }, 350);
+            };
+
+            if (role === 'host') {
+              p2pLink.createOffer({ mode: finalMode, minutes: minutes, seed: finalSeed, arenaId: finalArena, name: myName }).then(function (offerStr) {
+                if (offerStr) relayRtcSignal('offer', offerStr);
               }).catch(function () {});
-          }, 600);
+            } else {
+              // Check /api/room/signals once in case host posted before guest WS finished handshake
+              fetch(getApiUrl('/api/room/signals?code=' + encodeURIComponent(roomCode) + '&role=guest'))
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                  if (d && d.ok && Array.isArray(d.signals)) {
+                    var off = d.signals.find(function (s) { return s.type === 'offer'; });
+                    if (off && rLink.onRtcSignal) rLink.onRtcSignal({ kind: 'offer', data: off.data });
+                  }
+                }).catch(function () {});
+            }
+          }
+
+          if (rLink.wsOpen) {
+            attemptP2PUpgrade();
+          } else {
+            rLink.h.onWsReady = attemptP2PUpgrade;
+            setTimeout(attemptP2PUpgrade, 500);
+          }
+
+          onConnect(session);
+        }
+
+        if (role === 'guest') {
+          var syncDone = false;
+          var fallbackTimer = setTimeout(function () {
+            if (!syncDone) {
+              syncDone = true;
+              finalizeStart(mode, seed, arenaId);
+            }
+          }, 450);
+          fetch(getApiUrl('/api/room/status?code=' + encodeURIComponent(roomCode)))
+            .then(function (r) { return r.json(); })
+            .then(function (st) {
+              if (syncDone) return;
+              syncDone = true;
+              clearTimeout(fallbackTimer);
+              if (st && st.room && st.room.mode) {
+                finalizeStart(st.room.mode, st.room.seed, st.room.arenaId);
+              } else {
+                finalizeStart(mode, seed, arenaId);
+              }
+            }).catch(function () {
+              if (syncDone) return;
+              syncDone = true;
+              clearTimeout(fallbackTimer);
+              finalizeStart(mode, seed, arenaId);
+            });
+        } else {
+          finalizeStart(mode, seed, arenaId);
         }
       } catch (e) {
-        startWithRelay();
+        onError(e && e.message ? e.message : 'Session error');
       }
     });
   }
+  if (typeof window !== 'undefined') window.startWebRTCSession = startWebRTCSession;
 
   // Quick Match Search Modal (Real Matchmaking Server Integration - No Fake Opponents)
   function showQuickMatchSearchModal(app, targetSport) {
@@ -12166,7 +12197,7 @@
       setTimeout(function () {
         transitionDone = true;
         checkLaunch();
-      }, 1200);
+      }, 260);
 
       startWebRTCSession(app, matchInfo.role, matchInfo.matchId, playerName, opp.name, {
         mode: resolvedMode,
@@ -12529,11 +12560,11 @@
           }
 
           // Re-render if state changed
-          if (prevMode !== room.mode || prevGuest !== newGuest || prevHostReady !== newHostReady || prevGuestReady !== newGuestReady || prevStatus !== room.status || countdownSec !== null) {
-            render();
-          }
-        }).catch(function () {});
-    }, 550);
+            if (prevMode !== room.mode || prevGuest !== newGuest || prevHostReady !== newHostReady || prevGuestReady !== newGuestReady || prevStatus !== room.status || countdownSec !== null) {
+              render();
+            }
+          }).catch(function () {});
+      }, 320);
   }
 
   // Private Match: Create Room Modal (Transitions seamlessly into Lobby)

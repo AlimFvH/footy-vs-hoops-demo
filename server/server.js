@@ -16,6 +16,8 @@ let state = {
   signals: {}, // roomId -> { host: [signals], guest: [signals] }
   relays: {}, // matchId -> { host: [packets], guest: [packets], lastHostTick, lastGuestTick }
   wsClients: {}, // matchId -> { host: socket, guest: socket }
+  playerActiveMatch: {}, // O(1) index: playerId -> active matchId
+  playerHostRoom: {}, // O(1) index: host playerId -> active roomCode
   completedMatches: {}, // matchId -> { matchId, host, guest, finalScore, winner, phase, outcome, stats, completedAt, matchToken, rewarded: {} }
   referrals: {}, // refCode -> { ownerId, referred: [ { playerId, registeredAt, qualified: boolean, qualifiedAt } ], claimedMilestones: [1, 3, 5, 10] }
   starsInvoices: {}, // invoiceId -> { invoiceId, productId, playerId, starsAmount, status, createdAt, paidAt, chargeId }
@@ -948,7 +950,48 @@ process.on('SIGTERM', async () => {
 });
 
 let persistDiskTimer = null;
+let _isPersistingDisk = false;
+let _persistQueued = false;
+let _stateMutationSeq = 1;
+
+function invalidateLeaderboardCache() {
+  _stateMutationSeq++;
+}
+
+async function flushDiskPersistAsync() {
+  if (_isPersistingDisk) {
+    _persistQueued = true;
+    return;
+  }
+  _isPersistingDisk = true;
+  try {
+    const payload = JSON.stringify(getSerializableState());
+    const tmpFile = DATA_FILE + '.tmp';
+    await fs.promises.writeFile(tmpFile, payload);
+    try {
+      await fs.promises.rename(tmpFile, DATA_FILE);
+    } catch (renameErr) {
+      await fs.promises.writeFile(DATA_FILE, payload);
+      fs.promises.unlink(tmpFile).catch(() => {});
+    }
+  } catch (e) {
+    console.warn('Failed to save server/data.json:', e.message);
+  } finally {
+    _isPersistingDisk = false;
+    if (_persistQueued) {
+      _persistQueued = false;
+      if (!persistDiskTimer) {
+        persistDiskTimer = setTimeout(() => {
+          persistDiskTimer = null;
+          flushDiskPersistAsync();
+        }, 1200);
+      }
+    }
+  }
+}
+
 function persistState() {
+  invalidateLeaderboardCache();
   if (process.env.NODE_ENV === 'test') {
     try {
       fs.writeFileSync(DATA_FILE, JSON.stringify(getSerializableState(), null, 2));
@@ -958,14 +1001,8 @@ function persistState() {
   } else if (!persistDiskTimer) {
     persistDiskTimer = setTimeout(() => {
       persistDiskTimer = null;
-      try {
-        fs.writeFile(DATA_FILE, JSON.stringify(getSerializableState()), (err) => {
-          if (err) console.warn('Failed to save server/data.json', err.message);
-        });
-      } catch (e) {
-        console.warn('Failed to save server/data.json', e);
-      }
-    }, 1500);
+      flushDiskPersistAsync();
+    }, 2200);
   }
 
   if (storage && storage.name === 'PostgresStorageAdapter' && storage._initialized) {
@@ -973,24 +1010,59 @@ function persistState() {
   }
 }
 
-// Clean up stale queue items, rooms, and matches every 30 seconds
+// Clean up stale queue items, rooms, matches, WS handles, and bounded rolling caches every 30 seconds
 setInterval(() => {
   const now = Date.now();
   state.queue = state.queue.filter(q => (now - q.timestamp) < 30000);
   Object.keys(state.rooms).forEach(code => {
-    if ((now - state.rooms[code].createdAt) > 600000) { // 10 minutes max
+    if ((now - (state.rooms[code].lastActivity || state.rooms[code].createdAt)) > 600000) {
+      const r = state.rooms[code];
+      if (r && r.host && state.playerHostRoom[r.host.playerId] === code) {
+        delete state.playerHostRoom[r.host.playerId];
+      }
       delete state.rooms[code];
       delete state.signals[code];
       delete state.relays[code];
     }
   });
   Object.keys(state.matches).forEach(mId => {
-    if ((now - (state.matches[mId].lastActivity || state.matches[mId].createdAt)) > 600000) {
+    const m = state.matches[mId];
+    if ((now - (m.lastActivity || m.createdAt)) > 600000) {
+      if (m.host && state.playerActiveMatch[m.host.playerId] === mId) delete state.playerActiveMatch[m.host.playerId];
+      if (m.guest && state.playerActiveMatch[m.guest.playerId] === mId) delete state.playerActiveMatch[m.guest.playerId];
       delete state.matches[mId];
       delete state.signals[mId];
       delete state.relays[mId];
     }
   });
+  for (const mId of Object.keys(state.wsClients)) {
+    const pair = state.wsClients[mId];
+    if (!pair || ((!pair.host || pair.host.destroyed) && (!pair.guest || pair.guest.destroyed))) {
+      if (!state.matches[mId] && !state.rooms[mId]) {
+        delete state.wsClients[mId];
+      }
+    }
+  }
+  for (const rId of Object.keys(state.relays)) {
+    if (!state.matches[rId] && !state.rooms[rId]) {
+      const rl = state.relays[rId];
+      if (now - Math.max(rl.lastHostTick || 0, rl.lastGuestTick || 0) > 120000) {
+        delete state.relays[rId];
+      }
+    }
+  }
+  for (const key of Object.keys(state.idempotencyKeys)) {
+    const rec = state.idempotencyKeys[key];
+    if (rec && rec.timestamp && (now - rec.timestamp) > 86400000) {
+      delete state.idempotencyKeys[key];
+    }
+  }
+  if (Array.isArray(state.economyLedger) && state.economyLedger.length > 20000) {
+    state.economyLedger = state.economyLedger.slice(-15000);
+  }
+  if (Array.isArray(state.paymentsLedger) && state.paymentsLedger.length > 20000) {
+    state.paymentsLedger = state.paymentsLedger.slice(-15000);
+  }
 }, 30000);
 
 // ==========================================
@@ -1613,8 +1685,9 @@ function getBotStrings(fromUser, playerId = null) {
   return BOT_LOCALIZATION[lang] || BOT_LOCALIZATION.en;
 }
 
-// Helper to send JSON response
+// Helper to send JSON response (fast path)
 function sendJson(res, statusCode, data) {
+  if (res.writableEnded) return;
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -1624,18 +1697,60 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
-// Helper to read JSON body
-function readJsonBody(req, callback) {
-  let body = '';
-  req.on('data', chunk => { body += chunk; });
+// Helper to read JSON body safely with strict size bounds & error guard (prevents OOM under scale/abuse)
+function readJsonBody(req, callback, maxBytes = 512 * 1024) {
+  let done = false;
+  let totalBytes = 0;
+  const chunks = [];
+  const finish = (err, data) => {
+    if (done) return;
+    done = true;
+    callback(err, data);
+  };
+  req.on('data', chunk => {
+    if (done) return;
+    totalBytes += chunk.length;
+    if (totalBytes > maxBytes) {
+      finish(Object.assign(new Error('Payload too large'), { statusCode: 413 }));
+      try { req.destroy(); } catch (_) {}
+      return;
+    }
+    chunks.push(chunk);
+  });
   req.on('end', () => {
+    if (done) return;
     try {
+      const body = chunks.length ? Buffer.concat(chunks, totalBytes).toString('utf8') : '';
       const data = body ? JSON.parse(body) : {};
-      callback(null, data);
+      finish(null, data);
     } catch (err) {
-      callback(err);
+      finish(err);
     }
   });
+  req.on('error', err => finish(err));
+}
+
+// Lightweight per-IP sliding window rate limiter for abusive flood protection
+const _rateBuckets = new Map();
+setInterval(() => {
+  const cutoff = Date.now() - 20000;
+  for (const [k, b] of _rateBuckets.entries()) {
+    if (b.windowStart < cutoff) _rateBuckets.delete(k);
+  }
+}, 30000);
+
+function checkRateLimit(req, bucketKey, maxPer10s) {
+  const ip = (req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : '') || (req.socket && req.socket.remoteAddress) || 'local';
+  const key = ip + '|' + bucketKey;
+  const now = Date.now();
+  let rec = _rateBuckets.get(key);
+  if (!rec || (now - rec.windowStart) >= 10000) {
+    rec = { windowStart: now, count: 1 };
+    _rateBuckets.set(key, rec);
+    return true;
+  }
+  rec.count++;
+  return rec.count <= maxPer10s;
 }
 
 // Helper functions for room codes
@@ -1680,14 +1795,36 @@ const server = http.createServer((req, res) => {
   };
   const pathname = parsedUrl.pathname;
 
-  // 0. Health check endpoint
+  // Enforce generous protection on heavy mutation routes without impeding valid burst loads
+  if (req.method === 'POST' && (pathname === '/api/room/create' || pathname === '/api/matchmaking/join' || pathname === '/api/economy/purchase')) {
+    if (!checkRateLimit(req, pathname, 350)) {
+      res.setHeader('Retry-After', '5');
+      return sendJson(res, 429, { ok: false, error: 'rate_limited', message: 'Too many requests, please wait briefly' });
+    }
+  }
+
+  // 0. Health check & telemetry endpoint
   if (pathname === '/api/health' && req.method === 'GET') {
+    let wsConnections = 0;
+    for (const mId in state.wsClients) {
+      const c = state.wsClients[mId];
+      if (c && c.host && !c.host.destroyed) wsConnections++;
+      if (c && c.guest && !c.guest.destroyed) wsConnections++;
+    }
     return sendJson(res, 200, {
       ok: true,
       service: 'footy-vs-hoops',
-      version: '2.0.0',
+      version: '2.1.0',
       uptime: process.uptime(),
       storageAdapter: storage ? storage.name : 'JsonStorageAdapter',
+      metrics: {
+        playersCount: Object.keys(state.players).length,
+        activeMatches: Object.keys(state.matches).length,
+        activeRooms: Object.keys(state.rooms).length,
+        queueSize: state.queue.length,
+        wsConnections,
+        memoryRssMb: Math.round(process.memoryUsage().rss / (1024 * 1024))
+      },
       timestamp: Date.now()
     });
   }
@@ -1746,7 +1883,7 @@ const server = http.createServer((req, res) => {
         fs.writeFileSync(path.join(__dirname, '..', d), buf);
       }
       return sendJson(res, 200, { ok: true, action: data.action, bytes: buf.length });
-    });
+    }, 4 * 1024 * 1024);
   }
 
   // Public Aggregate Statistics (No Personal Data, Aggregate Only)
@@ -1806,17 +1943,17 @@ const server = http.createServer((req, res) => {
       const now = Date.now();
       state.queue = state.queue.filter(q => q.playerId !== playerId && (now - q.timestamp < 30000));
 
-      // Clean up previous active matches for this player so old matches NEVER hijack new matchmaking
-      for (const mId in state.matches) {
-        const m = state.matches[mId];
-        const isParticipant = (m.host && m.host.playerId === playerId) || (m.guest && m.guest.playerId === playerId);
-        if (isParticipant) {
-          m.status = 'abandoned';
-          state.completedMatches[mId] = true;
-          delete state.matches[mId];
-          delete state.signals[mId];
-          delete state.relays[mId];
-        }
+      // Clean up previous active match for this player in O(1) via playerActiveMatch index
+      const prevMId = state.playerActiveMatch[playerId];
+      if (prevMId && state.matches[prevMId]) {
+        const pm = state.matches[prevMId];
+        pm.status = 'abandoned';
+        state.completedMatches[prevMId] = true;
+        if (pm.host && state.playerActiveMatch[pm.host.playerId] === prevMId) delete state.playerActiveMatch[pm.host.playerId];
+        if (pm.guest && state.playerActiveMatch[pm.guest.playerId] === prevMId) delete state.playerActiveMatch[pm.guest.playerId];
+        delete state.matches[prevMId];
+        delete state.signals[prevMId];
+        delete state.relays[prevMId];
       }
 
       // Check if there is an eligible opponent waiting in the queue for the same discipline
@@ -1849,6 +1986,8 @@ const server = http.createServer((req, res) => {
         };
 
         state.matches[matchId] = matchInfo;
+        state.playerActiveMatch[opponent.playerId] = matchId;
+        state.playerActiveMatch[playerId] = matchId;
         state.signals[matchId] = { host: [], guest: [], all: [] };
         state.relays[matchId] = { host: [], guest: [], lastHostTick: Date.now(), lastGuestTick: Date.now() };
 
@@ -1897,16 +2036,29 @@ const server = http.createServer((req, res) => {
     const myTicket = state.queue.find(q => q.ticketId === ticketId || q.playerId === playerId);
     const expectedMode = myTicket ? myTicket.mode : null;
 
-    // Check if player is part of an active (non-completed) match for the requested discipline
-    for (const mId in state.matches) {
-      const m = state.matches[mId];
-      if (m.status !== 'playing' || state.completedMatches[mId]) {
-        continue;
+    // O(1) match lookup via playerActiveMatch index (falls back cleanly if direct state mutation occurred)
+    const resolvePlayerMatch = () => {
+      if (playerId && state.playerActiveMatch[playerId]) {
+        const mId = state.playerActiveMatch[playerId];
+        const m = state.matches[mId];
+        if (m && m.status === 'playing' && !state.completedMatches[mId] && (!expectedMode || m.mode === expectedMode)) {
+          return [mId, m];
+        }
       }
-      // Strictly prevent returning a match of a different sport discipline
-      if (expectedMode && m.mode !== expectedMode) {
-        continue;
+      for (const mId in state.matches) {
+        const m = state.matches[mId];
+        if (m.status !== 'playing' || state.completedMatches[mId]) continue;
+        if (expectedMode && m.mode !== expectedMode) continue;
+        if ((m.host && m.host.playerId === playerId) || (m.guest && m.guest.playerId === playerId)) {
+          return [mId, m];
+        }
       }
+      return null;
+    };
+
+    const hitMatch = resolvePlayerMatch();
+    if (hitMatch) {
+      const [mId, m] = hitMatch;
       if (m.host && m.host.playerId === playerId) {
         state.queue = state.queue.filter(q => q.playerId !== playerId && q.ticketId !== ticketId);
         return sendJson(res, 200, {
@@ -1994,15 +2146,13 @@ const server = http.createServer((req, res) => {
       const playerId = String(data.hostId || data.playerId || 'host_' + Math.random().toString(36).slice(2, 6));
       const playerName = String(data.hostName || data.playerName || 'Host Athlete');
 
-      // Clean up any old rooms or matches created by this host
-      for (const oldCode in state.rooms) {
-        const r = state.rooms[oldCode];
-        if (r && r.host && r.host.playerId === playerId) {
-          delete state.rooms[oldCode];
-          delete state.matches[oldCode];
-          delete state.signals[oldCode];
-          delete state.relays[oldCode];
-        }
+      // Clean up previous room created by this host in O(1)
+      const prevRoomCode = state.playerHostRoom[playerId];
+      if (prevRoomCode && state.rooms[prevRoomCode]) {
+        delete state.rooms[prevRoomCode];
+        delete state.matches[prevRoomCode];
+        delete state.signals[prevRoomCode];
+        delete state.relays[prevRoomCode];
       }
 
       const mode = (data.mode === 'hoops') ? 'hoops' : 'footy';
@@ -2025,6 +2175,7 @@ const server = http.createServer((req, res) => {
         createdAt: Date.now(),
         lastActivity: Date.now()
       };
+      state.playerHostRoom[playerId] = code;
       state.signals[code] = { host: [], guest: [], all: [] };
       state.relays[code] = { host: [], guest: [], lastHostTick: Date.now(), lastGuestTick: Date.now() };
 
@@ -3722,80 +3873,58 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // 9. Global Leaderboard / Рейтинг сильнейших атлетов (Production Quality)
+  // 9. Global Leaderboard / Рейтинг сильнейших атлетов (Production Quality + 4s Scale Cache)
   if (pathname === '/api/leaderboard' && req.method === 'GET') {
     let qCategory = String(parsedUrl.query.category || 'season').toLowerCase();
     if (qCategory === 'overall') qCategory = 'season';
     const qTimeframe = String(parsedUrl.query.timeframe || 'season').toLowerCase();
     const qPlayerId = String(parsedUrl.query.playerId || '').trim();
     const qSearch = String(parsedUrl.query.search || '').trim().toLowerCase();
+    const isPrelaunch = (SEASON_CONFIG.state === 'prelaunch');
 
-    function getRankTier(score) {
-      if (score >= 3500) return { id: 'champion', name: 'Champion', badge: '👑 CHAMPION', color: '#ef4444' };
-      if (score >= 2000) return { id: 'diamond', name: 'Diamond', badge: '💎 DIAMOND', color: '#a855f7' };
-      if (score >= 1200) return { id: 'platinum', name: 'Platinum', badge: '💠 PLATINUM', color: '#06b6d4' };
-      if (score >= 700) return { id: 'gold', name: 'Gold', badge: '🥇 GOLD', color: '#f59e0b' };
-      if (score >= 300) return { id: 'silver', name: 'Silver', badge: '🥈 SILVER', color: '#94a3b8' };
-      return { id: 'bronze', name: 'Bronze', badge: '🥉 BRONZE', color: '#cd7f32' };
-    }
+    if (!global.__fvhLbCache) global.__fvhLbCache = new Map();
+    const cacheKey = `${qCategory}|${qTimeframe}|${isPrelaunch ? 1 : 0}`;
+    const cachedLb = global.__fvhLbCache.get(cacheKey);
+    const nowMs = Date.now();
 
-    // Authoritative pool of registered real players
-    const athletes = [];
-    Object.keys(state.players).forEach(pid => {
-      // Exclude automated benchmark runners
-      if (pid.startsWith('test_') || pid.startsWith('e2e_') || pid.startsWith('scammer_') || pid.startsWith('host_') || pid.startsWith('guest_') || pid.startsWith('player_e2e_')) {
-        return;
+    let lbSnap;
+    if (cachedLb && cachedLb.seq === _stateMutationSeq && (nowMs - cachedLb.at) < 4000) {
+      lbSnap = cachedLb.data;
+    } else {
+      function getRankTier(score) {
+        if (score >= 3500) return { id: 'champion', name: 'Champion', badge: '👑 CHAMPION', color: '#ef4444' };
+        if (score >= 2000) return { id: 'diamond', name: 'Diamond', badge: '💎 DIAMOND', color: '#a855f7' };
+        if (score >= 1200) return { id: 'platinum', name: 'Platinum', badge: '💠 PLATINUM', color: '#06b6d4' };
+        if (score >= 700) return { id: 'gold', name: 'Gold', badge: '🥇 GOLD', color: '#f59e0b' };
+        if (score >= 300) return { id: 'silver', name: 'Silver', badge: '🥈 SILVER', color: '#94a3b8' };
+        return { id: 'bronze', name: 'Bronze', badge: '🥉 BRONZE', color: '#cd7f32' };
       }
-      const p = state.players[pid];
-      const pStats = p.stats || {};
-      const hasName = Boolean(p.playerName || p.telegramUser);
-      const hasStats = Boolean((pStats.wins || 0) > 0 || (pStats.played || 0) > 0 || (pStats.goals || 0) > 0 || (pStats.baskets || 0) > 0 || (p.xp || 0) > 0);
-      const isQueryUser = Boolean(qPlayerId && pid === qPlayerId);
-      if (!hasName && !hasStats && !isQueryUser) {
-        return;
-      }
-      const curChar = (p.selectedCharacter || p.selectedTeam)
-        ? (p.selectedCharacter || p.selectedTeam)
-        : ((p.equipped && ((p.equipped['skin.hoops'] && !p.equipped['skin.footy']) || (p.equipped.skin && p.equipped.skin.includes('hoops')))) ? 'hoops' : 'footy');
-      
-      const displayName = p.playerName || (p.telegramUser && (p.telegramUser.first_name || p.telegramUser.username)) || ('Athlete ' + pid.slice(4, 8).toUpperCase());
-      const totalWins = pStats.wins || 0;
-      const totalLosses = pStats.losses !== undefined ? pStats.losses : Math.max(0, Math.floor(totalWins * 0.2));
-      const totalMatches = totalWins + totalLosses;
-      const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
 
-      athletes.push({
-        id: pid,
-        name: displayName,
-        char: curChar,
-        club: curChar === 'hoops' ? 'Hoops Squad' : 'Footy United',
-        wins: totalWins,
-        losses: totalLosses,
-        winRate: winRate,
-        goals: pStats.goals || 0,
-        baskets: pStats.baskets || 0,
-        winsByDiff: pStats.winsByDiff || { easy: 0, normal: 0, hard: 0 },
-        coins: p.coins || 0,
-        xp: p.xp || 0,
-        photoUrl: p.photoUrl || (p.telegramUser && (p.telegramUser.photo_url || p.telegramUser.photoUrl)) || null
-      });
-    });
-
-    // Ensure the querying player is included even before first sync
-    if (qPlayerId && !athletes.find(a => a.id === qPlayerId)) {
-      const p = state.players[qPlayerId];
-      if (p) {
+      const athletes = [];
+      for (const pid in state.players) {
+        if (pid.startsWith('test_') || pid.startsWith('e2e_') || pid.startsWith('scammer_') || pid.startsWith('host_') || pid.startsWith('guest_') || pid.startsWith('player_e2e_')) {
+          continue;
+        }
+        const p = state.players[pid];
         const pStats = p.stats || {};
+        const hasName = Boolean(p.playerName || p.telegramUser);
+        const hasStats = Boolean((pStats.wins || 0) > 0 || (pStats.played || 0) > 0 || (pStats.goals || 0) > 0 || (pStats.baskets || 0) > 0 || (p.xp || 0) > 0);
+        if (!hasName && !hasStats) continue;
+
+        const curChar = (p.selectedCharacter || p.selectedTeam)
+          ? (p.selectedCharacter || p.selectedTeam)
+          : ((p.equipped && ((p.equipped['skin.hoops'] && !p.equipped['skin.footy']) || (p.equipped.skin && p.equipped.skin.includes('hoops')))) ? 'hoops' : 'footy');
+        const displayName = p.playerName || (p.telegramUser && (p.telegramUser.first_name || p.telegramUser.username)) || ('Athlete ' + pid.slice(4, 8).toUpperCase());
         const totalWins = pStats.wins || 0;
         const totalLosses = pStats.losses !== undefined ? pStats.losses : Math.max(0, Math.floor(totalWins * 0.2));
         const totalMatches = totalWins + totalLosses;
         const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
 
         athletes.push({
-          id: qPlayerId,
-          name: p.playerName || 'Athlete (You)',
-          char: (p.selectedCharacter || 'footy'),
-          club: (p.selectedCharacter === 'hoops' ? 'Hoops Squad' : 'Footy United'),
+          id: pid,
+          name: displayName,
+          char: curChar,
+          club: curChar === 'hoops' ? 'Hoops Squad' : 'Footy United',
           wins: totalWins,
           losses: totalLosses,
           winRate: winRate,
@@ -3807,127 +3936,133 @@ const server = http.createServer((req, res) => {
           photoUrl: p.photoUrl || (p.telegramUser && (p.telegramUser.photo_url || p.telegramUser.photoUrl)) || null
         });
       }
-    }
 
-    // Authenticity rule (Item 4): Do NOT fake live data or create sample players
-    // Real-time global rankings must rely on authentic server-verified data only.
+      function computeScore(ath, cat, timeframe) {
+        if (isPrelaunch && (cat === 'season' || cat === 'overall' || !cat)) {
+          return 0;
+        }
+        const wDiff = ath.winsByDiff || {
+          easy: Math.floor((ath.wins || 0) * 0.25),
+          normal: Math.floor((ath.wins || 0) * 0.5),
+          hard: Math.floor((ath.wins || 0) * 0.25)
+        };
+        const winPoints = (wDiff.easy || 0) * 15 + (wDiff.normal || 0) * 30 + (wDiff.hard || 0) * 60;
+        const goalsPoints = (ath.goals || 0) * 6;
+        const basketsPoints = (ath.baskets || 0) * 3;
+        const xpPoints = Math.floor((ath.xp || 0) / 8);
 
-    const isPrelaunch = (SEASON_CONFIG.state === 'prelaunch');
+        let raw = 0;
+        if (cat === 'footy') {
+          raw = (ath.goals || 0) * 10 + Math.round(winPoints * 0.55);
+        } else if (cat === 'hoops') {
+          raw = (ath.baskets || 0) * 5 + Math.round(winPoints * 0.45);
+        } else if (cat === 'coins') {
+          raw = ath.coins || 0;
+        } else {
+          raw = winPoints + goalsPoints + basketsPoints + xpPoints;
+        }
 
-    // Score Calculator with AI Difficulty weighting and Timeframe scaling
-    function computeScore(ath, cat, timeframe) {
-      if (isPrelaunch && (cat === 'season' || cat === 'overall' || !cat)) {
-        // Pre-launch rule: zero seasonal competition points awarded before official launch
-        return 0;
-      }
-      const wDiff = ath.winsByDiff || {
-        easy: Math.floor((ath.wins || 0) * 0.25),
-        normal: Math.floor((ath.wins || 0) * 0.5),
-        hard: Math.floor((ath.wins || 0) * 0.25)
-      };
-      // AI matches do not award seasonal points per rule 1
-      const winPoints = (wDiff.easy || 0) * 15 + (wDiff.normal || 0) * 30 + (wDiff.hard || 0) * 60;
-      const goalsPoints = (ath.goals || 0) * 6;
-      const basketsPoints = (ath.baskets || 0) * 3;
-      const xpPoints = Math.floor((ath.xp || 0) / 8);
-
-      let raw = 0;
-      if (cat === 'footy') {
-        raw = (ath.goals || 0) * 10 + Math.round(winPoints * 0.55);
-      } else if (cat === 'hoops') {
-        raw = (ath.baskets || 0) * 5 + Math.round(winPoints * 0.45);
-      } else if (cat === 'coins') {
-        raw = ath.coins || 0;
-      } else {
-        // default: overall/season
-        raw = winPoints + goalsPoints + basketsPoints + xpPoints;
+        if (timeframe === 'weekly') return Math.max(0, Math.round(raw * 0.38));
+        if (timeframe === 'alltime') return Math.round(raw * 1.5);
+        return raw;
       }
 
-      if (timeframe === 'weekly') {
-        return Math.max(0, Math.round(raw * 0.38));
+      let footballTotal = 0;
+      let basketballTotal = 0;
+      let footballAthletes = 0;
+      let basketballAthletes = 0;
+      for (let i = 0; i < athletes.length; i++) {
+        const a = athletes[i];
+        const s = computeScore(a, 'season', 'season');
+        if (a.char === 'hoops') { basketballTotal += s; basketballAthletes++; }
+        else { footballTotal += s; footballAthletes++; }
       }
-      if (timeframe === 'alltime') {
-        return Math.round(raw * 1.5);
-      }
-      return raw; // 'season'
-    }
+      const totalWarScore = footballTotal + basketballTotal;
+      const footballPct = totalWarScore > 0 ? Math.round((footballTotal / totalWarScore) * 1000) / 10 : 50;
+      const basketballPct = totalWarScore > 0 ? Math.round((100 - footballPct) * 10) / 10 : 50;
+      const winningTeam = footballTotal >= basketballTotal ? 'footy' : 'hoops';
+      const leadDiff = Math.abs(footballTotal - basketballTotal);
 
-    // Authoritative Server-side Sport Filtering (Requirement 4)
-    let filteredAthletes = athletes;
-    if (qCategory === 'footy') {
-      filteredAthletes = athletes.filter(a => a.char === 'footy');
-    } else if (qCategory === 'hoops') {
-      filteredAthletes = athletes.filter(a => a.char === 'hoops');
-    }
+      let filteredAthletes = athletes;
+      if (qCategory === 'footy') filteredAthletes = athletes.filter(a => a.char === 'footy');
+      else if (qCategory === 'hoops') filteredAthletes = athletes.filter(a => a.char === 'hoops');
 
-    const ranked = filteredAthletes.map(ath => {
-      const score = computeScore(ath, qCategory, qTimeframe);
-      const tier = getRankTier(score);
-      return Object.assign({}, ath, {
-        score,
-        tier,
-        badge: tier.badge
+      const ranked = filteredAthletes.map(ath => {
+        const score = computeScore(ath, qCategory, qTimeframe);
+        const tier = getRankTier(score);
+        return Object.assign({}, ath, { score, tier, badge: tier.badge });
       });
-    });
 
-    ranked.sort((a, b) => {
-      return (b.score - a.score)
-        || ((b.wins || 0) - (a.wins || 0))
-        || ((b.winRate || 0) - (a.winRate || 0))
-        || (((b.wins || 0) + (b.losses || 0)) - ((a.wins || 0) + (a.losses || 0)))
-        || String(a.id || '').localeCompare(String(b.id || ''));
-    });
+      ranked.sort((a, b) => {
+        return (b.score - a.score)
+          || ((b.wins || 0) - (a.wins || 0))
+          || ((b.winRate || 0) - (a.winRate || 0))
+          || (((b.wins || 0) + (b.losses || 0)) - ((a.wins || 0) + (a.losses || 0)))
+          || String(a.id || '').localeCompare(String(b.id || ''));
+      });
 
-    ranked.forEach((ath, idx) => {
-      ath.rank = idx + 1;
-      ath.isCurrentUser = Boolean(qPlayerId && ath.id === qPlayerId);
-    });
-
-    let footballTotal = 0;
-    let basketballTotal = 0;
-    let footballAthletes = 0;
-    let basketballAthletes = 0;
-    athletes.forEach(a => {
-      const s = computeScore(a, 'season', 'season');
-      if (a.char === 'hoops') {
-        basketballTotal += s;
-        basketballAthletes++;
-      } else {
-        footballTotal += s;
-        footballAthletes++;
+      const rankById = new Map();
+      for (let idx = 0; idx < ranked.length; idx++) {
+        ranked[idx].rank = idx + 1;
+        rankById.set(ranked[idx].id, idx);
       }
-    });
-    const totalWarScore = footballTotal + basketballTotal;
-    const footballPct = totalWarScore > 0 ? Math.round((footballTotal / totalWarScore) * 1000) / 10 : 50;
-    const basketballPct = totalWarScore > 0 ? Math.round((100 - footballPct) * 10) / 10 : 50;
-    const winningTeam = footballTotal >= basketballTotal ? 'footy' : 'hoops';
-    const leadDiff = Math.abs(footballTotal - basketballTotal);
+
+      lbSnap = {
+        ranked,
+        rankById,
+        topBase: ranked.slice(0, 50),
+        footballTotal, footballPct, footballAthletes,
+        basketballTotal, basketballPct, basketballAthletes,
+        winningTeam, leadDiff
+      };
+      if (global.__fvhLbCache.size > 24) global.__fvhLbCache.clear();
+      global.__fvhLbCache.set(cacheKey, { seq: _stateMutationSeq, at: nowMs, data: lbSnap });
+    }
 
     let playerRankInfo = null;
     if (qPlayerId) {
-      const pIdx = ranked.findIndex(a => a.id === qPlayerId);
+      const pIdx = lbSnap.rankById.has(qPlayerId) ? lbSnap.rankById.get(qPlayerId) : -1;
       if (pIdx !== -1) {
-        const myRank = pIdx + 1;
-        const higher = pIdx > 0 ? ranked[pIdx - 1] : null;
+        const cur = lbSnap.ranked[pIdx];
+        const higher = pIdx > 0 ? lbSnap.ranked[pIdx - 1] : null;
         playerRankInfo = {
           id: qPlayerId,
-          name: ranked[pIdx].name,
-          char: ranked[pIdx].char,
-          rank: myRank,
-          score: ranked[pIdx].score,
-          tier: ranked[pIdx].tier,
-          wins: ranked[pIdx].wins || 0,
-          losses: ranked[pIdx].losses || 0,
-          winRate: ranked[pIdx].winRate || 0,
-          photoUrl: ranked[pIdx].photoUrl || null,
-          pointsToNext: higher ? Math.max(1, higher.score - ranked[pIdx].score) : 0
+          name: cur.name,
+          char: cur.char,
+          rank: cur.rank,
+          score: cur.score,
+          tier: cur.tier,
+          wins: cur.wins || 0,
+          losses: cur.losses || 0,
+          winRate: cur.winRate || 0,
+          photoUrl: cur.photoUrl || null,
+          pointsToNext: higher ? Math.max(1, higher.score - cur.score) : 0
+        };
+      } else if (state.players[qPlayerId]) {
+        const p = state.players[qPlayerId];
+        const pStats = p.stats || {};
+        const tw = pStats.wins || 0;
+        const tl = pStats.losses !== undefined ? pStats.losses : Math.max(0, Math.floor(tw * 0.2));
+        const tm = tw + tl;
+        playerRankInfo = {
+          id: qPlayerId,
+          name: p.playerName || 'Athlete (You)',
+          char: p.selectedCharacter || 'footy',
+          rank: lbSnap.ranked.length + 1,
+          score: 0,
+          tier: { id: 'bronze', name: 'Bronze', badge: '🥉 BRONZE', color: '#cd7f32' },
+          wins: tw,
+          losses: tl,
+          winRate: tm > 0 ? Math.round((tw / tm) * 100) : 0,
+          photoUrl: p.photoUrl || (p.telegramUser && (p.telegramUser.photo_url || p.telegramUser.photoUrl)) || null,
+          pointsToNext: 1
         };
       }
     }
 
-    const filtered = qSearch 
-      ? ranked.filter(a => a.name.toLowerCase().includes(qSearch) || a.club.toLowerCase().includes(qSearch))
-      : ranked;
+    const filteredTop = qSearch
+      ? lbSnap.ranked.filter(a => a.name.toLowerCase().includes(qSearch) || a.club.toLowerCase().includes(qSearch)).slice(0, 50)
+      : lbSnap.topBase.map(a => (qPlayerId && a.id === qPlayerId) ? Object.assign({}, a, { isCurrentUser: true }) : a);
 
     return sendJson(res, 200, {
       ok: true,
@@ -3942,21 +4077,21 @@ const server = http.createServer((req, res) => {
       teamFootball: {
         id: 'footy',
         name: 'Team Football',
-        score: footballTotal,
-        pct: footballPct,
-        athletes: footballAthletes
+        score: lbSnap.footballTotal,
+        pct: lbSnap.footballPct,
+        athletes: lbSnap.footballAthletes
       },
       teamBasketball: {
         id: 'hoops',
         name: 'Team Basketball',
-        score: basketballTotal,
-        pct: basketballPct,
-        athletes: basketballAthletes
+        score: lbSnap.basketballTotal,
+        pct: lbSnap.basketballPct,
+        athletes: lbSnap.basketballAthletes
       },
-      winningTeam: winningTeam,
-      leadDiff: leadDiff,
-      totalAthletes: ranked.length,
-      top: filtered.slice(0, 50),
+      winningTeam: lbSnap.winningTeam,
+      leadDiff: lbSnap.leadDiff,
+      totalAthletes: lbSnap.ranked.length,
+      top: filteredTop,
       player: playerRankInfo
     });
   }
@@ -5171,55 +5306,110 @@ const server = http.createServer((req, res) => {
   }
 
   // ==========================================
-  // Static File Serving
+  // High-Concurrency In-Memory Static File + Pre-Gzip + ETag Cache
   // ==========================================
   let decodedPath = pathname;
   try { decodedPath = decodeURIComponent(pathname); } catch (e) {}
-  let filePath = pathname === '/' ? '/index.html' : decodedPath;
-  let fullPath = path.join(__dirname, '..', filePath);
+  // Normalize away directory traversal attempts safely
+  const safeRel = path.posix.normalize(decodedPath === '/' ? '/index.html' : decodedPath).replace(/^(\.\.[/\\])+/, '');
+  const mimeTypes = {
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
+    '.glb': 'model/gltf-binary',
+    '.gltf': 'model/gltf+json'
+  };
+
+  if (!global.__fvhStaticCache) {
+    global.__fvhStaticCache = { map: new Map(), totalBytes: 0, maxBytes: 72 * 1024 * 1024 };
+  }
+  const sCache = global.__fvhStaticCache;
+  const allowMemCache = !pathname.includes('/benchmark/') && !pathname.includes('/scratch/');
+
+  function serveCachedEntry(entry) {
+    const headers = {
+      'Content-Type': entry.contentType,
+      'ETag': entry.etag
+    };
+    if (entry.ext === '.html' || !allowMemCache) {
+      headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    } else if (['.glb', '.gltf', '.png', '.jpg', '.mp3', '.wav', '.ogg', '.svg', '.ico'].includes(entry.ext)) {
+      headers['Cache-Control'] = 'public, max-age=86400';
+    } else {
+      headers['Cache-Control'] = 'no-cache, must-revalidate';
+    }
+    if (req.headers['if-none-match'] === entry.etag) {
+      res.writeHead(304, headers);
+      return res.end();
+    }
+    const acceptEncoding = req.headers['accept-encoding'] || '';
+    if (entry.gzipBuf && acceptEncoding.includes('gzip')) {
+      headers['Content-Encoding'] = 'gzip';
+      headers['Content-Length'] = entry.gzipBuf.length;
+      res.writeHead(200, headers);
+      return res.end(entry.gzipBuf);
+    }
+    headers['Content-Length'] = entry.rawBuf.length;
+    res.writeHead(200, headers);
+    return res.end(entry.rawBuf);
+  }
+
+  if (allowMemCache && sCache.map.has(safeRel)) {
+    const cached = sCache.map.get(safeRel);
+    // LRU touch
+    sCache.map.delete(safeRel);
+    sCache.map.set(safeRel, cached);
+    return serveCachedEntry(cached);
+  }
+
+  let fullPath = path.join(__dirname, '..', safeRel);
   if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
-    const publicCandidate = path.join(__dirname, '..', 'public', filePath);
+    const publicCandidate = path.join(__dirname, '..', 'public', safeRel);
     if (fs.existsSync(publicCandidate) && fs.statSync(publicCandidate).isFile()) {
       fullPath = publicCandidate;
+    } else {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      return res.end('404 Not Found');
     }
   }
 
-  if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
-    const ext = path.extname(fullPath).toLowerCase();
-    const mimeTypes = {
-      '.html': 'text/html; charset=utf-8',
-      '.css': 'text/css; charset=utf-8',
-      '.js': 'application/javascript; charset=utf-8',
-      '.json': 'application/json; charset=utf-8',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon',
-      '.mp3': 'audio/mpeg',
-      '.wav': 'audio/wav',
-      '.ogg': 'audio/ogg',
-      '.glb': 'model/gltf-binary',
-      '.gltf': 'model/gltf+json'
-    };
+  const ext = path.extname(fullPath).toLowerCase();
+  const contentType = mimeTypes[ext] || 'application/octet-stream';
+  const stat = fs.statSync(fullPath);
 
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
-    const headers = { 'Content-Type': contentType };
+  if (allowMemCache && stat.size <= 8 * 1024 * 1024) {
+    fs.readFile(fullPath, (err, rawBuf) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        return res.end('Read error');
+      }
+      const compressible = ['.html', '.css', '.js', '.json', '.svg', '.glb'].includes(ext);
+      const gzipBuf = compressible ? zlib.gzipSync(rawBuf, { level: 6 }) : null;
+      const etag = `"${stat.size.toString(16)}-${Math.round(stat.mtimeMs).toString(16)}"`;
+      const entry = { ext, contentType, rawBuf, gzipBuf, etag, bytes: rawBuf.length + (gzipBuf ? gzipBuf.length : 0) };
 
-    // High-Concurrency Asset Caching Strategy: cache immutable binary assets (GLB/PNG/WAV) while keeping HTML/JS/CSS fresh
-    if (ext === '.html' || pathname.includes('/benchmark/') || pathname.includes('/scratch/')) {
-      headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-      headers['Pragma'] = 'no-cache';
-      headers['Expires'] = '0';
-    } else if (['.glb', '.gltf', '.png', '.jpg', '.mp3', '.wav', '.ogg', '.svg', '.ico'].includes(ext)) {
-      headers['Cache-Control'] = 'public, max-age=3600';
-    } else if (['.js', '.css'].includes(ext)) {
-      headers['Cache-Control'] = 'no-cache, must-revalidate';
-    }
-
-    // High-Concurrency Gzip Compression for text and script assets
+      while (sCache.totalBytes + entry.bytes > sCache.maxBytes && sCache.map.size > 0) {
+        const oldestKey = sCache.map.keys().next().value;
+        const old = sCache.map.get(oldestKey);
+        sCache.map.delete(oldestKey);
+        if (old) sCache.totalBytes -= old.bytes;
+      }
+      sCache.map.set(safeRel, entry);
+      sCache.totalBytes += entry.bytes;
+      serveCachedEntry(entry);
+    });
+  } else {
+    const headers = { 'Content-Type': contentType, 'Cache-Control': 'no-cache' };
     const acceptEncoding = req.headers['accept-encoding'] || '';
     const compressible = ['.html', '.css', '.js', '.json', '.svg'].includes(ext);
-
     if (compressible && acceptEncoding.includes('gzip')) {
       headers['Content-Encoding'] = 'gzip';
       res.writeHead(200, headers);
@@ -5228,32 +5418,36 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, headers);
       fs.createReadStream(fullPath).pipe(res);
     }
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('404 Not Found');
   }
 });
 
+// High-concurrency HTTP Keep-Alive timeouts
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
+
 // ==========================================
-// Native RFC6455 Real-Time WebSocket Relay
+// Native RFC6455 Real-Time WebSocket Relay (Zero-Parse Fast Path)
 // ==========================================
 const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
-function makeWsTextFrame(str) {
-  const payload = Buffer.from(str, 'utf8');
-  const len = payload.length;
+function makeWsTextFrameBuf(payloadBuf) {
+  const len = payloadBuf.length;
   let header;
   if (len < 126) {
     header = Buffer.from([0x81, len]);
   } else if (len < 65536) {
     header = Buffer.from([0x81, 126, (len >> 8) & 0xff, len & 0xff]);
   } else {
-    header = Buffer.alloc(10);
+    header = Buffer.allocUnsafe(10);
     header[0] = 0x81;
     header[1] = 127;
     header.writeBigUInt64BE(BigInt(len), 2);
   }
-  return Buffer.concat([header, payload]);
+  return Buffer.concat([header, payloadBuf]);
+}
+
+function makeWsTextFrame(str) {
+  return makeWsTextFrameBuf(Buffer.from(str, 'utf8'));
 }
 
 server.on('upgrade', (req, socket, head) => {
@@ -5316,62 +5510,60 @@ server.on('upgrade', (req, socket, head) => {
   let socketMsgWindow = Date.now();
 
   socket.on('data', (chunk) => {
-    buffer = Buffer.concat([buffer, chunk]);
-    while (buffer.length >= 2) {
-      const byte0 = buffer[0];
-      const byte1 = buffer[1];
+    buffer = buffer.length === 0 ? chunk : Buffer.concat([buffer, chunk]);
+    let pos = 0;
+    while (buffer.length - pos >= 2) {
+      const byte0 = buffer[pos];
+      const byte1 = buffer[pos + 1];
       const opcode = byte0 & 0x0f;
       const isMasked = (byte1 & 0x80) !== 0;
       let payloadLen = byte1 & 0x7f;
       let offset = 2;
 
       if (payloadLen === 126) {
-        if (buffer.length < 4) break;
-        payloadLen = buffer.readUInt16BE(2);
+        if (buffer.length - pos < 4) break;
+        payloadLen = buffer.readUInt16BE(pos + 2);
         offset = 4;
       } else if (payloadLen === 127) {
-        if (buffer.length < 10) break;
-        payloadLen = Number(buffer.readBigUInt64BE(2));
+        if (buffer.length - pos < 10) break;
+        payloadLen = Number(buffer.readBigUInt64BE(pos + 2));
         offset = 10;
       }
 
-      // Bound max frame size to 64KB (prevent memory exhaustion attacks)
       if (payloadLen > 65536) {
         socket.destroy();
-        break;
+        return;
       }
 
       const maskLen = isMasked ? 4 : 0;
       const totalLen = offset + maskLen + payloadLen;
-      if (buffer.length < totalLen) break;
+      if (buffer.length - pos < totalLen) break;
 
-      let payload = buffer.slice(offset + maskLen, totalLen);
+      let payload;
       if (isMasked) {
-        const maskKey = buffer.slice(offset, offset + 4);
-        payload = Buffer.from(payload);
-        for (let i = 0; i < payload.length; i++) {
-          payload[i] ^= maskKey[i % 4];
+        payload = Buffer.allocUnsafe(payloadLen);
+        const maskOff = pos + offset;
+        const payOff = maskOff + 4;
+        for (let i = 0; i < payloadLen; i++) {
+          payload[i] = buffer[payOff + i] ^ buffer[maskOff + (i & 3)];
         }
+      } else {
+        payload = buffer.subarray(pos + offset, pos + totalLen);
       }
 
-      buffer = buffer.slice(totalLen);
+      pos += totalLen;
 
-      // Opcode 8: close
       if (opcode === 8) {
         socket.end();
         break;
       }
-      // Opcode 9: ping -> send pong (opcode 10)
       if (opcode === 9) {
-        const pong = Buffer.from([0x8a, 0x00]);
-        socket.write(pong);
+        socket.write(Buffer.from([0x8a, 0x00]));
         continue;
       }
-      // Opcode 10: pong response
       if (opcode === 10) {
         continue;
       }
-      // Opcode 1: text message
       if (opcode === 1) {
         const nowSec = Date.now();
         if (nowSec - socketMsgWindow > 1000) {
@@ -5379,20 +5571,15 @@ server.on('upgrade', (req, socket, head) => {
           socketMsgWindow = nowSec;
         }
         socketMsgCount++;
-        // Rate limit: max 150 packets/sec
-        if (socketMsgCount > 150) {
-          continue;
-        }
+        if (socketMsgCount > 180) continue;
 
-        const text = payload.toString('utf8');
-        try {
-          const packet = JSON.parse(text);
-          // 1. Deliver to peer WebSocket immediately
-          const peerSocket = state.wsClients[matchId] && state.wsClients[matchId][targetRole];
-          if (peerSocket && !peerSocket.destroyed && peerSocket.writable) {
-            peerSocket.write(makeWsTextFrame(text));
-          } else {
-            // 2. Only enqueue into HTTP relay queue for late pollers if peer is NOT on WebSocket
+        // Zero-Parse Fast-Path Pass-Through when peer WebSocket is connected
+        const peerSocket = state.wsClients[matchId] && state.wsClients[matchId][targetRole];
+        if (peerSocket && !peerSocket.destroyed && peerSocket.writable) {
+          peerSocket.write(makeWsTextFrameBuf(payload));
+        } else {
+          try {
+            const packet = JSON.parse(payload.toString('utf8'));
             if (!state.relays[matchId]) {
               state.relays[matchId] = { host: [], guest: [], lastHostTick: Date.now(), lastGuestTick: Date.now() };
             }
@@ -5406,10 +5593,11 @@ server.on('upgrade', (req, socket, head) => {
               timestamp: Date.now()
             });
             if (relay[targetRole].length > 30) relay[targetRole].shift();
-          }
-        } catch (e) {}
+          } catch (e) {}
+        }
       }
     }
+    buffer = pos >= buffer.length ? Buffer.alloc(0) : Buffer.from(buffer.subarray(pos));
   });
 
   const cleanupSocket = () => {

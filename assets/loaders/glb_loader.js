@@ -338,6 +338,7 @@
       this._blendElapsed = 0;
       this._blendDuration = 0;
       this._defaultBlendDuration = 0.14;
+      this._qTmp = new Float32Array(4);
 
       // Up to 96 bones supported in vertex uniform array (standard in WebGL2)
       this.boneMatrices = new Float32Array(96 * 16);
@@ -452,7 +453,7 @@
           if (rawW >= 1) {
             this._blendFromPose = null;
           } else {
-            const qTmp = [0, 0, 0, 1];
+            const qTmp = this._qTmp || (this._qTmp = new Float32Array(4));
             for (let i = 0; i < this.nodes.length; i++) {
               const prev = this._blendFromPose[i];
               const node = this.nodes[i];

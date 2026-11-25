@@ -99,7 +99,7 @@ class PostgresStorageAdapter extends StorageAdapter {
       }
       const poolConfig = {
         connectionString: this.connectionString,
-        max: 10,
+        max: Number(process.env.PG_POOL_MAX) || 25,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000
       };

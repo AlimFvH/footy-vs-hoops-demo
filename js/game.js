@@ -211,7 +211,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.4.0-release';
+                        const AUDIO_VERSION = '4.5.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -14412,16 +14412,18 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                     const on = (this.cfg && this.cfg.online) || null;
                     if (on) {
                         const rtt = typeof on.rtt === 'number' ? on.rtt : 0;
+                        const transportStr = (on.link && on.link.transport) ? on.link.transport : 'WS';
                         const roleStr = on.role === 'host' ? 'Host' : 'Guest';
-                        const bufLen = (on.buf && on.buf.length) || 0;
                         const jitterVal = on.jitter ? Math.round(on.jitter) : 0;
-                        let text = `${fpsVal} FPS (${frameMs}ms) · ${roleStr}`;
-                        if (rtt > 0) text += ` · Ping: ${rtt}ms`;
-                        if (on.role === 'guest') {
+                        let text = showFps ? `${fpsVal} FPS (${frameMs}ms) · ${roleStr}` : `${roleStr}`;
+                        if (rtt > 0) text += ` · Ping: ${rtt}ms (${transportStr})`;
+                        else text += ` · ${transportStr}`;
+                        if (on.role === 'guest' && showFps) {
+                            const bufLen = (on.buf && on.buf.length) || 0;
                             text += ` · Buf: ${bufLen}`;
                             if (jitterVal > 0) text += ` · ±${jitterVal}ms`;
                         }
-                        this.fps.textContent = text; // this.fps.textContent = `${fpsVal} fps · ${rtt}ms`;
+                        this.fps.textContent = text;
                     } else if (showFps) {
                         this.fps.textContent = `${fpsVal} FPS (${frameMs}ms)`;
                     }
@@ -14945,6 +14947,7 @@ define("net/link", ["require", "exports", "net/support", "net/codec"], function 
             this.open = false;
             this.closed = false;
             this.rtt = 0;
+            this.transport = 'P2P';
             this.lastRx = 0;
             this.beat = 0;
             this.opened = { ctl: false, fast: false };
@@ -14974,6 +14977,7 @@ define("net/link", ["require", "exports", "net/support", "net/codec"], function 
                 if (this.opened.ctl && this.opened.fast && !this.open) {
                     this.open = true;
                     this.lastRx = performance.now();
+                    this.sendCtl({ k: 'ping', t: performance.now() });
                     this.beat = window.setInterval(() => this.heartbeat(), 1000);
                     (_b = (_a = this.h).onOpen) === null || _b === void 0 ? void 0 : _b.call(_a);
                 }
@@ -14994,7 +14998,14 @@ define("net/link", ["require", "exports", "net/support", "net/codec"], function 
                     return;
                 }
                 if (m.k === 'pong') {
-                    this.rtt = Math.round(performance.now() - Number(m.t));
+                    const sample = Math.max(1, Math.min(999, Math.round(performance.now() - Number(m.t))));
+                    this._pongN = (this._pongN || 0) + 1;
+                    if (!this.rtt || this._pongN < 2) {
+                        this.rtt = sample;
+                    } else {
+                        const w = (sample > this.rtt * 2.4 && sample > 120) ? 0.15 : 0.40;
+                        this.rtt = Math.round(this.rtt * (1 - w) + sample * w);
+                    }
                     return;
                 }
                 (_b = (_a = this.h).onMessage) === null || _b === void 0 ? void 0 : _b.call(_a, m, name);
@@ -15030,18 +15041,28 @@ define("net/link", ["require", "exports", "net/support", "net/codec"], function 
         }
         sendFast(m) {
             var _a;
-            if (((_a = this.fast) === null || _a === void 0 ? void 0 : _a.readyState) === 'open')
+            if (((_a = this.fast) === null || _a === void 0 ? void 0 : _a.readyState) === 'open') {
+                if (m && m.k === 'snap' && this.fast.bufferedAmount > 8192)
+                    return;
                 this.fast.send(JSON.stringify(m));
+            }
         }
         async gathered() {
             if (this.pc.iceGatheringState === 'complete')
                 return;
             await new Promise((res) => {
-                const done = () => { this.pc.removeEventListener('icegatheringstatechange', on); window.clearTimeout(t); res(); };
-                const on = () => { if (this.pc.iceGatheringState === 'complete')
-                    done(); };
-                const t = window.setTimeout(done, 4000);
+                const done = () => { this.pc.removeEventListener('icegatheringstatechange', on); this.pc.removeEventListener('icecandidate', onCand); window.clearTimeout(t); res(); };
+                const on = () => { if (this.pc.iceGatheringState === 'complete') done(); };
+                let candTimer = 0;
+                const onCand = (ev) => {
+                    // Finish shortly after first srflx/host candidates arrive instead of blocking full 4s
+                    if (ev && ev.candidate && !candTimer) {
+                        candTimer = window.setTimeout(done, 260);
+                    }
+                };
+                const t = window.setTimeout(done, 850);
                 this.pc.addEventListener('icegatheringstatechange', on);
+                this.pc.addEventListener('icecandidate', onCand);
             });
         }
         async createOffer(meta) {
@@ -15101,7 +15122,7 @@ define("net/protocol", ["require", "exports"], function (require, exports) {
     const TACKLE_FIELDS = ['t', 'charge', 'power', 'cooldown', 'cooldownMax', 'recoverDur', 'dur', 'speed'];
     const BALL_FIELDS = [['x', true], ['y', false], ['z', true], ['vx', true], ['vy', false], ['vz', true], ['spinX', true], ['spinZ', true], ['dribblePhase', false]];
     const r3 = (v) => Math.round(v * 1000) / 1000;
-    function captureSnapshot(sim) {
+    function captureSnapshot(sim, lastInSeq = 0) {
         const a = sim.agents.map((ag) => {
             const row = AGENT_FIELDS.map(([k]) => r3(ag[k]));
             row.push(ag.sprint ? 1 : 0, ag.shootCharging ? 1 : 0, TACKLE_PHASES.indexOf(ag.tackle.phase), ag.tackle.hit ? 1 : 0);
@@ -15122,6 +15143,7 @@ define("net/protocol", ["require", "exports"], function (require, exports) {
             t: r3(sim.time), ph: exports.PHASES.indexOf(sim.phase), pt: r3(sim.phaseTime), tl: r3(sim.timeLeft),
             mph: sim.matchPhase || 'regular',
             sc: [sim.score[0], sim.score[1]], w: sim.winner === null ? -1 : sim.winner, a, b,
+            lsq: lastInSeq || 0,
             hn: hoops ? [r3(hoops[0].net), r3(hoops[1].net)] : undefined,
         };
     }
@@ -15282,8 +15304,8 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.OnlineSession = void 0;
     exports.sanitize = sanitize;
-    const SNAP_INTERVAL = 1 / 48;
-    const DEFAULT_INTERP_DELAY = 0.07;
+    const SNAP_INTERVAL = 1 / 60;
+    const DEFAULT_INTERP_DELAY = 0.036;
     class OnlineSession {
         constructor(link, info) {
             this.link = link;
@@ -15291,10 +15313,12 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
             this.onLost = null;
             this.buf = [];
             this.evq = [];
+            this.pendingInputs = [];
             this.sinceSnap = 0;
             this.outEvents = [];
             this.lastSent = '';
             this.lastSentAt = 0;
+            this.lastInSeq = 0;
             this.lostFired = false;
             this.ending = false;
             this.snapshotsSent = 0;
@@ -15302,13 +15326,22 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
             this.inputsRecv = 0;
             this.sim = null;
             this.interpDelay = DEFAULT_INTERP_DELAY;
-            this.jitter = 12;
+            this.jitter = 8;
             this.lastSnapRecvAt = 0;
             this.renderTime = null;
             this.prevRenderTime = 0;
             this.lastNowMs = 0;
+            this.localActionTimer = 0;
+            this.localActionType = '';
             link.h.onClose = (reason) => this.lost(reason === 'local' ? null : 'lost');
             link.h.onMessage = (m, ch) => this.receive(m, ch);
+        }
+        upgradeLink(newLink) {
+            if (!newLink || this.ending || newLink === this.link)
+                return;
+            newLink.h.onClose = (reason) => this.lost(reason === 'local' ? null : 'lost');
+            newLink.h.onMessage = (m, ch) => this.receive(m, ch);
+            this.link = newLink;
         }
         get role() { return this.info.role; }
         get rtt() { return this.link.rtt; }
@@ -15344,61 +15377,69 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 this.outEvents = [];
             }
             this.sinceSnap += dt;
-            if (this.sinceSnap >= SNAP_INTERVAL) {
+            if (this.sinceSnap >= (SNAP_INTERVAL - 0.002)) {
                 this.sinceSnap = 0;
-                this.link.sendFast({ k: 'snap', s: (0, protocol_js_1.captureSnapshot)(sim) });
+                this.link.sendFast({ k: 'snap', s: (0, protocol_js_1.captureSnapshot)(sim, this.lastInSeq || 0) });
                 this.snapshotsSent++;
             }
         }
         guestUpdate(sim, nowMs, input) {
+            const dtFrame = this.lastNowMs > 0 ? Math.min(0.066, Math.max(0.001, (nowMs - this.lastNowMs) / 1000)) : 0.016;
+            this.lastNowMs = nowMs;
+
             const edge = input.shootPressed || input.shootReleased || input.tacklePressed || input.tackleReleased || input.passPressed;
             const sig = [input.moveX.toFixed(2), input.moveZ.toFixed(2), +input.sprint, +input.shootHeld, +input.tackleHeld].join();
             const timeSinceLast = nowMs - this.lastSentAt;
-            if (edge || (sig !== this.lastSent && timeSinceLast >= 32) || timeSinceLast > 90) {
+            if (edge || (sig !== this.lastSent && timeSinceLast >= 15) || timeSinceLast >= 65) {
                 this.lastSent = sig;
                 this.lastSentAt = nowMs;
                 this.inSeq = (this.inSeq || 0) + 1;
-                this.link.sendFast({ k: 'in', i: input, seq: this.inSeq });
-                if (edge) {
-                    this.link.sendCtl({ k: 'in', i: input, seq: this.inSeq });
+                const pkt = { k: 'in', i: input, seq: this.inSeq };
+                this.link.sendFast(pkt);
+                if (edge && this.link.transport !== 'WS') {
+                    this.link.sendCtl(pkt);
                 }
-            } else if (sig !== this.lastSent && timeSinceLast >= 16) {
-                this.lastSent = sig;
-                this.lastSentAt = nowMs;
-                this.inSeq = (this.inSeq || 0) + 1;
-                this.link.sendFast({ k: 'in', i: input, seq: this.inSeq });
+                this.pendingInputs.push({ seq: this.inSeq, dt: dtFrame, input: Object.assign({}, input) });
+                if (this.pendingInputs.length > 90)
+                    this.pendingInputs.shift();
+            } else if (this.pendingInputs.length) {
+                // Keep accumulating real frame dt for latest held input between packet sends
+                this.pendingInputs[this.pendingInputs.length - 1].dt += dtFrame;
             }
+
+            // Instant zero-latency visual response when Guest clicks Pass / Shoot / Tackle
+            if (input.passPressed) { this.localActionType = 'pass'; this.localActionTimer = 0.24; }
+            else if (input.shootReleased) { this.localActionType = 'shot'; this.localActionTimer = 0.28; }
+            else if (input.tacklePressed) { this.localActionType = 'tackle'; this.localActionTimer = 0.26; }
+            if (this.localActionTimer > 0) this.localActionTimer = Math.max(0, this.localActionTimer - dtFrame);
+
             const n = this.buf.length;
             if (!n)
                 return;
 
-            const dtFrame = this.lastNowMs > 0 ? Math.min(0.066, Math.max(0.001, (nowMs - this.lastNowMs) / 1000)) : 0.016;
-            this.lastNowMs = nowMs;
-
-            // Adaptive jitter buffer: dynamically adapt target interpolation delay to network RTT & jitter
-            const rttSec = (this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0) ? (this.link.rtt / 1000) : 0.040;
-            const jitterSec = this.jitter ? Math.min(0.06, this.jitter / 1000) : 0.015;
-            const targetDelay = Math.max(0.075, Math.min(0.16, 0.055 + rttSec * 0.4 + jitterSec * 1.5));
-            this.interpDelay += (targetDelay - this.interpDelay) * 0.05;
+            // Low-latency adaptive jitter buffer: ~28-55ms on clean WS/P2P, widening only on actual network jitter
+            const rttSec = (this.link && typeof this.link.rtt === 'number' && this.link.rtt > 0) ? (this.link.rtt / 1000) : 0.025;
+            const jitterSec = this.jitter ? Math.min(0.055, this.jitter / 1000) : 0.008;
+            const targetDelay = Math.max(0.026, Math.min(0.13, 0.020 + rttSec * 0.25 + jitterSec * 1.15));
+            this.interpDelay += (targetDelay - this.interpDelay) * 0.08;
 
             const newestSnap = this.buf[n - 1].s;
             const oldestSnap = this.buf[0].s;
             const targetRenderTime = newestSnap.t - this.interpDelay;
 
-            // Continuous clock drift correction (timescale dilation up to +/-12%)
+            // Continuous clock drift correction (up to +/-16% timescale dilation)
             if (this.renderTime === null || isNaN(this.renderTime)) {
                 this.renderTime = targetRenderTime;
             } else {
                 const timeDiff = targetRenderTime - this.renderTime;
-                if (Math.abs(timeDiff) > 0.30) {
+                if (Math.abs(timeDiff) > 0.22) {
                     this.renderTime = targetRenderTime;
                 } else {
-                    const driftCorrection = Math.max(-0.12, Math.min(0.12, timeDiff * 2.2));
+                    const driftCorrection = Math.max(-0.16, Math.min(0.16, timeDiff * 3.0));
                     this.renderTime += dtFrame * (1.0 + driftCorrection);
                 }
             }
 
-            // Strictly monotonic playback clock: renderTime NEVER steps backwards!
             if (typeof this.prevRenderTime === 'number' && this.renderTime < this.prevRenderTime) {
                 this.renderTime = this.prevRenderTime + 0.0001;
             }
@@ -15417,38 +15458,59 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                 const f = b.t > a.t ? Math.max(0, Math.min(1, (disp - a.t) / (b.t - a.t))) : 1;
                 (0, protocol_js_1.applySnapshot)(sim, a === b ? a : (0, protocol_js_1.blend)(a, b, f), true);
             } else {
-                // Buffer starvation / underrun: smoothly extrapolate forward along velocity vectors
-                const dtExtrap = Math.min(0.15, disp - newestSnap.t);
+                const dtExtrap = Math.min(0.14, disp - newestSnap.t);
                 const extrapolated = (0, protocol_js_1.extrapolateSnapshot)(newestSnap, dtExtrap);
                 (0, protocol_js_1.applySnapshot)(sim, extrapolated, true);
             }
 
-            // Client-side visual prediction & soft reconciliation for guest's own controlled athlete (agent 0)
+            // Input-Sequence Reconciliation & True-Speed Client Prediction for Guest's own athlete (agents[0])
             if (sim.agents && sim.agents[0]) {
                 const myAg = sim.agents[0];
-                const authX = myAg.x;
-                const authZ = myAg.z;
+                const P = sim.P || {};
+                const baseSpd = P.baseSpeed || (sim.mode === 'footy' ? 7.0 : 6.2);
+                const sprintMul = P.sprintMul || (sim.mode === 'footy' ? 1.42 : 1.38);
+                const carryMul = P.carryMul || 0.94;
+                const isCarrier = Boolean(sim.ball && sim.ball.owner === myAg);
+
+                // Compute true authoritative anchor at Host time using newestSnap + unacknowledged pendingInputs!
+                const ackSeq = newestSnap.lsq || 0;
+                while (this.pendingInputs.length && this.pendingInputs[0].seq <= ackSeq) {
+                    this.pendingInputs.shift();
+                }
+
+                const gMirrorIdx = (0, protocol_js_1.mirrorIndex)(0, sim.agents.length);
+                const rawHostRow = newestSnap.a && newestSnap.a[gMirrorIdx];
+                if (rawHostRow && (rawHostRow[13] > 0 || rawHostRow[14] > 0)) {
+                    this.localActionTimer = 0;
+                }
+                let authX = rawHostRow ? -rawHostRow[0] : myAg.x;
+                let authZ = rawHostRow ? -rawHostRow[1] : myAg.z;
+                for (let pi = 0; pi < this.pendingInputs.length; pi++) {
+                    const rec = this.pendingInputs[pi];
+                    const ri = rec.input;
+                    const mag = Math.hypot(ri.moveX, ri.moveZ);
+                    if (mag > 0.05) {
+                        let spd = baseSpd * (ri.sprint && myAg.stamina > 2 ? sprintMul : 1.0);
+                        if (isCarrier) spd *= carryMul;
+                        if (myAg.stun > 0) spd *= 0.38;
+                        if (ri.shootHeld) spd *= 0.82;
+                        const s = Math.min(1, mag) * spd * Math.min(0.05, rec.dt);
+                        authX += (ri.moveX / mag) * s;
+                        authZ += (ri.moveZ / mag) * s;
+                    }
+                }
+
                 if (typeof this.predX !== 'number' || isNaN(this.predX)) {
                     this.predX = authX;
                     this.predZ = authZ;
                 }
 
-                // Soft reconciliation: exponential decay of positional error towards authoritative state
-                const errX = authX - this.predX;
-                const errZ = authZ - this.predZ;
-                const errDist = Math.hypot(errX, errZ);
-                if (errDist > 2.2) {
-                    this.predX = authX;
-                    this.predZ = authZ;
-                } else if (errDist > 0.005) {
-                    const blendRate = Math.min(1.0, dtFrame * 8.5);
-                    this.predX += errX * blendRate;
-                    this.predZ += errZ * blendRate;
-                }
-
-                // Instant local client prediction from joystick movement (zero latency at 60 FPS)
                 const moveMag = Math.hypot(input.moveX, input.moveZ);
-                const topSpd = input.sprint ? 7.2 : 5.4;
+                let topSpd = baseSpd * (input.sprint && myAg.stamina > 2 ? sprintMul : 1.0);
+                if (isCarrier) topSpd *= carryMul;
+                if (myAg.stun > 0) topSpd *= 0.38;
+                if (input.shootHeld) topSpd *= 0.82;
+
                 if (moveMag > 0.05) {
                     const nx = input.moveX / Math.max(1, moveMag);
                     const nz = input.moveZ / Math.max(1, moveMag);
@@ -15460,22 +15522,39 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                     this.predZ += pVz * dtFrame;
                     myAg.vx = pVx;
                     myAg.vz = pVz;
-                    myAg.runPhase = (myAg.runPhase || 0) + topSpd * dtFrame * 2.8;
+                    myAg.runPhase = (myAg.runPhase || 0) + topSpd * dtFrame * 2.4;
                 } else {
-                    myAg.vx = (myAg.vx || 0) * 0.82;
-                    myAg.vz = (myAg.vz || 0) * 0.82;
+                    myAg.vx = (myAg.vx || 0) * 0.78;
+                    myAg.vz = (myAg.vz || 0) * 0.78;
                 }
 
-                const halfW = (sim.mode === 'footy') ? 14.5 : 8.0;
-                const halfL = (sim.mode === 'footy') ? 24.0 : 13.5;
+                // Reconcile gently ONLY against true future-replayed anchor (eliminates rubber-banding!)
+                const errX = authX - this.predX;
+                const errZ = authZ - this.predZ;
+                const errDist = Math.hypot(errX, errZ);
+                if (errDist > 2.4 || sim.phase === 'countdown' || sim.phase === 'celebrate') {
+                    this.predX = authX;
+                    this.predZ = authZ;
+                } else if (errDist > 0.08) {
+                    const blendRate = Math.min(1.0, dtFrame * (errDist > 0.75 ? 12.0 : 5.5));
+                    this.predX += errX * blendRate;
+                    this.predZ += errZ * blendRate;
+                }
+
+                const halfW = P.halfW || ((sim.mode === 'footy') ? 14.5 : 8.0);
+                const halfL = P.halfL || ((sim.mode === 'footy') ? 24.0 : 13.5);
                 this.predX = Math.max(-halfW, Math.min(halfW, this.predX));
                 this.predZ = Math.max(-halfL, Math.min(halfL, this.predZ));
 
                 myAg.x = this.predX;
                 myAg.z = this.predZ;
 
-                if (input.sprint) myAg.sprint = true;
+                if (input.sprint && myAg.stamina > 2) myAg.sprint = true;
                 if (input.shootHeld) myAg.shootCharging = true;
+                if (this.localActionTimer > 0) {
+                    if (this.localActionType === 'pass' && (!myAg.kickT || myAg.kickT <= 0)) myAg.kickT = this.localActionTimer;
+                    if (this.localActionType === 'shot' && (!myAg.shotT || myAg.shotT <= 0)) myAg.shotT = this.localActionTimer;
+                }
 
                 if (sim.ball && sim.ball.owner === myAg) {
                     const bOffset = (sim.mode === 'footy') ? 0.45 : 0.55;
@@ -15486,7 +15565,9 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
 
             while (this.evq.length && this.evq[0].t <= disp + 0.02)
                 sim.emit((0, protocol_js_1.mirrorEvent)(this.evq.shift().e, sim.agents.length));
-            while (this.buf.length > 35)
+            while (this.buf.length > 2 && this.buf[1].s.t < disp - 0.04)
+                this.buf.shift();
+            while (this.buf.length > 16)
                 this.buf.shift();
         }
         receive(m, _ch) {
@@ -15516,8 +15597,8 @@ define("net/session", ["require", "exports", "net/protocol"], function (require,
                     const now = performance.now();
                     if (this.lastSnapRecvAt) {
                         const interval = now - this.lastSnapRecvAt;
-                        const diff = Math.abs(interval - 1000 * SNAP_INTERVAL);
-                        this.jitter = this.jitter ? (this.jitter * 0.92 + diff * 0.08) : diff;
+                        const diff = Math.min(55, Math.abs(interval - 1000 * SNAP_INTERVAL));
+                        this.jitter = this.jitter ? (this.jitter * 0.90 + diff * 0.10) : diff;
                     }
                     this.lastSnapRecvAt = now;
                     this.buf.push({ s, at: now });
@@ -15893,6 +15974,24 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             this.last = performance.now();
             cancelAnimationFrame(this.raf);
             this.raf = requestAnimationFrame(this.frame);
+            if (this._hostNetPump) {
+                clearInterval(this._hostNetPump);
+                this._hostNetPump = 0;
+            }
+            if (online && online.role === 'host') {
+                this._hostNetPump = window.setInterval(() => {
+                    if (!this.running || !this.sim || this.paused || this.hold || this.replayActive)
+                        return;
+                    const nowMs = performance.now();
+                    const gapMs = nowMs - this.last;
+                    if (gapMs >= 40) {
+                        const stepDt = Math.min(0.08, gapMs / 1000);
+                        this.last = nowMs;
+                        this.sim.step(stepDt, this.input.snapshot());
+                        online.hostAfterStep(stepDt);
+                    }
+                }, 22);
+            }
         }
         begin() {
             this.hold = false;
@@ -15918,6 +16017,10 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
         stop() {
             var _a;
             cancelAnimationFrame(this.raf);
+            if (this._hostNetPump) {
+                clearInterval(this._hostNetPump);
+                this._hostNetPump = 0;
+            }
             window.clearTimeout(this.endTimer);
             if ((_a = this.cfg) === null || _a === void 0 ? void 0 : _a.online) {
                 this.cfg.online.onLost = null;
