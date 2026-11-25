@@ -231,8 +231,18 @@
       this.channels = channels;
     }
 
-    apply(timeSeconds, nodes) {
-      const t = this.duration > 0 ? (timeSeconds % this.duration) : 0;
+    apply(timeSeconds, nodes, loop = true) {
+      let t = timeSeconds;
+      if (this.duration > 0) {
+        if (loop) {
+          t = timeSeconds % this.duration;
+          if (t < 0) t += this.duration;
+        } else {
+          t = Math.max(0, Math.min(this.duration, timeSeconds));
+        }
+      } else {
+        t = 0;
+      }
 
       for (let c = 0; c < this.channels.length; c++) {
         const ch = this.channels[c];
@@ -317,6 +327,7 @@
       let idleIdx = this.animations.findIndex(a => a.name.toLowerCase() === 'idle_neutral');
       if (idleIdx === -1) idleIdx = this.animations.findIndex(a => a.name.toLowerCase().includes('idle'));
       this.activeAnimIndex = idleIdx !== -1 ? idleIdx : 0;
+      this.activeAnimLoop = true;
       this.playbackTime = 0;
       this.playing = true;
       this.playbackSpeed = 1.0;
@@ -374,11 +385,15 @@
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('sprint') || a.name.toLowerCase() === 'run');
         } else if (idx === -1 && (query.includes('walk') || query.includes('jog') || query.includes('step') || query.includes('slow'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase() === 'walk');
-        } else if (idx === -1 && (query.includes('kick') || query.includes('strike'))) {
-          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('powerstrike') || a.name.toLowerCase().includes('kick_right') || a.name.toLowerCase().includes('kick'));
-        } else if (idx === -1 && (query.includes('slide') || query.includes('tackle'))) {
+        } else if (idx === -1 && (query.includes('kick') || query.includes('shoot') || query.includes('strike'))) {
+          if (query.includes('shoot') && !query.includes('kick')) {
+            idx = this.animations.findIndex(a => a.name.toLowerCase().includes('jumpshot') || a.name.toLowerCase().includes('powerstrike'));
+          } else {
+            idx = this.animations.findIndex(a => a.name.toLowerCase().includes('powerstrike') || a.name.toLowerCase().includes('kick_right') || a.name.toLowerCase().includes('kick'));
+          }
+        } else if (idx === -1 && (query.includes('roll') || query.includes('slide') || query.includes('tackle'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('slidetackle') || a.name.toLowerCase().includes('roll'));
-        } else if (idx === -1 && (query.includes('jump') || query.includes('shot') || query.includes('shoot'))) {
+        } else if (idx === -1 && (query.includes('jump') || query.includes('shot'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('jumpshot') || a.name.toLowerCase().includes('punch_right'));
         } else if (idx === -1 && (query.includes('dunk') || query.includes('slam'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('slamdunk') || a.name.toLowerCase().includes('interact'));
@@ -397,6 +412,10 @@
         targetIdx = idx;
       }
 
+      const targetClip = targetIdx !== -1 ? this.animations[targetIdx] : null;
+      const defaultLoop = targetClip ? !/kick|shot|dunk|slide|tackle|dive|steal|hit|roll|punch/i.test(targetClip.name) : true;
+      const shouldLoop = (opts && typeof opts.loop === 'boolean') ? opts.loop : defaultLoop;
+
       if (targetIdx !== -1 && (this.activeAnimIndex !== targetIdx || resetOnSame)) {
         if (blendDur > 0.005) {
           this._blendFromPose = this._capturePose();
@@ -406,8 +425,16 @@
           this._blendFromPose = null;
         }
         this.activeAnimIndex = targetIdx;
+        this.activeAnimLoop = shouldLoop;
         this.playbackTime = 0;
+      } else if (targetIdx !== -1) {
+        this.activeAnimLoop = shouldLoop;
       }
+    }
+
+    getActiveClipDuration() {
+      const a = this.animations[this.activeAnimIndex];
+      return a ? a.duration : 1.0;
     }
 
     update(dt) {
@@ -415,7 +442,7 @@
         this.playbackTime += dt * this.playbackSpeed;
         const currentAnim = this.animations[this.activeAnimIndex];
         if (currentAnim) {
-          currentAnim.apply(this.playbackTime, this.nodes);
+          currentAnim.apply(this.playbackTime, this.nodes, this.activeAnimLoop !== false);
         }
         if (this._blendFromPose && this._blendDuration > 0) {
           this._blendElapsed += dt;

@@ -42,6 +42,7 @@
   out vec3 vWorldPos;
   out vec3 vNormal;
   out vec2 vUv;
+  out float vLocalY;
 
   void main() {
     vUv = aUv;
@@ -64,6 +65,7 @@
       localNorm = mat3(skinMat) * localNorm;
     }
 
+    vLocalY = localPos.y;
     vec4 worldPos = uModel * localPos;
     vWorldPos = worldPos.xyz;
     vNormal = normalize(mat3(uModel) * localNorm);
@@ -76,6 +78,7 @@
   in vec3 vWorldPos;
   in vec3 vNormal;
   in vec2 vUv;
+  in float vLocalY;
 
   uniform vec3 uEye;
   uniform vec3 uSunDir;
@@ -107,83 +110,94 @@
     vec3 L = normalize(uSunDir);
     vec3 H = normalize(L + V);
 
-    // Secondary cool stadium/studio fill light so shadow sides stay sculpted & readable
-    vec3 L2 = normalize(vec3(-uSunDir.x * 0.9 - 0.35, 0.38, -uSunDir.z * 0.8 - 0.25));
+    // Secondary cool stadium/studio fill light from opposite angle
+    vec3 L2 = normalize(vec3(-uSunDir.x * 0.85 - 0.38, 0.42, -uSunDir.z * 0.78 - 0.25));
     float fillDiff = clamp(dot(N, L2) * 0.5 + 0.5, 0.0, 1.0);
 
     vec4 baseColor = uBaseColor;
+    baseColor.rgb = pow(max(baseColor.rgb, vec3(0.0001)), vec3(2.15));
     if (uHasTex) {
-      baseColor *= texture(uTex, vUv);
+      vec4 tex = texture(uTex, vUv);
+      baseColor.rgb *= pow(max(tex.rgb, vec3(0.0001)), vec3(2.15));
+      baseColor.a *= tex.a;
     }
 
     // Subtle procedural woven jersey micro-grain on athletic apparel (role < 0.5)
     if (uMatRole < 0.5) {
-      float weaveX = sin(vUv.x * 520.0);
-      float weaveY = sin(vUv.y * 520.0);
-      float weave = 1.0 + (weaveX * weaveY) * 0.018;
+      float weaveX = sin(vUv.x * 640.0);
+      float weaveY = sin(vUv.y * 640.0);
+      float weave = 1.0 + (weaveX * weaveY) * 0.022;
       baseColor.rgb *= weave;
     }
 
     float NdotL = dot(N, L);
     float NdotV = max(dot(N, V), 0.001);
 
-    // Warm wrapped diffuse tailored by material role (higher wrap on skin & cloth)
-    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.54 : 0.44;
-    float wrappedL = clamp((NdotL + wrapAmt) / (1.0 + wrapAmt), 0.0, 1.0);
-    float directL = smoothstep(0.04, 0.96, wrappedL);
+    // Soft anatomical grounding & contact ambient occlusion along lower legs & crevices
+    float groundAo = mix(0.76, 1.0, smoothstep(-0.02, 0.62, vLocalY));
+    float cavityAo = mix(0.84, 1.0, N.y * 0.5 + 0.5);
+    float ao = groundAo * cavityAo;
 
-    // Subsurface scattering strictly on skin (uMatRole ~ 1.0) so white fabric never muddies
+    // Warm wrapped diffuse tailored by material role (higher wrap on skin & cloth)
+    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.56 : 0.44;
+    float wrappedL = clamp((NdotL + wrapAmt) / (1.0 + wrapAmt), 0.0, 1.0);
+    float directL = smoothstep(0.03, 0.96, wrappedL);
+
+    // Subsurface scattering warmth strictly on skin (uMatRole ~ 1.0)
     vec3 sssContrib = vec3(0.0);
     if (uMatRole > 0.5 && uMatRole < 1.5) {
-      float backRim = pow(clamp(1.0 - max(NdotL, 0.0), 0.0, 1.0), 2.2) * (0.35 + 0.65 * fillDiff);
-      sssContrib = baseColor.rgb * vec3(1.24, 0.72, 0.54) * backRim * 0.26;
+      float backRim = pow(clamp(1.0 - max(NdotL, 0.0), 0.0, 1.0), 2.1) * (0.35 + 0.65 * fillDiff);
+      sssContrib = baseColor.rgb * vec3(1.28, 0.68, 0.48) * backRim * 0.24;
     }
 
-    // Hemispheric Ambient + Stadium Bounce Fill (eliminates dark silhouette limbs)
-    vec3 hemi = mix(uGroundColor, uSkyColor, N.y * 0.50 + 0.50);
-    vec3 bounceFill = vec3(0.32, 0.42, 0.56) * fillDiff * 0.42;
-    vec3 ambient = baseColor.rgb * (hemi * 0.78 + bounceFill);
+    // Linearized hemispheric ambient + stadium bounce fill
+    vec3 skyLin = pow(max(uSkyColor, vec3(0.001)), vec3(1.9));
+    vec3 gndLin = pow(max(uGroundColor, vec3(0.001)), vec3(1.9));
+    vec3 sunLin = pow(max(uSunColor, vec3(0.001)), vec3(1.6));
+    vec3 hemi = mix(gndLin, skyLin, N.y * 0.50 + 0.50);
+    vec3 bounceFill = vec3(0.28, 0.36, 0.50) * fillDiff * 0.36;
+    vec3 ambient = baseColor.rgb * (hemi * 0.65 + bounceFill) * ao;
 
     // Direct Stadium / Key Light
-    vec3 diffuse = baseColor.rgb * uSunColor * directL * (1.0 - uMetallic * 0.72) + sssContrib;
+    vec3 diffuse = baseColor.rgb * sunLin * directL * (1.0 - uMetallic * 0.72) * mix(0.88, 1.0, ao) + sssContrib;
 
     // Material-aware Specular Highlights
-    float specPow = mix(18.0, 96.0, clamp(1.0 - uRoughness, 0.0, 1.0));
-    float specStrength = 0.08;
+    float specPow = mix(20.0, 96.0, clamp(1.0 - uRoughness, 0.0, 1.0));
+    float specStrength = 0.06;
     if (uMatRole > 2.5 && uMatRole < 3.5) {
-      // Eye wet cornea catchlight
-      specPow = 128.0;
-      specStrength = 0.62;
+      // Wet cornea catchlight
+      specPow = 140.0;
+      specStrength = 0.72;
     } else if (uMatRole > 1.5 && uMatRole < 2.5) {
-      // Satin hair crown highlight (anisotropic-inspired shifted half vector)
+      // Satin hair crown highlight (anisotropic shifted half-vector)
       vec3 hairH = normalize(H + vec3(0.0, 0.22, 0.0));
-      float hSpec = pow(max(dot(N, hairH), 0.0), 34.0);
-      specStrength = 0.22;
-      diffuse += vec3(1.0, 0.96, 0.90) * hSpec * 0.14;
+      float hSpec = pow(max(dot(N, hairH), 0.0), 30.0);
+      specStrength = 0.16;
+      diffuse += vec3(1.0, 0.95, 0.88) * hSpec * 0.14;
     } else if (uMatRole > 3.5) {
-      // Cleats / Sneakers / Keeper Latex & Metal Trim
-      specPow = mix(36.0, 92.0, 1.0 - uRoughness);
-      specStrength = mix(0.28, 0.68, uMetallic);
+      // Cleats / Sneakers / Keeper Latex & Gold Trim
+      specPow = mix(36.0, 96.0, 1.0 - uRoughness);
+      specStrength = mix(0.26, 0.65, uMetallic);
     } else if (uMatRole > 0.5 && uMatRole < 1.5) {
-      // Natural skin oil sheen
+      // Subtle skin sheen
       specPow = 28.0;
-      specStrength = 0.10;
+      specStrength = 0.08;
     }
     float specInt = pow(max(dot(N, H), 0.0), specPow) * specStrength;
-    vec3 specTint = mix(uSunColor, baseColor.rgb * 1.15, uMetallic);
+    vec3 specTint = mix(sunLin, baseColor.rgb * 1.18, uMetallic);
     vec3 specular = specTint * specInt;
 
-    // Broadcast Rim Light (crisp separation against turf/hardwood/arena backdrop)
-    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.75);
-    vec3 rimColor = mix(vec3(0.75, 0.90, 1.0), vec3(1.0, 0.93, 0.84), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
-    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.16 : 0.26;
-    vec3 rimLight = rim * rimColor * rimBoost;
+    // Clean Broadcast Rim Light
+    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.8);
+    vec3 rimColor = mix(vec3(0.60, 0.80, 1.0), vec3(1.0, 0.90, 0.76), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
+    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.12 : 0.20;
+    vec3 rimLight = rim * rimColor * rimBoost * ao;
 
-    // Linear Lighting -> Gentle ACES Filmic Curve (preserves crisp whites & vibrant team colors)
-    vec3 hdrColor = ambient * 0.68 + diffuse * 0.72 + specular + rimLight;
-    vec3 finalRgb = acesFilm(hdrColor * 1.12);
-    finalRgb = mix(hdrColor / (1.0 + hdrColor * 0.18), finalRgb, 0.65);
-    fragColor = vec4(finalRgb, baseColor.a);
+    // Linear HDR -> ACES Filmic Curve -> sRGB Gamma Output
+    vec3 hdrColor = ambient * 0.92 + diffuse * 0.95 + specular * 0.88 + rimLight;
+    vec3 finalLin = acesFilm(hdrColor * 1.06);
+    vec3 finalSrgb = pow(clamp(finalLin, 0.0, 1.0), vec3(1.0 / 2.2));
+    fragColor = vec4(finalSrgb, baseColor.a);
   }
   `;
 
@@ -1030,6 +1044,230 @@
     return out;
   }
 
+  // --- Zero-GC Athletic Skeletal Biomechanics Layer (Runs onPostAnimate before matrix bake) ---
+  function _qMulOut(out, ax, ay, az, aw, bx, by, bz, bw) {
+    out[0] = aw * bx + ax * bw + ay * bz - az * by;
+    out[1] = aw * by - ax * bz + ay * bw + az * bx;
+    out[2] = aw * bz + ax * by - ay * bx + az * bw;
+    out[3] = aw * bw - ax * bx - ay * by - az * bz;
+  }
+
+  function _initBioRig(model) {
+    if (!model || !model.nodes || model._bioRig) return model ? model._bioRig : null;
+    const nodes = model.nodes;
+    const parent = new Int16Array(nodes.length).fill(-1);
+    const byName = {};
+    for (let i = 0; i < nodes.length; i++) {
+      const nm = nodes[i].name;
+      if (nm) byName[nm] = i;
+      const ch = nodes[i].children;
+      if (ch) {
+        for (let c = 0; c < ch.length; c++) {
+          parent[ch[c]] = i;
+        }
+      }
+    }
+    const fingerChain = [];
+    for (const side of ['.L', '.R']) {
+      for (const f of ['Index', 'Middle', 'Ring', 'Pinky']) {
+        for (const seg of ['1', '2', '3']) {
+          const idx = byName[f + seg + side];
+          if (idx !== undefined) fingerChain.push({ idx, sign: side === '.L' ? -1 : 1, weight: seg === '1' ? 1.0 : 0.72 });
+        }
+      }
+    }
+    const rig = {
+      parent,
+      byName,
+      fingerChain,
+      tmpQ: new Float32Array(4),
+      tmpP: new Float32Array(4),
+      tmpD: new Float32Array(4),
+      tmpInv: new Float32Array(4),
+      tmpL: new Float32Array(4),
+      chain: new Int16Array(24)
+    };
+    model._bioRig = rig;
+    return rig;
+  }
+
+  function _rotCharAxis(nodes, rig, boneIdx, ax, ay, az, rad) {
+    if (boneIdx === undefined || boneIdx < 0 || Math.abs(rad) < 0.0005) return;
+    const bone = nodes[boneIdx];
+    if (!bone || bone.hasMatrix) return;
+
+    // Accumulate ancestor world quaternion above boneIdx
+    let len = 0;
+    let p = rig.parent[boneIdx];
+    while (p >= 0 && len < 24) {
+      rig.chain[len++] = p;
+      p = rig.parent[p];
+    }
+    const qp = rig.tmpP;
+    qp[0] = 0; qp[1] = 0; qp[2] = 0; qp[3] = 1;
+    const tq = rig.tmpQ;
+    for (let k = len - 1; k >= 0; k--) {
+      const pr = nodes[rig.chain[k]].rotation;
+      _qMulOut(tq, qp[0], qp[1], qp[2], qp[3], pr[0], pr[1], pr[2], pr[3]);
+      qp[0] = tq[0]; qp[1] = tq[1]; qp[2] = tq[2]; qp[3] = tq[3];
+    }
+
+    const half = rad * 0.5;
+    const s = Math.sin(half);
+    const qd = rig.tmpD;
+    qd[0] = ax * s; qd[1] = ay * s; qd[2] = az * s; qd[3] = Math.cos(half);
+
+    // Local delta: inv(qp) * qd * qp
+    const qi = rig.tmpInv;
+    qi[0] = -qp[0]; qi[1] = -qp[1]; qi[2] = -qp[2]; qi[3] = qp[3];
+    _qMulOut(tq, qd[0], qd[1], qd[2], qd[3], qp[0], qp[1], qp[2], qp[3]);
+    const ql = rig.tmpL;
+    _qMulOut(ql, qi[0], qi[1], qi[2], qi[3], tq[0], tq[1], tq[2], tq[3]);
+
+    const br = bone.rotation;
+    _qMulOut(tq, ql[0], ql[1], ql[2], ql[3], br[0], br[1], br[2], br[3]);
+    const nLen = Math.hypot(tq[0], tq[1], tq[2], tq[3]) || 1;
+    br[0] = tq[0] / nLen;
+    br[1] = tq[1] / nLen;
+    br[2] = tq[2] / nLen;
+    br[3] = tq[3] / nLen;
+  }
+
+  function attachAthleticBiomechanics(model, getStateFn) {
+    if (!model) return;
+    const rig = _initBioRig(model);
+    if (!rig) return;
+    const b = rig.byName;
+
+    model.onPostAnimate = function (nodes, clipTime) {
+      const st = getStateFn ? getStateFn() : null;
+      if (!st) return;
+
+      const t = st.clock || clipTime || 0;
+      const action = st.action || 'idle'; // idle | walk | run | dribble | shot | kick | pass | dunk | slide | steal | dive | celeb | hit
+      const isHoops = !!st.isHoops;
+      const speed = st.speed || 0;
+      const runPhase = st.runPhase || 0;
+      const dur = Math.max(0.15, model.getActiveClipDuration ? model.getActiveClipDuration() : 1.0);
+      const prog = Math.max(0, Math.min(1, clipTime / dur));
+
+      // 1. Natural relaxed finger curl across all fingers (no splayed mannequin paddles)
+      const baseCurl = (action === 'dunk' || action === 'shot' || action === 'dribble' || action === 'dive') ? 0.34 : 0.22;
+      for (let i = 0; i < rig.fingerChain.length; i++) {
+        const fc = rig.fingerChain[i];
+        _rotCharAxis(nodes, rig, fc.idx, 0, 0, 1, fc.sign * baseCurl * fc.weight);
+      }
+
+      // 2. Lifelike Idle / Showcase Stance (fixes stiff <3deg zombie arms)
+      if (action === 'idle') {
+        const breath = Math.sin(t * 2.1);
+        const shift = Math.sin(t * 1.05);
+        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, isHoops ? 0.05 : 0.03);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.025 * breath);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.035 * shift);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.04 * shift);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.02 * breath);
+
+        // Relaxed athletic shoulder abduct & natural forearm bend
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.065);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.065);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.06 + 0.03 * breath);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.08 - 0.03 * breath);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.32 - 0.04 * breath);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.34 + 0.04 * breath);
+        return;
+      }
+
+      // 3. Athletic Run & Sprint Symmetry + Gaze Stabilization
+      if (action === 'run' || action === 'walk') {
+        const stride = Math.sin(runPhase);
+        const spK = Math.min(1.0, speed / 3.2);
+        // Counter-stabilize excessive 42deg head bob inside raw Run clip & tighten forward athletic posture
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.08 * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.08 * stride * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, 0.06 * spK);
+        // Symmetric athletic runner arm drive (balances 70deg L / 18deg R discrepancy in raw Run)
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (-0.36 + 0.28 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.52 - 0.14 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.42 + 0.10 * stride) * spK);
+        return;
+      }
+
+      // 4. True Basketball Dribble (Right hand active dribble pump + left defender shield arm)
+      if (action === 'dribble') {
+        const freq = speed > 0.35 ? 11.2 : 6.8;
+        const drib = Math.sin(t * freq);
+        const push = Math.max(0, -drib); // downward bounce push
+        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.09);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.08 * Math.sin(t * freq * 0.5));
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.07);
+        // Right dribbling arm: raised forward with rhythmic pump & crisp wrist slap
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.14);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.58 + 0.26 * push);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.78 + 0.48 * push);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.32 * push - 0.12);
+        // Left defender shield forearm across body
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.18);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.45);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.72);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 0, 1, 0, -0.45);
+        return;
+      }
+
+      // 5. Hoops Jump Shot (True asymmetric shooting arm + crisp wrist flick release)
+      if (action === 'shot' && isHoops) {
+        const release = Math.min(1, Math.max(0, (prog - 0.18) / 0.45));
+        const smoothRel = release * release * (3 - 2 * release);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.12 * smoothRel);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.08 * Math.sin(prog * Math.PI));
+        // Dominant right shooting arm follows through cleanly overhead; off-hand releases wide
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.55 * smoothRel);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, 0.32 * smoothRel - 0.22);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.52 * smoothRel);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.22 * smoothRel);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.25 * (1 - smoothRel));
+        return;
+      }
+
+      // 6. Hoops Slam Dunk (Explosive 1-hand rim hammer & follow-through arch)
+      if (action === 'dunk') {
+        const cock = Math.sin(Math.min(1, prog * 2.1) * Math.PI * 0.5);
+        const slam = Math.max(0, Math.min(1, (prog - 0.32) / 0.45));
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.18 * cock + 0.36 * slam);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.14 * cock + 0.24 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.55 * cock + 0.95 * slam);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.35 * cock + 0.45 * slam);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.48 * slam);
+        // Left arm sweeps back cleanly for mid-air balance
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, 0.52 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.28);
+        return;
+      }
+
+      // 7. Footy Power Strike & Pass (Adds torso twist & counter-balance arm snap)
+      if (action === 'kick' || action === 'pass') {
+        const wind = Math.sin(Math.min(0.5, prog) * Math.PI);
+        const whip = Math.max(0, Math.min(1, (prog - 0.25) / 0.55));
+        const powerMul = action === 'kick' ? 1.0 : 0.62;
+        _rotCharAxis(nodes, rig, b.Abdomen, 0, 1, 0, (-0.12 * wind + 0.22 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (-0.16 * wind + 0.30 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (-0.10 * wind + 0.14 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.24 * powerMul);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.42);
+        return;
+      }
+
+      // 8. Goalkeeper Dive (Symmetrical twin-glove extended save reach)
+      if (action === 'dive') {
+        const stretch = Math.sin(Math.min(1, prog) * Math.PI * 0.7);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.14 * stretch);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -1.25 * stretch);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.35 * stretch);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.25 * stretch);
+      }
+    };
+  }
+
   class GLBCharacterInstance {
     constructor(charRef, modelUrl, options = {}) {
       this.charRef = charRef;
@@ -1055,6 +1293,7 @@
       this.pitch = 0;
       this.roll = 0;
       this.elevationLift = 0;
+      this._bioState = { action: 'idle', isHoops: !this.isFooty, speed: 0, runPhase: 0, clock: 0 };
       // Athletic, calibrated player scale (fits comfortably in goal & under rim)
       this.scale = options.scale || 1.96;
       this.currentAnim = 'idle';
@@ -1066,6 +1305,7 @@
         const cached = loader.getCachedModel(this.modelUrl);
         if (cached) {
           this.model = cached;
+          attachAthleticBiomechanics(this.model, () => this._bioState);
           this.loaded = true;
           // Model is fully ready and drawn this frame: safely hide procedural mesh
           if (this.charRef && this.charRef.pivot) {
@@ -1092,6 +1332,7 @@
         // Clone model instance so this character has independent skeletal animations
         const clone = masterModel ? (masterModel.clone ? masterModel.clone() : masterModel) : (loader.loadGLB ? await loader.loadGLB(this.modelUrl) : null);
         this.model = clone;
+        attachAthleticBiomechanics(this.model, () => this._bioState);
         this.loaded = true;
 
         // Hide procedural body mesh once GLB is loaded (retains selection ring & shadow blob)
@@ -1127,7 +1368,15 @@
         targetClip = 'Run_Right';
       } else if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'kick_right' || lower === 'anim_ea_powerstrike') {
         const isHoops = (this.isHoops || this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops') || (this.matchView && this.matchView.mode === 'hoops'));
-        targetClip = (name === 'Kick_Right' || name === 'Anim_Kick_V1' || name === 'Anim_Shot_V1') ? name : (isHoops ? 'Anim_2K_JumpShot' : 'Anim_EA_PowerStrike');
+        if (name === 'Kick_Right' || name === 'Anim_Kick_V1' || name === 'Anim_Shot_V1') {
+          targetClip = name;
+        } else if (lower === 'kick_right') {
+          targetClip = 'Kick_Right';
+        } else if (isHoops) {
+          targetClip = 'Anim_2K_JumpShot';
+        } else {
+          targetClip = 'Anim_EA_PowerStrike';
+        }
       } else if (lower === 'kick_left') {
         targetClip = 'Kick_Left';
       } else if (lower === 'punch' || lower === 'punch_right') {
@@ -1136,27 +1385,33 @@
         targetClip = 'Punch_Left';
       } else if (lower === 'slide' || lower === 'tackle' || lower === 'anim_ea_slidetackle') {
         const isHoops = (this.isHoops || this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops') || (this.matchView && this.matchView.mode === 'hoops'));
-        targetClip = (name === 'Anim_Slide_V1' || name === 'Anim_Steal_V1') ? name : (isHoops ? 'Anim_2K_Steal' : 'Anim_EA_SlideTackle');
+        if (lower === 'roll') {
+          targetClip = 'Roll';
+        } else {
+          targetClip = (name === 'Anim_Slide_V1' || name === 'Anim_Steal_V1') ? name : (isHoops ? 'Anim_2K_Steal' : 'Anim_EA_SlideTackle');
+        }
       } else if (lower === 'dunk' || lower === 'slamdunk' || lower === 'anim_2k_slamdunk') {
         targetClip = (name === 'Anim_Dunk_V1') ? 'Anim_Dunk_V1' : 'Anim_2K_SlamDunk';
       } else if (lower === 'steal' || lower === 'anim_2k_steal') {
         targetClip = (name === 'Anim_Steal_V1') ? 'Anim_Steal_V1' : 'Anim_2K_Steal';
       } else if (lower === 'roll' || lower === 'dive' || lower === 'anim_ea_keeperdive' || lower === 'save') {
-        targetClip = (lower === 'roll') ? 'Roll' : 'Anim_EA_KeeperDive';
+        if (lower === 'roll') targetClip = 'Roll';
+        else targetClip = 'Anim_EA_KeeperDive';
       } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win' || lower === 'anim_celebration') {
-        targetClip = (name === 'Anim_Celeb_V1' || name === 'Anim_Celeb_V2') ? name : 'Anim_Celebration';
+        if (lower === 'wave') targetClip = 'Wave';
+        else targetClip = (name === 'Anim_Celeb_V1' || name === 'Anim_Celeb_V2') ? name : 'Anim_Celebration';
       } else if (lower === 'hit' || lower === 'hitrecieve') {
         targetClip = 'HitRecieve';
       }
 
+      const nextIsOneShot = /Kick|Shot|Dunk|Slide|Dive|Steal|Hit|Roll|Punch/i.test(targetClip);
       if (this.currentAnim !== targetClip) {
         const prevWasAction = /Kick|Shot|Dunk|Slide|Dive|Steal|Celeb|Hit|Roll|Punch/i.test(this.currentAnim || '');
-        const nextIsAction = /Kick|Shot|Dunk|Slide|Dive|Steal|Celeb|Hit|Roll|Punch/i.test(targetClip);
         const blend = (typeof blendDuration === 'number')
           ? blendDuration
-          : (nextIsAction ? 0.08 : (prevWasAction ? 0.22 : 0.15));
+          : (nextIsOneShot ? 0.065 : (prevWasAction ? 0.22 : 0.14));
         this.currentAnim = targetClip;
-        this.model.setAnimation(targetClip, { blendDuration: blend, restart: nextIsAction });
+        this.model.setAnimation(targetClip, { blendDuration: blend, restart: nextIsOneShot, loop: !nextIsOneShot });
       }
     }
 
@@ -1219,11 +1474,11 @@
 
       // 2. Fortnite-Style Kinetic Animation Tracks & Procedural Motion Mechanics
       // A. Dynamic body bank & cornering lean (lean into turns at speed like Fortnite & Rocket League)
-      const corneringLean = Math.max(-0.24, Math.min(0.24, -dy * Math.min(1.0, speed / 2.2)));
+      const corneringLean = Math.max(-0.22, Math.min(0.22, -dy * Math.min(1.0, speed / 2.4)));
       const sprintDrive = Math.min(1.0, speed / 3.4);
-      this.roll = corneringLean;
-      this.pitch = 0.18 * sprintDrive; // Fortnite athletic forward sprint posture
-      this.elevationLift = (speed > 1.2) ? Math.sin((this.model.playbackTime || 0) * 16) * 0.04 * sprintDrive : 0;
+      let targetRoll = corneringLean;
+      let targetPitch = 0.16 * sprintDrive;
+      let targetLift = (speed > 1.2) ? Math.sin((this.model.playbackTime || 0) * 16) * 0.035 * sprintDrive : 0;
 
       // Real-time athletic leg locomotion
       this.runSpeed = Math.min(1.0, speed / 2.6);
@@ -1245,7 +1500,12 @@
         this.matchView.sim.ball.owner === a
       );
 
-      // Strict Mode Distinction: Any player in basketball match plays BASKETBALL with hands!
+      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, speed: 0, runPhase: 0, clock: 0 });
+      bio.isHoops = isBasketballMode;
+      bio.speed = speed;
+      bio.runPhase = this.runPhase || 0;
+      bio.clock = (bio.clock || 0) + dt;
+      bio.action = 'idle';
 
       // Track clean action entry edges for variant clip variety
       const curActionTag = (isBasketballMode
@@ -1269,6 +1529,12 @@
       }
       this._lastActionTag = curActionTag;
 
+      // Helper to fit clip playback rate smoothly so windup -> peak -> follow-through executes inside the action window
+      const syncRate = (targetWindowSec, fallbackRate) => {
+        const d = this.model && this.model.getActiveClipDuration ? this.model.getActiveClipDuration() : 0;
+        return d > 0.2 ? Math.max(1.2, Math.min(3.8, (d * 0.88) / Math.max(0.18, targetWindowSec))) : fallbackRate;
+      };
+
       // ==========================================
       // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
       // ==========================================
@@ -1278,56 +1544,65 @@
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
           const hangTimeArc = Math.pow(Math.sin(dunkProgress * Math.PI), 0.65);
-          this.elevationLift = hangTimeArc * 0.85;
-          this.pitch = 0.20 * Math.sin(dunkProgress * Math.PI);
-          this.roll = corneringLean + 0.08 * Math.sin(dunkProgress * Math.PI * 2);
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', 1.75, 0.08);
+          targetLift = hangTimeArc * 0.88;
+          targetPitch = 0.22 * Math.sin(dunkProgress * Math.PI);
+          targetRoll = corneringLean + 0.08 * Math.sin(dunkProgress * Math.PI * 2);
+          bio.action = 'dunk';
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', syncRate(dk.dur || 0.65, 2.45), 0.06);
         }
         // 2. Jump Shot / Block Elevation & Release
         else if (a.shotT > 0) {
           const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
-          this.elevationLift = Math.sin(shotProgress * Math.PI) * 0.65;
-          this.pitch = -0.08;
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', 1.55, 0.08);
+          targetLift = Math.sin(shotProgress * Math.PI) * 0.66;
+          targetPitch = -0.09;
+          bio.action = 'shot';
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', syncRate(0.50, 2.85), 0.06);
         }
         else if (a.jumpT > 0) {
           const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.45));
-          this.elevationLift = Math.sin(jp * Math.PI) * 0.52;
-          this.pitch = -0.05;
-          this.setAnimation('Anim_2K_JumpShot', 1.45, 0.08);
+          targetLift = Math.sin(jp * Math.PI) * 0.54;
+          targetPitch = -0.06;
+          bio.action = 'shot';
+          this.setAnimation('Anim_2K_JumpShot', syncRate(0.45, 2.95), 0.07);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
         else if (a.kickT > 0) {
-          this.pitch = 0.12;
-          this.setAnimation('Anim_Shot_V1', 2.0, 0.07);
+          targetPitch = 0.12;
+          bio.action = 'pass';
+          this.setAnimation('Anim_Shot_V1', syncRate(0.32, 3.2), 0.06);
         }
         // 4. Interception Lunge / Hand Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          this.pitch = 0.18;
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', 1.6, 0.08);
+          targetPitch = 0.20;
+          bio.action = 'steal';
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', syncRate(0.38, 3.0), 0.06);
         }
         // 5. Recovery / Stumble
         else if (a.stunT > 0) {
-          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.25, 0.09);
+          bio.action = 'hit';
+          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.4, 0.08);
         }
         // 6. Celebration Emotes
         else if (a.celebrateT > 0) {
+          bio.action = 'celeb';
           this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
         }
         // 7. Basketball Dribbling (Athletic crouch protecting the ball)
         else if (isBallCarrier) {
+          bio.action = 'dribble';
           if (speed > 0.3) {
-            const sprintCadence = Math.max(1.05, Math.min(2.1, speed / 2.95));
-            this.setAnimation('Run', sprintCadence, 0.14);
-            this.pitch = 0.14;
+            const sprintCadence = Math.max(1.05, Math.min(2.15, speed / 2.85));
+            this.setAnimation('Run', sprintCadence, 0.12);
+            targetPitch = 0.14;
           } else {
-            this.setAnimation('Idle', 1.0, 0.16);
-            this.pitch = 0.11;
+            this.setAnimation('Idle', 1.0, 0.15);
+            targetPitch = 0.09;
           }
         }
         // 8. Directional Defense / Outfield Running / Walking / Idle
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
+          bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
           this.setAnimation(loco.clip, loco.rate);
         }
       }
@@ -1340,56 +1615,70 @@
           const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.42));
           const diveArc = Math.sin(diveProg * Math.PI);
           const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1);
-          this.roll = -diveDir * (0.85 + 0.25 * diveArc);
-          this.elevationLift = 0.20 * diveArc;
-          this.pitch = 0.15 * diveArc;
-          this.setAnimation('Anim_EA_KeeperDive', 1.6, 0.07);
+          targetRoll = -diveDir * (0.88 + 0.24 * diveArc);
+          targetLift = 0.22 * diveArc;
+          targetPitch = 0.14 * diveArc;
+          bio.action = 'dive';
+          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.42, 3.4), 0.06);
         }
         else if (a.role === 'keeper' && a.jumpT > 0) {
           const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
-          this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.34;
-          this.pitch = -0.10;
-          this.setAnimation('Anim_EA_KeeperDive', 1.75, 0.08);
+          targetLift = Math.sin(jumpProg * Math.PI) * 0.36;
+          targetPitch = -0.10;
+          bio.action = 'dive';
+          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.50, 3.0), 0.07);
         }
         // 2. Football Power Shot vs Crisp Pass
         else if (a.shotT > 0) {
           const strikeProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.45));
-          this.elevationLift = 0.0;
-          this.pitch = 0.22 * Math.sin(strikeProgress * Math.PI);
-          this.roll = -0.06 * Math.sin(strikeProgress * Math.PI);
-          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', 1.55, 0.07);
+          targetLift = 0.04 * Math.sin(strikeProgress * Math.PI);
+          targetPitch = 0.20 * Math.sin(strikeProgress * Math.PI);
+          targetRoll = -0.07 * Math.sin(strikeProgress * Math.PI);
+          bio.action = 'kick';
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', syncRate(0.45, 2.75), 0.06);
         }
         else if (a.kickT > 0) {
           const passProg = Math.min(1, Math.max(0, 1 - a.kickT / 0.35));
-          this.elevationLift = 0.0;
-          this.pitch = 0.12 * Math.sin(passProg * Math.PI);
-          this.setAnimation(this._activeVariantClip || 'Kick_Right', 1.5, 0.07);
+          targetLift = 0.0;
+          targetPitch = 0.11 * Math.sin(passProg * Math.PI);
+          bio.action = 'pass';
+          this.setAnimation(this._activeVariantClip || 'Kick_Right', syncRate(0.35, 2.3), 0.06);
         }
         // 3. Football Turf Slide Tackle
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          this.elevationLift = -0.36;
-          this.pitch = -0.44;
-          this.roll = -0.20;
-          this.setAnimation(this._activeVariantClip || 'Anim_EA_SlideTackle', 1.55, 0.08);
+          targetLift = -0.34;
+          targetPitch = -0.44;
+          targetRoll = -0.18;
+          bio.action = 'slide';
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_SlideTackle', syncRate(0.42, 3.4), 0.06);
         }
         // 4. Recovery / Stumble after tackle collision
         else if (a.stunT > 0) {
-          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.2, 0.09);
+          bio.action = 'hit';
+          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.35, 0.08);
         }
         // 5. Celebration Emotes
         else if (a.celebrateT > 0) {
           const cT = a.celebrateT || 0;
-          this.elevationLift = Math.max(0, Math.sin(cT * 9) * 0.28);
-          this.pitch = -0.10 * Math.sin(cT * 7);
-          this.roll = Math.sin(cT * 5) * 0.14;
+          targetLift = Math.max(0, Math.sin(cT * 9) * 0.28);
+          targetPitch = -0.10 * Math.sin(cT * 7);
+          targetRoll = Math.sin(cT * 5) * 0.14;
+          bio.action = 'celeb';
           this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
         }
         // 6. Directional Strafe / Sprint / Walk / Idle
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
+          bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
           this.setAnimation(loco.clip, loco.rate);
         }
       }
+
+      // Smooth exponential body attitude damping (zero snappy jumps between transitions)
+      const attAlpha = 1 - Math.exp(-Math.min(0.05, dt) * 20.0);
+      this.roll += (targetRoll - this.roll) * attAlpha;
+      this.pitch += (targetPitch - this.pitch) * attAlpha;
+      this.elevationLift += (targetLift - this.elevationLift) * attAlpha;
 
       // 3. Step skeletal bones with procedural athletic animation blending
       this.model.update(dt);
@@ -1570,7 +1859,7 @@
 
   const CharactersGLB = {
     enabled: true,
-    mode: '3d', // High-Fidelity 3D GLB Athletes with Skeletal GPU Skinning & Authentic Sports Animations
+    mode: 'glb', // High-Fidelity 3D GLB Athletes with Skeletal GPU Skinning & Authentic Sports Animations
     instances: new Map(), // matchView -> (HiRes25DCharacterInstance | GLBCharacterInstance)[]
 
     init(gl) {
@@ -1706,9 +1995,9 @@
       // Set balanced Stadium / Indoor Arena Bounce Lighting from Match Scene
       const isFootyMatch = Boolean(matchView && matchView.isFooty);
       const sunDir = [0.42, 0.86, 0.42];
-      const sunCol = isFootyMatch ? [1.28, 1.24, 1.15] : [1.32, 1.24, 1.08];
-      const skyCol = isFootyMatch ? [0.76, 0.85, 0.98] : [0.80, 0.84, 0.94];
-      const gndCol = isFootyMatch ? [0.34, 0.48, 0.36] : [0.52, 0.42, 0.32];
+      const sunCol = isFootyMatch ? [1.22, 1.18, 1.10] : [1.26, 1.18, 1.04];
+      const skyCol = isFootyMatch ? [0.78, 0.87, 1.0] : [0.82, 0.86, 0.96];
+      const gndCol = isFootyMatch ? [0.32, 0.46, 0.34] : [0.48, 0.39, 0.30];
 
       gl.uniform3fv(glLocations.uSunDir, sunDir);
       gl.uniform3fv(glLocations.uSunColor, sunCol);
@@ -1817,8 +2106,14 @@
 
     playWardrobePreviewAnim(animName) {
       if (!wardrobeStageState || !wardrobeStageState.model) return false;
-      wardrobeStageState.model.setAnimation(animName, { blendDuration: 0.16, restart: true });
-      wardrobeStageState.animResetAt = performance.now() + 2200;
+      const isOneShot = /Kick|Shot|Dunk|Slide|Dive|Steal/i.test(animName || '');
+      const st = wardrobeStageState;
+      if (st._bioState) {
+        st._bioState.action = /Dunk/i.test(animName) ? 'dunk' : (/PowerStrike|Kick/i.test(animName) ? 'kick' : (/Celeb|Wave/i.test(animName) ? 'celeb' : 'idle'));
+      }
+      st.model.playbackSpeed = isOneShot ? 1.55 : 1.0;
+      st.model.setAnimation(animName, { blendDuration: 0.14, restart: true, loop: !isOneShot });
+      st.animResetAt = performance.now() + 1850;
       return true;
     },
 
@@ -1852,7 +2147,9 @@
       const loader = getLoader();
       const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb' : (charId === 'hoops' ? '/assets/characters/hoops23.glb' : '/assets/characters/footy10.glb');
       if (loader && loader.loadGLB) {
-        const m = await loader.loadGLB(url);
+        const master = await loader.loadGLB(url);
+        const m = (master && master.clone) ? master.clone() : master;
+        attachAthleticBiomechanics(m, () => st._bioState);
         st.modelsByChar[charId || 'footy'] = m;
         st.model = m;
         st.model.setAnimation(o.anim || 'Idle', { blendDuration: 0 });
@@ -1916,25 +2213,33 @@
 
     const glState = initShader(gl);
 
-    // Soft studio ground contact shadow shader
+    // Soft studio ground contact shadow + subtle pedestal rim halo shader
     const shVS = `#version 300 es
     precision highp float;
     layout(location=0) in vec2 aP;
     uniform mat4 uProj, uView;
     out vec2 vP;
-    void main(){ vP = aP; gl_Position = uProj * uView * vec4(aP.x * 0.72, 0.005, aP.y * 0.72, 1.0); }`;
+    void main(){ vP = aP; gl_Position = uProj * uView * vec4(aP.x * 0.84, 0.005, aP.y * 0.84, 1.0); }`;
     const shFS = `#version 300 es
     precision highp float;
     in vec2 vP;
+    uniform vec3 uAccent;
     out vec4 o;
-    void main(){ float d = length(vP); float a = exp(-d * d * 4.5) * 0.65 * smoothstep(1.0, 0.25, d); o = vec4(0.0, 0.02, 0.06, a); }`;
+    void main(){
+      float d = length(vP);
+      float sh = exp(-d * d * 5.2) * 0.62 * smoothstep(0.95, 0.22, d);
+      float ring = exp(-pow((d - 0.72) * 18.0, 2.0)) * 0.42 * smoothstep(0.98, 0.82, d);
+      float disc = (1.0 - smoothstep(0.55, 0.74, d)) * 0.10;
+      vec3 col = mix(vec3(0.0, 0.02, 0.05), uAccent, clamp((ring + disc) / max(sh + ring + disc, 0.001), 0.0, 1.0));
+      o = vec4(col, clamp(sh + ring + disc, 0.0, 0.85));
+    }`;
     const cs = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; };
     const sp = gl.createProgram();
     gl.attachShader(sp, cs(gl.VERTEX_SHADER, shVS));
     gl.attachShader(sp, cs(gl.FRAGMENT_SHADER, shFS));
     gl.linkProgram(sp);
     glState.shadowProg = sp;
-    glState.shadowLocs = { uProj: gl.getUniformLocation(sp, 'uProj'), uView: gl.getUniformLocation(sp, 'uView') };
+    glState.shadowLocs = { uProj: gl.getUniformLocation(sp, 'uProj'), uView: gl.getUniformLocation(sp, 'uView'), uAccent: gl.getUniformLocation(sp, 'uAccent') };
     const sVao = gl.createVertexArray();
     gl.bindVertexArray(sVao);
     const sBuf = gl.createBuffer();
@@ -1950,8 +2255,9 @@
       charId: null, kitId: null,
       modelsByChar: {},
       model: null, customTexture: null,
-      yaw: 0.22, pitch: 0.08, dist: 3.15, target: [0, 0.90, 0], hideShadow: false,
-      dragging: false, lastX: 0, lastY: 0, autoSpin: true,
+      _bioState: { action: 'idle', isHoops: false, speed: 0, runPhase: 0, clock: 0 },
+      baseYaw: 0.22, yaw: 0.22, pitch: 0.06, dist: 3.12, target: [0, 0.94, 0], hideShadow: false,
+      camLift: 0, dragging: false, lastX: 0, lastY: 0, autoSpin: true,
       rafId: 0, lastT: performance.now(), animResetAt: 0,
       proj: new Float32Array(16), view: new Float32Array(16), modelMat: new Float32Array(16),
 
@@ -1968,9 +2274,10 @@
 
       setSubject(charId, kitId, opts) {
         const o = opts || {};
-        if (o.autoRotate !== undefined) st.autoSpin = Boolean(o.autoRotate);
-        if (o.yaw !== undefined) st.yaw = Number(o.yaw);
-        else if (o.targetYaw !== undefined) st.yaw = Number(o.targetYaw);
+        st.autoSpin = (o.autoRotate !== undefined) ? Boolean(o.autoRotate) : true;
+        if (o.yaw !== undefined) { st.baseYaw = Number(o.yaw); st.yaw = st.baseYaw; }
+        else if (o.targetYaw !== undefined) { st.baseYaw = Number(o.targetYaw); st.yaw = st.baseYaw; }
+        else { st.baseYaw = 0.22; st.yaw = 0.22; }
         if (o.pitch !== undefined) st.pitch = Number(o.pitch);
         if (o.dist !== undefined) st.dist = Number(o.dist);
         if (o.targetY !== undefined) st.target[1] = Number(o.targetY);
@@ -1990,53 +2297,91 @@
         st.customTexture = getOrCreateSkinTexture(gl, st.model, fakeSkin, isFooty, isKeeper);
 
         if (charChanged) {
+          st._bioState.action = 'idle';
+          st._bioState.isHoops = (nextChar === 'hoops');
           if (st.modelsByChar[nextChar]) {
             st.model = st.modelsByChar[nextChar];
-            st.model.setAnimation('Idle', { blendDuration: 0 });
+            st.model.playbackSpeed = 1.0;
+            st.model.setAnimation('Idle', { blendDuration: 0, loop: true });
             return;
           }
           const loader = getLoader();
           if (!loader) return;
           const cached = loader.getCachedModel ? loader.getCachedModel(url) : null;
           if (cached) {
-            st.modelsByChar[nextChar] = cached;
-            st.model = cached;
-            st.model.setAnimation('Idle', { blendDuration: 0 });
+            const m = cached.clone ? cached.clone() : cached;
+            attachAthleticBiomechanics(m, () => st._bioState);
+            st.modelsByChar[nextChar] = m;
+            st.model = m;
+            st.model.playbackSpeed = 1.0;
+            st.model.setAnimation('Idle', { blendDuration: 0, loop: true });
           } else {
-            loader.loadGLB(url).then(m => {
+            loader.loadGLB(url).then(master => {
+              const m = (master && master.clone) ? master.clone() : master;
+              attachAthleticBiomechanics(m, () => st._bioState);
               st.modelsByChar[nextChar] = m;
               if (st.charId === nextChar) {
                 st.model = m;
-                st.model.setAnimation('Idle', { blendDuration: 0 });
+                st.model.playbackSpeed = 1.0;
+                st.model.setAnimation('Idle', { blendDuration: 0, loop: true });
               }
             }).catch(e => console.warn('[Wardrobe3D] Load error:', e));
           }
+        } else {
+          st._bioState.isHoops = (nextChar === 'hoops');
         }
       },
 
       drawFrame(dt) {
           const now = performance.now();
+          st._bioState.clock = (st._bioState.clock || 0) + dt;
           if (st.autoSpin && !st.dragging) {
-            st.yaw += dt * 0.35;
+            st.yaw = st.baseYaw + Math.sin(st._bioState.clock * 0.72) * 0.24;
           }
           if (st.animResetAt && now > st.animResetAt && st.model) {
             st.animResetAt = 0;
-            st.model.setAnimation('Idle', { blendDuration: 0.20 });
+            st._bioState.action = 'idle';
+            st.model.playbackSpeed = 1.0;
+            st.model.setAnimation('Idle', { blendDuration: 0.22, loop: true });
           }
+
+          if (st.model) {
+            st.model.update(dt);
+          }
+
+          let rawLift = 0;
+          const rig = st.model && st.model._bioRig;
+          if (rig && rig.byName) {
+            const headNode = st.model.nodes[rig.byName['Head']];
+            const handR = st.model.nodes[rig.byName['Hand.R']];
+            const hipsNode = st.model.nodes[rig.byName['Hips']];
+            const topY = Math.max(
+              headNode && headNode.worldMatrix ? headNode.worldMatrix[13] + 0.22 : 0,
+              handR && handR.worldMatrix ? handR.worldMatrix[13] + 0.14 : 0
+            );
+            if (topY > 1.82) {
+              rawLift = Math.max(0, Math.min(2.2, topY - 1.78));
+            } else if (hipsNode && hipsNode.worldMatrix) {
+              rawLift = Math.max(0, Math.min(2.2, hipsNode.worldMatrix[13] - 0.96));
+            }
+          }
+          const liftRate = rawLift > st.camLift ? 24 : 12;
+          st.camLift += (rawLift - st.camLift) * Math.min(1, dt * liftRate);
 
           gl.viewport(0, 0, canvas.width, canvas.height);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
           const aspect = canvas.width / Math.max(1, canvas.height);
-          const fitDist = aspect < 0.85 ? st.dist / Math.max(0.68, aspect) * 0.88 : st.dist;
+          const fitDist = (aspect < 0.85 ? st.dist / Math.max(0.68, aspect) * 0.88 : st.dist) * (1.0 + st.camLift * 0.44);
+          const camTarget = [st.target[0], st.target[1] + st.camLift * 0.72, st.target[2]];
           _mat4Perspective(st.proj, 38 * Math.PI / 180, aspect, 0.1, 40.0);
           const eye = [
-            st.target[0] + Math.sin(st.yaw) * Math.cos(st.pitch) * fitDist,
-            st.target[1] + Math.sin(st.pitch) * fitDist,
-            st.target[2] + Math.cos(st.yaw) * Math.cos(st.pitch) * fitDist
+            camTarget[0] + Math.sin(st.yaw) * Math.cos(st.pitch) * fitDist,
+            camTarget[1] + Math.sin(st.pitch) * fitDist,
+            camTarget[2] + Math.cos(st.yaw) * Math.cos(st.pitch) * fitDist
           ];
-          _mat4LookAt(st.view, eye, st.target, [0, 1, 0]);
+          _mat4LookAt(st.view, eye, camTarget, [0, 1, 0]);
 
           if (!st.hideShadow) {
             gl.enable(gl.BLEND);
@@ -2045,6 +2390,10 @@
             gl.useProgram(glState.shadowProg);
             gl.uniformMatrix4fv(glState.shadowLocs.uProj, false, st.proj);
             gl.uniformMatrix4fv(glState.shadowLocs.uView, false, st.view);
+            if (glState.shadowLocs.uAccent) {
+              if (st.charId === 'hoops') gl.uniform3f(glState.shadowLocs.uAccent, 0.98, 0.45, 0.09);
+              else gl.uniform3f(glState.shadowLocs.uAccent, 0.06, 0.72, 0.51);
+            }
             gl.bindVertexArray(glState.shadowVao);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             gl.bindVertexArray(null);
@@ -2053,7 +2402,6 @@
           }
 
           if (!st.model) return;
-          st.model.update(dt);
 
           const p = glState.program, l = glState.locs;
           gl.useProgram(p);

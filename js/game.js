@@ -44,7 +44,11 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             this.master = null;
             this.sfxGain = null;
             this.musicGain = null;
+            this.sfxDry = null;
+            this.sfxWet = null;
             this.noiseBuf = null;
+            this.pinkBuf = null;
+            this.musicBus = null;
             this.sfxVol = 0.8;
             this.musicVol = 0.35;
             this.musicOn = false;
@@ -56,15 +60,15 @@ define("core/audio", ["require", "exports"], function (require, exports) {
         }
         toggleMute() {
             this.muted = !this.muted;
-            if (this.master) {
-                this.master.gain.value = this.muted ? 0 : 0.9;
+            if (this.master && this.ctx) {
+                this.master.gain.setTargetAtTime(this.muted ? 0 : 0.9, this.ctx.currentTime, 0.02);
             }
             return this.muted;
         }
         setMuted(m) {
             this.muted = !!m;
-            if (this.master) {
-                this.master.gain.value = this.muted ? 0 : 0.9;
+            if (this.master && this.ctx) {
+                this.master.gain.setTargetAtTime(this.muted ? 0 : 0.9, this.ctx.currentTime, 0.02);
             }
         }
         isMuted() {
@@ -80,20 +84,98 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.ctx = new AC();
                     this.master = this.ctx.createGain();
                     this.master.gain.value = this.muted ? 0 : 0.9;
+
+                    // Mastering Bus: gentle low warmth + upper fizz tame + smooth limiter compressor
+                    const lowWarmth = this.ctx.createBiquadFilter();
+                    lowWarmth.type = 'lowshelf';
+                    lowWarmth.frequency.value = 115;
+                    lowWarmth.gain.value = 1.4;
+
+                    const airTame = this.ctx.createBiquadFilter();
+                    airTame.type = 'highshelf';
+                    airTame.frequency.value = 7200;
+                    airTame.gain.value = -2.2;
+
                     const comp = this.ctx.createDynamicsCompressor();
-                    this.master.connect(comp);
+                    comp.threshold.value = -14;
+                    comp.knee.value = 12;
+                    comp.ratio.value = 4.2;
+                    comp.attack.value = 0.004;
+                    comp.release.value = 0.16;
+
+                    this.master.connect(lowWarmth);
+                    lowWarmth.connect(airTame);
+                    airTame.connect(comp);
                     comp.connect(this.ctx.destination);
+
                     this.sfxGain = this.ctx.createGain();
                     this.sfxGain.gain.value = this.sfxVol;
                     this.sfxGain.connect(this.master);
+
+                    // Subtle Arena Early-Reflection Room Reverb Bus (glues dry samples together smoothly)
+                    try {
+                        const irDur = 0.28;
+                        const irLen = Math.floor(this.ctx.sampleRate * irDur);
+                        const irBuf = this.ctx.createBuffer(2, irLen, this.ctx.sampleRate);
+                        for (let ch = 0; ch < 2; ch++) {
+                            const chData = irBuf.getChannelData(ch);
+                            let lp = 0;
+                            for (let i = 0; i < irLen; i++) {
+                                const env = Math.pow(1 - i / irLen, 2.8);
+                                const raw = (Math.random() * 2 - 1) * env;
+                                lp = lp * 0.72 + raw * 0.28;
+                                chData[i] = lp * (i < 180 ? (i / 180) : 1);
+                            }
+                        }
+                        const convolver = this.ctx.createConvolver();
+                        convolver.buffer = irBuf;
+                        this.sfxWet = this.ctx.createGain();
+                        this.sfxWet.gain.value = 0.16;
+                        convolver.connect(this.sfxWet);
+                        this.sfxWet.connect(this.sfxGain);
+                        this.sfxReverbIn = convolver;
+                    } catch (_) {
+                        this.sfxReverbIn = null;
+                    }
+
                     this.musicGain = this.ctx.createGain();
-                    this.musicGain.gain.value = this.musicVol * 0.5;
+                    this.musicGain.gain.value = this.musicVol * 0.45;
+                    const musicLP = this.ctx.createBiquadFilter();
+                    musicLP.type = 'lowpass';
+                    musicLP.frequency.value = 3400;
+                    musicLP.Q.value = 0.6;
+                    this.musicBus = musicLP;
+                    musicLP.connect(this.musicGain);
                     this.musicGain.connect(this.master);
-                    const len = this.ctx.sampleRate * 1.5;
+
+                    const len = this.ctx.sampleRate * 2;
                     this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
                     const d = this.noiseBuf.getChannelData(0);
                     for (let i = 0; i < len; i++)
                         d[i] = Math.random() * 2 - 1;
+
+                    // Seamless Paul-Kellet Pink Noise Buffer for natural crowd & warm foley (zero 1.5s loop seam)
+                    const pLen = this.ctx.sampleRate * 3;
+                    this.pinkBuf = this.ctx.createBuffer(1, pLen, this.ctx.sampleRate);
+                    const pd = this.pinkBuf.getChannelData(0);
+                    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                    for (let i = 0; i < pLen; i++) {
+                        const w = Math.random() * 2 - 1;
+                        b0 = 0.99886 * b0 + w * 0.0555179;
+                        b1 = 0.99332 * b1 + w * 0.0750759;
+                        b2 = 0.96900 * b2 + w * 0.1538520;
+                        b3 = 0.86650 * b3 + w * 0.3104856;
+                        b4 = 0.55000 * b4 + w * 0.5329522;
+                        b5 = -0.7616 * b5 - w * 0.0168980;
+                        pd[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+                        b6 = w * 0.115926;
+                    }
+                    const fadeSamples = Math.floor(this.ctx.sampleRate * 0.12);
+                    for (let i = 0; i < fadeSamples; i++) {
+                        const tFade = i / fadeSamples;
+                        const sEnd = pLen - fadeSamples + i;
+                        pd[sEnd] = pd[sEnd] * (1 - tFade) + pd[i] * tFade;
+                    }
 
                     // Real Studio Sports Game Audio Sample Preloader (EA FC & NBA 2K Fidelity + 38 Variants)
                     if (!this.audioSamplesLoaded) {
@@ -242,7 +324,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 this.lastPlay[name] = now;
             }
 
-            // High-fidelity real studio audio variant pool playback (non-repeating + natural pitch micro-variance)
+            // High-fidelity studio audio variant pool playback with calibrated perceptual RMS & EQ polish
             const pool = this.samplePools && this.samplePools[name];
             let chosenBuf = null;
             if (pool && pool.length > 0) {
@@ -262,12 +344,42 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 try {
                     const src = c.createBufferSource();
                     src.buffer = chosenBuf;
-                    const jitter = (name === 'whistle' || name === 'whistleStart' || name === 'whistleEnd') ? 1.0 : (0.96 + Math.random() * 0.08);
+                    const isWhistle = (name === 'whistle' || name === 'whistleStart' || name === 'whistleEnd' || name === 'whistleRestart');
+                    const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
+
+                    // Per-action RMS gain calibration (tames loud whistles & steps, punches kicks & dunks)
+                    const gainMap = {
+                        whistle: 0.25, whistleStart: 0.24, whistleEnd: 0.26, whistleRestart: 0.22,
+                        step: 0.34, squeak: 0.42, tackle: 0.56, swish: 0.68,
+                        steal: 0.74, save: 0.80, dribble: 0.72, dribble_court: 0.78,
+                        bounce: 0.76, kick: 0.92, shot: 0.98, dunk: 1.05,
+                        goal: 0.82, score: 0.80, win: 0.82, celebration: 0.80
+                    };
+                    const lpFreqMap = {
+                        whistle: 4400, whistleStart: 4400, whistleEnd: 4400, whistleRestart: 4400,
+                        step: 2600, tackle: 3000, swish: 5200, dribble: 3200, bounce: 3000
+                    };
                     const sGain = c.createGain();
-                    sGain.gain.setValueAtTime(v * 0.96, now);
-                    src.connect(sGain);
+                    const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.84);
+                    sGain.gain.setValueAtTime(0.001, now);
+                    sGain.gain.linearRampToValueAtTime(gVal, now + 0.004);
+
+                    const lpFreq = lpFreqMap[name];
+                    if (lpFreq) {
+                        const lpf = c.createBiquadFilter();
+                        lpf.type = 'lowpass';
+                        lpf.frequency.setValueAtTime(lpFreq, now);
+                        lpf.Q.value = 0.65;
+                        src.connect(lpf);
+                        lpf.connect(sGain);
+                    } else {
+                        src.connect(sGain);
+                    }
                     sGain.connect(this.sfxGain);
+                    if (this.sfxReverbIn && (isWhistle || name === 'kick' || name === 'shot' || name === 'dunk' || name === 'swish' || name === 'goal' || name === 'score')) {
+                        sGain.connect(this.sfxReverbIn);
+                    }
                     src.start(now);
                     return;
                 } catch(e) {}
@@ -275,186 +387,179 @@ define("core/audio", ["require", "exports"], function (require, exports) {
 
             switch (name) {
                 case 'kick':
-                    // Punchy sub-bass transient + leather boot strike + surface air whoosh
-                    this.tone(135 * pitch, 0.16, 'sine', 0.95 * v, 0, 48);
-                    this.tone(260 * pitch, 0.07, 'triangle', 0.65 * v, 0, 80);
-                    this.noise(0.08, 0.55 * v, 2600, 600, 'bandpass');
-                    this.noise(0.02, 0.45 * v, 4400, 1800, 'highpass');
+                    this.tone(128 * pitch, 0.16, 'sine', 0.88 * v, 0, 44);
+                    this.tone(240 * pitch, 0.06, 'triangle', 0.52 * v, 0, 75);
+                    this.noise(0.07, 0.36 * v, 1900, 480, 'bandpass');
                     break;
                 case 'pass':
-                    this.tone(175 * pitch, 0.11, 'sine', 0.6 * v, 0, 85);
-                    this.noise(0.06, 0.35 * v, 1800, 600, 'bandpass');
+                    // Clean warm foot/hand pass tap
+                    this.tone(165 * pitch, 0.10, 'sine', 0.56 * v, 0, 78);
+                    this.noise(0.05, 0.24 * v, 1400, 450, 'lowpass');
                     break;
                 case 'shot':
-                    // Rocket shot: heavy sub-bass drive + explosive air shockwave + high snap
-                    this.tone(155 * pitch, 0.22, 'sine', 1.0 * v, 0, 42);
-                    this.tone(310 * pitch, 0.12, 'triangle', 0.55 * v, 0, 640);
-                    this.noise(0.22, 0.5 * v, 900, 3200, 'bandpass');
+                    this.tone(148 * pitch, 0.22, 'sine', 0.92 * v, 0, 40);
+                    this.tone(280 * pitch, 0.10, 'triangle', 0.45 * v, 0, 520);
+                    this.noise(0.18, 0.34 * v, 800, 2200, 'bandpass');
                     break;
                 case 'bounce':
-                    this.tone(95 * pitch, 0.13, 'sine', 0.7 * v, 0, 50);
-                    this.noise(0.04, 0.18 * v, 900, 300, 'lowpass');
+                    this.tone(92 * pitch, 0.12, 'sine', 0.65 * v, 0, 48);
+                    this.noise(0.035, 0.14 * v, 750, 240, 'lowpass');
                     break;
                 case 'dribble':
-                    this.tone(78 * pitch, 0.1, 'sine', 0.45 * v, 0, 48);
+                    this.tone(76 * pitch, 0.09, 'sine', 0.42 * v, 0, 46);
                     break;
                 case 'dribble_court':
-                    this.tone(85 * pitch, 0.09, 'sine', 0.55 * v, 0, 42);
-                    this.noise(0.04, 0.22 * v, 800, 250, 'lowpass');
+                    this.tone(86 * pitch, 0.09, 'sine', 0.54 * v, 0, 42);
+                    this.noise(0.035, 0.16 * v, 720, 220, 'lowpass');
                     break;
                 case 'step':
-                    // Dynamic footstep: turf grass cleat scuff / court floor grip
                     if (pitch < 1.05) {
-                        this.noise(0.04, 0.28 * v, 1400, 400, 'bandpass');
+                        this.noise(0.035, 0.16 * v, 950, 320, 'bandpass');
                     } else {
-                        this.tone(1350 * pitch, 0.035, 'sine', 0.16 * v, 0, 920);
-                        this.noise(0.04, 0.24 * v, 2400, 1100, 'bandpass');
+                        this.tone(1180 * pitch, 0.03, 'sine', 0.10 * v, 0, 820);
+                        this.noise(0.035, 0.14 * v, 1800, 850, 'bandpass');
                     }
                     break;
                 case 'dunk':
-                    // Massive monster slam: heavy 38Hz sub-bass shockwave + steel rim rattle + backboard glass flex + crowd gasp
-                    this.tone(125 * pitch, 0.35, 'sine', 1.0 * v, 0, 36);
-                    this.tone(480, 0.65, 'triangle', 0.7 * v, 0, 420);
-                    this.tone(1140, 0.5, 'sine', 0.45 * v);
-                    this.noise(0.28, 0.75 * v, 3200, 500, 'bandpass');
-                    this.crowdRoar(1.8, 1.0 * v);
+                    this.tone(120 * pitch, 0.32, 'sine', 0.95 * v, 0, 36);
+                    this.tone(420, 0.55, 'triangle', 0.48 * v, 0, 360);
+                    this.tone(960, 0.42, 'sine', 0.28 * v);
+                    this.noise(0.22, 0.48 * v, 2400, 420, 'bandpass');
+                    this.crowdRoar(1.6, 0.85 * v);
                     break;
                 case 'post':
-                    // Realistic tubular steel crossbar / post CLANG: fundamental bell resonance + inharmonic upper rings + metal strike
-                    this.tone(1180, 0.75, 'sine', 0.65 * v);
-                    this.tone(1740, 0.65, 'sine', 0.48 * v);
-                    this.tone(2820, 0.45, 'sine', 0.32 * v);
-                    this.tone(165, 0.35, 'triangle', 0.6 * v, 0, 75);
-                    this.noise(0.06, 0.6 * v, 4800, 2200, 'highpass');
+                    this.tone(980, 0.65, 'sine', 0.42 * v);
+                    this.tone(1490, 0.55, 'sine', 0.30 * v);
+                    this.tone(160, 0.28, 'triangle', 0.45 * v, 0, 72);
+                    this.noise(0.05, 0.28 * v, 3200, 1400, 'bandpass');
                     break;
                 case 'rim':
-                    // Basketball steel rim rattle & ring: harmonic overtone + steel spring ping
-                    this.tone(580, 0.6, 'triangle', 0.5 * v, 0, 560);
-                    this.tone(1220, 0.45, 'sine', 0.38 * v);
-                    this.tone(1880, 0.3, 'sine', 0.22 * v);
-                    this.noise(0.12, 0.38 * v, 2200, 900, 'bandpass');
+                    this.tone(540, 0.48, 'triangle', 0.34 * v, 0, 515);
+                    this.tone(1080, 0.36, 'sine', 0.24 * v);
+                    this.noise(0.09, 0.22 * v, 1800, 750, 'bandpass');
                     break;
                 case 'board':
-                    this.tone(160, 0.2, 'triangle', 0.5 * v, 0, 110);
-                    this.noise(0.1, 0.22 * v, 1200, 300, 'bandpass');
+                    this.tone(150, 0.18, 'triangle', 0.45 * v, 0, 95);
+                    this.noise(0.08, 0.18 * v, 950, 260, 'lowpass');
                     break;
                 case 'swish':
-                    this.noise(0.38, 0.5 * v, 2400, 5200, 'bandpass', 0, 2.5);
+                    this.noise(0.32, 0.36 * v, 2000, 4200, 'bandpass', 0, 2.2);
                     break;
                 case 'goal':
-                    this.crowdRoar(1.6, v);
-                    this.tone(523, 0.18, 'square', 0.12 * v, 0.05);
-                    this.tone(659, 0.18, 'square', 0.12 * v, 0.2);
-                    this.tone(784, 0.5, 'square', 0.12 * v, 0.35);
+                    this.crowdRoar(1.5, 0.85 * v);
+                    [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => this.tone(f, 0.32, 'triangle', 0.18 * v, idx * 0.06));
                     break;
                 case 'score':
-                    this.crowdRoar(1.1, 0.8 * v);
-                    this.tone(659, 0.12, 'triangle', 0.25 * v, 0.02);
-                    this.tone(880, 0.3, 'triangle', 0.25 * v, 0.14);
+                    this.crowdRoar(1.1, 0.75 * v);
+                    this.tone(659.25, 0.14, 'sine', 0.22 * v, 0.01);
+                    this.tone(880.0, 0.28, 'triangle', 0.22 * v, 0.10);
                     break;
                 case 'crowd':
-                    this.crowdRoar(0.9, 0.5 * v);
+                    this.crowdRoar(0.9, 0.45 * v);
                     break;
                 case 'whistle':
                 case 'whistleEnd': {
                     const n = name === 'whistle' ? 1 : 3;
                     for (let i = 0; i < n; i++) {
-                        this.tone(2750, 0.26, 'sine', 0.3 * v, i * 0.32, 2900);
-                        this.tone(2850, 0.26, 'sine', 0.2 * v, i * 0.32, 3000);
+                        this.tone(2450, 0.22, 'sine', 0.14 * v, i * 0.28, 2580);
+                        this.tone(2540, 0.22, 'sine', 0.09 * v, i * 0.28, 2660);
                     }
                     break;
                 }
                 case 'tackle':
-                    // Solid sliding body-check: deep impact thump + turf slide friction crunch + cleat tear
-                    this.tone(95, 0.16, 'triangle', 0.5 * v, 0, 45);
-                    this.noise(0.2, 0.65 * v, 950, 180, 'bandpass');
-                    this.noise(0.08, 0.45 * v, 2400, 600, 'bandpass');
+                    this.tone(92, 0.14, 'sine', 0.48 * v, 0, 44);
+                    this.noise(0.18, 0.40 * v, 850, 180, 'lowpass');
                     break;
                 case 'steal':
-                    // Precision ball strip / intercept: rapid snap + slap + harmonic pip
-                    this.tone(520, 0.1, 'triangle', 0.4 * v, 0, 980);
-                    this.tone(1040, 0.14, 'sine', 0.35 * v, 0.05);
-                    this.noise(0.1, 0.5 * v, 2400, 700, 'bandpass');
+                    this.tone(480, 0.09, 'sine', 0.32 * v, 0, 820);
+                    this.noise(0.08, 0.28 * v, 1800, 520, 'bandpass');
                     break;
                 case 'miss':
-                    this.noise(0.2, 0.2 * v, 500, 150, 'lowpass');
+                    this.noise(0.18, 0.16 * v, 440, 140, 'lowpass');
                     break;
                 case 'save':
-                    // Goalkeeper latex glove block / chest smother: latex grip slap + body impact thump
-                    this.noise(0.12, 0.55 * v, 1600, 350, 'bandpass');
-                    this.tone(160, 0.18, 'sine', 0.55 * v, 0, 70);
-                    this.noise(0.18, 0.35 * v, 800, 200, 'lowpass');
+                    this.noise(0.10, 0.35 * v, 1200, 300, 'bandpass');
+                    this.tone(145, 0.16, 'sine', 0.48 * v, 0, 68);
                     break;
                 case 'noStamina':
-                    this.tone(130, 0.18, 'sawtooth', 0.22 * v, 0, 100);
-                    this.tone(110, 0.18, 'sawtooth', 0.22 * v, 0.14, 80);
+                    this.tone(196, 0.12, 'triangle', 0.16 * v, 0, 148);
+                    this.tone(148, 0.14, 'sine', 0.14 * v, 0.11, 110);
                     break;
                 case 'tick':
-                    this.tone(880 * pitch, 0.09, 'square', 0.14 * v);
+                    // Clean warm broadcast countdown marimba/bell pip (no harsh square buzz)
+                    this.tone(587.33 * pitch, 0.11, 'sine', 0.16 * v, 0, 585 * pitch);
+                    this.tone(1174.66 * pitch, 0.08, 'sine', 0.06 * v, 0.004);
                     break;
                 case 'go':
-                    this.tone(1320, 0.3, 'square', 0.16 * v);
-                    this.tone(1760, 0.3, 'square', 0.1 * v, 0.02);
+                    // Uplifting stadium chime
+                    this.tone(783.99, 0.24, 'sine', 0.22 * v);
+                    this.tone(1174.66, 0.28, 'triangle', 0.15 * v, 0.02);
+                    this.tone(1567.98, 0.22, 'sine', 0.08 * v, 0.04);
                     break;
                 case 'click':
-                    this.tone(660 * pitch, 0.05, 'triangle', 0.15 * v);
+                    // Silky modern soft UI glass tap
+                    this.tone(620 * pitch, 0.036, 'sine', 0.11 * v, 0, 410 * pitch);
+                    this.tone(1480 * pitch, 0.018, 'sine', 0.035 * v, 0);
                     break;
                 case 'buy':
-                    this.tone(660, 0.07, 'triangle', 0.22 * v);
-                    this.tone(990, 0.07, 'triangle', 0.22 * v, 0.07);
-                    this.tone(1320, 0.18, 'triangle', 0.22 * v, 0.14);
+                    [587.33, 880, 1174.66].forEach((f, i) => this.tone(f, 0.14, 'sine', 0.18 * v, i * 0.065));
                     break;
                 case 'claim':
-                    [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.16, 'triangle', 0.2 * v, i * 0.07));
+                    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.18, 'sine', 0.16 * v, i * 0.06));
                     break;
                 case 'error':
-                    this.tone(200, 0.16, 'square', 0.14 * v, 0, 150);
-                    this.tone(160, 0.2, 'square', 0.14 * v, 0.12, 110);
+                    // Gentle muted low marimba thud (zero harsh buzz)
+                    this.tone(220, 0.12, 'triangle', 0.16 * v, 0, 175);
+                    this.tone(165, 0.16, 'sine', 0.15 * v, 0.09, 130);
                     break;
                 case 'win':
-                    [523, 659, 784, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.22, 'triangle', 0.22 * v, i * 0.14));
-                    this.crowdRoar(1.4, 0.6 * v);
+                    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.26, 'triangle', 0.18 * v, i * 0.11));
+                    this.crowdRoar(1.4, 0.52 * v);
                     break;
                 case 'lose':
-                    [392, 349, 311, 262].forEach((f, i) => this.tone(f, 0.3, 'triangle', 0.2 * v, i * 0.2));
+                    [392, 349.23, 311.13, 261.63].forEach((f, i) => this.tone(f, 0.26, 'sine', 0.16 * v, i * 0.18));
                     break;
             }
         }
         crowdRoar(dur, vol) {
             const c = this.ctx;
-            if (!c || !this.noiseBuf || !this.sfxGain)
+            const buf = this.pinkBuf || this.noiseBuf;
+            if (!c || !buf || !this.sfxGain)
                 return;
             const t0 = c.currentTime;
             const s = c.createBufferSource();
-            s.buffer = this.noiseBuf;
+            s.buffer = buf;
             s.loop = true;
             const f = c.createBiquadFilter();
             f.type = 'bandpass';
-            f.frequency.value = 900;
-            f.Q.value = 0.5;
+            f.frequency.setValueAtTime(550, t0);
+            f.frequency.linearRampToValueAtTime(920, t0 + Math.min(0.4, dur * 0.3));
+            f.frequency.linearRampToValueAtTime(520, t0 + dur);
+            f.Q.value = 0.55;
             const g = c.createGain();
             g.gain.setValueAtTime(0.0001, t0);
-            g.gain.exponentialRampToValueAtTime(0.35 * vol, t0 + 0.25);
+            g.gain.exponentialRampToValueAtTime(0.32 * vol, t0 + 0.22);
             g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
             s.connect(f);
             f.connect(g);
             g.connect(this.sfxGain);
-            s.start(t0);
+            s.start(t0, Math.random() * 1.5);
             s.stop(t0 + dur + 0.1);
         }
         startAmbience() {
             const c = this.ctx;
-            if (!c || !this.noiseBuf || !this.sfxGain || this.crowdNode)
+            const buf = this.pinkBuf || this.noiseBuf;
+            if (!c || !buf || !this.sfxGain || this.crowdNode)
                 return;
             const src = c.createBufferSource();
-            src.buffer = this.noiseBuf;
+            src.buffer = buf;
             src.loop = true;
             const f = c.createBiquadFilter();
             f.type = 'bandpass';
-            f.frequency.value = 700;
-            f.Q.value = 0.4;
+            f.frequency.value = 520;
+            f.Q.value = 0.45;
             const gain = c.createGain();
-            gain.gain.value = 0.035;
+            gain.gain.value = 0.045;
             src.connect(f);
             f.connect(gain);
             gain.connect(this.sfxGain);
@@ -483,23 +588,24 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             const c = this.ctx;
             if (!c || this.musicTimer)
                 return;
+            const dest = this.musicBus || this.musicGain;
+            if (!dest) return;
             this.nextNote = c.currentTime + 0.1;
             this.step = 0;
-            // Modern stadium sports progression: Am -> F -> C -> G
+            // Warm Modern Broadcast Sports Lounge Groove (Am9 -> Fmaj7 -> Cmaj7 -> G6 @ ~114 BPM)
             const chords = [
-                [220, 261.6, 329.6, 440], // Am
-                [174.6, 220, 261.6, 349.2], // F
-                [130.8, 164.8, 196, 261.6], // C
-                [196, 246.9, 293.7, 392], // G
+                [220.0, 261.63, 329.63, 392.0, 493.88],
+                [174.61, 220.0, 261.63, 329.63, 392.0],
+                [130.81, 164.81, 196.0, 246.94, 293.66],
+                [196.0, 246.94, 293.66, 329.63, 440.0],
             ];
-            // Bass roots with punchy pitch slides
-            const bassNotes = [55, 43.65, 65.4, 49];
-            const tempo = 0.175; // ~171 BPM driving stadium groove
+            const bassNotes = [55.0, 43.65, 65.41, 49.0];
+            const tempo = 0.132; // ~113.6 BPM smooth 16th-note pulse
             this.musicTimer = window.setInterval(() => {
                 const cx = this.ctx;
                 if (!cx || !this.musicGain || cx.state !== 'running')
                     return;
-                while (this.nextNote < cx.currentTime + 0.4) {
+                while (this.nextNote < cx.currentTime + 0.36) {
                     const bar = Math.floor(this.step / 16) % chords.length;
                     const ch = chords[bar];
                     const i = this.step % 16;
@@ -512,75 +618,75 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         o.frequency.setValueAtTime(f, t0);
                         if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, slide), t0 + d);
                         g.gain.setValueAtTime(0.0001, t0);
-                        g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
+                        g.gain.exponentialRampToValueAtTime(vol, t0 + 0.018);
                         g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
                         o.connect(g);
-                        g.connect(this.musicGain);
+                        g.connect(dest);
                         o.start(t0);
                         o.stop(t0 + d + 0.04);
                     };
 
-                    // 1. Punchy 808-Style Sub Bass
+                    // 1. Warm Round Sub Bass
                     if (i === 0 || i === 6 || i === 10) {
                         const root = bassNotes[bar];
-                        const slideTarget = i === 10 ? root * 1.5 : root * 0.95;
-                        note(root * 1.25, tempo * (i === 0 ? 3.5 : 2.0), 0.58, 'sine', slideTarget);
+                        note(root * 1.25, tempo * (i === 0 ? 4.0 : 2.5), 0.42, 'sine');
                     }
 
-                    // 2. Syncopated Stadium Beats (Kick & Snare)
-                    if (i === 0 || i === 8 || i === 14) {
-                        // Kick drum thump
-                        note(115, 0.08, 0.42, 'triangle', 45);
+                    // 2. Crisp Subtle Pocket Kick & Rim Snare
+                    if (i === 0 || i === 8 || i === 10) {
+                        note(108, 0.085, 0.34, 'sine', 44);
                     }
                     if (i === 4 || i === 12) {
-                        // Snare snap
-                        note(210, 0.09, 0.22, 'triangle', 110);
-                        if (this.noiseBuf) {
+                        note(195, 0.075, 0.14, 'triangle', 105);
+                        const buf = this.pinkBuf || this.noiseBuf;
+                        if (buf) {
                             const s = cx.createBufferSource();
-                            s.buffer = this.noiseBuf;
+                            s.buffer = buf;
                             const f = cx.createBiquadFilter();
                             f.type = 'bandpass';
-                            f.frequency.value = 3200;
-                            f.Q.value = 1.2;
+                            f.frequency.value = 2400;
+                            f.Q.value = 1.1;
                             const g = cx.createGain();
-                            g.gain.setValueAtTime(0.18, t0);
-                            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+                            g.gain.setValueAtTime(0.11, t0);
+                            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
                             s.connect(f);
                             f.connect(g);
-                            g.connect(this.musicGain);
-                            s.start(t0);
-                            s.stop(t0 + 0.15);
+                            g.connect(dest);
+                            s.start(t0, Math.random());
+                            s.stop(t0 + 0.12);
                         }
                     }
 
-                    // 3. Rolling Hi-Hats with Velocity Variation
-                    if (this.noiseBuf && (i % 2 === 0 || i === 7 || i === 15)) {
+                    // 3. Soft Brushed Shaker (instead of harsh metallic high-hat)
+                    if ((this.pinkBuf || this.noiseBuf) && (i % 2 === 0)) {
                         const s = cx.createBufferSource();
-                        s.buffer = this.noiseBuf;
+                        s.buffer = this.pinkBuf || this.noiseBuf;
                         const f = cx.createBiquadFilter();
-                        f.type = 'highpass';
-                        f.frequency.value = (i % 4 === 2) ? 5500 : 7500;
+                        f.type = 'bandpass';
+                        f.frequency.value = (i % 4 === 2) ? 4600 : 3400;
+                        f.Q.value = 1.4;
                         const g = cx.createGain();
-                        const hVol = (i % 4 === 2) ? 0.07 : 0.035;
+                        const hVol = (i % 4 === 2) ? 0.036 : 0.018;
                         g.gain.setValueAtTime(hVol, t0);
-                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.045);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.04);
                         s.connect(f);
                         f.connect(g);
-                        g.connect(this.musicGain);
-                        s.start(t0);
+                        g.connect(dest);
+                        s.start(t0, Math.random());
                         s.stop(t0 + 0.06);
                     }
 
-                    // 4. Melodic Synth Hook Arpeggio
-                    const melPatt = [0, 2, 1, 3, 2, 0, 1, 2, 3, 1, 2, 0, 2, 3, 1, 0];
-                    const noteIdx = melPatt[i];
-                    const arpFreq = ch[noteIdx % ch.length] * 1.5;
-                    note(arpFreq, tempo * 0.85, 0.13, 'sine');
+                    // 4. Warm Chord Pluck Pad on relaxed syncopated beats (non-fatiguing!)
+                    if (i === 0 || i === 6 || i === 12) {
+                        ch.slice(0, 4).forEach((freq, ci) => {
+                            note(freq, tempo * 3.8, 0.045 - ci * 0.005, 'triangle');
+                        });
+                    }
 
                     this.nextNote += tempo;
                     this.step++;
                 }
-            }, 100);
+            }, 95);
         }
     }
     exports.AudioEngine = AudioEngine;
@@ -4739,46 +4845,46 @@ define("data/shop", ["require", "exports"], function (require, exports) {
     exports.defaultEquipped = defaultEquipped;
     exports.defaultOwned = defaultOwned;
     exports.boostEffectsOf = boostEffectsOf;
-    exports.CATEGORIES = ['skins', 'balls', 'other'];
+    exports.CATEGORIES = ['skins', 'other'];
     exports.RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
     const FOOTY_BASE = {
-        line: 0xfdfefe,
-        skyTop: 0x100e2e,
-        skyBottom: 0x2e1065,
-        fog: 0x120d26,
-        sunColor: [1.32, 1.25, 1.15],
+        line: 0xf8fafc,
+        skyTop: 0x0b1630,
+        skyBottom: 0x1e355e,
+        fog: 0x122240,
+        sunColor: [1.06, 1.02, 0.95],
         sunDir: [0.35, 0.85, 0.4],
-        hemiSky: 0xdbeafe,
-        hemiGround: 0x14532d,
-        lights: [0xfff7e8, 0xfff7e8, 0xfff7e8, 0xfff7e8],
-        lightIntensity: 0.82,
-        stand: 0x222a3a,
+        hemiSky: 0xcbe2ff,
+        hemiGround: 0x144526,
+        lights: [0xfff6e6, 0xfff6e6, 0xfff6e6, 0xfff6e6],
+        lightIntensity: 0.72,
+        stand: 0x182334,
         crowd: [0xe84a5f, 0xf6c445, 0x4fb3ff, 0xffffff, 0x7be08a, 0xff8c42, 0x9b6bff],
         boards: 0x0d1424,
         boardText: 0xffffff,
         glow: 0xfff0c0,
-        accent: 0x22d3a0,
+        accent: 0x10b981,
     };
     const COURT_BASE = {
-        apron: 0x0f172a,
+        apron: 0x111a2e,
         line: 0xf8fafc,
-        paint: 0x162440, centerPaint: 0x162440,
-        floor: 0x1a2338,
-        skyTop: 0x0d152a,
-        skyBottom: 0x1d2d4e,
-        fog: 0x131d36,
-        sunColor: [1.28, 1.22, 1.12],
+        paint: 0x172645, centerPaint: 0x15233e,
+        floor: 0x131b2b,
+        skyTop: 0x0a1120,
+        skyBottom: 0x17243d,
+        fog: 0x10182b,
+        sunColor: [1.02, 0.98, 0.92],
         sunDir: [0.28, 0.88, 0.36],
-        hemiSky: 0xffe8cc,
-        hemiGround: 0x4b2e1b,
-        lights: [0xfff2dc, 0xdceeff, 0xfff2dc, 0xdceeff],
-        lightIntensity: 0.92,
-        stand: 0x182133,
+        hemiSky: 0xffe4c4,
+        hemiGround: 0x452a16,
+        lights: [0xfff0d6, 0xdeeeff, 0xfff0d6, 0xdeeeff],
+        lightIntensity: 0.78,
+        stand: 0x151e30,
         crowd: [0xf97316, 0xef4444, 0xfacc15, 0xffffff, 0x38bdf8],
         board: 0x0b1222,
         boardText: 0xffffff,
-        glow: 0x38bdf8,
-        rim: 0xff5500,
+        glow: 0x60a5fa,
+        rim: 0xf97316,
         accent: 0xf97316,
     };
     const skin = (id, name, rarity, price, v, icon = '👕') => ({
@@ -4946,7 +5052,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             price: 0,
             icon: '🏟️',
             isDefault: true,
-            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x24a648, pitchB: 0x1a8f3b }),
+            visual: Object.assign(Object.assign({}, FOOTY_BASE), { pitchA: 0x1e843d, pitchB: 0x176d31, line: 0xf8fafc, floor: 0x10351d }),
         },
         {
             id: 'std_footy_night',
@@ -4991,7 +5097,7 @@ define("data/shop", ["require", "exports"], function (require, exports) {
             price: 0,
             icon: '🏀',
             isDefault: true,
-            visual: Object.assign(Object.assign({}, COURT_BASE), { woodA: 0xd99557, woodB: 0xe8a968 }),
+            visual: Object.assign(Object.assign({}, COURT_BASE), { woodA: 0xc98a4a, woodB: 0xd99b59, line: 0xf8fafc }),
         },
         {
             id: 'std_hoops_neon',
@@ -5739,29 +5845,26 @@ define("render/textures", ["require", "exports", "sim/basketball", "sim/football
 
 function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.save();
-        // 1. Clean, dark circular medallion backing with glowing outer neon rim
-        const backingR = radius * 0.96;
+        // 1. Crisp, opaque championship medallion backing (completely masks center court/pitch line)
+        const backingR = radius * 0.98;
         g.beginPath();
         g.arc(cx, cy, backingR, 0, Math.PI * 2);
-        const grad = g.createRadialGradient(cx, cy, radius * 0.1, cx, cy, backingR);
-        grad.addColorStop(0, isBasketball ? 'rgba(12, 18, 36, 0.88)' : 'rgba(6, 18, 28, 0.88)');
-        grad.addColorStop(1, isBasketball ? 'rgba(5, 8, 18, 0.96)' : 'rgba(3, 8, 16, 0.96)');
+        const grad = g.createRadialGradient(cx, cy, radius * 0.08, cx, cy, backingR);
+        grad.addColorStop(0, isBasketball ? 'rgba(18, 28, 52, 0.99)' : 'rgba(10, 26, 22, 0.99)');
+        grad.addColorStop(1, isBasketball ? 'rgba(9, 14, 28, 1.0)' : 'rgba(6, 15, 16, 1.0)');
         g.fillStyle = grad;
         g.fill();
 
-        // Glowing outer accent ring
-        g.lineWidth = isBasketball ? 5 : 6;
-        g.strokeStyle = isBasketball ? '#f97316' : '#00f0ff';
-        g.shadowColor = isBasketball ? '#f97316' : '#00f0ff';
-        g.shadowBlur = 12;
+        // Crisp accent outer ring without neon smudge
+        g.lineWidth = isBasketball ? 4.5 : 5;
+        g.strokeStyle = isBasketball ? '#f97316' : 'rgba(248, 250, 252, 0.92)';
         g.stroke();
-        g.shadowBlur = 0;
 
-        // Inner clean boundary pinstripe
+        // Subtle inner satin pinstripe
         g.beginPath();
-        g.arc(cx, cy, radius * 0.91, 0, Math.PI * 2);
-        g.lineWidth = 1.8;
-        g.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        g.arc(cx, cy, radius * 0.89, 0, Math.PI * 2);
+        g.lineWidth = 1.6;
+        g.strokeStyle = isBasketball ? 'rgba(248, 250, 252, 0.42)' : 'rgba(56, 189, 248, 0.45)';
         g.stroke();
 
         // 2. High-resolution official emblem drawn dead center with true proportions
@@ -5810,47 +5913,51 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         const X = (x) => (x + pw / 2) * PPM_F;
         const Z = (z) => (z + pd / 2) * PPM_F;
         
-        // 1. Saturated Fortnite Electric Emerald Turf with Mower Bands
+        // 1. Authentic Championship Emerald Stadium Turf with Mower Bands
         const stripes = 14;
         const sh = c.height / stripes;
         // Preserved classic emerald turf references for test assertion suite: 0x24a648, 0x1a8f3b
-        const pitchColA = hex((t && t.pitchA) ? t.pitchA : 0x059669);
-        const pitchColB = hex((t && t.pitchB) ? t.pitchB : 0x10b981);
+        const pitchColA = hex((t && t.pitchA) ? t.pitchA : 0x1e843d);
+        const pitchColB = hex((t && t.pitchB) ? t.pitchB : 0x176d31);
         for (let i = 0; i < stripes; i++) {
             g.fillStyle = i % 2 ? pitchColA : pitchColB;
             g.fillRect(0, i * sh, c.width, sh + 1);
         }
 
-        // 2. Fortnite Laser-Cut Diagonal Diamond Lawn Patterns
+        // 2. Subtle Vertical & Cross-Cut Broadcast Sheen (restrained realism, zero harsh diagonals)
         g.save();
-        g.fillStyle = 'rgba(255,255,255,0.032)';
-        const diagStep = 32;
-        for (let d = -c.height; d < c.width + c.height; d += diagStep * 2) {
-            g.beginPath();
-            g.moveTo(d, 0);
-            g.lineTo(d + diagStep, 0);
-            g.lineTo(d + diagStep + c.height, c.height);
-            g.lineTo(d + c.height, c.height);
-            g.closePath();
-            g.fill();
+        g.fillStyle = 'rgba(255,255,255,0.016)';
+        const vStripes = 10;
+        const vw = c.width / vStripes;
+        for (let i = 0; i < vStripes; i += 2) {
+            g.fillRect(i * vw, 0, vw, c.height);
         }
+        // Subtle stadium floodlight radial vignette emphasizing center pitch
+        const turfVig = g.createRadialGradient(X(0), Z(0), pw * PPM_F * 0.24, X(0), Z(0), Math.max(pw, pd) * PPM_F * 0.72);
+        turfVig.addColorStop(0, 'rgba(255,255,255,0.04)');
+        turfVig.addColorStop(1, 'rgba(4,16,8,0.20)');
+        g.fillStyle = turfVig;
+        g.fillRect(0, 0, c.width, c.height);
         g.restore();
 
-        // 3. High-density grass blade micro-texture
-        for (let i = 0; i < 9000; i++) {
-            g.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.045) + ')';
-            g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 5);
-            g.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.04) + ')';
-            g.fillRect(Math.random() * c.width, Math.random() * c.height, 2, 4);
+        // 3. Natural grass blade micro-texture (deterministic subtle blades, no noisy speckle)
+        for (let i = 0; i < 6500; i++) {
+            const rx = ((i * 733) % 997) / 997;
+            const ry = ((i * 1597) % 991) / 991;
+            const xPos = rx * c.width;
+            const yPos = ry * c.height;
+            g.fillStyle = (i & 1) ? 'rgba(6,28,12,0.045)' : 'rgba(170,235,140,0.028)';
+            g.fillRect(xPos, yPos, 1.6, 4.2);
         }
 
-        // 4. Fortnite Electric Cyan-White Glowing Lines
-        const lineCol = hex((t && t.line) ? t.line : 0x7dffe8);
+        // 4. Broadcast Chalk-White Pitch Markings
+        const lineCol = hex((t && t.line) ? t.line : 0xf8fafc);
         const { W, L } = football_js_1.FB;
+        const isNeonPitch = t && t.id === 'std_footy_neon';
 
-        // Draw outer neon bloom glow pass
-        g.strokeStyle = 'rgba(0, 240, 255, 0.32)';
-        g.lineWidth = 0.26 * PPM_F;
+        // Soft contrast under-bevel (or subtle glow for Neon Turf theme only)
+        g.strokeStyle = isNeonPitch ? 'rgba(0, 240, 255, 0.32)' : 'rgba(5, 28, 12, 0.22)';
+        g.lineWidth = (isNeonPitch ? 0.24 : 0.18) * PPM_F;
         g.lineJoin = 'miter';
         g.strokeRect(X(-W), Z(-L), 2 * W * PPM_F, 2 * L * PPM_F);
         g.beginPath();
@@ -5861,7 +5968,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.arc(X(0), Z(0), football_js_1.FB.CIRCLE_R * PPM_F, 0, Math.PI * 2);
         g.stroke();
 
-        // Draw crisp core glowing line pass
+        // Crisp core broadcast chalk line pass
         g.strokeStyle = lineCol;
         g.fillStyle = lineCol;
         g.lineWidth = 0.13 * PPM_F;
@@ -5875,21 +5982,23 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.arc(X(0), Z(0), football_js_1.FB.CIRCLE_R * PPM_F, 0, Math.PI * 2);
         g.stroke();
 
-        // Official FOOTY vs HOOPS Center Pitch Emblem
+        // Official FOOTY vs HOOPS Center Pitch Emblem (opaque medallion cleanly masks halfway line)
         drawOfficialCenterEmblem(g, X(0), Z(0), football_js_1.FB.CIRCLE_R * 0.88 * PPM_F, false);
 
         // Penalty boxes and spots
+        g.strokeStyle = lineCol;
+        g.lineWidth = 0.13 * PPM_F;
         for (const s of [-1, 1]) {
             rect(-football_js_1.FB.BOX_W, s > 0 ? L - football_js_1.FB.BOX_D : -L, football_js_1.FB.BOX_W, s > 0 ? L : -L + football_js_1.FB.BOX_D);
             rect(-football_js_1.FB.SIX_W, s > 0 ? L - football_js_1.FB.SIX_D : -L, football_js_1.FB.SIX_W, s > 0 ? L : -L + football_js_1.FB.SIX_D);
             const spotZ = s * (L - football_js_1.FB.SPOT);
-            g.fillStyle = '#00f0ff';
+            g.fillStyle = isNeonPitch ? 'rgba(0,240,255,0.45)' : 'rgba(5,28,12,0.22)';
             g.beginPath();
-            g.arc(X(0), Z(spotZ), 0.36 * PPM_F, 0, Math.PI * 2);
+            g.arc(X(0), Z(spotZ), 0.25 * PPM_F, 0, Math.PI * 2);
             g.fill();
-            g.fillStyle = '#ffffff';
+            g.fillStyle = lineCol;
             g.beginPath();
-            g.arc(X(0), Z(spotZ), 0.18 * PPM_F, 0, Math.PI * 2);
+            g.arc(X(0), Z(spotZ), 0.16 * PPM_F, 0, Math.PI * 2);
             g.fill();
 
             g.save();
@@ -5927,16 +6036,17 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         const Z = (z) => (z + pd / 2) * PPM_B;
         const { W, L, APRON } = basketball_js_1.BB;
 
-        // 1. NBA Tournament Sapphire Apron & Baseline Safety Run-off Surface
-        g.fillStyle = hex(t.apron || 0x1b2845);
+        // 1. Clean Tournament Arena Apron & Baseline Run-Off Surface
+        const isNeonCourt = Boolean(t && t.id === 'std_hoops_neon');
+        g.fillStyle = hex(t.apron || 0x111a2e);
         g.fillRect(0, 0, c.width, c.height);
 
-        // Outer apron glowing boundary border
-        g.strokeStyle = 'rgba(0, 240, 255, 0.45)';
-        g.lineWidth = 0.08 * PPM_B;
-        g.strokeRect(X(-W - APRON + 0.1), Z(-L - APRON + 0.1), (2 * (W + APRON) - 0.2) * PPM_B, (2 * (L + APRON) - 0.2) * PPM_B);
+        // Crisp tailored apron outer pinstripe
+        g.strokeStyle = isNeonCourt ? 'rgba(0, 240, 255, 0.45)' : 'rgba(249, 115, 22, 0.48)';
+        g.lineWidth = 0.07 * PPM_B;
+        g.strokeRect(X(-W - APRON + 0.12), Z(-L - APRON + 0.12), (2 * (W + APRON) - 0.24) * PPM_B, (2 * (L + APRON) - 0.24) * PPM_B);
 
-        // 2. Fortnite Cyber Hardwood (Dark Obsidian & Deep Midnight Indigo Planks)
+        // 2. Warm Satin Championship Maple Hardwood Planks
         const plankMeters = 0.14;
         const totalCourtW = 2 * (W + APRON);
         const planks = Math.round(totalCourtW / plankMeters);
@@ -5946,9 +6056,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         const courtBotZ = Z(L + APRON);
         const courtLen = courtBotZ - courtTopZ;
 
-        // Golden NBA All-Star / Fortnite Maple Hardwood Planks
-        const colA = hex(t.woodA || 0xd29054);
-        const colB = hex(t.woodB || 0xe5a666);
+        const colA = hex(t.woodA || 0xc98a4a);
+        const colB = hex(t.woodB || 0xd99b59);
 
         for (let i = 0; i < planks; i++) {
             const seed = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
@@ -5956,25 +6065,23 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.fillStyle = i % 2 ? colA : colB;
             g.fillRect(px0 + i * pwid, courtTopZ, pwid + 0.8, courtLen);
 
-            // Subtle cyber grain striations with slight cyan/metallic shimmer
+            // Subtle natural oak/maple grain striations (zero harsh cyan stripes)
             for (let j = 0; j < 4; j++) {
-                g.fillStyle = variance > 0 ? 'rgba(0,240,255,0.025)' : 'rgba(255,255,255,0.035)';
+                g.fillStyle = variance > 0 ? 'rgba(92,48,14,0.042)' : 'rgba(255,232,195,0.045)';
                 g.fillRect(px0 + i * pwid + (j * pwid) / 4, courtTopZ, 1.0, courtLen);
             }
 
-            // Staggered plank butt joints with glowing cyber seams
+            // Natural warm brown plank butt joints
             const shift = ((i % 5) * 0.2);
             for (let y = courtTopZ + shift * 1.8 * PPM_B; y < courtBotZ; y += 1.8 * PPM_B) {
-                // Bevel seam shadow
-                g.fillStyle = 'rgba(0,0,0,0.45)';
-                g.fillRect(px0 + i * pwid, y, pwid + 0.8, 1.2);
-                // Glowing cyan seam highlight
-                g.fillStyle = 'rgba(0,240,255,0.12)';
-                g.fillRect(px0 + i * pwid, y + 1.2, pwid + 0.8, 0.8);
+                g.fillStyle = 'rgba(42,20,5,0.24)';
+                g.fillRect(px0 + i * pwid, y, pwid + 0.8, 1.1);
+                g.fillStyle = 'rgba(255,236,208,0.08)';
+                g.fillRect(px0 + i * pwid, y + 1.1, pwid + 0.8, 0.7);
             }
         }
 
-        // 3. Two-Tone Hardwood: Royal Electric Sapphire Glow Inside 3-Point Arcs
+        // 3. Subtle Two-Tone Maple Polish Inside 3-Point Arcs (clean natural stain, zero blue flood)
         const cornerDist = basketball_js_1.BB.THREE_R * 0.94;
         const threeR = basketball_js_1.BB.THREE_R;
         const dzThree = Math.sqrt(Math.max(0, threeR * threeR - cornerDist * cornerDist));
@@ -5990,26 +6097,28 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.arc(X(0), Z(hz), threeR * PPM_B, thetaL, thetaR, s < 0);
             g.lineTo(X(cornerDist), Z(s * L));
             g.closePath();
-            g.fillStyle = 'rgba(37,99,235,0.18)';
+            g.fillStyle = isNeonCourt ? 'rgba(0, 229, 255, 0.14)' : 'rgba(92, 46, 12, 0.08)';
             g.fill();
             g.restore();
         }
 
-        // Soft apron boundary drop shadow (clean natural depth, zero pitch-black blocks)
-        g.fillStyle = 'rgba(0,0,0,0.18)';
+        // Soft apron boundary frame outside court lines
+        g.fillStyle = hex(t.apron || 0x111a2e);
+        g.globalAlpha = 0.82;
         const ox = X(-W);
         const oz = Z(-L);
         g.fillRect(px0, Z(-L - APRON), c.width, oz - Z(-L - APRON));
         g.fillRect(px0, Z(L), c.width, c.height - Z(L));
         g.fillRect(px0, oz, ox - px0, 2 * L * PPM_B);
         g.fillRect(X(W), oz, c.width - X(W), 2 * L * PPM_B);
+        g.globalAlpha = 1.0;
 
-        // 4. Fortnite Glowing Neon Markings: Cyan Main Boundaries & Orange 3-Pt Lines
-        const lineCol = hex(t.line || 0x00f0ff);
-        
-        // Neon outer glow pass for perimeter
-        g.strokeStyle = 'rgba(0, 240, 255, 0.35)';
-        g.lineWidth = 0.18 * PPM_B;
+        // 4. Crisp Tournament Broadcast Court Lines
+        const lineCol = hex(t.line || 0xf8fafc);
+
+        // Subtle dark drop shadow beneath perimeter & half-court for razor-sharp edge contrast
+        g.strokeStyle = isNeonCourt ? 'rgba(0, 240, 255, 0.35)' : 'rgba(15, 23, 42, 0.22)';
+        g.lineWidth = (isNeonCourt ? 0.18 : 0.14) * PPM_B;
         g.strokeRect(X(-W), Z(-L), 2 * W * PPM_B, 2 * L * PPM_B);
         g.beginPath();
         g.moveTo(X(-W), Z(0));
@@ -6018,7 +6127,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
 
         // Crisp core boundary lines
         g.strokeStyle = lineCol;
-        g.lineWidth = 0.08 * PPM_B * 1.4;
+        g.lineWidth = 0.085 * PPM_B;
         g.lineCap = 'butt';
         g.lineJoin = 'miter';
         g.strokeRect(X(-W), Z(-L), 2 * W * PPM_B, 2 * L * PPM_B);
@@ -6031,8 +6140,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
 
         // Center Jump Circle with clean official emblem
         const centerR = basketball_js_1.BB.CENTER_R * PPM_B;
-        g.fillStyle = hex(t.centerPaint || 0x06b6d4);
-        g.globalAlpha = 0.55;
+        g.fillStyle = hex(t.centerPaint || 0x15233e);
+        g.globalAlpha = 0.36;
         g.beginPath();
         g.arc(X(0), Z(0), centerR, 0, Math.PI * 2);
         g.fill();
@@ -6045,9 +6154,9 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         drawOfficialCenterEmblem(g, X(0), Z(0), centerR * 0.88, true);
 
         g.strokeStyle = lineCol;
-        g.lineWidth = 0.08 * PPM_B * 1.4;
+        g.lineWidth = 0.085 * PPM_B;
 
-        // North & South Endzones (Hot Neon Magenta Key & Glowing Orange 3-Pt Arcs)
+        // North & South Endzones (Crisp Navy Paint Keys & Clean Tournament Orange 3-Pt Arcs)
         for (const s of [-1, 1]) {
             const hz = s * basketball_js_1.BB.HOOP_Z;
             const ftz = s * (basketball_js_1.BB.HOOP_Z - basketball_js_1.BB.FT_DIST);
@@ -6057,14 +6166,14 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.rect(X(-W), Z(-L), 2 * W * PPM_B, 2 * L * PPM_B);
             g.clip();
 
-            // Painted Free Throw Lane (Hot Neon Magenta / Ultraviolet)
+            // Painted Free Throw Lane
             const keyTop = Math.min(Z(ftz), Z(s * L));
             const keyH = Math.abs(Z(ftz) - Z(s * L));
-            g.fillStyle = hex(t.paint || 0x0f172a);
-            g.globalAlpha = 0.88;
+            g.fillStyle = hex(t.paint || 0x172645);
+            g.globalAlpha = 0.82;
             g.fillRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, keyH);
             g.globalAlpha = 1.0;
-            g.strokeStyle = '#ffffff';
+            g.strokeStyle = lineCol;
             g.strokeRect(X(-basketball_js_1.BB.KEY_W), keyTop, 2 * basketball_js_1.BB.KEY_W * PPM_B, keyH);
 
             // Free Throw Circle
@@ -6081,7 +6190,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.restore();
 
             // Rebound lane hash marks along the key
-            g.fillStyle = '#ffffff';
+            g.fillStyle = lineCol;
             for (let m = 1; m <= 4; m++) {
                 const markZ = Z(s * L - s * (1.75 + m * 0.95));
                 for (const side of [-1, 1]) {
@@ -6090,7 +6199,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 }
             }
 
-            // High-Voltage Neon Orange 3-Point Arc
+            // Crisp Tournament Orange 3-Point Arc
             const cornerDist = basketball_js_1.BB.THREE_R * 0.94;
             const threeR = basketball_js_1.BB.THREE_R;
             const dzThree = Math.sqrt(Math.max(0, threeR * threeR - cornerDist * cornerDist));
@@ -6098,9 +6207,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             const thetaL = Math.atan2(s < 0 ? dzThree : -dzThree, -cornerDist);
             const thetaR = Math.atan2(s < 0 ? dzThree : -dzThree, cornerDist);
             
-            // Neon outer glow for 3-pt line
-            g.strokeStyle = 'rgba(249, 115, 22, 0.45)';
-            g.lineWidth = 0.18 * PPM_B;
+            g.strokeStyle = 'rgba(15, 23, 42, 0.24)';
+            g.lineWidth = 0.14 * PPM_B;
             g.beginPath();
             g.moveTo(X(-cornerDist), Z(s * L));
             g.lineTo(X(-cornerDist), Z(cornerBreakZ));
@@ -6108,9 +6216,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.lineTo(X(cornerDist), Z(s * L));
             g.stroke();
 
-            // Core glowing orange 3-point line
-            g.strokeStyle = '#f59e0b';
-            g.lineWidth = 0.08 * PPM_B * 1.4;
+            g.strokeStyle = isNeonCourt ? '#00f0ff' : '#f97316';
+            g.lineWidth = 0.095 * PPM_B;
             g.beginPath();
             g.moveTo(X(-cornerDist), Z(s * L));
             g.lineTo(X(-cornerDist), Z(cornerBreakZ));
@@ -6118,16 +6225,17 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
             g.lineTo(X(cornerDist), Z(s * L));
             g.stroke();
 
-            // Restricted Area Arc (Glowing Cyan semicircle under rim)
-            g.strokeStyle = '#00f0ff';
+            // Restricted Area Arc under rim
+            g.strokeStyle = isNeonCourt ? '#00f0ff' : '#f97316';
+            g.lineWidth = 0.075 * PPM_B;
             g.beginPath();
             g.arc(X(0), Z(hz), 1.25 * PPM_B, s < 0 ? 0 : Math.PI, s < 0 ? Math.PI : Math.PI * 2);
             g.stroke();
 
-            // Glowing target dot
-            g.fillStyle = '#ff5500';
+            // Clean rim target marker
+            g.fillStyle = '#f97316';
             g.beginPath();
-            g.arc(X(0), Z(hz), 0.16 * PPM_B, 0, Math.PI * 2);
+            g.arc(X(0), Z(hz), 0.13 * PPM_B, 0, Math.PI * 2);
             g.fill();
 
             g.restore();
@@ -6359,16 +6467,20 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         g.fillRect(0, 0, 1024, 512);
 
         if (isFooty) {
-            // FOOTBALL BALL VISUAL OVERHAUL
+            // PRO COMPETITION FOOTBALL: crisp ivory-pearl panels, deep navy pentagons, clean stitching
+            const panelGrad = g.createLinearGradient(0, 0, 0, 512);
+            panelGrad.addColorStop(0, '#f8fafc');
+            panelGrad.addColorStop(0.5, base);
+            panelGrad.addColorStop(1, '#dce3ec');
+            g.fillStyle = (rarity === 'legendary' || rarity === 'epic') ? bgGrad : panelGrad;
+            g.fillRect(0, 0, 1024, 512);
 
-            // 1. Synthetic leather micro-grain texture
-            g.fillStyle = 'rgba(0,0,0,0.05)';
-            for (let i = 0; i < 9000; i++) {
-                g.fillRect(Math.random() * 1024, Math.random() * 512, 2.0, 2.0);
-            }
-            g.fillStyle = 'rgba(255,255,255,0.04)';
-            for (let i = 0; i < 6000; i++) {
-                g.fillRect(Math.random() * 1024, Math.random() * 512, 1.8, 1.8);
+            // Subtle fine synthetic leather grain
+            for (let i = 0; i < 4200; i++) {
+                const gx = ((i * 751) % 1021);
+                const gy = ((i * 397) % 509);
+                g.fillStyle = (i & 1) ? 'rgba(15,23,42,0.025)' : 'rgba(255,255,255,0.035)';
+                g.fillRect(gx, gy, 1.5, 1.5);
             }
 
             // 32-Panel geodesic layout
@@ -6380,10 +6492,10 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 spots.push([i * 170.6 + 124, 72], [i * 170.6 + 124, 440]);
             }
 
-            // Draw stitched boundary lines between hexagonal panels
-            const seamCol = (rarity === 'legendary') ? '#facc15' : (rarity === 'rare' ? '#38bdf8' : 'rgba(0,0,0,0.55)');
+            // Subtle crisp stitched boundary lines between hexagonal panels
+            const seamCol = 'rgba(15,23,42,0.42)';
             g.strokeStyle = seamCol;
-            g.lineWidth = (rarity === 'legendary' || rarity === 'rare') ? 7.0 : 5.5;
+            g.lineWidth = 4.2;
             for (const [x, y] of spots) {
                 g.beginPath();
                 for (let k = 0; k < 6; k++) {
@@ -6397,9 +6509,9 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 g.stroke();
             }
 
-            // Secondary double-stitch micro-line
-            g.strokeStyle = 'rgba(255,255,255,0.45)';
-            g.lineWidth = 2.0;
+            // Secondary double-stitch highlight
+            g.strokeStyle = 'rgba(255,255,255,0.52)';
+            g.lineWidth = 1.6;
             for (const [x, y] of spots) {
                 g.beginPath();
                 for (let k = 0; k < 6; k++) {
@@ -6413,134 +6525,58 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 g.stroke();
             }
 
-            // Draw distinctive pentagons with rarity-specific artwork
+            // Crisp navy-charcoal pentagons with clean metallic rim
             for (const [x, y] of spots) {
-                // Shadow under pentagon
-                g.fillStyle = 'rgba(0,0,0,0.45)';
+                g.fillStyle = 'rgba(0,0,0,0.28)';
                 g.beginPath();
                 for (let k = 0; k < 5; k++) {
                     const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
-                    g.lineTo(x + Math.cos(a) * 56 + 2, y + Math.sin(a) * 56 + 3);
+                    g.lineTo(x + Math.cos(a) * 55 + 1.5, y + Math.sin(a) * 55 + 2.5);
                 }
                 g.closePath();
                 g.fill();
 
-                // Pentagon body
                 g.fillStyle = acc;
                 g.beginPath();
                 for (let k = 0; k < 5; k++) {
                     const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
-                    g.lineTo(x + Math.cos(a) * 54, y + Math.sin(a) * 54);
+                    g.lineTo(x + Math.cos(a) * 53, y + Math.sin(a) * 53);
                 }
                 g.closePath();
                 g.fill();
 
-                // Specular highlight rim inside pentagon
-                g.strokeStyle = (rarity === 'legendary') ? 'rgba(250,204,21,0.85)' : 'rgba(255,255,255,0.55)';
-                g.lineWidth = 3.2;
+                g.strokeStyle = 'rgba(56,189,248,0.45)';
+                g.lineWidth = 2.4;
                 g.stroke();
             }
-
-            // RARITY-SPECIFIC SIGNATURE EFFECTS
-            if (rarity === 'legendary') {
-                // Championship Gold / Galactic Cosmos
-                if (ballId.includes('inferno') || style === 'flame') {
-                    // Blazing lava tongues
-                    g.fillStyle = 'rgba(255,106,0,0.75)';
-                    for (let i = 0; i < 24; i++) {
-                        g.beginPath();
-                        g.arc((i * 42.6) % 1024, 256 + Math.sin(i * 1.5) * 120, 42, 0, Math.PI * 2);
-                        g.fill();
-                    }
-                    g.fillStyle = 'rgba(254,240,138,0.9)';
-                    for (let i = 0; i < 18; i++) {
-                        g.beginPath();
-                        g.arc((i * 56.8 + 20) % 1024, 256 + Math.cos(i * 1.2) * 80, 22, 0, Math.PI * 2);
-                        g.fill();
-                    }
-                } else {
-                    // Galactic / Cosmic deep space nebula with shimmering stars
-                    g.fillStyle = '#ffffff';
-                    g.shadowColor = '#c084fc';
-                    g.shadowBlur = 18;
-                    for (let i = 0; i < 36; i++) {
-                        const sx = (i * 28.4 + 14) % 1024;
-                        const sy = 40 + (i * 37) % 432;
-                        g.beginPath();
-                        g.arc(sx, sy, (i % 3 === 0) ? 6.5 : 4.0, 0, Math.PI * 2);
-                        g.fill();
-                    }
-                    g.shadowBlur = 0;
-
-                    // Golden metallic reflection sash
-                    g.strokeStyle = 'rgba(250,204,21,0.55)';
-                    g.lineWidth = 14.0;
-                    g.beginPath();
-                    g.moveTo(0, 160);
-                    g.lineTo(1024, 352);
-                    g.stroke();
-                }
-            } else if (rarity === 'epic') {
-                // Golden Elite / Molten Fire
-                g.fillStyle = 'rgba(255,215,0,0.35)';
-                for (let i = 0; i < 16; i++) {
-                    g.beginPath();
-                    g.arc(i * 64 + 32, 256 + Math.sin(i) * 90, 36, 0, Math.PI * 2);
-                    g.fill();
-                }
-                g.strokeStyle = '#facc15';
-                g.lineWidth = 4.5;
-                g.beginPath();
-                g.moveTo(0, 256);
-                g.lineTo(1024, 256);
-                g.stroke();
-            } else if (rarity === 'rare') {
-                // Cyber Neon / Electric Blue high-vis energy bands
-                g.strokeStyle = '#00f0ff';
-                g.lineWidth = 7.0;
-                g.shadowColor = '#00f0ff';
-                g.shadowBlur = 16;
-                for (let i = 0; i < 8; i++) {
-                    g.beginPath();
-                    g.arc(i * 128 + 64, 256, 44, 0, Math.PI * 2);
-                    g.stroke();
-                }
-                g.shadowBlur = 0;
-            }
+            return c;
         } else {
-            // BASKETBALL BALL VISUAL OVERHAUL
+            // PRO COMPETITION BASKETBALL: rich composite pebbled orange leather & matte channels
+            const leatherGrad = g.createLinearGradient(0, 0, 0, 512);
+            leatherGrad.addColorStop(0, '#ec7128');
+            leatherGrad.addColorStop(0.5, '#d95e18');
+            leatherGrad.addColorStop(1, '#ba4c10');
+            g.fillStyle = leatherGrad;
+            g.fillRect(0, 0, 1024, 512);
 
-            // 1. Authentic pebbled composite leather grip micro-texture
-            g.fillStyle = 'rgba(0,0,0,0.24)';
-            for (let y = 0; y < 512; y += 6) {
-                for (let x = 0; x < 1024; x += 6) {
-                    if ((x + y) % 12 === 0) {
-                        g.fillRect(x + 1, y + 1, 2.5, 2.5);
-                    }
-                }
+            // Fine jittered micro-pebble grain (zero boxy pixel grid)
+            for (let i = 0; i < 6500; i++) {
+                const px = ((i * 619 + (i % 13) * 37) % 1024);
+                const py = ((i * 313 + (i % 17) * 29) % 512);
+                g.fillStyle = (i & 1) ? 'rgba(55,16,0,0.12)' : 'rgba(255,205,150,0.08)';
+                g.fillRect(px, py, 2.0, 2.0);
             }
 
-            // Highlight pebble grain dots for tactile depth
-            g.fillStyle = 'rgba(255,255,255,0.20)';
-            for (let y = 0; y < 512; y += 8) {
-                for (let x = 0; x < 1024; x += 8) {
-                    g.fillRect(x, y, 1.8, 1.8);
-                }
-            }
-
-            // 2. Recessed rubber grip seam channels
-            const channelCol = (rarity === 'legendary') ? '#facc15' : ((rarity === 'rare') ? '#22d3ee' : acc);
-            g.strokeStyle = channelCol;
-            g.lineWidth = 14;
+            // Recessed matte charcoal rubber channels
+            g.strokeStyle = '#181412';
+            g.lineWidth = 13;
             g.lineCap = 'round';
 
-            // Equator seam
             g.beginPath();
             g.moveTo(0, 256);
             g.lineTo(1024, 256);
             g.stroke();
 
-            // Vertical rib seams
             for (let x = 0; x <= 1024; x += 256) {
                 g.beginPath();
                 g.moveTo(x, 0);
@@ -6548,7 +6584,6 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 g.stroke();
             }
 
-            // Curved side ribs
             for (const x of [128, 384, 640, 896]) {
                 g.beginPath();
                 g.arc(x, 256, 184, -1.1, 1.1);
@@ -6558,9 +6593,8 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 g.stroke();
             }
 
-            // Inner dark shadow groove for 3D depth
-            g.strokeStyle = 'rgba(0,0,0,0.92)';
-            g.lineWidth = 6.0;
+            g.strokeStyle = 'rgba(0,0,0,0.85)';
+            g.lineWidth = 5.0;
             g.beginPath();
             g.moveTo(0, 256);
             g.lineTo(1024, 256);
@@ -6572,49 +6606,12 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 g.stroke();
             }
 
-            // Contrast seam highlights
-            const hlCol = (rarity === 'legendary') ? 'rgba(254,240,138,0.75)' : 'rgba(255,255,255,0.45)';
-            g.strokeStyle = hlCol;
-            g.lineWidth = 2.5;
+            g.strokeStyle = 'rgba(255,220,185,0.22)';
+            g.lineWidth = 2.0;
             g.beginPath();
-            g.moveTo(0, 252);
-            g.lineTo(1024, 252);
+            g.moveTo(0, 250);
+            g.lineTo(1024, 250);
             g.stroke();
-
-            // RARITY-SPECIFIC BASKETBALL SIGNATURES
-            if (rarity === 'legendary') {
-                // Cosmic / Midnight glowing star constellations and energy vortex
-                g.fillStyle = '#ffffff';
-                g.shadowColor = '#38bdf8';
-                g.shadowBlur = 18;
-                for (let i = 0; i < 30; i++) {
-                    const sx = (i * 34.1 + 17) % 1024;
-                    const sy = 40 + (i * 41) % 432;
-                    g.beginPath();
-                    g.arc(sx, sy, 5.0, 0, Math.PI * 2);
-                    g.fill();
-                }
-                g.shadowBlur = 0;
-            } else if (rarity === 'epic') {
-                // Molten Fire / Golden Elite
-                g.fillStyle = 'rgba(245,158,11,0.45)';
-                for (let i = 0; i < 16; i++) {
-                    g.beginPath();
-                    g.arc(i * 64 + 32, 256 + Math.sin(i * 1.4) * 90, 32, 0, Math.PI * 2);
-                    g.fill();
-                }
-            } else if (rarity === 'rare') {
-                // Neon Energy / Blaze cyan accent bands
-                g.strokeStyle = '#00f0ff';
-                g.lineWidth = 4.0;
-                g.shadowColor = '#00f0ff';
-                g.shadowBlur = 14;
-                g.beginPath();
-                g.moveTo(0, 260);
-                g.lineTo(1024, 260);
-                g.stroke();
-                g.shadowBlur = 0;
-            }
         }
 
         return c;
@@ -7154,8 +7151,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const pal = palette.map((c) => (0, math_js_6.rgb)(c));
         const step = quality >= 1 ? 0.62 : 0.9;
         const hi = quality >= 1;
-        const seatBase = (0, math_js_6.rgb)((_a = palette[0]) !== null && _a !== void 0 ? _a : 0x3355aa).map((v) => v * 0.55);
-        const seatAlt = (0, math_js_6.rgb)((_c = (_b = palette[1]) !== null && _b !== void 0 ? _b : palette[0]) !== null && _c !== void 0 ? _c : 0xaaaaaa).map((v) => v * 0.55);
+        const seatBase = (0, math_js_6.rgb)((_a = palette[0]) !== null && _a !== void 0 ? _a : 0x3355aa).map((v) => v * 0.34);
+        const seatAlt = (0, math_js_6.rgb)((_c = (_b = palette[1]) !== null && _b !== void 0 ? _b : palette[0]) !== null && _c !== void 0 ? _c : 0xaaaaaa).map((v) => v * 0.34);
         const B = { m: [], c: [] };
         const H = { m: [], c: [] };
         const R = { m: [], c: [] };
@@ -7176,7 +7173,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 wall.setPos(st.center, (lastH + 3.2) / 2, st.sign * (lastOut + 1.1));
             else
                 wall.setPos(st.sign * (lastOut + 1.1), (lastH + 3.2) / 2, st.center);
-            const rimMat = (0, scene_js_1.material)({ color: wallCol, emissive: [pal[0][0]*0.32, pal[0][1]*0.32, pal[0][2]*0.32], spec: 0.7, shininess: 65 });
+            const rimMat = (0, scene_js_1.material)({ color: wallCol, emissive: [pal[0][0] * 0.14, pal[0][1] * 0.14, pal[0][2] * 0.14], spec: 0.48, shininess: 48 });
             const rim = new scene_js_1.Node(st.alongX ? G.box(st.length + 2, 0.14, 0.56) : G.box(0.56, 0.14, st.length + 2), rimMat);
             if (st.alongX)
                 rim.setPos(st.center, lastH + 3.2 + 0.07, st.sign * (lastOut + 1.1));
@@ -7186,7 +7183,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             for (let r = 0; r < st.rows; r++) {
                 const out = st.offset + r * 0.95;
                 const h = baseY + 0.7 + r * 0.75;
-                const slab = new scene_js_1.Node(st.alongX ? G.box(st.length, h, 1.0) : G.box(1.0, h, st.length), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(standColor), receiveShadow: false }));
+                const slab = new scene_js_1.Node(st.alongX ? G.box(st.length, h, 1.08) : G.box(1.08, h, st.length), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(standColor), receiveShadow: false }));
                 if (st.alongX)
                     slab.setPos(st.center, h / 2, st.sign * out);
                 else
@@ -7194,14 +7191,14 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 slabs.add(slab);
                 const n = Math.floor(st.length / step);
                 const rowFill = 0.78 + rand() * 0.2;
-                const rowTint = 0.8 + rand() * 0.3;
+                const rowTint = 0.7 + rand() * 0.22;
                 for (let i = 0; i < n; i++) {
                     const aisle = i % 15 === 14;
                     const along = st.center - st.length / 2 + (i + 0.5) * step;
                     const ox = st.alongX ? along : st.sign * out;
                     const oz = st.alongX ? st.sign * out : along;
                     if (aisle) {
-                        push(S, st.alongX ? step * 0.9 : 0.9, 0.06, st.alongX ? 0.9 : step * 0.9, ox, h + 0.03, oz, [0.5, 0.52, 0.56]);
+                        push(S, st.alongX ? step * 0.9 : 0.9, 0.06, st.alongX ? 0.9 : step * 0.9, ox, h + 0.03, oz, [0.24, 0.27, 0.33]);
                         continue;
                     }
                     const seatCol = (Math.floor(i / 5) + r) % 4 === 0 ? seatAlt : seatBase;
@@ -7537,19 +7534,16 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
     }
 
     function buildFootballStadiumArchitecture(root, t, W, L, GD, quality) {
-        // Fortnite Neo Football Stadium: Clean cyber bowl, floating holographic jumbotrons, soaring canopy arches!
-        // 1. Sleek Aerodynamic Stadium Perimeter Barriers with continuous glowing neon rails
-        const barrierMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0a0f1d), spec: 0.65, shininess: 60 });
-        const neonCyanMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x00f0ff), emissive: [0.6, 1.2, 1.4], unlit: true });
-        const neonGoldMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xfacc15), emissive: [1.2, 1.0, 0.4], unlit: true });
+        // Championship Football Stadium: Brushed steel rails, clean canopy bowl, zero garish neon bars
+        const barrierMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0d1526), spec: 0.45, shininess: 48 });
+        const railMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x64748b), emissive: [0.06, 0.11, 0.16], spec: 0.72, shininess: 68 });
 
-        // Sideline continuous barrier walls
+        // Sideline barrier walls
         for (const s of [-1, 1]) {
             const wall = new scene_js_1.Node(G.box(0.4, 1.2, 2 * L + 14), barrierMat);
             wall.setPos(s * (W + 3.8), 0.6, 0);
-            // Glowing neon top rail
-            const rail = new scene_js_1.Node(G.box(0.45, 0.08, 2 * L + 14), neonCyanMat);
-            rail.setPos(s * (W + 3.8), 1.24, 0);
+            const rail = new scene_js_1.Node(G.box(0.44, 0.07, 2 * L + 14), railMat);
+            rail.setPos(s * (W + 3.8), 1.23, 0);
             root.add(wall, rail);
         }
 
@@ -7557,32 +7551,31 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         for (const s of [-1, 1]) {
             const wall = new scene_js_1.Node(G.box(2 * W + 8, 1.2, 0.4), barrierMat);
             wall.setPos(0, 0.6, s * (L + GD + 4.8));
-            const rail = new scene_js_1.Node(G.box(2 * W + 8, 0.08, 0.45), neonCyanMat);
-            rail.setPos(0, 1.24, s * (L + GD + 4.8));
+            const rail = new scene_js_1.Node(G.box(2 * W + 8, 0.07, 0.44), railMat);
+            rail.setPos(0, 1.23, s * (L + GD + 4.8));
             root.add(wall, rail);
         }
 
         // 2. Open Sky Vista (Clean field-of-view behind goals without big screen obstruction)
 
-        // 3. Four Monumental Cyber Floodlight Towers
+        // 3. Four Monumental Floodlight Towers
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
-                floodlight(root, sx * (W + 12.0), sz * (L + 8.5), 22, t.glow || 0x00f0ff);
+                floodlight(root, sx * (W + 12.0), sz * (L + 8.5), 22, t.glow || 0xfff0c0);
             }
         }
 
         // 4. Sweeping Stadium Aerodynamic Canopy Arches
-        const archMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.6, shininess: 50 });
+        const archMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.55, shininess: 46 });
         for (const sx of [-1, 1]) {
             const canopy = new scene_js_1.Node(G.box(10.0, 0.45, 2 * L + 16), archMat);
             canopy.rotation = [0, 0, -sx * 0.15];
             canopy.setPos(sx * (W + 9.5), 14.5, 0);
             
-            // Neon edge strip along canopy rim
-            const neonRim = new scene_js_1.Node(G.box(0.2, 0.5, 2 * L + 16), neonCyanMat);
-            neonRim.setPos(sx * (W + 4.5), 13.8, 0);
+            const trimRim = new scene_js_1.Node(G.box(0.22, 0.48, 2 * L + 16), railMat);
+            trimRim.setPos(sx * (W + 4.5), 13.8, 0);
 
-            root.add(canopy, neonRim);
+            root.add(canopy, trimRim);
             for (const cz of [-L * 0.8, -L * 0.3, L * 0.3, L * 0.8]) {
                 const col = new scene_js_1.Node(G.cylinder(0.38, 0.38, 15.0, 8), archMat);
                 col.setPos(sx * (W + 13.5), 7.5, cz);
@@ -7590,13 +7583,13 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             }
         }
 
-        // 5. Full 360-Degree Championship Stadium Grandstands + Enclosed Corner Concourse Structures!
+        // 5. Full 360-Degree Championship Stadium Grandstands + Enclosed Corner Concourse Structures
         const cornerArchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x162033), spec: 0.35, shininess: 30 });
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
                 const cStand = new scene_js_1.Node(G.box(8.8, 7.8, 8.8), cornerArchMat);
                 cStand.setPos(sx * (W + 7.2), 3.6, sz * (L + GD + 7.0));
-                const cTrim = new scene_js_1.Node(G.box(9.0, 0.25, 9.0), neonCyanMat);
+                const cTrim = new scene_js_1.Node(G.box(9.0, 0.22, 9.0), railMat);
                 cTrim.setPos(sx * (W + 7.2), 7.6, sz * (L + GD + 7.0));
                 root.add(cStand, cTrim);
             }
@@ -7620,12 +7613,12 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
     function buildBasketballArenaArchitecture(root, t, W, L, APRON, quality) {
         // Championship Indoor Arena Bowl: Complete enclosed lower + upper grandstands, corner mezzanines,
         // overhead truss skylight rig, zero black abyss voids!
-        const barrierMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0d1424), spec: 0.65, shininess: 65 });
+        const barrierMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0d1424), spec: 0.5, shininess: 52 });
         const wallConcreteMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1b263b), spec: 0.28, shininess: 24, receiveShadow: false });
-        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x25324a), spec: 0.65, shininess: 55, receiveShadow: false });
-        const accentCyanMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x38bdf8), emissive: [0.35, 0.72, 0.95], unlit: true });
-        const accentWarmMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf97316), emissive: [0.85, 0.42, 0.10], unlit: true });
-        const ceilingLampMat = (0, scene_js_1.material)({ color: [1, 1, 1], emissive: [1.5, 1.45, 1.35], unlit: true, fog: false });
+        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x25324a), spec: 0.6, shininess: 50, receiveShadow: false });
+        const accentCyanMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x38bdf8), emissive: [0.10, 0.20, 0.30], spec: 0.55, shininess: 50 });
+        const accentWarmMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf97316), emissive: [0.28, 0.13, 0.04], spec: 0.55, shininess: 50 });
+        const ceilingLampMat = (0, scene_js_1.material)({ color: [1, 1, 1], emissive: [1.15, 1.12, 1.05], unlit: true, fog: false });
 
         // 1. Sleek Championship Perimeter Wall & Subtle Glass/Steel Rail
         for (const s of [-1, 1]) {
@@ -8175,9 +8168,9 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const pitch = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makePitchTexture)(t), { mipmap: true, srgb: true }), receiveShadow: true, spec: 0.14, shininess: 18 }));
         root.add(ground, pitch);
 
-        const postMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf8fafc), emissive: [0.10, 0.24, 0.34], spec: 0.90, shininess: 92, rim: 0.45, castShadow: true });
+        const postMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf8fafc), emissive: [0.04, 0.05, 0.06], spec: 0.75, shininess: 76, rim: 0.25, castShadow: true });
         const netTex = new scene_js_1.Texture((0, textures_js_1.makeNetTexture)(), { repeat: true, mipmap: true, srgb: true });
-        const mkNet = (w, h, ux, uy) => new scene_js_1.Node(G.quad(w, h), (0, scene_js_1.material)({ texture: netTex, transparent: true, alpha: 0.92, doubleSided: true, depthWrite: false, uvScale: [ux, uy], receiveShadow: false, castShadow: false, color: (0, math_js_6.rgb)(0xe0f2fe), emissive: [0.18, 0.38, 0.56] }));
+        const mkNet = (w, h, ux, uy) => new scene_js_1.Node(G.quad(w, h), (0, scene_js_1.material)({ texture: netTex, transparent: true, alpha: 0.88, doubleSided: true, depthWrite: false, uvScale: [ux, uy], receiveShadow: false, castShadow: false, color: (0, math_js_6.rgb)(0xf8fafc), emissive: [0.06, 0.08, 0.10] }));
         const nets = [];
         for (const s of [-1, 1]) {
             const goal = new scene_js_1.Node();
@@ -8311,20 +8304,20 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         buildArenaSkyAndHorizon(root, t, W, L, true, quality);
 
         const [pw, pd] = (0, textures_js_1.courtPlaneSize)();
-        // Varnished Tournament Maple Hardwood Finish (rich specular light pools)
-        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.80, shininess: 92, receiveShadow: true }));
+        // Satin Tournament Maple Hardwood Finish (warm highlights without mirror glare)
+        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.30, shininess: 44, receiveShadow: true }));
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
-        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.56, spec: 0.55, shininess: 70, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
+        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.54, spec: 0.45, shininess: 60, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
         const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.4, shininess: 35, castShadow: true });
-        const rimColorVal = t.rim || 0xff5500;
+        const rimColorVal = t.rim || 0xf97316;
         const rimRgb = (0, math_js_6.rgb)(rimColorVal);
         const rimMat = (0, scene_js_1.material)({
-            color: (0, math_js_6.rgb)(0xff5500),
-            emissive: [1.35, 0.45, 0.05], // High-voltage glowing Fortnite neon orange rim
-            spec: 0.65,
-            shininess: 60,
+            color: rimRgb,
+            emissive: [0.22, 0.07, 0.01],
+            spec: 0.55,
+            shininess: 52,
             castShadow: true
         });
         const poleMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x334155), spec: 0.5, castShadow: true });
@@ -8393,8 +8386,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                     uvScale: [6, 3],
                     receiveShadow: false,
                     castShadow: false,
-                    color: (0, math_js_6.rgb)(0xe0f2fe),
-                    emissive: [0.38, 0.68, 0.98] // Glowing holographic energy weave net
+                    color: (0, math_js_6.rgb)(0xf8fafc),
+                    emissive: [0.06, 0.08, 0.10]
                 })
             );
             net.rotation = [0, 0, 0];
@@ -9662,7 +9655,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const isFrame = (id && id.startsWith('frame_')) || (fallback && fallback.startsWith('frame_'));
             const isSkin = (id && (id.startsWith('skin_') || id.startsWith('footy_') || id.startsWith('hoops_'))) || (fallback && (fallback.startsWith('skin_') || fallback.startsWith('footy_') || fallback.startsWith('hoops_')));
             if (isStd) {
-                return Object.assign({}, isHoops ? { floor: 0x060810, woodA: 0xd99557, woodB: 0xe8a968, line: 0x00f0ff, paint: 0xd946ef, centerPaint: 0x06b6d4, rim: 0xff5500, fog: 0x0c0f1c } : { pitchA: 0x059669, pitchB: 0x10b981, line: 0x7dffe8, fog: 0x0c1a2e }, { id: fallback || id || (isHoops ? 'std_hoops_street' : 'std_footy_classic') });
+                return Object.assign({}, isHoops ? { floor: 0x131b2b, apron: 0x111a2e, woodA: 0xc98a4a, woodB: 0xd99b59, line: 0xf8fafc, paint: 0x172645, centerPaint: 0x15233e, rim: 0xf97316, fog: 0x10182b } : { pitchA: 0x1e843d, pitchB: 0x176d31, line: 0xf8fafc, floor: 0x10351d, fog: 0x122240 }, { id: fallback || id || (isHoops ? 'std_hoops_street' : 'std_footy_classic') });
             }
             if (isTrail) {
                 return { type: 'default', color: 0xffffff, id: 'trail_default' };
@@ -9949,18 +9942,16 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.scene.root.add(c.root);
             }
             const fallbackBall = (mode === 'footy') ? 'ball_footy_classic' : 'ball_hoops_street';
-            const ballSlot = (mode === 'footy') ? 'ball.footy' : 'ball.hoops';
-            let chosenBallId = eq[ballSlot] || (mode === 'footy' ? (eq.ball && !eq.ball.includes('hoops') ? eq.ball : null) : (eq.ball && eq.ball.includes('hoops') ? eq.ball : null)) || fallbackBall;
-            this.ballVisual = visualOf(chosenBallId, fallbackBall);
-            if (!this.ballVisual.mode) {
-                this.ballVisual.mode = mode;
-            }
+            const chosenBallId = fallbackBall;
+            this.ballVisual = mode === 'footy'
+                ? { mode: 'footy', base: 0xf8fafc, accent: 0x0f172a, style: 'classic', rarity: 'common', id: 'ball_footy_classic' }
+                : { mode: 'hoops', base: 0xd95f18, accent: 0x1a1412, style: 'classic', rarity: 'common', id: 'ball_hoops_street' };
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
             // Prominent, clearly trackable ball size proportional to 3D player models (r = 0.23m for soccer, 0.24m for basketball)
             const r = (mode === 'footy') ? 0.23 : 0.24;
-            this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: 0.75, shininess: 55, castShadow: true, rim: 0.25, emissive: this.ballVisual.glow ? (0, math_js_10.rgb)(this.ballVisual.glow).map((v) => v * 0.4) : [0, 0, 0] }));
+            this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: mode === 'footy' ? 0.42 : 0.26, shininess: mode === 'footy' ? 38 : 22, castShadow: true, rim: 0.18, emissive: [0, 0, 0] }));
             this.ballShadow = new scene_js_5.Node(G.plane(r * 2.8, r * 2.8), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
-            this.ballGlow = new scene_js_5.Node(G.ring(r * 1.25, r * 1.9, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(0xffe27a), unlit: true, transparent: true, alpha: 0.65, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            this.ballGlow = new scene_js_5.Node(G.ring(r * 1.18, r * 1.48, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(mode === 'footy' ? 0x93c5fd : 0xfdba74), unlit: true, transparent: true, alpha: 0.22, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.scene.root.add(this.ball, this.ballShadow, this.ballGlow);
             this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), null);
             // Boosts completely removed
@@ -10195,6 +10186,9 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const s = this.scene.shadow;
             s.center = [c.target[0], 0, c.target[2]];
             this.renderer.render(this.scene, c);
+            if (typeof window !== 'undefined' && window.CharactersGLB) {
+                try { window.CharactersGLB.renderMatch(this, dt); } catch (e) {}
+            }
         }
         restoreLivePositions() {
             const sim = this.sim;
@@ -13872,7 +13866,7 @@ define("ui/dom", ["require", "exports"], function (require, exports) {
     }
     function isTouchDevice() {
         var _a, _b;
-        return ((_a = navigator.maxTouchPoints) !== null && _a !== void 0 ? _a : 0) > 0 || ((_b = window.matchMedia) === null || _b === void 0 ? void 0 : _b.call(window, '(pointer: coarse)').matches) === true;
+        return ('ontouchstart' in window) || ((_a = navigator.maxTouchPoints) !== null && _a !== void 0 ? _a : 0) > 0 || ((_b = window.matchMedia) === null || _b === void 0 ? void 0 : _b.call(window, '(pointer: coarse)').matches) === true;
     }
 });
 define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "data/shop"], function (require, exports, input_js_1, index_js_1, dom_js_1, shop_js_1) {
@@ -13882,127 +13876,43 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
     function getHudActionSvg(action, isHoops) {
         if (action === 'shoot') {
             if (isHoops) {
-                // Pro Competition Basketball Rim Swish
-                return '<svg width="42" height="42" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '  <radialGradient id="bbProShade" cx="38%" cy="30%" r="66%">' +
-                    '    <stop offset="0%" stop-color="#ff881a"/>' +
-                    '    <stop offset="50%" stop-color="#ea580c"/>' +
-                    '    <stop offset="85%" stop-color="#9a3412"/>' +
-                    '    <stop offset="100%" stop-color="#431407"/>' +
-                    '  </radialGradient>' +
-                    '</defs>' +
-                    '<path d="M9 25 L13 38 L18 25 L23 38 L27 25 M13 25 L18 38 L23 25 L27 38 L31 25" stroke="#e2e8f0" stroke-width="1.3" opacity="0.85" stroke-linecap="round"/>' +
-                    '<path d="M10 29 Q20 33 30 29 M12 34 Q20 37 28 34" stroke="#cbd5e1" stroke-width="1.2" opacity="0.7" fill="none"/>' +
-                    '<ellipse cx="20" cy="25" rx="12" ry="3.5" fill="none" stroke="#ea580c" stroke-width="3"/>' +
-                    '<ellipse cx="20" cy="25" rx="12" ry="3.5" fill="none" stroke="#fdba74" stroke-width="1"/>' +
-                    '<rect x="31" y="23" width="5" height="3.5" rx="1" fill="#7c2d12"/>' +
-                    '<circle cx="22" cy="13" r="10" fill="url(#bbProShade)" stroke="#fed7aa" stroke-width="0.8"/>' +
-                    '<path d="M12.2 13 Q22 14 31.8 13" stroke="#1c1917" stroke-width="1.3" stroke-linecap="round"/>' +
-                    '<path d="M22 3.2 Q22.8 13 22 22.8" stroke="#1c1917" stroke-width="1.3" stroke-linecap="round"/>' +
-                    '<path d="M15 5.5 C19.5 8.5 19.5 17.5 15 20.5" stroke="#1c1917" stroke-width="1.2" stroke-linecap="round"/>' +
-                    '<path d="M29 5.5 C24.5 8.5 24.5 17.5 29 20.5" stroke="#1c1917" stroke-width="1.2" stroke-linecap="round"/>' +
-                    '<ellipse cx="19" cy="8.5" rx="2.5" ry="1.2" transform="rotate(-30 19 8.5)" fill="#ffffff" opacity="0.5"/>' +
+                // Minimalist crisp vector hoop & ball arc
+                return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="16" cy="10" r="5.5" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.14)"/>' +
+                    '<path d="M11.2 10 H20.8 M16 4.6 V15.4" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>' +
+                    '<ellipse cx="16" cy="21" rx="8.5" ry="2.4" stroke="#fb923c" stroke-width="2.2"/>' +
+                    '<path d="M10 22.5 L12.5 28.5 H19.5 L22 22.5 M13.5 22.5 L14.8 28.5 M18.5 22.5 L17.2 28.5" stroke="rgba(255,255,255,0.78)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
                     '</svg>';
             }
-            // Pro Kinetic Ballistic Strike - Football (Authentic 3D Blue-Hex Ball)
-            return '<svg width="42" height="42" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                '<defs>' +
-                '  <linearGradient id="strikeBeam" x1="0%" y1="100%" x2="100%" y2="0%">' +
-                '    <stop offset="0%" stop-color="#2563eb" stop-opacity="0"/>' +
-                '    <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.6"/>' +
-                '    <stop offset="100%" stop-color="#00f0ff"/>' +
-                '  </linearGradient>' +
-                '  <radialGradient id="fvh_soc_strike" cx="35%" cy="30%" r="70%">' +
-                '    <stop offset="0%" stop-color="#ffffff"/>' +
-                '    <stop offset="30%" stop-color="#f8fafc"/>' +
-                '    <stop offset="65%" stop-color="#cbd5e1"/>' +
-                '    <stop offset="90%" stop-color="#64748b"/>' +
-                '    <stop offset="100%" stop-color="#1e293b"/>' +
-                '  </radialGradient>' +
-                '  <radialGradient id="fvh_soc_strike_blue" cx="36%" cy="32%" r="68%">' +
-                '    <stop offset="0%" stop-color="#60a5fa"/>' +
-                '    <stop offset="35%" stop-color="#2563eb"/>' +
-                '    <stop offset="75%" stop-color="#1d4ed8"/>' +
-                '    <stop offset="100%" stop-color="#172554"/>' +
-                '  </radialGradient>' +
-                '  <clipPath id="fvh_soc_strike_clip"><circle cx="26" cy="18" r="13"/></clipPath>' +
-                '</defs>' +
-                '<path d="M4 38 L14 28" stroke="url(#strikeBeam)" stroke-width="3" stroke-linecap="round"/>' +
-                '<path d="M2 30 L9 23" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>' +
-                '<path d="M12 40 L19 33" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
-                '<path d="M12 30 L22 20 M22 20 L16 19 M22 20 L21 26" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<circle cx="26" cy="18" r="13" fill="url(#fvh_soc_strike)" stroke="#93c5fd" stroke-width="0.9"/>' +
-                '<g clip-path="url(#fvh_soc_strike_clip)">' +
-                '  <polygon points="26,14 30,17 28.5,22 23.5,22 22,17" fill="url(#fvh_soc_strike_blue)" stroke="#1e293b" stroke-width="0.7"/>' +
-                '  <polygon points="26,6.5 28.5,8.5 27.5,11 24.5,11 23.5,8.5" fill="url(#fvh_soc_strike_blue)"/>' +
-                '  <polygon points="36,12 37.5,15 35,17 33,15 33.5,12.5" fill="url(#fvh_soc_strike_blue)"/>' +
-                '  <polygon points="35.5,25 32.5,27 31,24.5 32,22 35,22" fill="url(#fvh_soc_strike_blue)"/>' +
-                '  <polygon points="16.5,25 19.5,27 21,24.5 20,22 17,22" fill="url(#fvh_soc_strike_blue)"/>' +
-                '  <polygon points="16,12 18.5,12.5 19,15 17,17 14.5,15" fill="url(#fvh_soc_strike_blue)"/>' +
-                '  <circle cx="22" cy="13" r="1.8" fill="#ffffff" opacity="0.9"/>' +
-                '</g>' +
+            // Minimalist crisp vector soccer strike
+            return '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M5 25 L11 19 M4 19 L8 15 M11 27 L15 23" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round"/>' +
+                '<circle cx="20" cy="13" r="8" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.14)"/>' +
+                '<polygon points="20,9.2 23.4,11.7 22.1,15.6 17.9,15.6 16.6,11.7" fill="#ffffff"/>' +
+                '<path d="M20 5 V9.2 M27.5 11 L23.4 11.7 M24.8 19.2 L22.1 15.6 M15.2 19.2 L17.9 15.6 M12.5 11 L16.6 11.7" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/>' +
                 '</svg>';
         }
         if (action === 'tackle') {
             if (isHoops) {
-                // Pro Basketball Interception Steal
-                return '<svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '  <radialGradient id="stealCoreGrad" cx="35%" cy="30%" r="68%">' +
-                    '    <stop offset="0%" stop-color="#ff881a"/>' +
-                    '    <stop offset="65%" stop-color="#ea580c"/>' +
-                    '    <stop offset="100%" stop-color="#7c2d12"/>' +
-                    '  </radialGradient>' +
-                    '</defs>' +
-                    '<path d="M20 5 L20 9 M20 31 L20 35 M7 20 L11 20 M29 20 L33 20" stroke="#f43f5e" stroke-width="2" stroke-linecap="round"/>' +
-                    '<circle cx="20" cy="20" r="8.5" fill="url(#stealCoreGrad)" stroke="#fca5a5" stroke-width="0.8"/>' +
-                    '<path d="M11.8 20 Q20 21 28.2 20" stroke="#1c1917" stroke-width="1.2"/>' +
-                    '<path d="M20 11.8 Q20.5 20 20 28.2" stroke="#1c1917" stroke-width="1.2"/>' +
-                    '<path d="M3 14 C6 14 9 16 12 17 L16 16 C17 16 17.5 17.5 16.5 18.5 L13 20 L16 21 C17 21.5 16.5 23 15.5 23 L12 22 L11 25 C10.5 26 9 25.5 9 24.5 L8 21 L3 20 Z" fill="#e11d48" stroke="#ffe4e6" stroke-width="1.2" stroke-linejoin="round"/>' +
-                    '<rect x="3" y="14" width="3.5" height="6.5" rx="1" fill="#881337"/>' +
-                    '<path d="M37 14 C34 14 31 16 28 17 L24 16 C23 16 22.5 17.5 23.5 18.5 L27 20 L24 21 C23 21.5 23.5 23 24.5 23 L28 22 L29 25 C29.5 26 31 25.5 31 24.5 L32 21 L37 20 Z" fill="#e11d48" stroke="#ffe4e6" stroke-width="1.2" stroke-linejoin="round"/>' +
-                    '<rect x="33.5" y="14" width="3.5" height="6.5" rx="1" fill="#881337"/>' +
+                // Minimalist crisp vector steal / swipe
+                return '<svg width="26" height="26" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="14" cy="14" r="6" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.12)"/>' +
+                    '<path d="M8.5 14 H19.5 M14 8.5 V19.5" stroke="#ffffff" stroke-width="1.4"/>' +
+                    '<path d="M5 8 L9 12 M5 12 H9 M23 20 L19 16 M23 16 H19" stroke="#fda4af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
                     '</svg>';
             }
-            // Pro Soccer Razor Slide Tackle Boot
-            return '<svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                '<defs>' +
-                '  <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
-                '    <stop offset="0%" stop-color="#f43f5e"/>' +
-                '    <stop offset="60%" stop-color="#e11d48"/>' +
-                '    <stop offset="100%" stop-color="#881337"/>' +
-                '  </linearGradient>' +
-                '</defs>' +
-                '<path d="M3 34 L37 34" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>' +
-                '<path d="M14 35 L19 31 M18 36 L24 31 M23 37 L29 32" stroke="#fda4af" stroke-width="1.8" stroke-linecap="round"/>' +
-                '<rect x="15" y="31.5" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
-                '<rect x="21" y="31.5" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
-                '<rect x="27" y="31" width="2.5" height="2.5" rx="0.5" fill="#ffffff"/>' +
-                '<path d="M4 18 L11 17 L15 24 L29 27 C31.5 27.5 33 29.5 31 31.5 L12 31.5 C7.5 31.5 4.5 28 4 24 Z" fill="url(#bladeGrad)" stroke="#fecdd3" stroke-width="1.4" stroke-linejoin="round"/>' +
-                '<path d="M12 22 L22 26 M10 24 L18 28" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>' +
-                '<circle cx="32" cy="21" r="5.5" fill="#ffffff" stroke="#2563eb" stroke-width="0.8"/>' +
-                '<polygon points="32,19 33.5,20.2 33,22 31,22 30.5,20.2" fill="#2563eb"/>' +
-                '<path d="M28 22 L25 20 M29 25 L26 27" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>' +
+            // Minimalist crisp vector slide tackle chevrons
+            return '<svg width="26" height="26" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M4 21 H24" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>' +
+                '<path d="M6 16 L13 16 L21 10" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<path d="M16 10 H21 V15" stroke="#fda4af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<circle cx="22" cy="19" r="2.6" fill="#ffffff"/>' +
                 '</svg>';
         }
-        // Pro Supersonic Turbo Sprint
-        return '<svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-            '<defs>' +
-            '  <linearGradient id="nitroGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
-            '    <stop offset="0%" stop-color="#ffffff"/>' +
-            '    <stop offset="40%" stop-color="#38bdf8"/>' +
-            '    <stop offset="100%" stop-color="#06b6d4"/>' +
-            '  </linearGradient>' +
-            '</defs>' +
-            '<path d="M3 11 L10 18 L3 25" stroke="#06b6d4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>' +
-            '<path d="M9 11 L16 18 L9 25" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>' +
-            '<circle cx="27" cy="8" r="3.2" fill="url(#nitroGrad)"/>' +
-            '<path d="M25 11 L19 19 L16 18 L22 11 Z" fill="url(#nitroGrad)"/>' +
-            '<path d="M24 12 L30 16 L34 14" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-            '<path d="M20 13 L15 15 L12 11" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
-            '<path d="M19 19 L26 21 L29 29" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-            '<path d="M17 19 L12 25 L7 27" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        // Minimalist crisp vector turbo sprint chevrons
+        return '<svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M6 8 L12 14 L6 20" stroke="rgba(255,255,255,0.65)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<path d="M14 7 L21 14 L14 21" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
             '</svg>';
     }
     const STICK_R = 58;
@@ -17326,7 +17236,6 @@ define("core/album", ["require", "exports", "data/shop", "core/packs"], function
             reward: { coins: 600, xp: 200, pack: 'footy' },
             pages: [
                 { id: 'footy.pitches', collection: 'footy', title: 'album.page.pitches', icon: '🏟️', items: sorted(pick('stadiums', 'footy')) },
-                { id: 'footy.balls', collection: 'footy', title: 'album.page.balls', icon: '⚽', items: sorted(pick('balls', 'footy')) },
             ],
         },
         {
@@ -17336,7 +17245,6 @@ define("core/album", ["require", "exports", "data/shop", "core/packs"], function
             reward: { coins: 600, xp: 200, pack: 'hoops' },
             pages: [
                 { id: 'hoops.courts', collection: 'hoops', title: 'album.page.courts', icon: '🏟️', items: sorted(pick('stadiums', 'hoops')) },
-                { id: 'hoops.balls', collection: 'hoops', title: 'album.page.balls', icon: '🏀', items: sorted(pick('balls', 'hoops')) },
             ],
         },
         {

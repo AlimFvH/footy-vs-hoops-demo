@@ -131,7 +131,7 @@
       openLocker: 'INVENTORY',
       openLockerShort: 'INVENTORY',
       switchSideShort: 'SWITCH TEAM',
-      tapToInspect: 'Tap player to customize wardrobe, balls & gear',
+      tapToInspect: 'Tap player to customize wardrobe & kits',
       practiceTitle: 'Practice Match vs AI',
       selectDifficulty: 'Choose match rules and difficulty',
       playMatch: 'START MATCH',
@@ -528,16 +528,16 @@
       warScoreTotal: 'Total Team Points',
       warSeasonTimer: 'Season ends in {d}d · Team with most points claims the Championship Cup!',
       warLiveScoreboard: 'CLASH SCOREBOARD',
-      storeSubFooty: 'FOOTBALL CLUB BOUTIQUE · GEAR FOR FOOTBALLERS',
-      storeSubHoops: 'BASKETBALL CLUB BOUTIQUE · GEAR FOR BASKETBALLERS',
+      storeSubFooty: 'FOOTBALL CLUB STORE · KITS',
+      storeSubHoops: 'BASKETBALL CLUB STORE · JERSEYS',
       storeNoticeFooty: '⚽ You are playing for Team Football. Store strictly displays football items only.',
       storeNoticeHoops: '🏀 You are playing for Team Basketball. Store strictly displays basketball items only.',
       onlyForFootball: 'Exclusive for Footballers',
       onlyForBasketball: 'Exclusive for Basketballers',
       teamFootballBoutique: 'FOOTBALL CLUB STORE',
       teamBasketballBoutique: 'BASKETBALL CLUB STORE',
-      teamFootballBoutiqueDesc: 'Official football gear: match balls, cleats, striker kits, and championship pitches.',
-      teamBasketballBoutiqueDesc: 'Official basketball gear: basketballs, sneakers, all-star jerseys, and hardwood courts.',
+      teamFootballBoutiqueDesc: 'Official football gear: cleats, striker kits, and championship pitches.',
+      teamBasketballBoutiqueDesc: 'Official basketball gear: sneakers, all-star jerseys, and hardwood courts.',
       tabSeason: '🏆 Season',
       tabFooty: '⚽ Footy',
       tabHoops: '🏀 Hoops',
@@ -594,7 +594,7 @@
       airdropHubTitle: 'Play-to-Airdrop Hub',
       airdropBannerTitle: 'Earn $FOOTY & $HOOPS Tokens',
       airdropBannerSub: 'Play matches, climb rankings & build squad for TON Airdrop',
-      airdropBannerBtn: '🪙 Earn Tokens ➔',
+      airdropBannerBtn: 'Earn',
       airdropPtsLabel: 'Drop Qualification PTS',
       airdropMultiplierBadge: 'Leaderboard Boost: up to 3.0x',
       airdropPillarMatchesTitle: '1. Play Matches & Score',
@@ -1115,16 +1115,16 @@
       warScoreTotal: 'Общий счет команды',
       warSeasonTimer: 'До конца турнира: {d} дн. · Команда с наибольшим счетом заберет Кубок Сезона!',
       warLiveScoreboard: 'ТАБЛО БИТВЫ КОМАНД',
-      storeSubFooty: 'ВИТРИНА ФУТБОЛЬНОГО КЛУБА · ТОЛЬКО ДЛЯ ФУТБОЛИСТОВ',
-      storeSubHoops: 'ВИТРИНА БАСКЕТБОЛЬНОГО КЛУБА · ТОЛЬКО ДЛЯ БАСКЕТБОЛИСТОВ',
+      storeSubFooty: 'КЛУБНЫЙ МАГАЗИН · ФОРМЫ',
+      storeSubHoops: 'КЛУБНЫЙ МАГАЗИН · ДЖЕРСИ',
       storeNoticeFooty: '⚽ Вы играете за Команду Футбола. В магазине представлена экипировка только для футболистов.',
       storeNoticeHoops: '🏀 Вы играете за Команду Баскетбола. В магазине представлена экипировка только для баскетболистов.',
       onlyForFootball: 'Только для футболистов',
       onlyForBasketball: 'Только для баскетболистов',
       teamFootballBoutique: 'МАГАЗИН ФУТБОЛЬНОГО КЛУБА',
       teamBasketballBoutique: 'МАГАЗИН БАСКЕТБОЛЬНОГО КЛУБА',
-      teamFootballBoutiqueDesc: 'Официальная экипировка футболиста: мячи, бутсы, форма нападающего и футбольные поля.',
-      teamBasketballBoutiqueDesc: 'Официальная экипировка баскетболиста: мячи, кроссовки, джерси форварда и баскетбольные корты.',
+      teamFootballBoutiqueDesc: 'Официальная экипировка футболиста: бутсы, форма нападающего и футбольные поля.',
+      teamBasketballBoutiqueDesc: 'Официальная экипировка баскетболиста: кроссовки, джерси форварда и баскетбольные корты.',
       tabSeason: '🏆 Сезон',
       tabFooty: '⚽ Футбол',
       tabHoops: '🏀 Баскетбол',
@@ -1181,7 +1181,7 @@
       airdropHubTitle: 'Play-to-Airdrop Хаб',
       airdropBannerTitle: 'Зарабатывай токены $FOOTY и $HOOPS',
       airdropBannerSub: 'Играй матчи, поднимайся в Топ и зови друзей к дропу на TON',
-      airdropBannerBtn: '🪙 Заработать ➔',
+      airdropBannerBtn: 'Открыть',
       airdropPtsLabel: 'Очки квалификации к дропу',
       airdropMultiplierBadge: 'Буст Лидерборда: до 3.0x',
       airdropPillarMatchesTitle: '1. Играй матчи и забивай',
@@ -6850,10 +6850,10 @@
     var itemsCol = document.createElement('div');
     itemsCol.className = 'list';
 
-    // Slot Category Tabs (Football or Basketball based on team)
+    // Slot Category Tabs (Football or Basketball kits based on team — ball skins disabled)
     var isFooty = (curChar === 'footy');
-    if (curSlot === 'balls_footy' || curSlot === 'balls_hoops') curSlot = 'balls';
-    var validSlots = ['skins', 'stars', 'balls'];
+    if (curSlot === 'balls' || curSlot === 'balls_footy' || curSlot === 'balls_hoops') curSlot = 'skins';
+    var validSlots = ['skins', 'stars'];
     if (validSlots.indexOf(curSlot) === -1) curSlot = 'skins';
     var slotSeg = document.createElement('div');
     slotSeg.className = 'seg fvh-wardrobe-seg';
@@ -6863,7 +6863,6 @@
       slotSeg.innerHTML = '';
       var slots = [
         { id: 'skins', icon: 'cat_skins', label: (isFooty ? (lang === 'ru' ? 'Формы' : 'Kits') : (lang === 'ru' ? 'Майки' : 'Tanks')) },
-        { id: 'balls', icon: isFooty ? 'nav_home_footy' : 'nav_home_hoops', label: tr('catBalls') || (lang === 'ru' ? 'Мячи' : 'Balls') },
         { id: 'stars', icon: 'star', label: (lang === 'ru' ? 'За Звёзды' : 'For Stars') }
       ];
       slots.forEach(function (s) {
@@ -6954,11 +6953,9 @@
       var owned = (app.store && app.store.data && app.store.data.owned) || [];
 
       var curCharSkin = resolveEquippedItemId(eq, 'skins', curChar);
-      var activeBallId = resolveEquippedItemId(eq, 'balls', curChar);
 
       equipSlotList.innerHTML =
-        '<div class="fvh-equipped-slot"><span>' + tr('catSkins') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
-        '<div class="fvh-equipped-slot"><span>' + (isFooty ? tr('catFootballBalls') : tr('catBasketballBalls')) + ':</span><b>' + getItemLabelById(activeBallId, isFooty ? 'Match Classic' : 'Street Classic') + '</b></div>';
+        '<div class="fvh-equipped-slot"><span>' + tr('catSkins') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>';
 
       // Load matching items for current slot (OWNED ITEMS ONLY)
       itemsGrid.innerHTML = '';
@@ -6967,12 +6964,11 @@
         var unseenItems = (app.store && app.store.data && app.store.data.unseenItems) || [];
 
         var matching = baseCatalog.filter(function (it) {
+          if (it.category === 'balls' || it.category === 'balls_footy' || it.category === 'balls_hoops' || String(it.id).startsWith('ball_')) return false;
           if (curSlot === 'skins') {
             if (it.category !== 'skins' || it.currency === 'star') return false;
           } else if (curSlot === 'stars') {
             if (it.category !== 'stars' && it.currency !== 'star') return false;
-          } else if (curSlot === 'balls') {
-            if (it.category !== 'balls' && it.category !== 'balls_footy' && it.category !== 'balls_hoops') return false;
           } else {
             return false;
           }
@@ -8443,11 +8439,8 @@
     var curChar = (app.store && app.store.data && (app.store.data.selectedTeam || app.store.data.selectedCharacter)) || 'footy';
     var shopSport = curChar; // Active sport filter in the shop: 'footy' or 'hoops'
     var curCategory = initialCategory || 'skins';
-    if (curCategory === 'all' || curCategory === 'stadiums' || curCategory === 'packs') {
+    if (curCategory === 'all' || curCategory === 'stadiums' || curCategory === 'packs' || curCategory === 'balls' || curCategory === 'balls_footy' || curCategory === 'balls_hoops') {
       curCategory = 'skins';
-    }
-    if (curCategory === 'balls' || curCategory === 'balls_footy' || curCategory === 'balls_hoops') {
-      curCategory = (shopSport === 'footy') ? 'balls_footy' : 'balls_hoops';
     }
     var isPurchasing = false; // Debounce flag to prevent duplicate purchases
 
@@ -8501,7 +8494,6 @@
       catSeg.innerHTML = '';
       var categories = [
         { id: 'skins', icon: 'cat_skins', label: (shopSport === 'footy' ? (getActiveLang() === 'ru' ? 'Формы' : 'Jerseys') : (getActiveLang() === 'ru' ? 'Майки' : 'Tanks')) },
-        { id: shopSport === 'footy' ? 'balls_footy' : 'balls_hoops', icon: shopSport === 'footy' ? 'nav_home_footy' : 'nav_home_hoops', label: tr('catBalls') || (getActiveLang() === 'ru' ? 'Мячи' : 'Balls') },
         { id: 'stars', icon: 'star', label: (getActiveLang() === 'ru' ? 'За Звёзды' : 'For Stars') },
         { id: 'bundles', icon: 'cat_packs', label: tr('catBundles') },
         { id: 'coins', icon: 'coin', label: tr('catCoins') }
@@ -8518,7 +8510,7 @@
           catSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
           btn.className = 'on';
           if (shopFilterCtrl) {
-            shopFilterCtrl.setVisible(curCategory === 'skins' || curCategory === 'balls_footy' || curCategory === 'balls_hoops' || curCategory === 'stars');
+            shopFilterCtrl.setVisible(curCategory === 'skins' || curCategory === 'stars');
           }
           app.audio.play('click');
           renderShop();
@@ -8536,7 +8528,7 @@
     renderCategoryTabs();
     body.appendChild(catSeg);
     body.appendChild(shopFilterCtrl.el);
-    shopFilterCtrl.setVisible(curCategory === 'skins' || curCategory === 'balls_footy' || curCategory === 'balls_hoops' || curCategory === 'stars');
+    shopFilterCtrl.setVisible(curCategory === 'skins' || curCategory === 'stars');
 
     // Product Catalogue Grid
     var catalogueGrid = document.createElement('div');
@@ -8990,6 +8982,7 @@
 
       var filtered = baseCatalog.filter(function (it) {
         if (it.packExclusive) return false;
+        if (it.category === 'balls' || it.category === 'balls_footy' || it.category === 'balls_hoops' || String(it.id).startsWith('ball_')) return false;
         if (curRarity !== 'all' && it.rarity !== curRarity) return false;
         if (curCategory === 'skins') {
           return it.category === 'skins' && it.mode === shopSport;
@@ -8999,12 +8992,6 @@
         }
         if (curCategory === 'bundles') {
           return it.category === 'bundles' && (it.mode === shopSport || it.sport === shopSport);
-        }
-        if (curCategory === 'balls_footy') {
-          return it.category === 'balls_footy' && shopSport === 'footy';
-        }
-        if (curCategory === 'balls_hoops') {
-          return it.category === 'balls_hoops' && shopSport === 'hoops';
         }
         return it.category === curCategory && (it.mode ? it.mode === shopSport : true);
       });
@@ -9058,38 +9045,32 @@
         card.innerHTML =
           '<div class="fvh-card-head" style="display:flex;justify-content:space-between;align-items:center;">' +
           '  <span class="rar ' + rarKey + '">' + localizedRarity + '</span>' +
-          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#22c55e;font-size:10.5px;font-weight:800;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
+          (isEquipped ? '  <span class="fvh-card-owned-tag" style="color:#34d399;font-size:10.5px;font-weight:700;">' + tr('equippedState') + '</span>' : (isOwned ? '  <span class="fvh-card-owned-tag">✓ ' + tr('inCollection') + '</span>' : '')) +
           '</div>' +
-          '<div class="fvh-card-thumb-wrap" style="height:76px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
+          '<div class="fvh-card-thumb-wrap" style="height:80px;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
           renderItemArtwork(it, 'thumb') +
           '</div>' +
-          '<div class="fvh-card-title" style="font-size:13px;font-weight:800;color:var(--text-pure);margin-bottom:4px;">' + localizedItemName + '</div>' +
-          '<div class="fvh-card-price" style="font-size:12px;font-weight:900;color:' + (isStarItem ? '#fde047' : '#facc15') + ';margin-bottom:8px;">' +
-          priceDisplayHtml +
-          '</div>' +
+          '<div class="fvh-card-title" style="font-size:13px;font-weight:700;color:var(--text-pure);margin-bottom:8px;">' + localizedItemName + '</div>' +
           '<div class="fvh-card-action"></div>';
 
         var actBox = card.querySelector('.fvh-card-action');
         var actionBtn = document.createElement('button');
         if (isEquipped) {
-          actionBtn.className = 'btn small block';
+          actionBtn.className = 'btn small block fvh-btn-eq-state';
           actionBtn.disabled = true;
           actionBtn.textContent = tr('equippedState');
         } else if (isOwned) {
           actionBtn.className = 'btn small secondary block';
-          actionBtn.textContent = '✓ ' + (tr('ownedState') || 'Owned');
+          actionBtn.textContent = tr('toWardrobe');
           actionBtn.onclick = function (e) {
             e.stopPropagation();
             app.audio.play('click');
-            var targetSlot = isBallShop ? 'balls' : (it.category === 'stars' || it.currency === 'star' ? 'stars' : 'skins');
+            var targetSlot = (it.category === 'stars' || it.currency === 'star') ? 'stars' : 'skins';
             app.go('characters', { char: curChar, slot: targetSlot });
           };
         } else if (isStarItem) {
-          actionBtn.className = 'btn small primary block';
-          actionBtn.style.background = 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)';
-          actionBtn.style.color = '#000';
-          actionBtn.style.fontWeight = '900';
-          actionBtn.innerHTML = '⭐ ' + it.price + ' Stars';
+          actionBtn.className = 'btn small star block';
+          actionBtn.innerHTML = '⭐ ' + it.price.toLocaleString();
           actionBtn.onclick = function (e) {
             e.stopPropagation();
             if (isPurchasing) return;
@@ -9113,7 +9094,7 @@
           };
         } else {
           actionBtn.className = 'btn small primary block';
-          actionBtn.innerHTML = tr('buyAction') + ' ' + getFvhCoinSvg('inline') + ' ' + it.price;
+          actionBtn.innerHTML = getFvhCoinSvg('inline') + ' <span>' + it.price.toLocaleString() + '</span>';
           actionBtn.onclick = function (e) {
             e.stopPropagation();
             if (isPurchasing) return;
@@ -13114,9 +13095,7 @@
     // Equipped cosmetics labels (authoritative per chosen team)
     var eq = d.equipped || {};
     var activeKitId = resolveEquippedItemId(eq, 'skins', curChar);
-    var activeBallId = resolveEquippedItemId(eq, 'balls', curChar);
     var equippedJersey = getItemLabelById(activeKitId, isFooty ? 'Классика #10' : 'Классика #23');
-    var equippedBall = getItemLabelById(activeBallId, isFooty ? 'Классик Телстар' : 'Классическая Кожа');
 
     var up = d.upgrades || { power: 1, stamina: 1, keeper: 1 };
     var pLvl = Math.max(1, Math.min(10, up.power || 1));
@@ -13153,13 +13132,11 @@
       '<div class="solo-avatar-box" style="width:100%;height:clamp(210px, 30vh, 260px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
       charPortraitHtml +
       '</div>' +
-      '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
+      '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.32);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
       '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
       '    <span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <strong style="color:#fff;">' + escapeHtml(equippedJersey) + '</strong>' +
       '  </div>' +
-      '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-      '    <span style="display:inline-flex;align-items:center;">' + getUiIconSvg(isFooty ? 'nav_home_footy' : 'nav_home_hoops', 14) + '</span> <strong style="color:#fff;">' + escapeHtml(equippedBall) + '</strong>' +
-      '  </div>' +
+      '  <span style="font-size:11px;font-weight:700;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';white-space:nowrap;">' + (isFooty ? 'FOOTY #10' : 'HOOPS #23') + '</span>' +
       '</div>';
 
     heroCard.querySelectorAll('.fvh-rival-side').forEach(function (sideEl) {
@@ -13197,12 +13174,12 @@
 
     var playBtn = document.createElement('button');
     playBtn.className = 'fvh-btn-play-hero ' + curChar;
-    var playTitle = lang === 'ru' ? 'ИГРАТЬ ➔' : 'PLAY MATCH ➔';
+    var playTitle = lang === 'ru' ? 'ИГРАТЬ' : 'PLAY MATCH';
     var playSub = lang === 'ru' ? '1v1 Онлайн и Одиночный матч' : '1v1 PvP & vs AI';
 
     playBtn.innerHTML =
       '<div class="play-row">' +
-      '  <span class="play-icon">▶</span>' +
+      '  <span class="play-icon">' + getUiIconSvg('play', 16) + '</span>' +
       '  <span class="play-text">' + playTitle + '</span>' +
       '</div>' +
       '<span class="play-sub">' + playSub + '</span>';

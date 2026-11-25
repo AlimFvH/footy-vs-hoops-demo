@@ -10429,3 +10429,393 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
     padding: 7px 8px !important;
   }
 }
+
+
+/* ==========================================================================
+   V4.1 UNIFIED CLEAN DESIGN SYSTEM: SIMPLE BEAUTIFUL BUTTONS, HUD & LAYOUT
+   ========================================================================== */
+
+/* Richer Main Menu Atmosphere (no flat void) */
+.screen.menu-bg {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 18%, rgba(16, 185, 129, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 45% at 50% 72%, rgba(249, 115, 22, 0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #070b16 0%, #050811 100%) !important;
+}
+
+/* Unified Clean Tactile Buttons Across Entire App */
+.btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  border-radius: 12px !important;
+  min-height: 40px !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22) !important;
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, filter 0.15s ease !important;
+}
+.btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.13) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  transform: translateY(-1px) !important;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.98) !important;
+}
+.btn:disabled {
+  opacity: 0.65 !important;
+  cursor: default !important;
+}
+.btn.small {
+  min-height: 36px !important;
+  padding: 6px 12px !important;
+  font-size: 12.5px !important;
+  border-radius: 10px !important;
+}
+.btn.primary {
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: 1px solid rgba(125, 211, 252, 0.35) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+.btn.primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%) !important;
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+.btn.secondary {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #e2e8f0 !important;
+}
+.btn.star {
+  background: linear-gradient(180deg, #facc15 0%, #eab308 100%) !important;
+  border: 1px solid rgba(254, 240, 138, 0.5) !important;
+  color: #1c1917 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+.btn.fvh-btn-eq-state {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  color: #6ee7b7 !important;
+  opacity: 1 !important;
+}
+
+/* Segmented Tabs (Shop, Locker, Mode Select, Quests) */
+.seg {
+  background: rgba(15, 23, 42, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: 12px !important;
+  padding: 3px !important;
+  gap: 3px !important;
+}
+.seg button {
+  border-radius: 9px !important;
+  min-height: 34px !important;
+  padding: 6px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #94a3b8 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+}
+.seg button:hover:not(.on) {
+  color: #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.seg button.on {
+  background: rgba(255, 255, 255, 0.13) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Main Menu Hero Card & Primary PLAY CTA Button */
+.fvh-hero-card.solo-hero-compact {
+  background: linear-gradient(180deg, rgba(16, 24, 46, 0.88) 0%, rgba(9, 14, 28, 0.96) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55) !important;
+  padding: 14px !important;
+}
+.fvh-hero-card.solo-hero-compact.footy {
+  border-color: rgba(16, 185, 129, 0.28) !important;
+}
+.fvh-hero-card.solo-hero-compact.hoops {
+  border-color: rgba(249, 115, 22, 0.28) !important;
+}
+
+.fvh-btn-play-hero {
+  min-height: 58px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  padding: 10px 18px !important;
+  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease !important;
+}
+.fvh-btn-play-hero.footy {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(5, 150, 105, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+.fvh-btn-play-hero.hoops {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(234, 88, 12, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+.fvh-btn-play-hero:hover {
+  filter: brightness(1.06) !important;
+  transform: translateY(-1px) !important;
+}
+.fvh-btn-play-hero .play-icon {
+  animation: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+.fvh-btn-play-hero .play-text {
+  font-size: 19px !important;
+  font-style: normal !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.6px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22) !important;
+}
+.fvh-btn-play-hero .play-sub {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  opacity: 0.88 !important;
+}
+
+/* Airdrop Banner Clean Alignment (Zero Mobile Text Cutoff) */
+.fvh-airdrop-banner {
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+  gap: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(15, 23, 42, 0.78) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.32) !important;
+}
+.fvh-airdrop-banner-left {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  gap: 10px !important;
+}
+.fvh-airdrop-banner-title {
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+.fvh-airdrop-banner-sub {
+  font-size: 11px !important;
+}
+.fvh-airdrop-banner-badge {
+  flex: 0 0 auto !important;
+  border-radius: 10px !important;
+  padding: 8px 14px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.fvh-airdrop-banner-badge:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* Pose Chips & Filter Pill Clean Look */
+.fvh-pose-chip {
+  padding: 5px 11px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+}
+.fvh-pose-chip:hover,
+.fvh-pose-chip.active {
+  background: rgba(14, 165, 233, 0.22) !important;
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  color: #ffffff !important;
+}
+.fvh-filter-trigger {
+  border-radius: 10px !important;
+  padding: 7px 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: none !important;
+}
+.fvh-filter-trigger.open,
+.fvh-filter-trigger.filtered {
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  background: rgba(14, 165, 233, 0.16) !important;
+  box-shadow: none !important;
+}
+
+/* Shop Cards Clean Frame */
+.fvh-catalogue-card,
+.card.shopc {
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(13, 20, 38, 0.88) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+.fvh-catalogue-card.r-legendary,
+.card.shopc.r-legendary {
+  border-color: rgba(250, 204, 21, 0.35) !important;
+}
+.fvh-catalogue-card.r-epic,
+.card.shopc.r-epic {
+  border-color: rgba(168, 85, 247, 0.35) !important;
+}
+.fvh-catalogue-card.r-rare,
+.card.shopc.r-rare {
+  border-color: rgba(56, 189, 248, 0.35) !important;
+}
+
+/* Top Toast Pill (Never overlaps bottom equip/buy buttons) */
+.toast-ui {
+  top: calc(max(var(--sat), 10px) + 56px) !important;
+  bottom: auto !important;
+  border-radius: 999px !important;
+  padding: 8px 16px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  background: rgba(10, 16, 32, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* In-Game HUD Scoreboard & Minimalist Frosted Touch Controls */
+@media (max-width: 680px) {
+  .hud-top {
+    justify-content: space-between !important;
+    padding: 0 10px !important;
+  }
+  .hud-top .scoreboard {
+    flex: 0 1 auto !important;
+    max-width: calc(100vw - 96px) !important;
+  }
+  .hud-top .scoreboard .sb-team {
+    min-width: 0 !important;
+    padding: 5px 8px !important;
+    gap: 5px !important;
+  }
+  .sb-name {
+    max-width: none !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+  }
+  .sb-score {
+    font-size: 19px !important;
+  }
+  .sb-time {
+    font-size: 14px !important;
+    padding: 4px 8px !important;
+    min-width: 46px !important;
+  }
+}
+
+.hud-top-ctrls .hud-pause,
+.hud-top-ctrls .hud-mute {
+  border-radius: 10px !important;
+  background: rgba(10, 16, 30, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.stick-base {
+  background: rgba(10, 16, 30, 0.34) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+.stick-base.active {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.18) !important;
+}
+.stick-knob {
+  width: 44px !important;
+  height: 44px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+}
+
+.tbtn {
+  background: rgba(10, 16, 30, 0.56) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.24) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+}
+.tbtn::before {
+  display: none !important;
+}
+.tbtn .ico svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+}
+.tbtn .lbl {
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+}
+.btn-shoot {
+  width: 82px !important;
+  height: 82px !important;
+  background: rgba(15, 23, 42, 0.62) !important;
+  border: 2px solid rgba(251, 146, 60, 0.78) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.42) !important;
+}
+.btn-shoot .ico svg {
+  width: 28px !important;
+  height: 28px !important;
+}
+.btn-shoot .lbl {
+  font-size: 10.5px !important;
+}
+.btn-tackle {
+  width: 66px !important;
+  height: 66px !important;
+  right: 8px !important;
+  bottom: 96px !important;
+  background: rgba(15, 23, 42, 0.60) !important;
+  border: 1.5px solid rgba(251, 113, 133, 0.68) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+}
+.btn-tackle .ico svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+.btn-sprint {
+  width: 60px !important;
+  height: 60px !important;
+  right: 92px !important;
+  bottom: 84px !important;
+  background: rgba(15, 23, 42, 0.60) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.68) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+}
+.btn-sprint .ico svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+.tbtn.down,
+.tbtn:active {
+  transform: scale(0.92) !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+}
