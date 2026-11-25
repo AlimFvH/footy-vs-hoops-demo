@@ -10232,6 +10232,22 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 .fvh-wardrobe-avatar {
   height: auto !important;
   min-height: 300px !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+.fvh-wardrobe-3d-host,
+.fvh-hero-3d-stage,
+.fvh-wardrobe-avatar .fvh-hero-portrait-wrap,
+.fvh-3d-wrap,
+.fvh-item-modal-preview.is-3d-stage {
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 .fvh-wardrobe-3d-host {
@@ -10239,7 +10255,8 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   width: 100% !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  touch-action: pan-y !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
   user-select: none !important;
   background: radial-gradient(circle at 50% 42%, rgba(28, 48, 86, 0.55) 0%, rgba(10, 15, 28, 0.0) 74%) !important;
 }
@@ -10249,6 +10266,8 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   width: 100% !important;
   height: 100% !important;
   pointer-events: auto !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
 }
 
 .fvh-wardrobe-pose-bar {

@@ -2846,8 +2846,33 @@
   }
   window.getWardrobe3DViewerHtml = getWardrobe3DViewerHtml;
 
+  function lockTelegramSwipesNow() {
+    try {
+      var tg = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+      if (tg) {
+        if (typeof tg.expand === 'function') tg.expand();
+        if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+      }
+    } catch (_) {}
+  }
+
   function mountWardrobe3DIntoContainer(containerEl, charId, kitId) {
     if (!containerEl) return;
+    lockTelegramSwipesNow();
+    var lockWrap = containerEl.querySelector('.fvh-3d-wrap') || containerEl;
+    if (lockWrap && !lockWrap._fvhSwipeGuard) {
+      lockWrap._fvhSwipeGuard = true;
+      lockWrap.style.touchAction = 'none';
+      lockWrap.style.overscrollBehavior = 'none';
+      var preventWrapTouch = function (e) {
+        if (e && e.target && e.target.closest && e.target.closest('button, .fvh-wrd-cycle-btn')) return;
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopPropagation();
+        lockTelegramSwipesNow();
+      };
+      lockWrap.addEventListener('touchstart', preventWrapTouch, { passive: false });
+      lockWrap.addEventListener('touchmove', preventWrapTouch, { passive: false });
+    }
     var host = containerEl.querySelector('.fvh-wardrobe-3d-host');
     if (host && window.CharactersGLB && typeof window.CharactersGLB.mountWardrobePreview === 'function') {
       window.CharactersGLB.mountWardrobePreview(host, charId, canonItemId(kitId));
@@ -2872,7 +2897,7 @@
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var genericFallback = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
-    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.3.0-release';
+    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.4.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
       '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
@@ -5270,7 +5295,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.3.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.4.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -8397,7 +8422,7 @@
     return val;
   }
 
-  // Thematic Store Bundles Definition (with mathematically verified discounts)
+  // Thematic Store Bundles Definition (100% exclusive skins created specifically for bundles)
   var BUNDLE_ITEMS = [
     {
       id: 'bundle_footy_starter',
@@ -8405,18 +8430,18 @@
       sport: 'footy',
       mode: 'footy',
       rarity: 'epic',
-      badge: '⚡ ЭКСКЛЮЗИВ СТАРТ',
+      badge: '⚡ 100% ЭКСКЛЮЗИВ',
       name: 'Стартовый набор Футболиста',
       name_en: 'Football Starter Exclusive Pack',
-      desc: 'Уникальная форма «Солнечный Вольт» (только в наборе!), форма «Сапфир Страйкер» и 600 монет FvH.',
-      originalValue: 2950,
+      desc: 'Две новые эксклюзивные формы «Солнечный Вольт» и «Алая Комета» (нельзя купить в магазине!) + 600 монет FvH.',
+      originalValue: 3400,
       coinsPrice: 1400,
-      discount: 52,
+      discount: 59,
       starsPrice: 115,
       tonPrice: 0.7,
       items: [
         { id: 'footy_excl_solar_volt', name: 'Солнечный Вольт', exclusive: true, rarity: 'epic', type: 'cosmetic' },
-        { id: 'footy_1_sapphire', name: 'Сапфир Страйкер', rarity: 'rare', type: 'cosmetic' },
+        { id: 'footy_excl_crimson_comet', name: 'Алая Комета', exclusive: true, rarity: 'epic', type: 'cosmetic' },
         { name: '600 FvH', type: 'coins', val: 600 }
       ]
     },
@@ -8426,18 +8451,18 @@
       sport: 'hoops',
       mode: 'hoops',
       rarity: 'epic',
-      badge: '⚡ ЭКСКЛЮЗИВ СТАРТ',
+      badge: '⚡ 100% ЭКСКЛЮЗИВ',
       name: 'Стартовый набор Баскетболиста',
       name_en: 'Basketball Starter Exclusive Pack',
-      desc: 'Уникальная майка «Багряный Рассвет» (только в наборе!), майка «Шарлотт Бриз» и 600 монет FvH.',
-      originalValue: 2950,
+      desc: 'Две новые эксклюзивные майки «Багряный Рассвет» и «Изумрудная Гадюка» (нельзя купить в магазине!) + 600 монет FvH.',
+      originalValue: 3400,
       coinsPrice: 1400,
-      discount: 52,
+      discount: 59,
       starsPrice: 115,
       tonPrice: 0.7,
       items: [
         { id: 'hoops_excl_inferno_dusk', name: 'Багряный Рассвет', exclusive: true, rarity: 'epic', type: 'cosmetic' },
-        { id: 'hoops_6_charlotte', name: 'Шарлотт Бриз', rarity: 'rare', type: 'cosmetic' },
+        { id: 'hoops_excl_emerald_viper', name: 'Изумрудная Гадюка', exclusive: true, rarity: 'epic', type: 'cosmetic' },
         { name: '600 FvH', type: 'coins', val: 600 }
       ]
     },
@@ -8450,16 +8475,16 @@
       badge: '👑 МИФИК ЭКСКЛЮЗИВ',
       name: 'Набор Мифической Легенды',
       name_en: 'Mythic Legend Football Pack',
-      desc: 'Мифическая форма «Император Затмение» (только в наборе!) + «Обсидиановый Шиноби», «Пламя Дракона» и 2,500 монет.',
-      originalValue: 9600,
+      desc: 'Три новые эксклюзивные формы: «Император Затмение», «Ледяной Суверен» и «Теневой Монарх» (только в наборе!) + 2,500 монет.',
+      originalValue: 10500,
       coinsPrice: 4200,
-      discount: 56,
+      discount: 60,
       starsPrice: 350,
       tonPrice: 2.1,
       items: [
         { id: 'footy_excl_eclipse_royal', name: 'Император Затмение', exclusive: true, rarity: 'mythic', type: 'cosmetic' },
-        { id: 'footy_8_obsidian', name: 'Обсидиановый Шиноби', rarity: 'legendary', type: 'cosmetic' },
-        { id: 'footy_9_dragon', name: 'Пламя Дракона', rarity: 'epic', type: 'cosmetic' },
+        { id: 'footy_excl_glacial_sovereign', name: 'Ледяной Суверен', exclusive: true, rarity: 'legendary', type: 'cosmetic' },
+        { id: 'footy_excl_shadow_monarch', name: 'Теневой Монарх', exclusive: true, rarity: 'mythic', type: 'cosmetic' },
         { name: '2,500 FvH', type: 'coins', val: 2500 }
       ]
     },
@@ -8472,16 +8497,16 @@
       badge: '👑 МИФИК ЭКСКЛЮЗИВ',
       name: 'Набор Короля Данков',
       name_en: 'Mythic Dunk King Pack',
-      desc: 'Мифическая майка «Космос Апекс» (только в наборе!) + «Чёрная Мамба», «Гипер Зверь» и 2,500 монет.',
-      originalValue: 9600,
+      desc: 'Три новые эксклюзивные майки: «Космос Апекс», «Кибер Фараон» и «Сверхновая Феникс» (только в наборе!) + 2,500 монет.',
+      originalValue: 10500,
       coinsPrice: 4200,
-      discount: 56,
+      discount: 60,
       starsPrice: 350,
       tonPrice: 2.1,
       items: [
         { id: 'hoops_excl_cosmos_apex', name: 'Космос Апекс', exclusive: true, rarity: 'mythic', type: 'cosmetic' },
-        { id: 'hoops_8_mamba', name: 'Чёрная Мамба', rarity: 'legendary', type: 'cosmetic' },
-        { id: 'hoops_9_beast', name: 'Гипер Зверь', rarity: 'epic', type: 'cosmetic' },
+        { id: 'hoops_excl_cyber_pharaoh', name: 'Кибер Фараон', exclusive: true, rarity: 'legendary', type: 'cosmetic' },
+        { id: 'hoops_excl_phoenix_nova', name: 'Сверхновая Феникс', exclusive: true, rarity: 'mythic', type: 'cosmetic' },
         { name: '2,500 FvH', type: 'coins', val: 2500 }
       ]
     }
@@ -8511,7 +8536,10 @@
       { id: 'skin_footy_neon_matrix', name: 'Неон Матрица', name_ru: 'Неон Матрица', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1300, packExclusive: true, desc: 'Цифровой неоновый узор с матричным свечением.' },
       { id: 'skin_footy_mythic_titan', name: 'Мифический Титан', name_ru: 'Мифический Титан', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 9999, packExclusive: true, desc: 'Ультраредкий эксклюзив из Мистери Паков: сияющая титановая форма.' },
       { id: 'footy_excl_solar_volt', name: 'Солнечный Вольт', name_ru: 'Солнечный Вольт', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true, badge: '⚡ НАБОР ЭКСКЛЮЗИВ', desc: 'Эксклюзив Стартового Набора: карбоновый градиент с неоновыми лаймовыми молниями и золотым кантом.' },
+      { id: 'footy_excl_crimson_comet', name: 'Алая Комета', name_ru: 'Алая Комета', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true, badge: '⚡ НАБОР ЭКСКЛЮЗИВ', desc: 'Эксклюзив Стартового Набора: алый бархат с диагональным шлейфом расплавленного золота.' },
+      { id: 'footy_excl_glacial_sovereign', name: 'Ледяной Суверен', name_ru: 'Ледяной Суверен', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 0, packExclusive: true, bundleOnly: true, badge: '💎 НАБОР ЭКСКЛЮЗИВ', desc: 'Эксклюзив Набора Легенд: кристальный сапфир с серебристым инеем и ледяными гранями.' },
       { id: 'footy_excl_eclipse_royal', name: 'Император Затмение', name_ru: 'Император Затмение', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true, badge: '👑 МИФИК НАБОР', desc: 'Мифический эксклюзив Набора Легенд: королевский рубин и обсидиан с сиянием золотого затмения.' },
+      { id: 'footy_excl_shadow_monarch', name: 'Теневой Монарх', name_ru: 'Теневой Монарх', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true, badge: '👑 МИФИК НАБОР', desc: 'Мифический эксклюзив Набора Легенд: ультрафиолетовый шеврон пантеры с плазменным аметистом и жемчужным кантом.' },
 
       // FOOTY STAR KITS (3 EXCLUSIVE KITS ЗА ЗВЁЗДЫ)
       { id: 'footy_kit_star_holiday', name: '🎄 Новогодняя 2027', name_ru: '🎄 Новогодняя 2027', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star', badge: '🎄 НОВОГОДНИЙ', desc: 'Эксклюзивный новогодний комплект: королевский алый бархат Санты, морозная белая опушка, вышитые золотые елочки, снежинки и номер 25.' },
@@ -8549,7 +8577,10 @@
       { id: 'skin_hoops_phantom_black', name: 'Чёрный Фантом', name_ru: 'Чёрный Фантом', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500, packExclusive: true, desc: 'Матовая змеиная броня короля данков.' },
       { id: 'skin_hoops_hyper_beast', name: 'Гипер-Зверь Эксклюзив', name_ru: 'Гипер-Зверь Эксклюзив', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 9999, packExclusive: true, desc: 'Ультраредкая эксклюзивная майка из Мистери Паков.' },
       { id: 'hoops_excl_inferno_dusk', name: 'Багряный Рассвет', name_ru: 'Багряный Рассвет', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true, badge: '⚡ НАБОР ЭКСКЛЮЗИВ', desc: 'Эксклюзив Стартового Набора: огненно-багряный рассвет с золотым воротником и огненными искрами.' },
+      { id: 'hoops_excl_emerald_viper', name: 'Изумрудная Гадюка', name_ru: 'Изумрудная Гадюка', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true, badge: '⚡ НАБОР ЭКСКЛЮЗИВ', desc: 'Эксклюзив Стартового Набора: изумрудная змеиная чешуя с неоново-мятным следом и обсидиановой окантовкой.' },
+      { id: 'hoops_excl_cyber_pharaoh', name: 'Кибер Фараон', name_ru: 'Кибер Фараон', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 0, packExclusive: true, bundleOnly: true, badge: '💎 НАБОР ЭКСКЛЮЗИВ', desc: 'Эксклюзив Набора Короля Данков: глубокий лазурит с 24K золотой геометрией пирамид и бирюзовым неоном.' },
       { id: 'hoops_excl_cosmos_apex', name: 'Космос Апекс', name_ru: 'Космос Апекс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true, badge: '👑 МИФИК НАБОР', desc: 'Мифический эксклюзив Набора Короля Данков: глубокое звёздное небо с полярным сиянием и платиновым кантом.' },
+      { id: 'hoops_excl_phoenix_nova', name: 'Сверхновая Феникс', name_ru: 'Сверхновая Феникс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true, badge: '👑 МИФИК НАБОР', desc: 'Мифический эксклюзив Набора Короля Данков: сияющие крылья алой сверхновой с золотым звёздным контуром.' },
 
       // HOOPS STAR KITS (3 EXCLUSIVE TANKS ЗА ЗВЁЗДЫ)
       { id: 'hoops_kit_star_holiday', name: '🎄 Новогодняя 2027', name_ru: '🎄 Новогодняя 2027', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star', badge: '🎄 НОВОГОДНИЙ', desc: 'Рождественская безрукавная майка Санты: алый бархат с изумрудными резинками, золотыми елочками, снежинками и номером 25.' },
@@ -8976,7 +9007,7 @@
           '  <div class="fvh-bundle-banner-icon">' + getUiIconSvg('gift', 28) + '</div>' +
           '  <div>' +
           '    <div style="font-weight:900;font-size:14.5px;color:#fde047;letter-spacing:0.4px;">' + tr('catBundles') + ' · ' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВНЫЕ СЕТЫ' : 'EXCLUSIVE BUNDLES') + '</div>' +
-          '    <div style="font-size:12px;color:#cbd5e1;margin-top:2px;line-height:1.4;">' + (getActiveLang() === 'ru' ? 'Уникальные мифические формы (только в наборах!) + бонусные монеты со скидкой до 56%!' : 'Exclusive bundle-only kits (not sold separately!) + bonus coins up to 56% off!') + '</div>' +
+          '    <div style="font-size:12px;color:#cbd5e1;margin-top:2px;line-height:1.4;">' + (getActiveLang() === 'ru' ? 'Новые эксклюзивные формы, которые нельзя купить в магазине, + бонусные монеты со скидкой до 60%!' : 'Brand-new exclusive kits unavailable in the shop + bonus coins up to 60% off!') + '</div>' +
           '  </div>' +
           '</div>';
         catalogueGrid.appendChild(bundlesBanner);
@@ -9015,7 +9046,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.3.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.4.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -9074,6 +9105,7 @@
                       d.coins = res.coins;
                       d.xp = res.xp;
                       d.owned = res.owned;
+                      if (Array.isArray(res.unseenItems)) d.unseenItems = res.unseenItems;
                       if (res.packs) d.packs = res.packs;
                     });
                     app.audio.play('claim');
@@ -9130,7 +9162,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=4.3.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=4.4.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -9212,6 +9244,7 @@
                     d.coins = res.coins;
                     d.xp = res.xp;
                     d.owned = res.owned;
+                    if (Array.isArray(res.unseenItems)) d.unseenItems = res.unseenItems;
                     if (res.packs) d.packs = res.packs;
                   });
                   app.audio.play('claim');
@@ -9331,7 +9364,7 @@
       var eq = (app.store && app.store.data && app.store.data.equipped) || {};
 
       var filtered = baseCatalog.filter(function (it) {
-        if (it.packExclusive) return false;
+        if (it.packExclusive || it.bundleOnly) return false;
         if (it.category === 'balls' || it.category === 'balls_footy' || it.category === 'balls_hoops' || String(it.id).startsWith('ball_')) return false;
         if (curRarity !== 'all' && it.rarity !== curRarity) return false;
         if (curCategory === 'skins') {
@@ -14209,7 +14242,7 @@
               triggerHaptic('medium');
             }
             // Note: Never vibrate on bounce, dribble, step, click, swish, countdown
-            return origPlay(name);
+            return origPlay.apply(app.audio, arguments);
           };
           app.audio._hapticWrapped = true;
         }
@@ -14219,6 +14252,7 @@
     }
 
     function updateTelegramBackButton(state) {
+      lockTelegramSwipesNow();
       if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.BackButton) {
         try {
           if (state === 'menu') {
@@ -14237,6 +14271,7 @@
     var originalShow = app.show ? app.show.bind(app) : null;
 
     app.show = function (el, id) {
+      lockTelegramSwipesNow();
       if (this.ui) {
         this.ui.innerHTML = '';
       }

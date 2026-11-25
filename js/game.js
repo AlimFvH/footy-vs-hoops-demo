@@ -185,19 +185,25 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         this._lastVariantIdx = {};
                         const variantPools = {
                             kick: ['assets/audio/kick_power_strike.wav', 'assets/audio/variants/kick_v1.wav', 'assets/audio/variants/kick_v2.wav', 'assets/audio/variants/kick_v3.wav', 'assets/audio/variants/kick_v4.wav', 'assets/audio/variants/kick_v5.wav'],
+                            pass: ['assets/audio/pass_footy.wav', 'assets/audio/variants/pass_footy_v1.wav', 'assets/audio/variants/pass_footy_v2.wav', 'assets/audio/variants/pass_footy_v3.wav'],
+                            pass_hoops: ['assets/audio/shot_hoops.wav', 'assets/audio/variants/shot_hoops_v1.wav', 'assets/audio/variants/shot_hoops_v2.wav'],
                             shot: ['assets/audio/kick_power_strike.wav', 'assets/audio/variants/kick_v2.wav', 'assets/audio/variants/kick_v4.wav', 'assets/audio/variants/kick_v5.wav'],
+                            shot_hoops: ['assets/audio/shot_hoops.wav', 'assets/audio/variants/shot_hoops_v1.wav', 'assets/audio/variants/shot_hoops_v2.wav', 'assets/audio/variants/shot_hoops_v3.wav'],
                             tackle: ['assets/audio/slide_tackle.wav', 'assets/audio/variants/slide_v1.wav', 'assets/audio/variants/slide_v2.wav', 'assets/audio/variants/slide_v3.wav', 'assets/audio/variants/slide_v4.wav', 'assets/audio/variants/slide_v5.wav'],
-                            step: ['assets/audio/sprint_step.wav'],
+                            step: ['assets/audio/sprint_step.wav', 'assets/audio/variants/step_v1.wav', 'assets/audio/variants/step_v2.wav'],
+                            step_court: ['assets/audio/sprint_step_court.wav', 'assets/audio/variants/step_court_v1.wav', 'assets/audio/variants/step_court_v2.wav'],
                             swish: ['assets/audio/shot_swish.wav', 'assets/audio/variants/swish_v1.wav', 'assets/audio/variants/swish_v2.wav', 'assets/audio/variants/swish_v3.wav', 'assets/audio/variants/swish_v4.wav', 'assets/audio/variants/swish_v5.wav'],
                             dunk: ['assets/audio/dunk_slam.wav', 'assets/audio/variants/dunk_v1.wav', 'assets/audio/variants/dunk_v2.wav', 'assets/audio/variants/dunk_v3.wav', 'assets/audio/variants/dunk_v4.wav', 'assets/audio/variants/dunk_v5.wav'],
                             steal: ['assets/audio/steal_swipe.wav', 'assets/audio/variants/steal_v1.wav', 'assets/audio/variants/steal_v2.wav', 'assets/audio/variants/steal_v3.wav', 'assets/audio/variants/steal_v4.wav', 'assets/audio/variants/steal_v5.wav'],
+                            steal_swoosh: ['assets/audio/steal_swipe.wav', 'assets/audio/variants/steal_v2.wav', 'assets/audio/variants/steal_v4.wav'],
                             save: ['assets/audio/keeper_save.wav', 'assets/audio/variants/save_v1.wav', 'assets/audio/variants/save_v2.wav', 'assets/audio/variants/save_v3.wav'],
                             goal: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
                             score: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
                             win: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v5.wav'],
                             celebration: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
                             bounce: ['assets/audio/ball_bounce.wav', 'assets/audio/variants/dribble_v1.wav'],
-                            dribble: ['assets/audio/dribble.wav', 'assets/audio/variants/dribble_v1.wav'],
+                            bounce_footy: ['assets/audio/bounce_footy.wav', 'assets/audio/variants/bounce_footy_v1.wav', 'assets/audio/variants/bounce_footy_v2.wav'],
+                            dribble: ['assets/audio/pass_footy.wav', 'assets/audio/variants/pass_footy_v1.wav', 'assets/audio/variants/pass_footy_v2.wav', 'assets/audio/variants/pass_footy_v3.wav'],
                             dribble_court: ['assets/audio/dribble.wav', 'assets/audio/variants/dribble_v1.wav'],
                             whistle: ['assets/audio/whistle.wav', 'assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav', 'assets/audio/variants/whistle_v3.wav'],
                             whistleStart: ['assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav'],
@@ -205,7 +211,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.3.0-release';
+                        const AUDIO_VERSION = '4.4.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -318,7 +324,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             if (!c || c.state !== 'running')
                 return;
             const now = c.currentTime;
-            const gap = { bounce: 0.06, dribble: 0.12, dribble_court: 0.12, dunk: 0.1, kick: 0.04, tackle: 0.08, rim: 0.05, post: 0.05, step: 0.12, tick: 0.05, click: 0.03 };
+            const gap = { bounce: 0.06, bounce_footy: 0.07, dribble: 0.12, dribble_court: 0.12, dunk: 0.1, kick: 0.04, pass: 0.06, pass_hoops: 0.06, shot_hoops: 0.08, tackle: 0.08, steal_swoosh: 0.22, rim: 0.05, post: 0.05, step: 0.14, step_court: 0.14, tick: 0.05, click: 0.03 };
             const g = gap[name];
             if (g !== undefined) {
                 if (now - ((_a = this.lastPlay[name]) !== null && _a !== void 0 ? _a : -9) < g)
@@ -353,14 +359,18 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     // Per-action RMS gain calibration tuned for remastered studio WAVs
                     const gainMap = {
                         whistle: 0.56, whistleStart: 0.54, whistleEnd: 0.58, whistleRestart: 0.50,
-                        step: 0.42, squeak: 0.38, tackle: 0.68, swish: 0.72,
-                        steal: 0.78, save: 0.84, dribble: 0.74, dribble_court: 0.80,
-                        bounce: 0.76, kick: 0.88, shot: 0.94, dunk: 1.00,
-                        goal: 0.84, score: 0.82, win: 0.84, celebration: 0.82
+                        step: 0.34, step_court: 0.38, squeak: 0.36, tackle: 0.68, swish: 0.78,
+                        steal: 0.76, steal_swoosh: 0.42, save: 0.84,
+                        dribble: 0.54, dribble_court: 0.78, bounce: 0.74, bounce_footy: 0.62,
+                        pass: 0.76, pass_hoops: 0.68, kick: 0.88, shot: 0.94, shot_hoops: 0.84, dunk: 1.00,
+                        goal: 0.82, score: 0.80, win: 0.82, celebration: 0.80
                     };
                     const lpFreqMap = {
-                        whistle: 5800, whistleStart: 5800, whistleEnd: 5800, whistleRestart: 5800,
-                        step: 3400, tackle: 4200, swish: 7200, dribble: 4400, bounce: 4200
+                        whistle: 5600, whistleStart: 5600, whistleEnd: 5600, whistleRestart: 5600,
+                        step: 2800, step_court: 3200, tackle: 3800, steal: 5200, steal_swoosh: 4600, swish: 6400,
+                        dribble: 3400, dribble_court: 4400, bounce: 4200, bounce_footy: 3000,
+                        pass: 3800, pass_hoops: 4400, shot_hoops: 5200,
+                        goal: 6800, score: 6800, win: 6800, celebration: 6800
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.84);
@@ -1269,8 +1279,8 @@ uniform int uPLCount;
 float shadowAt(float ndl){
   vec3 p = vLight.xyz / vLight.w * 0.5 + 0.5;
   if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;
-  float bias = 0.0007 + 0.0022 * (1.0 - ndl);
-  float t = uShadowTexel;
+  float bias = 0.0005 + 0.0017 * (1.0 - ndl);
+  float t = uShadowTexel * 0.8;
   float s = texture(uShadow, vec3(p.xy, p.z - bias));
   s += texture(uShadow, vec3(p.xy + vec2(-t, -t), p.z - bias));
   s += texture(uShadow, vec3(p.xy + vec2( t, -t), p.z - bias));
@@ -1297,11 +1307,16 @@ void main(){
     vec3 N = normalize(vN);
     if (uDouble == 1 && !gl_FrontFacing) N = -N;
     
-    // Procedural turf normal perturbation for grass blade micro-depth on ground plane
+    // Procedural turf blade & varnished hardwood micro-normal relief on ground plane
     if (uReceive == 1 && vWorld.y < 0.05 && N.y > 0.6) {
-      vec2 gP = vWorld.xz * 12.0;
-      float bPattern = sin(gP.x + cos(gP.y * 1.4)) * cos(gP.y - sin(gP.x * 0.8)) * 0.08;
-      N = normalize(N + vec3(dFdx(bPattern), 0.0, dFdy(bPattern)));
+      if (uShine > 34.0) {
+        float woodGrain = sin(vWorld.x * 44.0 + sin(vWorld.z * 2.2) * 0.6) * 0.035;
+        N = normalize(N + vec3(dFdx(woodGrain), 0.0, dFdy(woodGrain)));
+      } else {
+        vec2 gP = vWorld.xz * 15.0;
+        float bPattern = sin(gP.x + cos(gP.y * 1.4)) * cos(gP.y - sin(gP.x * 0.8)) * 0.11;
+        N = normalize(N + vec3(dFdx(bPattern), 0.0, dFdy(bPattern)));
+      }
     }
 
     vec3 V = normalize(uCam - vWorld);
@@ -1391,8 +1406,9 @@ void main(){
     float f = smoothstep(uFogNear, uFogFar, fd) * uFogAmt;
     col = mix(col, uFogColor, f);
   }
-  vec3 aces = clamp((col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14), 0.0, 1.0);
-  vec3 toneCol = mix(clamp(col, 0.0, 1.0), aces, 0.68);
+  vec3 boostCol = col * 1.06;
+  vec3 aces = clamp((boostCol * (2.51 * boostCol + 0.03)) / (boostCol * (2.43 * boostCol + 0.59) + 0.14), 0.0, 1.0);
+  vec3 toneCol = mix(clamp(boostCol, 0.0, 1.0), aces, 0.80);
   outColor = vec4(pow(toneCol, vec3(1.0 / 2.2)), alpha);
 }`;
     const VS_DEPTH = `#version 300 es
@@ -1473,7 +1489,7 @@ void main(){
                 this.contextLost = true;
             });
             this.anisoExt = gl.getExtension('EXT_texture_filter_anisotropic');
-            this.aniso = this.anisoExt ? Math.min(8, gl.getParameter(this.anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) : 1;
+            this.aniso = this.anisoExt ? Math.min(16, gl.getParameter(this.anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) : 1;
             this.progs.main = this.makeProg(VS_MAIN, FS_MAIN, '');
             this.progs.mainInst = this.makeProg(VS_MAIN, FS_MAIN, '#define INSTANCED\n');
             this.progs.depth = this.makeProg(VS_DEPTH, FS_DEPTH, '');
@@ -5907,7 +5923,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         return [c, c.getContext('2d')];
     }
     exports.PITCH_MARGIN = 3;
-    const PPM_F = 40;
+    const PPM_F = 72;
     function pitchPlaneSize() {
         return [2 * (football_js_1.FB.W + exports.PITCH_MARGIN), 2 * (football_js_1.FB.L + exports.PITCH_MARGIN)];
     }
@@ -5917,41 +5933,43 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         const X = (x) => (x + pw / 2) * PPM_F;
         const Z = (z) => (z + pd / 2) * PPM_F;
         
-        // 1. Authentic Championship Emerald Stadium Turf with Mower Bands
-        const stripes = 14;
+        // 1. Rich Broadcast Stadium Turf with crisp alternating mower bands
+        const stripes = 16;
         const sh = c.height / stripes;
         // Preserved classic emerald turf references for test assertion suite: 0x24a648, 0x1a8f3b
-        const pitchColA = hex((t && t.pitchA) ? t.pitchA : 0x1e843d);
+        const pitchColA = hex((t && t.pitchA) ? t.pitchA : 0x1f8c42);
         const pitchColB = hex((t && t.pitchB) ? t.pitchB : 0x176d31);
         for (let i = 0; i < stripes; i++) {
             g.fillStyle = i % 2 ? pitchColA : pitchColB;
             g.fillRect(0, i * sh, c.width, sh + 1);
+            // Crisp hairline mower transition sheen
+            g.fillStyle = i % 2 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.035)';
+            g.fillRect(0, i * sh, c.width, 3);
         }
 
-        // 2. Subtle Vertical & Cross-Cut Broadcast Sheen (restrained realism, zero harsh diagonals)
+        // 2. Subtle Cross-Cut Broadcast Sheen & Penalty Area Sheen
         g.save();
-        g.fillStyle = 'rgba(255,255,255,0.016)';
-        const vStripes = 10;
+        g.fillStyle = 'rgba(255,255,255,0.02)';
+        const vStripes = 12;
         const vw = c.width / vStripes;
         for (let i = 0; i < vStripes; i += 2) {
             g.fillRect(i * vw, 0, vw, c.height);
         }
-        // Subtle stadium floodlight radial vignette emphasizing center pitch
         const turfVig = g.createRadialGradient(X(0), Z(0), pw * PPM_F * 0.24, X(0), Z(0), Math.max(pw, pd) * PPM_F * 0.72);
-        turfVig.addColorStop(0, 'rgba(255,255,255,0.04)');
-        turfVig.addColorStop(1, 'rgba(4,16,8,0.20)');
+        turfVig.addColorStop(0, 'rgba(255,255,255,0.06)');
+        turfVig.addColorStop(1, 'rgba(4,16,8,0.22)');
         g.fillStyle = turfVig;
         g.fillRect(0, 0, c.width, c.height);
         g.restore();
 
-        // 3. Natural grass blade micro-texture (deterministic subtle blades, no noisy speckle)
-        for (let i = 0; i < 6500; i++) {
-            const rx = ((i * 733) % 997) / 997;
-            const ry = ((i * 1597) % 991) / 991;
+        // 3. Dense Crisp Natural Grass Blade Micro-Texture
+        for (let i = 0; i < 14000; i++) {
+            const rx = ((i * 733) % 1999) / 1999;
+            const ry = ((i * 1597) % 1993) / 1993;
             const xPos = rx * c.width;
             const yPos = ry * c.height;
-            g.fillStyle = (i & 1) ? 'rgba(6,28,12,0.045)' : 'rgba(170,235,140,0.028)';
-            g.fillRect(xPos, yPos, 1.6, 4.2);
+            g.fillStyle = (i & 1) ? 'rgba(6,28,12,0.065)' : 'rgba(185,245,155,0.042)';
+            g.fillRect(xPos, yPos, 2.0, 5.5);
         }
 
         // 4. Broadcast Chalk-White Pitch Markings
@@ -6029,7 +6047,7 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         return c;
     }
     exports.COURT_MARGIN = 2.4;
-    const PPM_B = 60;
+    const PPM_B = 96;
     function courtPlaneSize() {
         return [2 * (basketball_js_1.BB.W + basketball_js_1.BB.APRON + exports.COURT_MARGIN), 2 * (basketball_js_1.BB.L + basketball_js_1.BB.APRON + exports.COURT_MARGIN)];
     }
@@ -6248,17 +6266,16 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         return c;
     }
     function makeNetTexture(color = '#ffffff') {
-        const [c, g] = makeCanvas(256, 256);
-        g.clearRect(0, 0, 256, 256);
+        const [c, g] = makeCanvas(512, 512);
+        g.clearRect(0, 0, 512, 512);
         g.strokeStyle = color;
-        g.lineWidth = 3.2;
+        g.lineWidth = 7.2;
         g.lineCap = 'round';
         g.lineJoin = 'round';
         
-        // Authentic hexagonal stadium netting with braided twine knot highlights
-        const r = 22;
+        // Crisp broadcast braided hexagonal stadium & hoop netting
+        const r = 44;
         const h = r * Math.sin(Math.PI / 3);
-        const w = r * 1.5;
         
         for (let row = -1; row <= 10; row++) {
             const yOffset = row * h;
@@ -6278,14 +6295,13 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
                 g.closePath();
                 g.stroke();
                 
-                // Twine intersection knot highlights
-                g.fillStyle = 'rgba(255,255,255,0.6)';
+                g.fillStyle = 'rgba(255,255,255,0.88)';
                 for (let a = 0; a < 6; a++) {
                     const angle = (a * Math.PI) / 3;
                     const kx = cx + r * Math.cos(angle);
                     const ky = cy + r * Math.sin(angle);
                     g.beginPath();
-                    g.arc(kx, ky, 1.8, 0, Math.PI * 2);
+                    g.arc(kx, ky, 4.2, 0, Math.PI * 2);
                     g.fill();
                 }
             }
@@ -6426,35 +6442,33 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
         return c;
     }
     function makeBackboardTexture() {
-        const [c, g] = makeCanvas(512, 320);
-        // Crystal-clear tempered arena glass
-        const glassG = g.createLinearGradient(0, 0, 512, 320);
-        glassG.addColorStop(0, 'rgba(200, 230, 255, 0.24)');
-        glassG.addColorStop(0.5, 'rgba(18, 32, 56, 0.34)');
-        glassG.addColorStop(1, 'rgba(180, 220, 255, 0.18)');
+        const [c, g] = makeCanvas(1024, 640);
+        // Crystal-clear tempered arena glass with specular reflection diagonal sheen
+        const glassG = g.createLinearGradient(0, 0, 1024, 640);
+        glassG.addColorStop(0, 'rgba(215, 240, 255, 0.28)');
+        glassG.addColorStop(0.45, 'rgba(22, 42, 74, 0.30)');
+        glassG.addColorStop(0.55, 'rgba(255, 255, 255, 0.14)');
+        glassG.addColorStop(1, 'rgba(180, 220, 255, 0.22)');
         g.fillStyle = glassG;
-        g.fillRect(0, 0, 512, 320);
+        g.fillRect(0, 0, 1024, 640);
 
-        // Crisp Pro Championship White & Frosted Ice Glass Outer Border
-        g.strokeStyle = 'rgba(255, 255, 255, 0.92)';
-        g.lineWidth = 8;
-        g.strokeRect(5, 5, 502, 310);
+        g.strokeStyle = 'rgba(255, 255, 255, 0.96)';
+        g.lineWidth = 14;
+        g.strokeRect(8, 8, 1008, 624);
 
-        // Subtle cool LED rim inlay
-        g.strokeStyle = 'rgba(56, 189, 248, 0.55)';
-        g.lineWidth = 3;
-        g.strokeRect(14, 14, 484, 292);
+        g.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+        g.lineWidth = 5;
+        g.strokeRect(26, 26, 972, 588);
 
-        // Official Pro Shooter's Square (Crisp White w/ subtle amber edge)
         g.strokeStyle = '#ffffff';
-        g.lineWidth = 8;
-        g.shadowColor = 'rgba(249, 115, 22, 0.65)';
-        g.shadowBlur = 8;
-        g.strokeRect(178, 138, 156, 136);
+        g.lineWidth = 14;
+        g.shadowColor = 'rgba(249, 115, 22, 0.72)';
+        g.shadowBlur = 12;
+        g.strokeRect(356, 276, 312, 272);
         g.shadowBlur = 0;
 
         g.fillStyle = '#f97316';
-        g.fillRect(253, 200, 6, 8);
+        g.fillRect(506, 400, 12, 16);
         return c;
     }
     function makeBallTexture(v) {
@@ -7680,10 +7694,10 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         }
 
         // 6. Balanced Arena Bowl Stands (clean 4-row baseline tiers so top hoop & HUD stay crystal clear!)
-        const deckMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x162033), spec: 0.3, receiveShadow: false });
+        const deckMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x121b2d), spec: 0.35, receiveShadow: false });
         for (const s of [-1, 1]) {
-            const sd = new scene_js_1.Node(G.box(5.0, 0.36, 2 * (L + APRON) + 12), deckMat);
-            sd.setPos(s * (W + APRON + 6.2), 3.3, 0);
+            const sd = new scene_js_1.Node(G.box(5.8, 3.48, 2 * (L + APRON) + 12), deckMat);
+            sd.setPos(s * (W + APRON + 6.4), 1.74, 0);
             root.add(sd);
         }
         const stands = [
@@ -8291,16 +8305,16 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const isDefault = Boolean(t && (t.isDefault || t.id === 'std_hoops_street' || t.id === 'std_hoops_gold'));
         
         // Massive seamless ground plane (500x500) - Polished tournament arena concourse
-        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : 0x1e2433);
-        const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.15, fog: false }));
+        const groundCol = (0, math_js_6.rgb)(t && t.floor ? t.floor : 0x0b1220);
+        const ground = new scene_js_1.Node(G.plane(500, 500), (0, scene_js_1.material)({ color: groundCol, receiveShadow: true, spec: 0.28, shininess: 42, fog: false }));
         ground.setPos(0, -0.06, 0);
 
         // 360-Degree Panoramic Sky Dome
         buildArenaSkyAndHorizon(root, t, W, L, true, quality);
 
         const [pw, pd] = (0, textures_js_1.courtPlaneSize)();
-        // Satin Tournament Maple Hardwood Finish (warm highlights without mirror glare)
-        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.30, shininess: 44, receiveShadow: true }));
+        // Satin Tournament Maple Hardwood Finish (overhead arena spotlight sheen)
+        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.44, shininess: 56, receiveShadow: true }));
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
@@ -15586,7 +15600,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 const w = Math.max(1, this.stage.clientWidth || window.innerWidth);
                 const hgt = Math.max(1, this.stage.clientHeight || window.innerHeight);
                 const isMob = isMobileDevice();
-                const cap = isMob ? (this.qualityMode === 'high' ? 2.0 : 1.75) : (this.qualityMode === 'high' ? 2.5 : 2.0);
+                const cap = isMob ? (this.qualityMode === 'high' ? 2.25 : 1.75) : (this.qualityMode === 'high' ? 2.5 : 2.0);
                 this.dpr = Math.min(window.devicePixelRatio || 1, cap) * this.dprScale;
                 this.renderer.resize(w, hgt, this.dpr);
                 (_a = this.view) === null || _a === void 0 ? void 0 : _a.setAspect(w / hgt);
@@ -15631,7 +15645,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             };
             this.stage = stage;
             this.qualityMode = this.pickQuality();
-            const initShadowMapSize = isMobileDevice() ? 0 : (this.qualityMode === 'high' ? 2048 : 1024);
+            const initShadowMapSize = isMobileDevice() ? (this.qualityMode === 'high' ? 1024 : 0) : (this.qualityMode === 'high' ? 2048 : 1024);
             this.renderer = new renderer_js_1.Renderer(canvas, { antialias: true, shadowSize: initShadowMapSize });
             canvas.addEventListener('webglcontextlost', () => { var _a; return (_a = this.onContextLost) === null || _a === void 0 ? void 0 : _a.call(this); });
             window.addEventListener('resize', this.resize);
@@ -15778,7 +15792,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
                 /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
             );
-            const shadowMapSize = isMob ? 0 : (this.qualityMode === 'high' ? 2048 : 1024);
+            const shadowMapSize = isMob ? (this.qualityMode === 'high' ? 1024 : 0) : (this.qualityMode === 'high' ? 2048 : 1024);
             this.renderer.setShadowSize(shadowMapSize);
             this.resize();
         }
@@ -15989,26 +16003,26 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     a.play(e.kind === 'end' ? 'whistleEnd' : 'whistle');
                     break;
                 case 'kick':
-                    a.play('kick', 0.5 + e.power * 0.7, mode === 'footy' ? 1 : 1.2);
+                    a.play(mode === 'hoops' ? 'pass_hoops' : 'kick', 0.5 + e.power * 0.65, mode === 'footy' ? 1 : 1.06);
                     if (mine(e.id) && e.power > 0.5)
                         telegram_js_1.telegram.haptic('light');
                     break;
                 case 'pass':
-                    a.play('pass');
+                    a.play(mode === 'hoops' ? 'pass_hoops' : 'pass', 0.88);
                     break;
                 case 'shot':
-                    a.play('shot');
+                    a.play(mode === 'hoops' ? 'shot_hoops' : 'shot', mode === 'hoops' ? 0.92 : 0.96);
                     if (mine(e.id))
                         telegram_js_1.telegram.haptic('light');
                     break;
                 case 'bounce':
-                    a.play('bounce', Math.min(1.2, e.speed / 8), mode === 'hoops' ? 1.1 : 1.3);
+                    a.play(mode === 'hoops' ? 'bounce' : 'bounce_footy', Math.min(1.15, (e.speed || 4) / 8), mode === 'hoops' ? 1.02 : 1.0);
                     break;
                 case 'dribble':
-                    a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', 0.85);
+                    a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', mode === 'hoops' ? 0.85 : 0.72);
                     break;
                 case 'step':
-                    a.play('step', Math.min(0.55, (e.speed || 5) / 10), mode === 'hoops' ? 1.2 : 0.95);
+                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.62, (e.speed || 5) / 10), mode === 'hoops' ? 1.04 : 0.98);
                     break;
                 case 'post':
                     a.play('post', Math.min(1.2, e.speed / 12));
@@ -16024,6 +16038,8 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     a.play('save');
                     break;
                 case 'tackleStart':
+                    if (mine(e.id) || (e.dist === undefined || e.dist < 14))
+                        a.play(mode === 'hoops' ? 'squeak' : 'steal_swoosh', 0.85);
                     break;
                 case 'tackleHit':
                     a.play(e.stolen ? 'steal' : 'tackle', 1);

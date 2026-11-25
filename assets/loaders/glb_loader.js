@@ -474,7 +474,7 @@
       }
 
       if (this.onPostAnimate) {
-        this.onPostAnimate(this.nodes, this.playbackTime);
+        this.onPostAnimate(this.nodes, this.playbackTime, dt);
       }
 
       this.updateNodeMatrices();

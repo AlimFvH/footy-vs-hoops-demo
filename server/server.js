@@ -298,7 +298,10 @@ const ITEM_CATALOG = {
   'footy_8_obsidian': { name: 'Обсидиановый Шиноби', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500 },
   'footy_0_tiffany': { name: 'Тиффани Оникс', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800 },
   'footy_excl_solar_volt': { name: 'Солнечный Вольт', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true },
+  'footy_excl_crimson_comet': { name: 'Алая Комета', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true },
+  'footy_excl_glacial_sovereign': { name: 'Ледяной Суверен', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 0, packExclusive: true, bundleOnly: true },
   'footy_excl_eclipse_royal': { name: 'Император Затмение', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true },
+  'footy_excl_shadow_monarch': { name: 'Теневой Монарх', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true },
 
   // OFFICIAL FOOTY STAR KITS (ЗА ЗВЁЗДЫ)
   'footy_kit_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star' },
@@ -321,7 +324,10 @@ const ITEM_CATALOG = {
   'hoops_8_mamba': { name: 'Чёрная Мамба', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500 },
   'hoops_1_miami': { name: 'Майами Роуз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2800 },
   'hoops_excl_inferno_dusk': { name: 'Багряный Рассвет', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true },
+  'hoops_excl_emerald_viper': { name: 'Изумрудная Гадюка', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'epic', price: 0, packExclusive: true, bundleOnly: true },
+  'hoops_excl_cyber_pharaoh': { name: 'Кибер Фараон', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 0, packExclusive: true, bundleOnly: true },
   'hoops_excl_cosmos_apex': { name: 'Космос Апекс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true },
+  'hoops_excl_phoenix_nova': { name: 'Сверхновая Феникс', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'mythic', price: 0, packExclusive: true, bundleOnly: true },
 
   // OFFICIAL HOOPS STAR KITS (ЗА ЗВЁЗДЫ)
   'hoops_kit_star_holiday': { name: '🎄 Новогодняя 2027', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star' },
@@ -449,13 +455,13 @@ const BUNDLE_CATALOG = {
     name: 'Стартовый набор Футболиста',
     mode: 'footy',
     coinsPrice: 1400,
-    badge: '⚡ STARTER EXCLUSIVE',
-    desc: 'Эксклюзивная форма «Солнечный Вольт» (не продаётся отдельно!), форма «Сапфир Страйкер» + 600 монет FvH',
-    originalValue: 2950,
-    discount: 52,
+    badge: '⚡ 100% ЭКСКЛЮЗИВ',
+    desc: 'Две новые эксклюзивные формы («Солнечный Вольт» и «Алая Комета» — нельзя купить в магазине!) + 600 монет FvH',
+    originalValue: 3400,
+    discount: 59,
     items: [
       { id: 'footy_excl_solar_volt', type: 'cosmetic', exclusive: true },
-      { id: 'footy_1_sapphire', type: 'cosmetic' },
+      { id: 'footy_excl_crimson_comet', type: 'cosmetic', exclusive: true },
       { type: 'coins', val: 600 }
     ]
   },
@@ -464,13 +470,13 @@ const BUNDLE_CATALOG = {
     name: 'Стартовый набор Баскетболиста',
     mode: 'hoops',
     coinsPrice: 1400,
-    badge: '⚡ STARTER EXCLUSIVE',
-    desc: 'Эксклюзивная майка «Багряный Рассвет» (не продаётся отдельно!), майка «Шарлотт Бриз» + 600 монет FvH',
-    originalValue: 2950,
-    discount: 52,
+    badge: '⚡ 100% ЭКСКЛЮЗИВ',
+    desc: 'Две новые эксклюзивные майки («Багряный Рассвет» и «Изумрудная Гадюка» — нельзя купить в магазине!) + 600 монет FvH',
+    originalValue: 3400,
+    discount: 59,
     items: [
       { id: 'hoops_excl_inferno_dusk', type: 'cosmetic', exclusive: true },
-      { id: 'hoops_6_charlotte', type: 'cosmetic' },
+      { id: 'hoops_excl_emerald_viper', type: 'cosmetic', exclusive: true },
       { type: 'coins', val: 600 }
     ]
   },
@@ -479,14 +485,14 @@ const BUNDLE_CATALOG = {
     name: 'Набор Мифической Легенды',
     mode: 'footy',
     coinsPrice: 4200,
-    badge: '👑 MYTHIC EXCLUSIVE',
-    desc: 'Мифический эксклюзив «Император Затмение» + «Обсидиановый Шиноби», «Пламя Дракона» и 2,500 монет FvH',
-    originalValue: 9600,
-    discount: 56,
+    badge: '👑 МИФИК ЭКСКЛЮЗИВ',
+    desc: 'Три новые эксклюзивные формы («Император Затмение», «Ледяной Суверен» и «Теневой Монарх» — только в наборе!) + 2,500 монет FvH',
+    originalValue: 10500,
+    discount: 60,
     items: [
       { id: 'footy_excl_eclipse_royal', type: 'cosmetic', exclusive: true },
-      { id: 'footy_8_obsidian', type: 'cosmetic' },
-      { id: 'footy_9_dragon', type: 'cosmetic' },
+      { id: 'footy_excl_glacial_sovereign', type: 'cosmetic', exclusive: true },
+      { id: 'footy_excl_shadow_monarch', type: 'cosmetic', exclusive: true },
       { type: 'coins', val: 2500 }
     ]
   },
@@ -495,14 +501,14 @@ const BUNDLE_CATALOG = {
     name: 'Набор Короля Данков',
     mode: 'hoops',
     coinsPrice: 4200,
-    badge: '👑 MYTHIC EXCLUSIVE',
-    desc: 'Мифический эксклюзив «Космос Апекс» + «Чёрная Мамба», «Гипер Зверь» и 2,500 монет FvH',
-    originalValue: 9600,
-    discount: 56,
+    badge: '👑 МИФИК ЭКСКЛЮЗИВ',
+    desc: 'Три новые эксклюзивные майки («Космос Апекс», «Кибер Фараон» и «Сверхновая Феникс» — только в наборе!) + 2,500 монет FvH',
+    originalValue: 10500,
+    discount: 60,
     items: [
       { id: 'hoops_excl_cosmos_apex', type: 'cosmetic', exclusive: true },
-      { id: 'hoops_8_mamba', type: 'cosmetic' },
-      { id: 'hoops_9_beast', type: 'cosmetic' },
+      { id: 'hoops_excl_cyber_pharaoh', type: 'cosmetic', exclusive: true },
+      { id: 'hoops_excl_phoenix_nova', type: 'cosmetic', exclusive: true },
       { type: 'coins', val: 2500 }
     ]
   },

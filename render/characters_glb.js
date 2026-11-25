@@ -122,13 +122,14 @@
       baseColor.a *= tex.a;
     }
 
-    // Subtle procedural woven jersey micro-grain & highlight preservation on athletic apparel (role < 0.5)
+    // Crisp woven jersey micro-relief & normal depth on athletic apparel (role < 0.5)
     if (uMatRole < 0.5) {
-      float weaveX = sin(vUv.x * 680.0);
-      float weaveY = sin(vUv.y * 680.0);
-      float weave = 1.0 + (weaveX * weaveY) * 0.026;
+      float weaveX = sin(vUv.x * 760.0);
+      float weaveY = sin(vUv.y * 760.0);
+      float weave = weaveX * weaveY;
+      N = normalize(N + vec3(dFdx(weave), 0.0, dFdy(weave)) * 0.25);
       float clothLum = dot(baseColor.rgb, vec3(0.299, 0.587, 0.114));
-      baseColor.rgb *= weave * mix(1.0, 0.87, smoothstep(0.54, 0.95, clothLum));
+      baseColor.rgb *= (1.0 + weave * 0.032) * mix(1.0, 0.89, smoothstep(0.56, 0.96, clothLum));
     }
 
     float NdotL = dot(N, L);
@@ -140,7 +141,7 @@
     float ao = groundAo * cavityAo;
 
     // Warm wrapped diffuse tailored by material role (higher wrap on skin & cloth)
-    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.58 : 0.44;
+    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.56 : 0.42;
     float wrappedL = clamp((NdotL + wrapAmt) / (1.0 + wrapAmt), 0.0, 1.0);
     float directL = smoothstep(0.03, 0.96, wrappedL);
 
@@ -148,7 +149,7 @@
     vec3 sssContrib = vec3(0.0);
     if (uMatRole > 0.5 && uMatRole < 1.5) {
       float backRim = pow(clamp(1.0 - max(NdotL, 0.0), 0.0, 1.0), 2.1) * (0.35 + 0.65 * fillDiff);
-      sssContrib = baseColor.rgb * vec3(1.22, 0.60, 0.40) * backRim * 0.22;
+      sssContrib = baseColor.rgb * vec3(1.24, 0.62, 0.40) * backRim * 0.24;
     }
 
     // Linearized hemispheric ambient + stadium bounce fill
@@ -156,47 +157,47 @@
     vec3 gndLin = pow(max(uGroundColor, vec3(0.001)), vec3(1.9));
     vec3 sunLin = pow(max(uSunColor, vec3(0.001)), vec3(1.6));
     vec3 hemi = mix(gndLin, skyLin, N.y * 0.50 + 0.50);
-    vec3 bounceFill = vec3(0.28, 0.36, 0.50) * fillDiff * 0.36;
+    vec3 bounceFill = vec3(0.30, 0.38, 0.54) * fillDiff * 0.36;
     vec3 ambient = baseColor.rgb * (hemi * 0.64 + bounceFill) * ao;
 
     // Direct Stadium / Key Light
     vec3 diffuse = baseColor.rgb * sunLin * directL * (1.0 - uMetallic * 0.72) * mix(0.88, 1.0, ao) + sssContrib;
 
     // Material-aware Specular Highlights
-    float specPow = mix(20.0, 96.0, clamp(1.0 - uRoughness, 0.0, 1.0));
-    float specStrength = 0.06;
+    float specPow = mix(22.0, 108.0, clamp(1.0 - uRoughness, 0.0, 1.0));
+    float specStrength = 0.07;
     if (uMatRole > 2.5 && uMatRole < 3.5) {
       // Wet cornea catchlight
-      specPow = 156.0;
-      specStrength = 0.78;
+      specPow = 164.0;
+      specStrength = 0.85;
     } else if (uMatRole > 1.5 && uMatRole < 2.5) {
       // Satin hair crown highlight (anisotropic shifted half-vector)
       vec3 hairH = normalize(H + vec3(0.0, 0.22, 0.0));
-      float hSpec = pow(max(dot(N, hairH), 0.0), 32.0);
-      specStrength = 0.16;
-      diffuse += vec3(1.0, 0.95, 0.88) * hSpec * 0.15;
+      float hSpec = pow(max(dot(N, hairH), 0.0), 34.0);
+      specStrength = 0.18;
+      diffuse += vec3(1.0, 0.95, 0.88) * hSpec * 0.16;
     } else if (uMatRole > 3.5) {
       // Cleats / Sneakers / Keeper Latex & Gold Trim
-      specPow = mix(36.0, 96.0, 1.0 - uRoughness);
-      specStrength = mix(0.26, 0.65, uMetallic);
+      specPow = mix(38.0, 104.0, 1.0 - uRoughness);
+      specStrength = mix(0.28, 0.70, uMetallic);
     } else if (uMatRole > 0.5 && uMatRole < 1.5) {
       // Subtle warm skin sheen
-      specPow = 32.0;
-      specStrength = 0.06;
+      specPow = 36.0;
+      specStrength = 0.07;
     }
     float specInt = pow(max(dot(N, H), 0.0), specPow) * specStrength;
     vec3 specTint = mix(sunLin, baseColor.rgb * 1.18, uMetallic);
     vec3 specular = specTint * specInt;
 
-    // Clean Broadcast Rim Light
-    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.8);
-    vec3 rimColor = mix(vec3(0.60, 0.80, 1.0), vec3(1.0, 0.90, 0.76), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
-    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.13 : 0.22;
+    // Crisp Broadcast Silhouette Rim Light (separates athletes cleanly from grass & crowd)
+    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.6);
+    vec3 rimColor = mix(vec3(0.62, 0.84, 1.0), vec3(1.0, 0.92, 0.78), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
+    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.15 : 0.28;
     vec3 rimLight = rim * rimColor * rimBoost * ao;
 
     // Linear HDR -> ACES Filmic Curve -> sRGB Gamma Output
-    vec3 hdrColor = ambient * 0.90 + diffuse * 0.93 + specular * 0.88 + rimLight;
-    vec3 finalLin = acesFilm(hdrColor * 1.00);
+    vec3 hdrColor = ambient * 0.88 + diffuse * 0.98 + specular * 0.92 + rimLight;
+    vec3 finalLin = acesFilm(hdrColor * 1.06);
     vec3 finalSrgb = pow(clamp(finalLin, 0.0, 1.0), vec3(1.0 / 2.2));
     fragColor = vec4(finalSrgb, baseColor.a);
   }
@@ -745,7 +746,10 @@
     'skin_footy_neon_matrix': 'assets/kits/footy_kit_3_neon.png',
     'skin_footy_mythic_titan': 'assets/kits/footy_kit_star_emperor.png',
     'footy_excl_solar_volt': 'assets/kits/footy_kit_excl_volt.png',
+    'footy_excl_crimson_comet': 'assets/kits/footy_kit_excl_comet.png',
+    'footy_excl_glacial_sovereign': 'assets/kits/footy_kit_excl_glacial.png',
     'footy_excl_eclipse_royal': 'assets/kits/footy_kit_excl_eclipse.png',
+    'footy_excl_shadow_monarch': 'assets/kits/footy_kit_excl_monarch.png',
 
     // Basketball Regular Tanks
     'hoops_classic': 'assets/kits/hoops_kit_classic.png',
@@ -791,7 +795,10 @@
     'skin_hoops_phantom_black': 'assets/kits/hoops_kit_8_stealth.png',
     'skin_hoops_hyper_beast': 'assets/kits/hoops_kit_9_beast.png',
     'hoops_excl_inferno_dusk': 'assets/kits/hoops_kit_excl_dusk.png',
+    'hoops_excl_emerald_viper': 'assets/kits/hoops_kit_excl_viper.png',
+    'hoops_excl_cyber_pharaoh': 'assets/kits/hoops_kit_excl_pharaoh.png',
     'hoops_excl_cosmos_apex': 'assets/kits/hoops_kit_excl_cosmos.png',
+    'hoops_excl_phoenix_nova': 'assets/kits/hoops_kit_excl_nova.png',
 
     // Keeper Kits
     'keeper_0_volt': 'assets/kits/keeper_kit_0_volt.png',
@@ -800,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '4.3.0-release';
+  const ATLAS_VERSION = '4.4.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -831,7 +838,7 @@
       const aniso = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
       if (aniso) {
         const maxA = gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
-        gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxA));
+        gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(16, maxA));
       }
       gl.bindTexture(gl.TEXTURE_2D, null);
       tex._fvhLoaded = true;
@@ -888,12 +895,12 @@
       roughness = Math.max(0.58, roughness);
       metallic = Math.min(0.05, metallic);
       const sk = String(skinId || '').toLowerCase();
-      if (sk.includes('gold') || sk.includes('championship') || sk.includes('emperor') || sk.includes('eclipse')) {
-        role = 5.0; metallic = 0.44; roughness = 0.28;
-      } else if (sk.includes('neon') || sk.includes('cyber') || sk.includes('dragon') || sk.includes('volt') || sk.includes('cosmos') || sk.includes('dusk')) {
-        metallic = 0.24; roughness = 0.40;
-      } else if (sk.includes('frost') || sk.includes('tiffany') || sk.includes('sapphire')) {
-        metallic = 0.12; roughness = 0.46;
+      if (sk.includes('gold') || sk.includes('championship') || sk.includes('emperor') || sk.includes('eclipse') || sk.includes('pharaoh') || sk.includes('monarch')) {
+        role = 5.0; metallic = 0.46; roughness = 0.26;
+      } else if (sk.includes('neon') || sk.includes('cyber') || sk.includes('dragon') || sk.includes('volt') || sk.includes('cosmos') || sk.includes('dusk') || sk.includes('nova') || sk.includes('comet') || sk.includes('viper')) {
+        metallic = 0.26; roughness = 0.38;
+      } else if (sk.includes('frost') || sk.includes('tiffany') || sk.includes('sapphire') || sk.includes('glacial')) {
+        metallic = 0.16; roughness = 0.42;
       }
     }
     return { role, roughness, metallic };
@@ -950,6 +957,61 @@
       uRunSpeed: gl.getUniformLocation(p, 'uRunSpeed'),
       uKickPhase: gl.getUniformLocation(p, 'uKickPhase')
     };
+
+    // Match ground contact + directional soft cast shadow program for GLB athletes
+    if (!st.matchShadowProg) {
+      const mshVS = `#version 300 es
+      precision highp float;
+      layout(location=0) in vec2 aP;
+      uniform mat4 uProj, uView;
+      uniform vec3 uPos;
+      uniform float uScale;
+      uniform vec2 uSunXZ;
+      out vec2 vP;
+      void main(){
+        vP = aP;
+        vec2 off = vec2(aP.x * uScale, aP.y * uScale);
+        // Stretch subtly opposite stadium floodlight angle
+        vec2 castOff = off - uSunXZ * max(0.0, dot(aP, -uSunXZ)) * (0.48 * uScale);
+        vec3 wp = vec3(uPos.x + castOff.x, 0.016, uPos.z + castOff.y);
+        gl_Position = uProj * uView * vec4(wp, 1.0);
+      }`;
+      const mshFS = `#version 300 es
+      precision highp float;
+      in vec2 vP;
+      uniform float uFade;
+      out vec4 o;
+      void main(){
+        float d = length(vP);
+        if (d > 1.0) discard;
+        float core = exp(-d * d * 5.8) * 0.56;
+        float penumbra = exp(-d * d * 2.2) * 0.26 * smoothstep(1.0, 0.25, d);
+        o = vec4(0.02, 0.04, 0.06, clamp((core + penumbra) * uFade, 0.0, 0.68));
+      }`;
+      const mp = gl.createProgram();
+      gl.attachShader(mp, createShader(gl.VERTEX_SHADER, mshVS));
+      gl.attachShader(mp, createShader(gl.FRAGMENT_SHADER, mshFS));
+      gl.linkProgram(mp);
+      st.matchShadowProg = mp;
+      st.matchShadowLocs = {
+        uProj: gl.getUniformLocation(mp, 'uProj'),
+        uView: gl.getUniformLocation(mp, 'uView'),
+        uPos: gl.getUniformLocation(mp, 'uPos'),
+        uScale: gl.getUniformLocation(mp, 'uScale'),
+        uSunXZ: gl.getUniformLocation(mp, 'uSunXZ'),
+        uFade: gl.getUniformLocation(mp, 'uFade')
+      };
+      const msVao = gl.createVertexArray();
+      gl.bindVertexArray(msVao);
+      const msBuf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, msBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      gl.bindVertexArray(null);
+      st.matchShadowVao = msVao;
+    }
+
     return st;
   }
 
@@ -1023,7 +1085,7 @@
         const anisoExt = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
         if (anisoExt) {
           const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 4;
-          gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
+          gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(16, maxAniso));
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
       }
@@ -1109,6 +1171,10 @@
       parent,
       byName,
       fingerChain,
+      smoothIndices: ['Hips','Abdomen','Torso','Chest','Neck','Head','Shoulder.L','UpperArm.L','LowerArm.L','Wrist.L','Shoulder.R','UpperArm.R','LowerArm.R','Wrist.R','UpperLeg.L','LowerLeg.L','Foot.L','UpperLeg.R','LowerLeg.R','Foot.R'].map(n => byName[n]).filter(idx => idx !== undefined),
+      prevRot: new Float32Array(nodes.length * 4),
+      prevHipPos: new Float32Array(3),
+      hasPrevPose: false,
       tmpQ: new Float32Array(4),
       tmpP: new Float32Array(4),
       tmpD: new Float32Array(4),
@@ -1168,144 +1234,250 @@
     if (!rig) return;
     const b = rig.byName;
 
-    model.onPostAnimate = function (nodes, clipTime) {
+    function applySmoothPoseFilter(nodes, action, dt) {
+      if (!(dt > 0)) return;
+      const hipIdx = b.Hips;
+      const isFastAction = (action === 'kick' || action === 'pass' || action === 'shot' || action === 'dunk' || action === 'dive' || action === 'slide' || action === 'steal');
+      const rate = isFastAction ? 26.0 : 14.5;
+      const alpha = 1 - Math.exp(-Math.min(0.05, dt) * rate);
+
+      if (!rig.hasPrevPose) {
+        for (let i = 0; i < rig.smoothIndices.length; i++) {
+          const idx = rig.smoothIndices[i];
+          const r = nodes[idx].rotation;
+          const o = idx * 4;
+          rig.prevRot[o] = r[0]; rig.prevRot[o + 1] = r[1]; rig.prevRot[o + 2] = r[2]; rig.prevRot[o + 3] = r[3];
+        }
+        if (hipIdx !== undefined && nodes[hipIdx]) {
+          const ht = nodes[hipIdx].translation;
+          rig.prevHipPos[0] = ht[0]; rig.prevHipPos[1] = ht[1]; rig.prevHipPos[2] = ht[2];
+        }
+        rig.hasPrevPose = true;
+        return;
+      }
+
+      for (let i = 0; i < rig.smoothIndices.length; i++) {
+        const idx = rig.smoothIndices[i];
+        const r = nodes[idx].rotation;
+        const o = idx * 4;
+        let px = rig.prevRot[o], py = rig.prevRot[o + 1], pz = rig.prevRot[o + 2], pw = rig.prevRot[o + 3];
+        let cx = r[0], cy = r[1], cz = r[2], cw = r[3];
+        if (px * cx + py * cy + pz * cz + pw * cw < 0) {
+          cx = -cx; cy = -cy; cz = -cz; cw = -cw;
+        }
+        const nx = px + (cx - px) * alpha;
+        const ny = py + (cy - py) * alpha;
+        const nz = pz + (cz - pz) * alpha;
+        const nw = pw + (cw - pw) * alpha;
+        const len = Math.hypot(nx, ny, nz, nw) || 1;
+        r[0] = nx / len; r[1] = ny / len; r[2] = nz / len; r[3] = nw / len;
+        rig.prevRot[o] = r[0]; rig.prevRot[o + 1] = r[1]; rig.prevRot[o + 2] = r[2]; rig.prevRot[o + 3] = r[3];
+      }
+      if (hipIdx !== undefined && nodes[hipIdx]) {
+        const ht = nodes[hipIdx].translation;
+        const hipA = 1 - Math.exp(-Math.min(0.05, dt) * (isFastAction ? 28.0 : 16.0));
+        ht[0] = rig.prevHipPos[0] + (ht[0] - rig.prevHipPos[0]) * hipA;
+        ht[1] = rig.prevHipPos[1] + (ht[1] - rig.prevHipPos[1]) * hipA;
+        ht[2] = rig.prevHipPos[2] + (ht[2] - rig.prevHipPos[2]) * hipA;
+        rig.prevHipPos[0] = ht[0]; rig.prevHipPos[1] = ht[1]; rig.prevHipPos[2] = ht[2];
+      }
+    }
+
+    model.onPostAnimate = function (nodes, clipTime, stepDt) {
       const st = getStateFn ? getStateFn() : null;
       if (!st) return;
 
       const t = st.clock || clipTime || 0;
-      const action = st.action || 'idle'; // idle | walk | run | dribble | shot | kick | pass | dunk | slide | steal | dive | celeb | hit
+      const dt = stepDt || st.dt || 0.016;
+      const action = st.action || 'idle'; // idle | walk | run | dribble | fdribble | shot | kick | pass | dunk | slide | steal | dive | celeb | hit
       const isHoops = !!st.isHoops;
+      const isKeeper = !!st.isKeeper;
+      const diveDir = st.diveDir || 1;
       const speed = st.speed || 0;
       const runPhase = st.runPhase || 0;
       const dur = Math.max(0.15, model.getActiveClipDuration ? model.getActiveClipDuration() : 1.0);
       const prog = Math.max(0, Math.min(1, clipTime / dur));
 
-      // 1. Natural relaxed finger curl across all fingers (no splayed mannequin paddles)
-      const baseCurl = (action === 'dunk' || action === 'shot' || action === 'dribble' || action === 'dive') ? 0.36 : 0.22;
+      // 1. Natural relaxed finger curl across all fingers
+      const baseCurl = (action === 'dunk' || action === 'shot' || action === 'dribble' || action === 'dive') ? 0.34 : 0.24;
       for (let i = 0; i < rig.fingerChain.length; i++) {
         const fc = rig.fingerChain[i];
         _rotCharAxis(nodes, rig, fc.idx, 0, 0, 1, fc.sign * baseCurl * fc.weight);
       }
 
-      // 2. Lifelike Idle / Showcase Stance (expressive athletic ready bounce, gaze scan & natural guard poise)
+      // 2. Lifelike Athletic Idle / Ready Stance (gentle knee flex + bounce + goalkeeper crouch)
       if (action === 'idle') {
-        const breath = Math.sin(t * 2.25);
-        const shift = Math.sin(t * 1.15);
-        const sway = Math.cos(t * 1.4);
-        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, (isHoops ? 0.075 : 0.045) + 0.014 * Math.abs(breath));
-        _rotCharAxis(nodes, rig, b.Torso, 0, 1, 0, 0.036 * shift);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.032 * breath);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.055 * shift);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.024 * sway);
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.075 * shift + 0.03 * Math.sin(t * 0.72));
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.025 * breath - 0.02);
+        const breath = Math.sin(t * 2.4);
+        const shift = Math.sin(t * 1.25);
+        const sway = Math.cos(t * 1.5);
+        const hipNode = b.Hips !== undefined ? nodes[b.Hips] : null;
 
-        // Relaxed athletic shoulder abduct & dynamic forearm guard poise
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isHoops ? 0.11 : 0.09) + 0.025 * sway);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isHoops ? -0.11 : -0.09) - 0.025 * sway);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, (isHoops ? -0.16 : -0.08) + 0.045 * breath);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (isHoops ? -0.18 : -0.10) - 0.045 * breath);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (isHoops ? -0.46 : -0.36) - 0.06 * breath);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (isHoops ? -0.48 : -0.38) + 0.06 * breath);
+        if (isKeeper) {
+          if (hipNode) hipNode.translation[1] -= 0.048 + 0.008 * Math.abs(breath);
+          _rotCharAxis(nodes, rig, b['UpperLeg.L'], 1, 0, 0, -0.22);
+          _rotCharAxis(nodes, rig, b['LowerLeg.L'], 1, 0, 0, 0.38);
+          _rotCharAxis(nodes, rig, b['Foot.L'], 1, 0, 0, -0.16);
+          _rotCharAxis(nodes, rig, b['UpperLeg.R'], 1, 0, 0, -0.22);
+          _rotCharAxis(nodes, rig, b['LowerLeg.R'], 1, 0, 0, 0.38);
+          _rotCharAxis(nodes, rig, b['Foot.R'], 1, 0, 0, -0.16);
+          _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.14);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.05 * shift);
+          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.10);
+          _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.28 + 0.03 * sway);
+          _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.28 - 0.03 * sway);
+          _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.34);
+          _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.34);
+          _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.72 + 0.05 * breath);
+          _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.72 - 0.05 * breath);
+        } else {
+          if (hipNode) hipNode.translation[1] -= 0.022 + 0.008 * Math.abs(breath);
+          _rotCharAxis(nodes, rig, b['UpperLeg.L'], 1, 0, 0, -0.10 + 0.02 * shift);
+          _rotCharAxis(nodes, rig, b['LowerLeg.L'], 1, 0, 0, 0.18 - 0.02 * shift);
+          _rotCharAxis(nodes, rig, b['Foot.L'], 1, 0, 0, -0.08);
+          _rotCharAxis(nodes, rig, b['UpperLeg.R'], 1, 0, 0, -0.10 - 0.02 * shift);
+          _rotCharAxis(nodes, rig, b['LowerLeg.R'], 1, 0, 0, 0.18 + 0.02 * shift);
+          _rotCharAxis(nodes, rig, b['Foot.R'], 1, 0, 0, -0.08);
+
+          _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, (isHoops ? 0.075 : 0.045) + 0.014 * Math.abs(breath));
+          _rotCharAxis(nodes, rig, b.Torso, 0, 1, 0, 0.042 * shift);
+          _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.028 * breath);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.058 * shift);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.024 * sway);
+          _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.08 * shift + 0.035 * Math.sin(t * 0.72));
+          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.025 * breath - 0.02);
+
+          _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isHoops ? 0.13 : 0.11) + 0.025 * sway);
+          _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isHoops ? -0.13 : -0.11) - 0.025 * sway);
+          _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, (isHoops ? -0.18 : -0.09) + 0.045 * breath);
+          _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (isHoops ? -0.20 : -0.11) - 0.045 * breath);
+          _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (isHoops ? -0.52 : -0.42) - 0.05 * breath);
+          _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (isHoops ? -0.54 : -0.44) + 0.05 * breath);
+        }
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 3. Athletic Run, Walk & Football Dribble Symmetry + Gaze Stabilization
+      // 3. Athletic Run, Walk & Football Dribble (strong arm drive + torso torque + dynamic knee lift)
       if (action === 'run' || action === 'walk' || action === 'fdribble') {
         const stride = Math.sin(runPhase);
         const strideCos = Math.cos(runPhase);
-        const spK = Math.min(1.0, speed / 2.8);
+        const spK = Math.min(1.0, speed / 3.2);
         const isFDrib = (action === 'fdribble');
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, (isFDrib ? -0.12 : -0.07) * spK);
+        const hipNode = b.Hips !== undefined ? nodes[b.Hips] : null;
+        if (hipNode) hipNode.translation[1] -= (isFDrib ? 0.034 : 0.020) * spK;
+
+        _rotCharAxis(nodes, rig, b.Hips, 0, 1, 0, 0.09 * stride * spK);
+        _rotCharAxis(nodes, rig, b.Abdomen, 0, 1, 0, -0.06 * stride * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (isFDrib ? -0.16 : -0.13) * stride * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (isFDrib ? 0.13 : 0.09) * spK);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, (isFDrib ? 0.06 : 0.035) * strideCos * spK);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, (isFDrib ? -0.11 : -0.07) * spK);
         _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, 0.05 * strideCos * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (isFDrib ? -0.15 : -0.11) * stride * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (isFDrib ? 0.12 : 0.08) * spK);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, (isFDrib ? 0.06 : 0.03) * strideCos * spK);
-        // Snappy diagonal sprinter/dribbler arm drive & balanced shoulder roll
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isFDrib ? 0.20 : 0.11) * spK);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isFDrib ? -0.20 : -0.11) * spK);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (-0.38 + 0.36 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, (-0.38 - 0.32 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.58 - 0.18 * stride) * spK);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.56 + 0.16 * stride) * spK);
+
+        // Energetic opposite arm pump (fixes stiff Quaternius Run arms!)
+        const armAmp = isFDrib ? 0.44 : 0.52;
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, (isFDrib ? 0.22 : 0.14) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, (isFDrib ? -0.22 : -0.14) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (-0.34 + armAmp * stride) * spK);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, (-0.34 - armAmp * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, (-0.68 - 0.18 * stride) * spK);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, (-0.68 + 0.18 * stride) * spK);
+
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 4. True Basketball Dribble (Rhythmic crossover palm slap & defender shield arm)
+      // 4. True Basketball Dribble (Low athletic drive stance + rhythmic palm push + off-arm shield)
       if (action === 'dribble') {
-        const freq = speed > 0.35 ? 12.2 : 7.4;
+        const freq = speed > 0.35 ? 11.2 : 7.0;
         const drib = Math.sin(t * freq);
         const push = Math.max(0, -drib);
         const crossSway = Math.sin(t * freq * 0.5);
-        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.11);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.12 * crossSway);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.04 * crossSway);
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.09);
+        const hipNode = b.Hips !== undefined ? nodes[b.Hips] : null;
+        if (hipNode) hipNode.translation[1] -= 0.044 + 0.012 * push;
+
+        _rotCharAxis(nodes, rig, b['UpperLeg.L'], 1, 0, 0, -0.14);
+        _rotCharAxis(nodes, rig, b['LowerLeg.L'], 1, 0, 0, 0.24);
+        _rotCharAxis(nodes, rig, b['UpperLeg.R'], 1, 0, 0, -0.14);
+        _rotCharAxis(nodes, rig, b['LowerLeg.R'], 1, 0, 0, 0.24);
+
+        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.14);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.14 * crossSway);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, 0.05 * crossSway);
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.12);
         _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -0.06 * crossSway);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.17);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.60 + 0.30 * push);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.82 + 0.54 * push);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.36 * push - 0.14);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.22);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.50);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.78);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 0, 1, 0, -0.48);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.20);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.56 + 0.34 * push);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.78 + 0.56 * push);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.42 * push - 0.12);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.28);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.46);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.82);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 0, 1, 0, -0.46);
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 5. Hoops Jump Shot (True asymmetric shooting arm + crisp gooseneck wrist flick release)
+      // 5. Pro Asymmetric Basketball Jump Shot (one-hand pocket -> high arc release & gooseneck wrist snap)
       if (action === 'shot' && isHoops) {
         const gather = Math.min(1, prog / 0.25);
-        const release = Math.min(1, Math.max(0, (prog - 0.18) / 0.42));
+        const release = Math.min(1, Math.max(0, (prog - 0.18) / 0.44));
         const smoothRel = release * release * (3 - 2 * release);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.14 * smoothRel);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.16 * smoothRel);
         _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.10 * Math.sin(prog * Math.PI));
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.12 * gather);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.65 * smoothRel);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, 0.42 * smoothRel - 0.26);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.62 * smoothRel);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.25 * smoothRel);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.28 * (1 - smoothRel));
+        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.14 * gather);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.10 * smoothRel);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.78 * smoothRel);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, 0.48 * smoothRel - 0.32);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.72 * smoothRel);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.32 * smoothRel);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, 0.22 * smoothRel);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.44);
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
       // 6. Hoops Slam Dunk (Explosive 1-hand cock-back & rim hammer arch)
       if (action === 'dunk') {
         const cock = Math.sin(Math.min(1, prog * 2.2) * Math.PI * 0.5);
-        const slam = Math.max(0, Math.min(1, (prog - 0.30) / 0.44));
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.24 * cock + 0.42 * slam);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.18 * cock + 0.28 * slam);
+        const slam = Math.max(0, Math.min(1, (prog - 0.28) / 0.44));
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.22 * cock + 0.40 * slam);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.20 * cock + 0.28 * slam);
         _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.16 * cock + 0.10 * slam);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.66 * cock + 1.06 * slam);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.40 * cock + 0.52 * slam);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.56 * slam);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, 0.58 * slam);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.32);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.72 * cock + 1.08 * slam);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.42 * cock + 0.54 * slam);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.58 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, 0.54 * slam);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.34);
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 7. Footy Power Strike & Crisp Pass (Whip hip/torso torque & follow-through arm snap)
+      // 7. Footy Power Strike & Crisp Pass (Whip hip/torso torque & follow-through arm counterbalance)
       if (action === 'kick' || action === 'pass') {
-        const wind = Math.sin(Math.min(0.5, prog) * Math.PI);
-        const whip = Math.max(0, Math.min(1, (prog - 0.22) / 0.52));
-        const powerMul = action === 'kick' ? 1.15 : 0.68;
-        _rotCharAxis(nodes, rig, b.Abdomen, 0, 1, 0, (-0.15 * wind + 0.28 * whip) * powerMul);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (-0.20 * wind + 0.36 * whip) * powerMul);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (-0.12 * wind + 0.18 * whip) * powerMul);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.30 * powerMul);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, 0.25 * whip * powerMul);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.48);
+        const wind = Math.sin(Math.min(0.45, prog) / 0.45 * Math.PI * 0.5);
+        const whip = Math.max(0, Math.min(1, (prog - 0.20) / 0.50));
+        const powerMul = action === 'kick' ? 1.15 : 0.72;
+        _rotCharAxis(nodes, rig, b.Abdomen, 0, 1, 0, (-0.16 * wind + 0.28 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (-0.22 * wind + 0.38 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (-0.12 * wind + 0.16 * whip) * powerMul);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.36 * powerMul);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.22 * powerMul);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, 0.26 * whip * powerMul);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.52);
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
       // 8. Turf Slide Tackle & Hoops Lunge Steal
       if (action === 'slide' || action === 'steal') {
         const snap = Math.sin(Math.min(1, prog) * Math.PI * 0.85);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (action === 'steal' ? 0.34 : -0.26) * snap);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (action === 'steal' ? 0.26 : -0.22) * snap);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (action === 'steal' ? -0.78 : 0.42) * snap);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.22 * snap);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.35 * snap);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, (action === 'steal' ? 0.36 : -0.24) * snap);
+        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, (action === 'steal' ? 0.28 : -0.14) * snap);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, (action === 'steal' ? -0.82 : 0.36) * snap);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.26 * snap);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.36 * snap);
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
@@ -1320,19 +1492,24 @@
         _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.52 + 0.22 * pump);
         _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.34 - 0.16 * (1 - pump));
         _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.28);
+        applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 10. Goalkeeper Dive (Symmetrical twin-glove extended save reach)
+      // 10. Goalkeeper Dive (Directional twin-glove parry reach without flipping inverted)
       if (action === 'dive') {
-        const stretch = Math.sin(Math.min(1, prog) * Math.PI * 0.72);
-        _rotCharAxis(nodes, rig, b.Chest, 1, 0, 0, -0.18 * stretch);
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.10 * stretch);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -1.32 * stretch);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.36 * stretch);
+        const stretch = Math.sin(Math.min(1, prog) * Math.PI * 0.78);
+        _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, -diveDir * 0.24 * stretch);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, -diveDir * 0.18 * stretch);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -1.25 * stretch);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.32 * stretch);
         _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -1.10 * stretch);
         _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.28 * stretch);
+        applySmoothPoseFilter(nodes, action, dt);
+        return;
       }
+
+      applySmoothPoseFilter(nodes, action, dt);
     };
   }
 
@@ -1484,16 +1661,16 @@
     }
 
     _pickLocomotionClip(vx, vz, speed) {
-      if (speed <= 0.20) return { clip: 'Idle', rate: 1.0 };
-      if (speed <= 1.20) {
-        return { clip: 'Walk', rate: Math.max(0.78, Math.min(1.45, speed / 1.32)) };
+      if (speed <= 0.22) return { clip: 'Idle', rate: 1.0 };
+      if (speed <= 1.65) {
+        return { clip: 'Walk', rate: Math.max(0.75, Math.min(1.38, speed / 1.38)) };
       }
       const fwdX = Math.sin(this.yaw);
       const fwdZ = Math.cos(this.yaw);
       const invS = 1 / (speed || 1);
       const dotF = (vx * fwdX + vz * fwdZ) * invS;
       const dotR = (vx * fwdZ - vz * fwdX) * invS;
-      const rate = Math.max(0.96, Math.min(2.35, speed / 2.45));
+      const rate = Math.max(0.86, Math.min(1.92, speed / 3.45));
       if (dotF < -0.52) return { clip: 'Run_Back', rate };
       if (dotR > 0.72 && dotF < 0.48) return { clip: 'Run_Right', rate };
       if (dotR < -0.72 && dotF < 0.48) return { clip: 'Run_Left', rate };
@@ -1568,14 +1745,16 @@
         this.matchView.sim.ball.owner === a
       );
 
-      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, speed: 0, runPhase: 0, clock: 0 });
+      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, isKeeper: !!this.isKeeper, diveDir: 1, dt: dt, speed: 0, runPhase: 0, clock: 0 });
       bio.isHoops = isBasketballMode;
+      bio.isKeeper = (a.role === 'keeper' || !!this.isKeeper);
+      bio.dt = dt;
       bio.speed = speed;
       bio.runPhase = this.runPhase || 0;
       bio.clock = (bio.clock || 0) + dt;
       bio.action = 'idle';
 
-      // Track clean action entry edges for variant clip variety
+      // Track clean action entry edges for variant clip variety & follow-through linger
       const curActionTag = (isBasketballMode
         ? (a.dunk && a.dunk.active ? 'dunk' : a.shotT > 0 ? 'shot' : a.kickT > 0 ? 'pass' : a.jumpT > 0 ? 'jump' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'steal' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none')
         : (a.role === 'keeper' && a.diveT > 0 ? 'dive' : a.role === 'keeper' && a.jumpT > 0 ? 'kjump' : a.shotT > 0 ? 'fshot' : a.kickT > 0 ? 'fkick' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'slide' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none'));
@@ -1594,80 +1773,91 @@
           fkick: ['Kick_Right', 'Kick_Left'],
           slide: ['Anim_EA_SlideTackle', 'Anim_Slide_V1']
         })[curActionTag] || ['Idle']);
+        this._lingerTimer = (curActionTag === 'fshot' || curActionTag === 'fkick' || curActionTag === 'shot' || curActionTag === 'dunk') ? 0.22 : 0;
+        this._lingerClip = this._activeVariantClip;
+        this._lingerTag = curActionTag;
+      }
+      if (curActionTag === 'none' && this._lingerTimer > 0) {
+        this._lingerTimer = Math.max(0, this._lingerTimer - dt);
       }
       this._lastActionTag = curActionTag;
 
-      // Helper to fit clip playback rate smoothly so windup -> peak -> follow-through executes inside the action window
+      // Helper to fit clip playback rate naturally without hyperspeed cartoon jitter
       const syncRate = (targetWindowSec, fallbackRate) => {
         const d = this.model && this.model.getActiveClipDuration ? this.model.getActiveClipDuration() : 0;
-        return d > 0.2 ? Math.max(1.2, Math.min(3.8, (d * 0.88) / Math.max(0.18, targetWindowSec))) : fallbackRate;
+        return d > 0.2 ? Math.max(1.15, Math.min(2.35, (d * 0.80) / Math.max(0.24, targetWindowSec))) : fallbackRate;
       };
 
       // ==========================================
       // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
       // ==========================================
       if (isBasketballMode) {
-        // 1. Slam Dunk: Explosive Hang-Time & Rim Hammer
+        // 1. Slam Dunk: Explosive Hang-Time & Rim Hammer (avoid doubling GLB clip elevation!)
         if (a.dunk && a.dunk.active) {
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
           const hangTimeArc = Math.pow(Math.sin(dunkProgress * Math.PI), 0.65);
-          targetLift = hangTimeArc * 0.88;
-          targetPitch = 0.22 * Math.sin(dunkProgress * Math.PI);
-          targetRoll = corneringLean + 0.08 * Math.sin(dunkProgress * Math.PI * 2);
+          targetLift = hangTimeArc * 0.24;
+          targetPitch = 0.08 * Math.sin(dunkProgress * Math.PI);
+          targetRoll = corneringLean * 0.6 + 0.05 * Math.sin(dunkProgress * Math.PI * 2);
           bio.action = 'dunk';
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', syncRate(dk.dur || 0.65, 2.45), 0.06);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', syncRate(dk.dur || 0.65, 1.95), 0.08);
         }
         // 2. Jump Shot / Block Elevation & Release
         else if (a.shotT > 0) {
           const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
-          targetLift = Math.sin(shotProgress * Math.PI) * 0.66;
-          targetPitch = -0.09;
+          targetLift = Math.sin(shotProgress * Math.PI) * 0.08;
+          targetPitch = -0.03;
           bio.action = 'shot';
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', syncRate(0.50, 2.85), 0.06);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', syncRate(0.54, 1.90), 0.08);
         }
         else if (a.jumpT > 0) {
           const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.45));
-          targetLift = Math.sin(jp * Math.PI) * 0.54;
-          targetPitch = -0.06;
+          targetLift = Math.sin(jp * Math.PI) * 0.14;
+          targetPitch = -0.02;
           bio.action = 'shot';
-          this.setAnimation('Anim_2K_JumpShot', syncRate(0.45, 2.95), 0.07);
+          this.setAnimation('Anim_2K_JumpShot', syncRate(0.48, 1.95), 0.08);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
         else if (a.kickT > 0) {
-          targetPitch = 0.12;
+          targetPitch = 0.08;
           bio.action = 'pass';
-          this.setAnimation('Anim_Shot_V1', syncRate(0.32, 3.2), 0.06);
+          this.setAnimation('Anim_Shot_V1', syncRate(0.36, 2.1), 0.07);
         }
         // 4. Interception Lunge / Hand Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          targetPitch = 0.20;
+          targetPitch = 0.14;
           bio.action = 'steal';
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', syncRate(0.38, 3.0), 0.06);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', syncRate(0.40, 2.05), 0.07);
         }
-        // 5. Recovery / Stumble
+        // 5. Smooth Follow-Through Linger right after releasing shot/dunk/pass
+        else if (this._lingerTimer > 0 && (this._lingerTag === 'shot' || this._lingerTag === 'dunk')) {
+          bio.action = this._lingerTag === 'dunk' ? 'dunk' : 'shot';
+          this.setAnimation(this._lingerClip || 'Anim_2K_JumpShot', 1.35, 0.10);
+        }
+        // 6. Recovery / Stumble
         else if (a.stunT > 0) {
           bio.action = 'hit';
-          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.4, 0.08);
+          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.25, 0.09);
         }
-        // 6. Celebration Emotes
+        // 7. Celebration Emotes
         else if (a.celebrateT > 0) {
           bio.action = 'celeb';
-          this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
+          this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.35, 0.12);
         }
-        // 7. Basketball Dribbling (Athletic crouch protecting the ball)
+        // 8. Basketball Dribbling (Athletic crouch protecting the ball)
         else if (isBallCarrier) {
           bio.action = 'dribble';
-          if (speed > 0.3) {
-            const sprintCadence = Math.max(1.05, Math.min(2.15, speed / 2.85));
+          if (speed > 0.35) {
+            const sprintCadence = Math.max(0.88, Math.min(1.80, speed / 3.45));
             this.setAnimation('Run', sprintCadence, 0.12);
-            targetPitch = 0.14;
+            targetPitch = 0.12;
           } else {
-            this.setAnimation('Idle', 1.0, 0.15);
-            targetPitch = 0.09;
+            this.setAnimation('Idle', 1.0, 0.16);
+            targetPitch = 0.07;
           }
         }
-        // 8. Directional Defense / Outfield Running / Walking / Idle
+        // 9. Directional Defense / Outfield Running / Walking / Idle
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
           bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
@@ -1683,63 +1873,70 @@
           const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.42));
           const diveArc = Math.sin(diveProg * Math.PI);
           const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1);
-          targetRoll = -diveDir * (0.88 + 0.24 * diveArc);
-          targetLift = 0.22 * diveArc;
-          targetPitch = 0.14 * diveArc;
+          bio.diveDir = diveDir;
+          targetRoll = -diveDir * (0.28 + 0.14 * diveArc);
+          targetLift = 0.16 * diveArc;
+          targetPitch = 0.06 * diveArc;
           bio.action = 'dive';
-          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.42, 3.4), 0.06);
+          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.45, 2.25), 0.08);
         }
         else if (a.role === 'keeper' && a.jumpT > 0) {
           const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
-          targetLift = Math.sin(jumpProg * Math.PI) * 0.36;
-          targetPitch = -0.10;
+          bio.diveDir = 1;
+          targetLift = Math.sin(jumpProg * Math.PI) * 0.24;
+          targetPitch = -0.05;
           bio.action = 'dive';
-          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.50, 3.0), 0.07);
+          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.50, 2.1), 0.08);
         }
         // 2. Football Power Shot vs Crisp Pass
         else if (a.shotT > 0) {
           const strikeProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.45));
-          targetLift = 0.04 * Math.sin(strikeProgress * Math.PI);
-          targetPitch = 0.20 * Math.sin(strikeProgress * Math.PI);
-          targetRoll = -0.07 * Math.sin(strikeProgress * Math.PI);
+          targetLift = 0.02 * Math.sin(strikeProgress * Math.PI);
+          targetPitch = 0.12 * Math.sin(strikeProgress * Math.PI);
+          targetRoll = -0.05 * Math.sin(strikeProgress * Math.PI);
           bio.action = 'kick';
-          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', syncRate(0.45, 2.75), 0.06);
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', syncRate(0.45, 2.15), 0.07);
         }
         else if (a.kickT > 0) {
           const passProg = Math.min(1, Math.max(0, 1 - a.kickT / 0.35));
           targetLift = 0.0;
-          targetPitch = 0.11 * Math.sin(passProg * Math.PI);
+          targetPitch = 0.08 * Math.sin(passProg * Math.PI);
           bio.action = 'pass';
-          this.setAnimation(this._activeVariantClip || 'Kick_Right', syncRate(0.35, 2.3), 0.06);
+          this.setAnimation(this._activeVariantClip || 'Kick_Right', syncRate(0.38, 1.95), 0.07);
         }
-        // 3. Football Turf Slide Tackle
+        // 3. Football Turf Slide Tackle (stays ON grass — no negative sinking!)
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          targetLift = -0.34;
-          targetPitch = -0.44;
-          targetRoll = -0.18;
+          targetLift = 0.02;
+          targetPitch = 0.0;
+          targetRoll = -0.06;
           bio.action = 'slide';
-          this.setAnimation(this._activeVariantClip || 'Anim_EA_SlideTackle', syncRate(0.42, 3.4), 0.06);
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_SlideTackle', syncRate(0.44, 2.25), 0.08);
         }
-        // 4. Recovery / Stumble after tackle collision
+        // 4. Smooth Follow-Through Linger after Kick/Pass
+        else if (this._lingerTimer > 0 && (this._lingerTag === 'fshot' || this._lingerTag === 'fkick')) {
+          bio.action = this._lingerTag === 'fshot' ? 'kick' : 'pass';
+          this.setAnimation(this._lingerClip || 'Kick_Right', 1.45, 0.10);
+        }
+        // 5. Recovery / Stumble after tackle collision
         else if (a.stunT > 0) {
           bio.action = 'hit';
-          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.35, 0.08);
+          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.25, 0.09);
         }
-        // 5. Celebration Emotes
+        // 6. Celebration Emotes
         else if (a.celebrateT > 0) {
           const cT = a.celebrateT || 0;
-          targetLift = Math.max(0, Math.sin(cT * 9) * 0.28);
-          targetPitch = -0.10 * Math.sin(cT * 7);
-          targetRoll = Math.sin(cT * 5) * 0.14;
+          targetLift = Math.max(0, Math.sin(cT * 9) * 0.18);
+          targetPitch = -0.08 * Math.sin(cT * 7);
+          targetRoll = Math.sin(cT * 5) * 0.10;
           bio.action = 'celeb';
-          this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
+          this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.35, 0.12);
         }
-        // 6. Football Ball-Carrier Agility Dribble vs Directional Run / Walk / Idle
+        // 7. Football Ball-Carrier Agility Dribble vs Directional Run / Walk / Idle
         else if (isBallCarrier && speed > 0.35) {
           bio.action = 'fdribble';
-          const dribCadence = Math.max(1.06, Math.min(2.30, speed / 2.35));
-          this.setAnimation('Run', dribCadence, 0.10);
-          targetPitch = 0.14 * Math.min(1.0, speed / 3.2);
+          const dribCadence = Math.max(0.88, Math.min(1.88, speed / 3.25));
+          this.setAnimation('Run', dribCadence, 0.11);
+          targetPitch = 0.11 * Math.min(1.0, speed / 3.4);
         }
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
@@ -2053,6 +2250,38 @@
       // Update character transforms and skeletal animation
       list.forEach(inst => inst.update(dt));
 
+      // Grounded Contact AO + Soft Directional Cast Shadows beneath every GLB Athlete
+      const isFootyMatch = Boolean(matchView && (matchView.isFooty || matchView.mode === 'footy'));
+      const sunDir = [0.42, 0.86, 0.42];
+      if (glState.matchShadowProg && glState.matchShadowVao) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.depthMask(false);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        gl.disable(gl.CULL_FACE);
+        gl.useProgram(glState.matchShadowProg);
+        gl.uniformMatrix4fv(glState.matchShadowLocs.uProj, false, cam.proj);
+        gl.uniformMatrix4fv(glState.matchShadowLocs.uView, false, cam.view);
+        gl.uniform2f(glState.matchShadowLocs.uSunXZ, sunDir[0], sunDir[2]);
+        gl.bindVertexArray(glState.matchShadowVao);
+        list.forEach(inst => {
+          if (!inst.loaded || !inst.agent) return;
+          const ax = inst.agent.x || 0;
+          const az = inst.agent.z || 0;
+          const lift = Math.max(0, (inst.agent.y || 0) + (inst.elevationLift || 0));
+          const spread = (inst.scale || 1.96) * 0.44 * (1.0 + Math.min(0.65, lift * 0.18));
+          const fade = Math.max(0.28, 1.0 - lift * 0.28);
+          gl.uniform3f(glState.matchShadowLocs.uPos, ax, 0, az);
+          gl.uniform1f(glState.matchShadowLocs.uScale, spread);
+          gl.uniform1f(glState.matchShadowLocs.uFade, fade);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        });
+        gl.bindVertexArray(null);
+        gl.depthMask(true);
+        gl.disable(gl.BLEND);
+      }
+
       // Draw all loaded GLB characters
       gl.useProgram(glProgram);
       gl.enable(gl.DEPTH_TEST);
@@ -2067,11 +2296,9 @@
       gl.uniform3fv(glLocations.uEye, cam.position);
 
       // Set balanced Stadium / Indoor Arena Bounce Lighting from Match Scene
-      const isFootyMatch = Boolean(matchView && matchView.isFooty);
-      const sunDir = [0.42, 0.86, 0.42];
-      const sunCol = isFootyMatch ? [1.22, 1.18, 1.10] : [1.26, 1.18, 1.04];
-      const skyCol = isFootyMatch ? [0.78, 0.87, 1.0] : [0.82, 0.86, 0.96];
-      const gndCol = isFootyMatch ? [0.32, 0.46, 0.34] : [0.48, 0.39, 0.30];
+      const sunCol = isFootyMatch ? [1.24, 1.20, 1.12] : [1.28, 1.20, 1.06];
+      const skyCol = isFootyMatch ? [0.78, 0.88, 1.0] : [0.84, 0.88, 0.98];
+      const gndCol = isFootyMatch ? [0.30, 0.48, 0.32] : [0.50, 0.40, 0.30];
 
       gl.uniform3fv(glLocations.uSunDir, sunDir);
       gl.uniform3fv(glLocations.uSunColor, sunCol);
@@ -2162,6 +2389,22 @@
       const preview = ensureWardrobeStage();
       if (!preview || !preview.gl) return false;
 
+      if (!containerEl._fvhTouchBound) {
+        containerEl._fvhTouchBound = true;
+        const lockTgSwipe = (e) => {
+          if (e && e.cancelable) e.preventDefault();
+          if (e) e.stopPropagation();
+          try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            if (tg && typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+          } catch (_) {}
+        };
+        containerEl.style.touchAction = 'none';
+        containerEl.style.overscrollBehavior = 'none';
+        containerEl.addEventListener('touchstart', lockTgSwipe, { passive: false });
+        containerEl.addEventListener('touchmove', lockTgSwipe, { passive: false });
+      }
+
       const poster = containerEl.querySelector('.fvh-hero-real-img');
       if (preview.canvas.parentElement !== containerEl) {
         containerEl.querySelectorAll('canvas.fvh-wardrobe-3d-canvas').forEach(c => c.remove());
@@ -2240,10 +2483,15 @@
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
         attachAthleticBiomechanics(m, () => st._bioState);
+        if (m._bioRig) m._bioRig.hasPrevPose = false;
         st.modelsByChar[charId || 'footy'] = m;
         st.model = m;
         st.model.setAnimation(o.anim || 'Idle', { blendDuration: 0 });
       }
+      st._bioState.action = 'idle';
+      st._bioState.isHoops = (charId === 'hoops');
+      st._bioState.isKeeper = (charId === 'keeper');
+      st._bioState.dt = 0.016;
       const atlasUrl = KIT_ATLAS_MAP[kitId] || (charId === 'hoops' ? KIT_ATLAS_MAP.hoops_classic : (charId === 'keeper' ? KIT_ATLAS_MAP.keeper_0_volt : KIT_ATLAS_MAP.footy_classic));
       if (atlasUrl) {
         await new Promise(resolve => {
@@ -2345,7 +2593,7 @@
       charId: null, kitId: null,
       modelsByChar: {},
       model: null, customTexture: null,
-      _bioState: { action: 'idle', isHoops: false, speed: 0, runPhase: 0, clock: 0 },
+      _bioState: { action: 'idle', isHoops: false, isKeeper: false, dt: 0.016, speed: 0, runPhase: 0, clock: 0 },
       baseYaw: 0.22, yaw: 0.22, pitch: 0.06, dist: 3.12, target: [0, 0.94, 0], hideShadow: false,
       camLift: 0, dragging: false, lastX: 0, lastY: 0, autoSpin: true,
       rafId: 0, lastT: performance.now(), animResetAt: 0,
@@ -2355,7 +2603,7 @@
         const rect = (containerEl || canvas.parentElement || canvas).getBoundingClientRect();
         const w = Math.max(240, Math.round(rect.width || 300));
         const h = Math.max(240, Math.round(rect.height || 300));
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
         if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
           canvas.width = Math.round(w * dpr);
           canvas.height = Math.round(h * dpr);
@@ -2389,6 +2637,7 @@
         if (charChanged) {
           st._bioState.action = 'idle';
           st._bioState.isHoops = (nextChar === 'hoops');
+          st._bioState.isKeeper = isKeeper;
           if (st.modelsByChar[nextChar]) {
             st.model = st.modelsByChar[nextChar];
             st.model.playbackSpeed = 1.0;
@@ -2419,14 +2668,20 @@
           }
         } else {
           st._bioState.isHoops = (nextChar === 'hoops');
+          st._bioState.isKeeper = isKeeper;
         }
       },
 
       drawFrame(dt) {
           const now = performance.now();
           st._bioState.clock = (st._bioState.clock || 0) + dt;
-          if (st.autoSpin && !st.dragging) {
+          st._bioState.dt = dt;
+          st._bioState.isKeeper = (st.charId === 'keeper');
+          if (st.autoSpin && !st.dragging && !st._touchDrag) {
             st.yaw = st.baseYaw + Math.sin(st._bioState.clock * 0.72) * 0.24;
+          } else if (!st.dragging && !st._touchDrag && Math.abs(st.yawVel) > 0.0002) {
+            st.yaw += st.yawVel;
+            st.yawVel *= Math.exp(-dt * 8.5);
           }
           if (st.animResetAt && now > st.animResetAt && st.model) {
             st.animResetAt = 0;
@@ -2571,25 +2826,71 @@
       }
     };
 
-    // 360° Pointer/Touch Orbit & Wheel Zoom
+    // 360° Pointer/Touch Orbit & Wheel Zoom (with Telegram Mini App vertical-swipe lock)
+    const lockVerticalSwipes = () => {
+      try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+      } catch (_) {}
+    };
+    const handleTouchLock = (e) => {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+      lockVerticalSwipes();
+      // Fallback touch orbit if pointer events were not active on legacy WebViews
+      if (e.touches && e.touches.length === 1 && st._activePtrId === null) {
+        const tch = e.touches[0];
+        if (e.type === 'touchstart') {
+          st._touchDrag = true;
+          st.autoSpin = false;
+          st.lastX = tch.clientX;
+          st.lastY = tch.clientY;
+          st.yawVel = 0;
+        } else if (e.type === 'touchmove' && st._touchDrag) {
+          const dx = tch.clientX - st.lastX;
+          const dy = tch.clientY - st.lastY;
+          st.lastX = tch.clientX;
+          st.lastY = tch.clientY;
+          st.yaw -= dx * 0.013;
+          st.yawVel = -dx * 0.013;
+          st.pitch = Math.max(-0.22, Math.min(0.65, st.pitch + dy * 0.006));
+        }
+      }
+    };
+    st._activePtrId = null;
+    st._touchDrag = false;
+    st.yawVel = 0;
+    canvas.addEventListener('touchstart', handleTouchLock, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchLock, { passive: false });
+    canvas.addEventListener('touchend', () => { st._touchDrag = false; });
+    canvas.addEventListener('touchcancel', () => { st._touchDrag = false; });
+
     canvas.addEventListener('pointerdown', (e) => {
+      st._activePtrId = e.pointerId;
+      st._touchDrag = false;
       st.dragging = true;
       st.autoSpin = false;
+      st.yawVel = 0;
       st.lastX = e.clientX;
       st.lastY = e.clientY;
       canvas.style.cursor = 'grabbing';
+      lockVerticalSwipes();
       try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
     });
     canvas.addEventListener('pointermove', (e) => {
-      if (!st.dragging) return;
+      if (!st.dragging || (st._activePtrId !== null && e.pointerId !== st._activePtrId)) return;
       const dx = e.clientX - st.lastX;
       const dy = e.clientY - st.lastY;
       st.lastX = e.clientX;
       st.lastY = e.clientY;
-      st.yaw -= dx * 0.011;
-      st.pitch = Math.max(-0.22, Math.min(0.65, st.pitch + dy * 0.008));
+      st.yaw -= dx * 0.012;
+      st.yawVel = -dx * 0.012;
+      st.pitch = Math.max(-0.22, Math.min(0.65, st.pitch + dy * 0.006));
     });
-    const endDrag = () => {
+    const endDrag = (e) => {
+      if (e && st._activePtrId !== null && e.pointerId !== st._activePtrId) return;
+      st._activePtrId = null;
+      st._touchDrag = false;
       if (!st.dragging) return;
       st.dragging = false;
       canvas.style.cursor = 'grab';
