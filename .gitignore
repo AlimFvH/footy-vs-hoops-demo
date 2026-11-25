@@ -24,3 +24,12 @@ screenshot_*.png
 Thumbs.db
 .vscode/
 .idea/
+
+scratch/
+*.orig.bak
+*.bak
+
+
+benchmark/renders/
+*.zip
+

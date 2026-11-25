@@ -237,12 +237,40 @@ const LEGACY_ITEM_ALIASES = {
   'ball_hoops_neon_energy': 'ball_hoops_lime',
   'ball_hoops_chrome': 'ball_hoops_asphalt',
   'ball_hoops_midnight': 'ball_hoops_camo',
-  'ball_hoops_golden_elite': 'ball_gold_groove'
+  'ball_hoops_golden_elite': 'ball_gold_groove',
+  // Canonical kit & star aliases
+  'footy_kit_2_white': 'footy_2_white',
+  'footy_kit_6_crimson': 'footy_6_crimson',
+  'footy_kit_7_gold': 'footy_7_gold',
+  'footy_kit_1_sapphire': 'footy_1_sapphire',
+  'footy_kit_4_amber': 'footy_4_amber',
+  'footy_kit_5_amethyst': 'footy_5_amethyst',
+  'footy_kit_9_dragon': 'footy_9_dragon',
+  'footy_kit_3_neon': 'footy_3_neon',
+  'footy_kit_8_obsidian': 'footy_8_obsidian',
+  'footy_kit_0_tiffany': 'footy_0_tiffany',
+  'footy_star_holiday': 'footy_kit_star_holiday',
+  'footy_star_emperor': 'footy_kit_star_emperor',
+  'footy_star_samurai': 'footy_kit_star_samurai',
+  'hoops_kit_2_crimson': 'hoops_2_chicago',
+  'hoops_kit_3_gold': 'hoops_3_la',
+  'hoops_kit_4_emerald': 'hoops_4_boston',
+  'hoops_kit_6_cyan': 'hoops_6_charlotte',
+  'hoops_kit_5_amethyst': 'hoops_5_raptor',
+  'hoops_kit_0_neon': 'hoops_0_neon',
+  'hoops_kit_7_amber': 'hoops_7_phoenix',
+  'hoops_kit_9_galaxy': 'hoops_9_beast',
+  'hoops_kit_8_stealth': 'hoops_8_mamba',
+  'hoops_kit_1_pink': 'hoops_1_miami',
+  'hoops_star_holiday': 'hoops_kit_star_holiday',
+  'hoops_star_astral': 'hoops_kit_star_astral',
+  'hoops_star_phantom': 'hoops_kit_star_phantom'
 };
 
 // Canonical Store Catalog (30 Distinct High-Quality Items across All Rarities)
 const ITEM_CATALOG = {
   // OFFICIAL FOOTY KITS (EXACT RARITY TIERS)
+  'footy_classic': { name: 'Классика #10', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true },
   'footy_2_white': { name: 'Чистый Дом', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200, isDefault: true },
   'footy_6_crimson': { name: 'Багровый Гладиатор', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 250 },
   'footy_7_gold': { name: 'Золотой Владыка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300 },
@@ -263,6 +291,7 @@ const ITEM_CATALOG = {
   'footy_star_samurai': { name: '⚔️ Квантовый Самурай', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 750, currency: 'star' },
 
   // OFFICIAL HOOPS KITS (EXACT RARITY TIERS)
+  'hoops_classic': { name: 'Классика #23', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true },
   'hoops_2_chicago': { name: 'Чикаго Классик 1998', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200, isDefault: true },
   'hoops_3_la': { name: 'ЛА Династия', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 250 },
   'hoops_4_boston': { name: 'Бостон Прайд', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 300 },
@@ -598,7 +627,9 @@ function createDefaultPlayer(playerId) {
     unseenItems: [],
     initialSyncDone: false,
     owned: [
+      'footy_classic',
       'footy_2_white',
+      'hoops_classic',
       'hoops_2_chicago',
       'skin_rookie',
       'skin_bb_onyx',
@@ -612,9 +643,9 @@ function createDefaultPlayer(playerId) {
       'trail_default'
     ],
     equipped: {
-      skin: 'footy_2_white',
-      'skin.footy': 'footy_2_white',
-      'skin.hoops': 'hoops_2_chicago',
+      skin: 'footy_classic',
+      'skin.footy': 'footy_classic',
+      'skin.hoops': 'hoops_classic',
       'ball.footy': 'ball_footy_classic',
       'ball.hoops': 'ball_hoops_street',
       'stadium.footy': 'std_footy_classic',
@@ -4815,6 +4846,24 @@ const server = http.createServer((req, res) => {
 
       if (!player.equipped) player.equipped = {};
       player.equipped[slot] = canonicalId;
+      const catEntry = ITEM_CATALOG[canonicalId] || ITEM_CATALOG[itemId];
+      if (slot === 'skin' || slot.startsWith('skin.')) {
+        const inferredMode = (catEntry && catEntry.mode)
+          ? catEntry.mode
+          : (slot.includes('hoops') || canonicalId.startsWith('hoops_') || canonicalId.includes('bb_')) ? 'hoops' : 'footy';
+        player.equipped['skin.' + inferredMode] = canonicalId;
+        if (slot === 'skin' || !player.selectedCharacter || player.selectedCharacter === inferredMode) {
+          player.equipped.skin = canonicalId;
+        }
+      } else if (slot === 'ball' || slot.startsWith('ball.')) {
+        const bMode = (catEntry && catEntry.mode)
+          ? catEntry.mode
+          : (slot.includes('hoops') || canonicalId.includes('hoops')) ? 'hoops' : 'footy';
+        player.equipped['ball.' + bMode] = canonicalId;
+        if (slot === 'ball' || !player.selectedCharacter || player.selectedCharacter === bMode) {
+          player.equipped.ball = canonicalId;
+        }
+      }
       // Interaction in wardrobe marks item as seen
       if (player.unseenItems && (player.unseenItems.includes(canonicalId) || player.unseenItems.includes(itemId))) {
         player.unseenItems = player.unseenItems.filter(id => id !== canonicalId && id !== itemId);
@@ -5097,13 +5146,13 @@ const server = http.createServer((req, res) => {
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     const headers = { 'Content-Type': contentType };
 
-    // High-Concurrency Asset Caching Strategy
-    if (ext === '.html' || pathname.includes('/benchmark/') || pathname.includes('/scratch/') || pathname.includes('/assets/characters/')) {
+    // High-Concurrency Asset Caching Strategy: cache immutable binary assets (GLB/PNG/WAV) while keeping HTML/JS/CSS fresh
+    if (ext === '.html' || pathname.includes('/benchmark/') || pathname.includes('/scratch/')) {
       headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
       headers['Pragma'] = 'no-cache';
       headers['Expires'] = '0';
     } else if (['.glb', '.gltf', '.png', '.jpg', '.mp3', '.wav', '.ogg', '.svg', '.ico'].includes(ext)) {
-      headers['Cache-Control'] = 'no-cache, must-revalidate';
+      headers['Cache-Control'] = 'public, max-age=3600';
     } else if (['.js', '.css'].includes(ext)) {
       headers['Cache-Control'] = 'no-cache, must-revalidate';
     }

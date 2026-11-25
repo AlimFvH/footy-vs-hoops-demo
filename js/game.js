@@ -95,38 +95,53 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     for (let i = 0; i < len; i++)
                         d[i] = Math.random() * 2 - 1;
 
-                    // Real Studio Sports Game Audio Sample Preloader (EA FC & NBA 2K Fidelity)
+                    // Real Studio Sports Game Audio Sample Preloader (EA FC & NBA 2K Fidelity + 38 Variants)
                     if (!this.audioSamplesLoaded) {
                         this.audioSamplesLoaded = true;
                         this.audioSamples = {};
-                        const sampleMap = {
-                            kick: 'assets/audio/kick_power_strike.wav',
-                            shot: 'assets/audio/kick_power_strike.wav',
-                            tackle: 'assets/audio/slide_tackle.wav',
-                            step: 'assets/audio/sprint_step.wav',
-                            swish: 'assets/audio/shot_swish.wav',
-                            dunk: 'assets/audio/dunk_slam.wav',
-                            steal: 'assets/audio/steal_swipe.wav',
-                            save: 'assets/audio/keeper_save.wav',
-                            goal: 'assets/audio/celebration.wav',
-                            score: 'assets/audio/celebration.wav',
-                            win: 'assets/audio/celebration.wav',
-                            celebration: 'assets/audio/celebration.wav',
-                            bounce: 'assets/audio/ball_bounce.wav',
-                            dribble: 'assets/audio/dribble.wav',
-                            dribble_court: 'assets/audio/dribble.wav',
-                            whistle: 'assets/audio/whistle.wav',
-                            whistleStart: 'assets/audio/whistle.wav',
-                            whistleEnd: 'assets/audio/whistle.wav',
-                            whistleRestart: 'assets/audio/whistle.wav',
-                            squeak: 'assets/audio/sneaker_squeak.wav'
+                        this.samplePools = {};
+                        this._lastVariantIdx = {};
+                        const variantPools = {
+                            kick: ['assets/audio/kick_power_strike.wav', 'assets/audio/variants/kick_v1.wav', 'assets/audio/variants/kick_v2.wav', 'assets/audio/variants/kick_v3.wav', 'assets/audio/variants/kick_v4.wav', 'assets/audio/variants/kick_v5.wav'],
+                            shot: ['assets/audio/kick_power_strike.wav', 'assets/audio/variants/kick_v2.wav', 'assets/audio/variants/kick_v4.wav', 'assets/audio/variants/kick_v5.wav'],
+                            tackle: ['assets/audio/slide_tackle.wav', 'assets/audio/variants/slide_v1.wav', 'assets/audio/variants/slide_v2.wav', 'assets/audio/variants/slide_v3.wav', 'assets/audio/variants/slide_v4.wav', 'assets/audio/variants/slide_v5.wav'],
+                            step: ['assets/audio/sprint_step.wav'],
+                            swish: ['assets/audio/shot_swish.wav', 'assets/audio/variants/swish_v1.wav', 'assets/audio/variants/swish_v2.wav', 'assets/audio/variants/swish_v3.wav', 'assets/audio/variants/swish_v4.wav', 'assets/audio/variants/swish_v5.wav'],
+                            dunk: ['assets/audio/dunk_slam.wav', 'assets/audio/variants/dunk_v1.wav', 'assets/audio/variants/dunk_v2.wav', 'assets/audio/variants/dunk_v3.wav', 'assets/audio/variants/dunk_v4.wav', 'assets/audio/variants/dunk_v5.wav'],
+                            steal: ['assets/audio/steal_swipe.wav', 'assets/audio/variants/steal_v1.wav', 'assets/audio/variants/steal_v2.wav', 'assets/audio/variants/steal_v3.wav', 'assets/audio/variants/steal_v4.wav', 'assets/audio/variants/steal_v5.wav'],
+                            save: ['assets/audio/keeper_save.wav', 'assets/audio/variants/save_v1.wav', 'assets/audio/variants/save_v2.wav', 'assets/audio/variants/save_v3.wav'],
+                            goal: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
+                            score: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
+                            win: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v5.wav'],
+                            celebration: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
+                            bounce: ['assets/audio/ball_bounce.wav', 'assets/audio/variants/dribble_v1.wav'],
+                            dribble: ['assets/audio/dribble.wav', 'assets/audio/variants/dribble_v1.wav'],
+                            dribble_court: ['assets/audio/dribble.wav', 'assets/audio/variants/dribble_v1.wav'],
+                            whistle: ['assets/audio/whistle.wav', 'assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav', 'assets/audio/variants/whistle_v3.wav'],
+                            whistleStart: ['assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav'],
+                            whistleEnd: ['assets/audio/whistle.wav', 'assets/audio/variants/whistle_v2.wav', 'assets/audio/variants/whistle_v3.wav'],
+                            whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
+                            squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        for (const [sName, sUrl] of Object.entries(sampleMap)) {
-                            fetch(sUrl)
-                                .then(res => res.ok ? res.arrayBuffer() : null)
-                                .then(buf => buf ? this.ctx.decodeAudioData(buf) : null)
-                                .then(decoded => { if (decoded) this.audioSamples[sName] = decoded; })
-                                .catch(() => {});
+                        const decodedUrlPromises = new Map();
+                        const loadDecoded = (url) => {
+                            if (!decodedUrlPromises.has(url)) {
+                                decodedUrlPromises.set(url, fetch(url)
+                                    .then(res => res.ok ? res.arrayBuffer() : null)
+                                    .then(buf => (buf && this.ctx) ? this.ctx.decodeAudioData(buf) : null)
+                                    .catch(() => null));
+                            }
+                            return decodedUrlPromises.get(url);
+                        };
+                        for (const [sName, urls] of Object.entries(variantPools)) {
+                            this.samplePools[sName] = [];
+                            urls.forEach((u, idx) => {
+                                loadDecoded(u).then(decoded => {
+                                    if (!decoded) return;
+                                    this.samplePools[sName].push(decoded);
+                                    if (idx === 0 || !this.audioSamples[sName]) this.audioSamples[sName] = decoded;
+                                });
+                            });
                         }
                     }
                 }
@@ -227,14 +242,30 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 this.lastPlay[name] = now;
             }
 
-            // High-fidelity real game audio sample playback
-            if (this.audioSamples && this.audioSamples[name]) {
+            // High-fidelity real studio audio variant pool playback (non-repeating + natural pitch micro-variance)
+            const pool = this.samplePools && this.samplePools[name];
+            let chosenBuf = null;
+            if (pool && pool.length > 0) {
+                if (pool.length === 1) {
+                    chosenBuf = pool[0];
+                } else {
+                    const lastIdx = (this._lastVariantIdx && this._lastVariantIdx[name] !== undefined) ? this._lastVariantIdx[name] : -1;
+                    let nextIdx = Math.floor(Math.random() * pool.length);
+                    if (nextIdx === lastIdx) nextIdx = (nextIdx + 1) % pool.length;
+                    if (this._lastVariantIdx) this._lastVariantIdx[name] = nextIdx;
+                    chosenBuf = pool[nextIdx];
+                }
+            } else if (this.audioSamples && this.audioSamples[name]) {
+                chosenBuf = this.audioSamples[name];
+            }
+            if (chosenBuf) {
                 try {
                     const src = c.createBufferSource();
-                    src.buffer = this.audioSamples[name];
-                    src.playbackRate.setValueAtTime(pitch, now);
+                    src.buffer = chosenBuf;
+                    const jitter = (name === 'whistle' || name === 'whistleStart' || name === 'whistleEnd') ? 1.0 : (0.96 + Math.random() * 0.08);
+                    src.playbackRate.setValueAtTime(pitch * jitter, now);
                     const sGain = c.createGain();
-                    sGain.gain.setValueAtTime(v * 0.95, now);
+                    sGain.gain.setValueAtTime(v * 0.96, now);
                     src.connect(sGain);
                     sGain.connect(this.sfxGain);
                     src.start(now);
@@ -1252,7 +1283,9 @@ void main(){
     float f = smoothstep(uFogNear, uFogFar, fd) * uFogAmt;
     col = mix(col, uFogColor, f);
   }
-  outColor = vec4(pow(clamp(col, 0.0, 1.0), vec3(1.0 / 2.2)), alpha);
+  vec3 aces = clamp((col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14), 0.0, 1.0);
+  vec3 toneCol = mix(clamp(col, 0.0, 1.0), aces, 0.68);
+  outColor = vec4(pow(toneCol, vec3(1.0 / 2.2)), alpha);
 }`;
     const VS_DEPTH = `#version 300 es
 layout(location=0) in vec3 aPos;
@@ -4727,26 +4760,26 @@ define("data/shop", ["require", "exports"], function (require, exports) {
         accent: 0x22d3a0,
     };
     const COURT_BASE = {
-        apron: 0x0a0c16,
-        line: 0x00f0ff,
-        paint: 0x0f172a, centerPaint: 0x0f172a,
-        floor: 0x060810,
-        skyTop: 0x100e2e,
-        skyBottom: 0x2e1065,
-        fog: 0x140e2a,
-        sunColor: [1.22, 1.14, 1.02],
-        sunDir: [0.25, 0.88, 0.38],
-        hemiSky: 0xffedd5,
-        hemiGround: 0x3b1d11,
-        lights: [0x00e5ff, 0xff2bd6, 0x00e5ff, 0xff2bd6],
-        lightIntensity: 0.75,
-        stand: 0x0f1422,
-        crowd: [0x00f0ff, 0xff2bd6, 0xf59e0b, 0xffffff, 0xa855f7],
-        board: 0x080c16,
+        apron: 0x0f172a,
+        line: 0xf8fafc,
+        paint: 0x162440, centerPaint: 0x162440,
+        floor: 0x1a2338,
+        skyTop: 0x0d152a,
+        skyBottom: 0x1d2d4e,
+        fog: 0x131d36,
+        sunColor: [1.28, 1.22, 1.12],
+        sunDir: [0.28, 0.88, 0.36],
+        hemiSky: 0xffe8cc,
+        hemiGround: 0x4b2e1b,
+        lights: [0xfff2dc, 0xdceeff, 0xfff2dc, 0xdceeff],
+        lightIntensity: 0.92,
+        stand: 0x182133,
+        crowd: [0xf97316, 0xef4444, 0xfacc15, 0xffffff, 0x38bdf8],
+        board: 0x0b1222,
         boardText: 0xffffff,
-        glow: 0x00f0ff,
+        glow: 0x38bdf8,
         rim: 0xff5500,
-        accent: 0xff2bd6,
+        accent: 0xf97316,
     };
     const skin = (id, name, rarity, price, v, icon = '👕') => ({
         id,
@@ -6265,36 +6298,34 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
     }
     function makeBackboardTexture() {
         const [c, g] = makeCanvas(512, 320);
-        // Translucent dark cyber glass
-        g.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        // Crystal-clear tempered arena glass
+        const glassG = g.createLinearGradient(0, 0, 512, 320);
+        glassG.addColorStop(0, 'rgba(200, 230, 255, 0.24)');
+        glassG.addColorStop(0.5, 'rgba(18, 32, 56, 0.34)');
+        glassG.addColorStop(1, 'rgba(180, 220, 255, 0.18)');
+        g.fillStyle = glassG;
         g.fillRect(0, 0, 512, 320);
 
-        // Radiant Glowing Neon Cyan Outer LED strip
-        g.strokeStyle = '#00f0ff';
-        g.lineWidth = 10;
-        g.shadowColor = '#00f0ff';
-        g.shadowBlur = 14;
-        g.strokeRect(6, 6, 500, 308);
-
-        // Inner Glowing Hot Magenta border line
-        g.strokeStyle = '#ff2bd6';
-        g.shadowColor = '#ff2bd6';
-        g.shadowBlur = 10;
-        g.lineWidth = 6;
-        g.strokeRect(16, 16, 480, 288);
-        g.shadowBlur = 0;
-
-        // Official Inner Shooter's Target Box in Radiant Neon Orange
-        g.strokeStyle = '#ff6a00';
+        // Crisp Pro Championship White & Frosted Ice Glass Outer Border
+        g.strokeStyle = 'rgba(255, 255, 255, 0.92)';
         g.lineWidth = 8;
-        g.shadowColor = '#ff6a00';
-        g.shadowBlur = 12;
-        g.strokeRect(176, 135, 160, 140);
+        g.strokeRect(5, 5, 502, 310);
+
+        // Subtle cool LED rim inlay
+        g.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+        g.lineWidth = 3;
+        g.strokeRect(14, 14, 484, 292);
+
+        // Official Pro Shooter's Square (Crisp White w/ subtle amber edge)
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 8;
+        g.shadowColor = 'rgba(249, 115, 22, 0.65)';
+        g.shadowBlur = 8;
+        g.strokeRect(178, 138, 156, 136);
         g.shadowBlur = 0;
 
-        // Center crosshair tick in target box
-        g.fillStyle = '#ffffff';
-        g.fillRect(254, 202, 4, 6);
+        g.fillStyle = '#f97316';
+        g.fillRect(253, 200, 6, 8);
         return c;
     }
     function makeBallTexture(v) {
@@ -7137,23 +7168,24 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const shade = (c, k) => [Math.min(1, c[0] * k), Math.min(1, c[1] * k), Math.min(1, c[2] * k)];
         const wallCol = (0, math_js_6.rgb)(standColor).map((v) => v * 0.55);
         for (const st of stands) {
+            const baseY = st.baseY || 0;
             const lastOut = st.offset + (st.rows - 1) * 0.95;
-            const lastH = 0.7 + (st.rows - 1) * 0.75;
+            const lastH = baseY + 0.7 + (st.rows - 1) * 0.75;
             const wall = new scene_js_1.Node(st.alongX ? G.box(st.length + 2, lastH + 3.2, 0.6) : G.box(0.6, lastH + 3.2, st.length + 2), (0, scene_js_1.material)({ color: wallCol, receiveShadow: false }));
             if (st.alongX)
                 wall.setPos(st.center, (lastH + 3.2) / 2, st.sign * (lastOut + 1.1));
             else
                 wall.setPos(st.sign * (lastOut + 1.1), (lastH + 3.2) / 2, st.center);
-            const rimMat = (0, scene_js_1.material)({ color: pal[0], emissive: [pal[0][0]*1.2, pal[0][1]*1.2, pal[0][2]*1.2], unlit: true });
-            const rim = new scene_js_1.Node(st.alongX ? G.box(st.length + 2, 0.22, 0.68) : G.box(0.68, 0.22, st.length + 2), rimMat);
+            const rimMat = (0, scene_js_1.material)({ color: wallCol, emissive: [pal[0][0]*0.32, pal[0][1]*0.32, pal[0][2]*0.32], spec: 0.7, shininess: 65 });
+            const rim = new scene_js_1.Node(st.alongX ? G.box(st.length + 2, 0.14, 0.56) : G.box(0.56, 0.14, st.length + 2), rimMat);
             if (st.alongX)
-                rim.setPos(st.center, lastH + 3.2 + 0.11, st.sign * (lastOut + 1.1));
+                rim.setPos(st.center, lastH + 3.2 + 0.07, st.sign * (lastOut + 1.1));
             else
-                rim.setPos(st.sign * (lastOut + 1.1), lastH + 3.2 + 0.11, st.center);
+                rim.setPos(st.sign * (lastOut + 1.1), lastH + 3.2 + 0.07, st.center);
             if (!st.noWall) slabs.add(wall, rim);
             for (let r = 0; r < st.rows; r++) {
                 const out = st.offset + r * 0.95;
-                const h = 0.7 + r * 0.75;
+                const h = baseY + 0.7 + r * 0.75;
                 const slab = new scene_js_1.Node(st.alongX ? G.box(st.length, h, 1.0) : G.box(1.0, h, st.length), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(standColor), receiveShadow: false }));
                 if (st.alongX)
                     slab.setPos(st.center, h / 2, st.sign * out);
@@ -7408,6 +7440,16 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 head.add(lens);
             }
         }
+        // Subtle volumetric stadium floodlight atmosphere cone
+        const gCol = (0, math_js_6.rgb)(glow || 0xfff4dc);
+        const beamMat = (0, scene_js_1.material)({
+            color: [0.8 + gCol[0] * 0.2, 0.85 + gCol[1] * 0.15, 0.9 + gCol[2] * 0.1],
+            transparent: true, alpha: 0.036, unlit: true, depthWrite: false, doubleSided: true, fog: false
+        });
+        const beamCone = new scene_js_1.Node(G.cylinder(0.85, 6.4, 15.0, 12), beamMat);
+        beamCone.rotation = [-Math.PI / 2, 0, 0];
+        beamCone.setPos(0, 0, 7.6);
+        head.add(beamCone);
         root.add(pole, head);
     }
 
@@ -7548,75 +7590,124 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             }
         }
 
-        // 5. Full 360-Degree Fortnite Stadium Grandstands & Cheering Ultras!
+        // 5. Full 360-Degree Championship Stadium Grandstands + Enclosed Corner Concourse Structures!
+        const cornerArchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x162033), spec: 0.35, shininess: 30 });
+        for (const sx of [-1, 1]) {
+            for (const sz of [-1, 1]) {
+                const cStand = new scene_js_1.Node(G.box(8.8, 7.8, 8.8), cornerArchMat);
+                cStand.setPos(sx * (W + 7.2), 3.6, sz * (L + GD + 7.0));
+                const cTrim = new scene_js_1.Node(G.box(9.0, 0.25, 9.0), neonCyanMat);
+                cTrim.setPos(sx * (W + 7.2), 7.6, sz * (L + GD + 7.0));
+                root.add(cStand, cTrim);
+            }
+        }
         const stands = [
-            { alongX: true, sign: -1, offset: L + GD + 3.2, length: 2 * W + 8, rows: 6, center: 0 },
-            { alongX: true, sign: 1, offset: L + GD + 3.2, length: 2 * W + 8, rows: 6, center: 0 },
-            { alongX: false, sign: -1, offset: W + 3.2, length: 2 * L + 6, rows: 6, center: 0 },
-            { alongX: false, sign: 1, offset: W + 3.2, length: 2 * L + 6, rows: 6, center: 0 }
+            { alongX: true, sign: -1, offset: L + GD + 3.2, length: 2 * W + 10, rows: 7, center: 0 },
+            { alongX: true, sign: 1, offset: L + GD + 3.2, length: 2 * W + 10, rows: 7, center: 0 },
+            { alongX: false, sign: -1, offset: W + 3.2, length: 2 * L + 8, rows: 7, center: 0 },
+            { alongX: false, sign: 1, offset: W + 3.2, length: 2 * L + 8, rows: 7, center: 0 }
         ];
         // Preserved crowd geometry tokens for test suite assertions:
         const supporterTorso = G.cylinder(0.36, 0.44, 1.0, 8, true);
         const supporterArm = G.capsule(0.16, 0.82, 6, 2);
         void supporterTorso; void supporterArm;
 
-        const crowdPalette = [0x00f0ff, 0x0284c7, 0xffffff, 0x38bdf8, 0x1e293b];
-        const crowdObj = crowdAndStands(root, stands, crowdPalette, 0x1e2433, quality);
+        const crowdPalette = [0x0ea5e9, 0x38bdf8, 0xffffff, 0xfacc15, 0x1e293b];
+        const crowdObj = crowdAndStands(root, stands, crowdPalette, 0x182133, quality);
         return crowdObj;
     }
 
     function buildBasketballArenaArchitecture(root, t, W, L, APRON, quality) {
-        // Fortnite Cyber Basketball Arena: Zero wooden peg dolls in direct camera view!
-        // Elevated distant balconies, floating North holographic jumbotron, glowing neon perimeter rails!
-        const barrierMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0a0d18), spec: 0.65, shininess: 65 });
-        const neonCyanMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x00f0ff), emissive: [0.6, 1.2, 1.5], unlit: true });
-        const neonMagentaMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xff2bd6), emissive: [1.4, 0.4, 1.2], unlit: true });
-        const neonOrangeMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf97316), emissive: [1.3, 0.6, 0.2], unlit: true });
+        // Championship Indoor Arena Bowl: Complete enclosed lower + upper grandstands, corner mezzanines,
+        // overhead truss skylight rig, zero black abyss voids!
+        const barrierMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0d1424), spec: 0.65, shininess: 65 });
+        const wallConcreteMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1b263b), spec: 0.28, shininess: 24, receiveShadow: false });
+        const trussMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x25324a), spec: 0.65, shininess: 55, receiveShadow: false });
+        const accentCyanMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x38bdf8), emissive: [0.35, 0.72, 0.95], unlit: true });
+        const accentWarmMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf97316), emissive: [0.85, 0.42, 0.10], unlit: true });
+        const ceilingLampMat = (0, scene_js_1.material)({ color: [1, 1, 1], emissive: [1.5, 1.45, 1.35], unlit: true, fog: false });
 
-        // 1. Curved Cyber Barrier Perimeter around Court Apron
+        // 1. Sleek Championship Perimeter Wall & Subtle Glass/Steel Rail
         for (const s of [-1, 1]) {
-            // Sideline barriers
-            const wall = new scene_js_1.Node(G.box(0.35, 1.1, 2 * (L + APRON) + 4), barrierMat);
-            wall.setPos(s * (W + APRON + 1.8), 0.55, 0);
-            const rail = new scene_js_1.Node(G.box(0.40, 0.08, 2 * (L + APRON) + 4), neonCyanMat);
-            rail.setPos(s * (W + APRON + 1.8), 1.14, 0);
+            const wall = new scene_js_1.Node(G.box(0.32, 0.95, 2 * (L + APRON) + 5), barrierMat);
+            wall.setPos(s * (W + APRON + 1.65), 0.48, 0);
+            const rail = new scene_js_1.Node(G.box(0.36, 0.06, 2 * (L + APRON) + 5), accentWarmMat);
+            rail.setPos(s * (W + APRON + 1.65), 0.98, 0);
             root.add(wall, rail);
         }
 
-        // 2. Open Court Skyline (Clean sightline behind hoops without big screen obstruction)
+        // 2. Complete Enclosing Arena Perimeter Bowl Wall (eliminates black outer void along horizon!)
+        const outerX = W + APRON + 18.0;
+        const outerZ = L + APRON + 18.5;
+        const wallH = 14.0;
+        for (const s of [-1, 1]) {
+            const sideBowl = new scene_js_1.Node(G.box(1.2, wallH, outerZ * 2 + 4), wallConcreteMat);
+            sideBowl.setPos(s * outerX, wallH * 0.5 - 0.5, 0);
+            const endBowl = new scene_js_1.Node(G.box(outerX * 2 + 4, wallH, 1.2), wallConcreteMat);
+            endBowl.setPos(0, wallH * 0.5 - 0.5, s * outerZ);
+            const sideFascia = new scene_js_1.Node(G.box(1.3, 0.35, outerZ * 2 + 2), accentCyanMat);
+            sideFascia.setPos(s * (outerX - 0.4), wallH - 1.2, 0);
+            const endFascia = new scene_js_1.Node(G.box(outerX * 2 + 2, 0.35, 1.3), accentWarmMat);
+            endFascia.setPos(0, wallH - 1.2, s * (outerZ - 0.4));
+            root.add(sideBowl, endBowl, sideFascia, endFascia);
+        }
 
-        // 3. Cyber Stadium Floodlight Pylons (4 corners of basketball court)
-        const pylonMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x1e293b), spec: 0.6, shininess: 55 });
+        // 3. Elevated Corner Arena Structural Towers & Spot Light Rigs
         for (const sx of [-1, 1]) {
             for (const sz of [-1, 1]) {
+                const cornerDeck = new scene_js_1.Node(G.box(9.5, 5.2, 9.5), wallConcreteMat);
+                cornerDeck.setPos(sx * (W + APRON + 9.2), 2.5, sz * (L + APRON + 9.2));
                 const pylon = new scene_js_1.Node();
-                pylon.setPos(sx * (W + APRON + 4.2), 0, sz * (L + APRON + 3.2));
-                const column = new scene_js_1.Node(G.cylinder(0.24, 0.32, 14.0, 8), pylonMat);
-                column.setPos(0, 7.0, 0);
-                const lamp = new scene_js_1.Node(G.box(1.4, 0.6, 0.6), sz < 0 ? neonCyanMat : neonMagentaMat);
-                lamp.setPos(0, 14.2, 0);
-                lamp.rotation = [0.35, Math.atan2(-sx, -sz) + Math.PI, 0];
+                pylon.setPos(sx * (W + APRON + 6.5), 0, sz * (L + APRON + 6.0));
+                const column = new scene_js_1.Node(G.cylinder(0.28, 0.36, 15.0, 8), trussMat);
+                column.setPos(0, 7.5, 0);
+                const lamp = new scene_js_1.Node(G.box(1.8, 0.65, 0.65), ceilingLampMat);
+                lamp.setPos(0, 15.1, 0);
+                lamp.rotation = [0.42, Math.atan2(-sx, -sz) + Math.PI, 0];
                 pylon.add(column, lamp);
-                root.add(pylon);
+                root.add(cornerDeck, pylon);
             }
         }
 
-        // 4. Courtside Team Benches & Media Desks
-        const benchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0f172a), spec: 0.5 });
-        for (const s of [-1, 1]) {
-            const desk = new scene_js_1.Node(G.box(0.65, 0.72, 10.0), benchMat);
-            desk.setPos(s * (W + APRON + 1.1), 0.36, 0);
-            const deskNeon = new scene_js_1.Node(G.box(0.70, 0.06, 10.0), s < 0 ? neonCyanMat : neonMagentaMat);
-            deskNeon.setPos(s * (W + APRON + 1.1), 0.74, 0);
-            root.add(desk, deskNeon);
+        // 4. Overhead Arena Roof Trusses & Suspended Light Halo (cleanly high above court sightlines)
+        for (const rz of [-L * 0.65, 0, L * 0.65]) {
+            const trussBeam = new scene_js_1.Node(G.box(outerX * 2, 0.55, 0.65), trussMat);
+            trussBeam.setPos(0, 17.8, rz);
+            const spotBar = new scene_js_1.Node(G.box(W * 1.4, 0.14, 0.32), ceilingLampMat);
+            spotBar.setPos(0, 17.45, rz);
+            root.add(trussBeam, spotBar);
         }
 
-        // 5. Electric NBA All-Star Cyber Arena Grandstands & Spectators!
+        // 5. Sleek Courtside Scorer Table & Player Bench (clean dark matte w/ hairline LED accent, NO neon blocks!)
+        const benchMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x0f172a), spec: 0.55 });
+        for (const s of [-1, 1]) {
+            const desk = new scene_js_1.Node(G.box(0.55, 0.68, 9.2), benchMat);
+            desk.setPos(s * (W + APRON + 1.0), 0.34, 0);
+            const deskEdge = new scene_js_1.Node(G.box(0.58, 0.04, 9.2), s < 0 ? accentCyanMat : accentWarmMat);
+            deskEdge.setPos(s * (W + APRON + 1.0), 0.69, 0);
+            root.add(desk, deskEdge);
+        }
+
+        // 6. Dual-Tier Championship Arena Stands (Seamless Elevated Upper Mezzanine Tier across ALL 4 sides!)
+        const deckMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x162033), spec: 0.3, receiveShadow: false });
+        for (const s of [-1, 1]) {
+            const sd = new scene_js_1.Node(G.box(5.2, 0.4, 2 * (L + APRON) + 14), deckMat);
+            sd.setPos(s * (W + APRON + 6.4), 3.7, 0);
+            const ed = new scene_js_1.Node(G.box(2 * (W + APRON) + 18, 0.4, 5.2), deckMat);
+            ed.setPos(0, 3.7, s * (L + APRON + 6.6));
+            root.add(sd, ed);
+        }
         const stands = [
-            { alongX: true, sign: -1, offset: L + APRON + 2.8, length: 2 * (W + APRON) + 6, rows: 5, center: 0 },
-            { alongX: true, sign: 1, offset: L + APRON + 2.8, length: 2 * (W + APRON) + 6, rows: 5, center: 0 },
-            { alongX: false, sign: -1, offset: W + APRON + 2.5, length: 2 * (L + APRON) + 4, rows: 5, center: 0 },
-            { alongX: false, sign: 1, offset: W + APRON + 2.5, length: 2 * (L + APRON) + 4, rows: 5, center: 0 }
+            // Lower bowl
+            { alongX: true, sign: -1, offset: L + APRON + 2.5, length: 2 * (W + APRON) + 6, rows: 5, center: 0, noWall: true },
+            { alongX: true, sign: 1, offset: L + APRON + 2.5, length: 2 * (W + APRON) + 6, rows: 5, center: 0, noWall: true },
+            { alongX: false, sign: -1, offset: W + APRON + 2.3, length: 2 * (L + APRON) + 4, rows: 5, center: 0, noWall: true },
+            { alongX: false, sign: 1, offset: W + APRON + 2.3, length: 2 * (L + APRON) + 4, rows: 5, center: 0, noWall: true },
+            // Upper Bowl Mezzanine Tier (elevated seamlessly above lower bowl!)
+            { alongX: true, sign: -1, offset: L + APRON + 7.5, length: 2 * (W + APRON) + 16, rows: 5, center: 0, baseY: 3.8 },
+            { alongX: true, sign: 1, offset: L + APRON + 7.5, length: 2 * (W + APRON) + 16, rows: 5, center: 0, baseY: 3.8 },
+            { alongX: false, sign: -1, offset: W + APRON + 7.3, length: 2 * (L + APRON) + 14, rows: 5, center: 0, baseY: 3.8 },
+            { alongX: false, sign: 1, offset: W + APRON + 7.3, length: 2 * (L + APRON) + 14, rows: 5, center: 0, baseY: 3.8 }
         ];
 
         // Preserved crowd geometry tokens for test suite assertions:
@@ -7624,8 +7715,8 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const supporterArm = G.capsule(0.16, 0.82, 6, 2);
         void supporterTorso; void supporterArm;
 
-        const hoopsCrowdPalette = [0xff6b00, 0xfb923c, 0xf59e0b, 0x18181b, 0xffffff];
-        const hoopsCrowdObj = crowdAndStands(root, stands, hoopsCrowdPalette, 0x1c1917, quality);
+        const hoopsCrowdPalette = [0xf97316, 0xef4444, 0xfacc15, 0x38bdf8, 0xffffff];
+        const hoopsCrowdObj = crowdAndStands(root, stands, hoopsCrowdPalette, 0x1c2536, quality);
         return hoopsCrowdObj;
     }
 
@@ -8081,12 +8172,12 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         buildArenaSkyAndHorizon(root, t, W, L, false, quality);
 
         const [pw, pd] = (0, textures_js_1.pitchPlaneSize)();
-        const pitch = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makePitchTexture)(t), { mipmap: true, srgb: true }), receiveShadow: true, spec: 0.05, shininess: 8 }));
+        const pitch = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makePitchTexture)(t), { mipmap: true, srgb: true }), receiveShadow: true, spec: 0.14, shininess: 18 }));
         root.add(ground, pitch);
 
-        const postMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf0fdfa), emissive: [0.18, 0.42, 0.52], spec: 0.85, shininess: 85, rim: 0.4, castShadow: true });
+        const postMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf8fafc), emissive: [0.10, 0.24, 0.34], spec: 0.90, shininess: 92, rim: 0.45, castShadow: true });
         const netTex = new scene_js_1.Texture((0, textures_js_1.makeNetTexture)(), { repeat: true, mipmap: true, srgb: true });
-        const mkNet = (w, h, ux, uy) => new scene_js_1.Node(G.quad(w, h), (0, scene_js_1.material)({ texture: netTex, transparent: true, alpha: 0.90, doubleSided: true, depthWrite: false, uvScale: [ux, uy], receiveShadow: false, castShadow: false, color: (0, math_js_6.rgb)(0x67e8f9), emissive: [0.28, 0.58, 0.82] }));
+        const mkNet = (w, h, ux, uy) => new scene_js_1.Node(G.quad(w, h), (0, scene_js_1.material)({ texture: netTex, transparent: true, alpha: 0.92, doubleSided: true, depthWrite: false, uvScale: [ux, uy], receiveShadow: false, castShadow: false, color: (0, math_js_6.rgb)(0xe0f2fe), emissive: [0.18, 0.38, 0.56] }));
         const nets = [];
         for (const s of [-1, 1]) {
             const goal = new scene_js_1.Node();
@@ -8220,12 +8311,12 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         buildArenaSkyAndHorizon(root, t, W, L, true, quality);
 
         const [pw, pd] = (0, textures_js_1.courtPlaneSize)();
-        // Satin non-glare tournament parquet finish
-        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.58, shininess: 55, receiveShadow: true }));
+        // Varnished Tournament Maple Hardwood Finish (rich specular light pools)
+        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.80, shininess: 92, receiveShadow: true }));
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
-        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.85, spec: 0.25, shininess: 25, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
+        const glassMat = (0, scene_js_1.material)({ texture: boardTex, transparent: true, alpha: 0.56, spec: 0.55, shininess: 70, depthWrite: false, receiveShadow: false, castShadow: false, doubleSided: true });
         const frameMat = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0xf2f4f7), spec: 0.4, shininess: 35, castShadow: true });
         const rimColorVal = t.rim || 0xff5500;
         const rimRgb = (0, math_js_6.rgb)(rimColorVal);
@@ -8400,10 +8491,12 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                     const hp = (_a = bs.hoops) === null || _a === void 0 ? void 0 : _a[i];
                     nt[i] = Math.max(nt[i] - dt, 0);
                     const k = hp ? Math.min(1, hp.net) : 0;
-                    const holder = hoopNets[i === 0 ? 1 : 0];
+                    const idx = i === 0 ? 1 : 0;
+                    const holder = hoopNets[idx];
                     if (holder) holder.scale = [1 - k * 0.22, 1 + k * 0.45, 1 - k * 0.22];
+                    const hr = hoopRoots[idx];
+                    if (hr) hr.position[1] = -Math.sin(k * Math.PI * 2.2) * k * 0.055;
                 }
-                void hoopRoots;
                 if (crowd) crowd.visible = true;
                 pulseLed(led, dt);
             },
@@ -14795,7 +14888,7 @@ define("core/telegram", ["require", "exports"], function (require, exports) {
                     backCb = null;
                     wa.BackButton.hide();
                 }
-                if (wa === null || wa === void 0 ? void 0 : wa.exitFullscreen)
+                if ((wa === null || wa === void 0 ? void 0 : wa.exitFullscreen) && (!wa.isVersionAtLeast || wa.isVersionAtLeast('8.0')))
                     (_b = wa.exitFullscreen) === null || _b === void 0 ? void 0 : _b.call(wa);
             }
             catch (_c) {

@@ -810,9 +810,9 @@
       document.getElementById('loader').style.display = 'flex';
       document.getElementById('loader').style.opacity = '1';
 
-      let glbUrl = '/assets/characters/footy10.glb?v=35.0';
-      if (athleteId === 'hoops') glbUrl = '/assets/characters/hoops23.glb?v=35.0';
-      if (athleteId === 'keeper') glbUrl = '/assets/characters/keeper1.glb?v=35.0';
+      let glbUrl = '/assets/characters/footy10.glb';
+      if (athleteId === 'hoops') glbUrl = '/assets/characters/hoops23.glb';
+      if (athleteId === 'keeper') glbUrl = '/assets/characters/keeper1.glb';
 
       try {
         const model = await GLBLoader.loadGLB(glbUrl);

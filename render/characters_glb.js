@@ -86,10 +86,20 @@
   uniform vec4 uBaseColor;
   uniform float uRoughness;
   uniform float uMetallic;
+  uniform float uMatRole;
   uniform sampler2D uTex;
   uniform bool uHasTex;
 
   out vec4 fragColor;
+
+  vec3 acesFilm(vec3 x) {
+    float a = 2.51;
+    float b = 0.03;
+    float c = 2.43;
+    float d = 0.59;
+    float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+  }
 
   void main() {
     vec3 N = normalize(vNormal);
@@ -97,58 +107,112 @@
     vec3 L = normalize(uSunDir);
     vec3 H = normalize(L + V);
 
+    // Secondary cool stadium/studio fill light so shadow sides stay sculpted & readable
+    vec3 L2 = normalize(vec3(-uSunDir.x * 0.9 - 0.35, 0.38, -uSunDir.z * 0.8 - 0.25));
+    float fillDiff = clamp(dot(N, L2) * 0.5 + 0.5, 0.0, 1.0);
+
     vec4 baseColor = uBaseColor;
     if (uHasTex) {
       baseColor *= texture(uTex, vUv);
     }
 
+    // Subtle procedural woven jersey micro-grain on athletic apparel (role < 0.5)
+    if (uMatRole < 0.5) {
+      float weaveX = sin(vUv.x * 520.0);
+      float weaveY = sin(vUv.y * 520.0);
+      float weave = 1.0 + (weaveX * weaveY) * 0.018;
+      baseColor.rgb *= weave;
+    }
+
     float NdotL = dot(N, L);
     float NdotV = max(dot(N, V), 0.001);
 
-    // Elevated Half-Lambert Wrapped Diffuse (eliminates harsh low-poly facet lines)
-    float wrappedL = NdotL * 0.44 + 0.56;
-    float directL = smoothstep(0.06, 0.94, wrappedL);
+    // Warm wrapped diffuse tailored by material role (higher wrap on skin & cloth)
+    float wrapAmt = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.54 : 0.44;
+    float wrappedL = clamp((NdotL + wrapAmt) / (1.0 + wrapAmt), 0.0, 1.0);
+    float directL = smoothstep(0.04, 0.96, wrappedL);
 
-    // Organic Subsurface Skin Scatter (vitality & warm skin tone depth)
-    float sss = pow(clamp(1.0 - NdotL, 0.0, 1.0), 2.0) * 0.28;
-    vec3 sssTint = baseColor.rgb * vec3(1.28, 0.72, 0.52);
+    // Subsurface scattering strictly on skin (uMatRole ~ 1.0) so white fabric never muddies
+    vec3 sssContrib = vec3(0.0);
+    if (uMatRole > 0.5 && uMatRole < 1.5) {
+      float backRim = pow(clamp(1.0 - max(NdotL, 0.0), 0.0, 1.0), 2.2) * (0.35 + 0.65 * fillDiff);
+      sssContrib = baseColor.rgb * vec3(1.24, 0.72, 0.54) * backRim * 0.26;
+    }
 
-    // Hemispheric Ambient Lighting with stadium ground bounce
-    vec3 ambient = mix(uGroundColor, uSkyColor, N.y * 0.50 + 0.50) * baseColor.rgb * 1.05;
+    // Hemispheric Ambient + Stadium Bounce Fill (eliminates dark silhouette limbs)
+    vec3 hemi = mix(uGroundColor, uSkyColor, N.y * 0.50 + 0.50);
+    vec3 bounceFill = vec3(0.32, 0.42, 0.56) * fillDiff * 0.42;
+    vec3 ambient = baseColor.rgb * (hemi * 0.78 + bounceFill);
 
-    // Diffuse Sunlight + SSS
-    vec3 diffuse = baseColor.rgb * uSunColor * directL * (1.0 - uMetallic) + sssTint * sss;
+    // Direct Stadium / Key Light
+    vec3 diffuse = baseColor.rgb * uSunColor * directL * (1.0 - uMetallic * 0.72) + sssContrib;
 
-    // Stylized Soft Specular (Pixar / EA Sports smooth sheen)
-    float specPow = mix(24.0, 80.0, 1.0 - uRoughness);
-    float specInt = pow(max(dot(N, H), 0.0), specPow) * mix(0.20, 0.70, uMetallic);
-    vec3 specular = uSunColor * specInt;
+    // Material-aware Specular Highlights
+    float specPow = mix(18.0, 96.0, clamp(1.0 - uRoughness, 0.0, 1.0));
+    float specStrength = 0.08;
+    if (uMatRole > 2.5 && uMatRole < 3.5) {
+      // Eye wet cornea catchlight
+      specPow = 128.0;
+      specStrength = 0.62;
+    } else if (uMatRole > 1.5 && uMatRole < 2.5) {
+      // Satin hair crown highlight (anisotropic-inspired shifted half vector)
+      vec3 hairH = normalize(H + vec3(0.0, 0.22, 0.0));
+      float hSpec = pow(max(dot(N, hairH), 0.0), 34.0);
+      specStrength = 0.22;
+      diffuse += vec3(1.0, 0.96, 0.90) * hSpec * 0.14;
+    } else if (uMatRole > 3.5) {
+      // Cleats / Sneakers / Keeper Latex & Metal Trim
+      specPow = mix(36.0, 92.0, 1.0 - uRoughness);
+      specStrength = mix(0.28, 0.68, uMetallic);
+    } else if (uMatRole > 0.5 && uMatRole < 1.5) {
+      // Natural skin oil sheen
+      specPow = 28.0;
+      specStrength = 0.10;
+    }
+    float specInt = pow(max(dot(N, H), 0.0), specPow) * specStrength;
+    vec3 specTint = mix(uSunColor, baseColor.rgb * 1.15, uMetallic);
+    vec3 specular = specTint * specInt;
 
-    // Broadcast Stadium Rim Light (heroic silhouette contour)
-    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.6);
-    vec3 rimColor = mix(vec3(0.85, 0.95, 1.0), vec3(1.0, 0.92, 0.82), N.y * 0.5 + 0.5);
-    vec3 rimLight = rim * rimColor * 0.48;
+    // Broadcast Rim Light (crisp separation against turf/hardwood/arena backdrop)
+    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.75);
+    vec3 rimColor = mix(vec3(0.75, 0.90, 1.0), vec3(1.0, 0.93, 0.84), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
+    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.16 : 0.26;
+    vec3 rimLight = rim * rimColor * rimBoost;
 
-    // Vibrant Balanced Final Color with gentle S-curve contrast
-    vec3 finalRgb = ambient * 0.58 + diffuse * 0.65 + specular * 0.30 + rimLight * 0.26;
-    finalRgb = pow(finalRgb, vec3(0.96));
+    // Linear Lighting -> Gentle ACES Filmic Curve (preserves crisp whites & vibrant team colors)
+    vec3 hdrColor = ambient * 0.68 + diffuse * 0.72 + specular + rimLight;
+    vec3 finalRgb = acesFilm(hdrColor * 1.12);
+    finalRgb = mix(hdrColor / (1.0 + hdrColor * 0.18), finalRgb, 0.65);
     fragColor = vec4(finalRgb, baseColor.a);
   }
   `;
 
-  // Shared GL State & Cache
-  let glProgram = null;
-  let glLocations = null;
+  // Shared Per-Context GL State & Cache (prevents cross-context handle leaks between Match & Wardrobe WebGL contexts)
+  const glContextMap = new WeakMap();
+  function getGLState(gl) {
+    let st = glContextMap.get(gl);
+    if (!st) {
+      st = {
+        program: null,
+        locs: null,
+        bufferCache: new WeakMap(),
+        skinTextureCache: new Map(),
+        shadowProg: null,
+        shadowVao: null,
+        shadowLocs: null
+      };
+      glContextMap.set(gl, st);
+    }
+    return st;
+  }
   const modelCache = new Map(); // url -> Promise<GLBModel>
-  const bufferCache = new Map(); // model -> PrimitiveBuffer[]
   const activeMatches = new Set();
-  const skinTextureCache = new Map();
   // Preload GLB Character Models immediately into memory to eliminate match start lag
   function preloadGLBModels() {
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['assets/characters/footy10.glb', 'assets/characters/hoops23.glb', 'assets/characters/keeper1.glb'];
+    const urls = ['/assets/characters/footy10.glb', '/assets/characters/hoops23.glb', '/assets/characters/keeper1.glb'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -159,7 +223,6 @@
     });
   }
   if (typeof setTimeout === 'function') setTimeout(preloadGLBModels, 50);
- // key -> WebGLTexture
 
 
   let glbEmblemImg = null;
@@ -610,56 +673,86 @@
   const KIT_ATLAS_MAP = {
     // Football Regular Kits
     'footy_classic': 'assets/kits/footy_kit_classic.png',
+    'footy_kit_classic': 'assets/kits/footy_kit_classic.png',
     'footy_2_white': 'assets/kits/footy_kit_2_white.png',
+    'footy_kit_2_white': 'assets/kits/footy_kit_2_white.png',
     'skin_rookie': 'assets/kits/footy_kit_classic.png',
     'footy_6_crimson': 'assets/kits/footy_kit_6_crimson.png',
+    'footy_kit_6_crimson': 'assets/kits/footy_kit_6_crimson.png',
     'footy_2_crimson': 'assets/kits/footy_kit_6_crimson.png',
     'footy_7_gold': 'assets/kits/footy_kit_7_gold.png',
+    'footy_kit_7_gold': 'assets/kits/footy_kit_7_gold.png',
     'footy_2_gold': 'assets/kits/footy_kit_7_gold.png',
     'footy_1_sapphire': 'assets/kits/footy_kit_1_sapphire.png',
+    'footy_kit_1_sapphire': 'assets/kits/footy_kit_1_sapphire.png',
     'footy_4_amber': 'assets/kits/footy_kit_4_amber.png',
+    'footy_kit_4_amber': 'assets/kits/footy_kit_4_amber.png',
     'footy_7_amber': 'assets/kits/footy_kit_4_amber.png',
     'footy_5_amethyst': 'assets/kits/footy_kit_5_amethyst.png',
+    'footy_kit_5_amethyst': 'assets/kits/footy_kit_5_amethyst.png',
     'footy_9_dragon': 'assets/kits/footy_kit_9_dragon.png',
+    'footy_kit_9_dragon': 'assets/kits/footy_kit_9_dragon.png',
     'footy_3_neon': 'assets/kits/footy_kit_3_neon.png',
+    'footy_kit_3_neon': 'assets/kits/footy_kit_3_neon.png',
     'footy_8_obsidian': 'assets/kits/footy_kit_8_obsidian.png',
+    'footy_kit_8_obsidian': 'assets/kits/footy_kit_8_obsidian.png',
     'footy_0_tiffany': 'assets/kits/footy_kit_0_tiffany.png',
+    'footy_kit_0_tiffany': 'assets/kits/footy_kit_0_tiffany.png',
     'footy_star_holiday': 'assets/kits/footy_kit_star_holiday.png',
     'footy_kit_star_holiday': 'assets/kits/footy_kit_star_holiday.png',
     'footy_star_emperor': 'assets/kits/footy_kit_star_emperor.png',
     'footy_kit_star_emperor': 'assets/kits/footy_kit_star_emperor.png',
     'footy_star_samurai': 'assets/kits/footy_kit_star_samurai.png',
     'footy_kit_star_samurai': 'assets/kits/footy_kit_star_samurai.png',
+    'skin_footy_cyber_strike': 'assets/kits/footy_kit_4_cyber.png',
+    'skin_footy_golden_legend': 'assets/kits/footy_kit_7_gold24k.png',
+    'skin_footy_stealth_shadow': 'assets/kits/footy_kit_6_midnight.png',
+    'skin_footy_neon_matrix': 'assets/kits/footy_kit_3_neon.png',
+    'skin_footy_mythic_titan': 'assets/kits/footy_kit_star_emperor.png',
 
     // Basketball Regular Tanks
     'hoops_classic': 'assets/kits/hoops_kit_classic.png',
+    'hoops_kit_classic': 'assets/kits/hoops_kit_classic.png',
     'hoops_2_chicago': 'assets/kits/hoops_kit_2_crimson.png',
     'hoops_2_crimson': 'assets/kits/hoops_kit_2_crimson.png',
+    'hoops_kit_2_crimson': 'assets/kits/hoops_kit_2_crimson.png',
     'skin_solar': 'assets/kits/hoops_kit_classic.png',
     'skin_bb_onyx': 'assets/kits/hoops_kit_classic.png',
     'hoops_3_la': 'assets/kits/hoops_kit_3_gold.png',
     'hoops_3_gold': 'assets/kits/hoops_kit_3_gold.png',
+    'hoops_kit_3_gold': 'assets/kits/hoops_kit_3_gold.png',
     'hoops_4_boston': 'assets/kits/hoops_kit_4_emerald.png',
     'hoops_4_emerald': 'assets/kits/hoops_kit_4_emerald.png',
+    'hoops_kit_4_emerald': 'assets/kits/hoops_kit_4_emerald.png',
     'hoops_6_charlotte': 'assets/kits/hoops_kit_6_cyan.png',
     'hoops_6_cyan': 'assets/kits/hoops_kit_6_cyan.png',
+    'hoops_kit_6_cyan': 'assets/kits/hoops_kit_6_cyan.png',
     'hoops_5_raptor': 'assets/kits/hoops_kit_5_amethyst.png',
     'hoops_5_amethyst': 'assets/kits/hoops_kit_5_amethyst.png',
+    'hoops_kit_5_amethyst': 'assets/kits/hoops_kit_5_amethyst.png',
     'hoops_0_neon': 'assets/kits/hoops_kit_0_neon.png',
+    'hoops_kit_0_neon': 'assets/kits/hoops_kit_0_neon.png',
     'hoops_7_phoenix': 'assets/kits/hoops_kit_7_amber.png',
     'hoops_7_amber': 'assets/kits/hoops_kit_7_amber.png',
+    'hoops_kit_7_amber': 'assets/kits/hoops_kit_7_amber.png',
     'hoops_9_beast': 'assets/kits/hoops_kit_9_galaxy.png',
     'hoops_9_galaxy': 'assets/kits/hoops_kit_9_galaxy.png',
+    'hoops_kit_9_galaxy': 'assets/kits/hoops_kit_9_galaxy.png',
     'hoops_8_mamba': 'assets/kits/hoops_kit_8_stealth.png',
     'hoops_8_stealth': 'assets/kits/hoops_kit_8_stealth.png',
+    'hoops_kit_8_stealth': 'assets/kits/hoops_kit_8_stealth.png',
     'hoops_1_miami': 'assets/kits/hoops_kit_1_pink.png',
     'hoops_1_pink': 'assets/kits/hoops_kit_1_pink.png',
+    'hoops_kit_1_pink': 'assets/kits/hoops_kit_1_pink.png',
     'hoops_star_holiday': 'assets/kits/hoops_kit_star_holiday.png',
     'hoops_kit_star_holiday': 'assets/kits/hoops_kit_star_holiday.png',
     'hoops_star_astral': 'assets/kits/hoops_kit_star_astral.png',
     'hoops_kit_star_astral': 'assets/kits/hoops_kit_star_astral.png',
     'hoops_star_phantom': 'assets/kits/hoops_kit_star_phantom.png',
     'hoops_kit_star_phantom': 'assets/kits/hoops_kit_star_phantom.png',
+    'skin_hoops_street_legend': 'assets/kits/hoops_kit_2_brooklyn.png',
+    'skin_hoops_phantom_black': 'assets/kits/hoops_kit_8_stealth.png',
+    'skin_hoops_hyper_beast': 'assets/kits/hoops_kit_9_beast.png',
 
     // Keeper Kits
     'keeper_0_volt': 'assets/kits/keeper_kit_0_volt.png',
@@ -679,9 +772,10 @@
   }
 
   function loadAtlasTexture(gl, url) {
-    if (skinTextureCache.has(url)) return skinTextureCache.get(url);
+    const st = getGLState(gl);
+    if (st.skinTextureCache.has(url)) return st.skinTextureCache.get(url);
     const tex = gl.createTexture();
-    skinTextureCache.set(url, tex);
+    st.skinTextureCache.set(url, tex);
 
     const img = preloadImage(url) || (typeof Image !== 'undefined' ? new Image() : null);
 
@@ -703,7 +797,6 @@
     if (img && img.complete && img.naturalWidth > 0) {
       uploadToGl(img);
     } else if (img) {
-      // 1x1 neutral fallback while loading
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([200, 210, 225, 255]));
       gl.bindTexture(gl.TEXTURE_2D, null);
@@ -721,15 +814,6 @@
       return loadAtlasTexture(gl, 'assets/kits/keeper_kit_0_volt.png');
     }
     const skId = (skin && skin.id) ? skin.id : (isFooty ? 'footy_classic' : 'hoops_classic');
-
-    // Default hero uniforms use the pristine embedded 2048x2048 atlas inside the GLB model directly!
-    if (isFooty && (skId === 'footy_classic' || skId === 'footy_2_white' || skId === 'skin_rookie')) {
-      return null;
-    }
-    if (!isFooty && (skId === 'hoops_classic' || skId === 'hoops_2_crimson' || skId === 'hoops_2_chicago' || skId === 'skin_bb_onyx' || skId === 'skin_solar')) {
-      return null;
-    }
-
     const atlasUrl = KIT_ATLAS_MAP[skId];
     if (atlasUrl) {
       return loadAtlasTexture(gl, atlasUrl);
@@ -743,8 +827,38 @@
     return null;
   }
 
+  function resolveMaterialPBR(matName, pbrMat, skinId) {
+    let role = 0.0; // 0: cloth, 1: skin, 2: hair, 3: eye, 4: footwear/leather, 5: gold/metal
+    let roughness = (pbrMat && pbrMat.roughnessFactor !== undefined) ? pbrMat.roughnessFactor : 0.65;
+    let metallic = (pbrMat && pbrMat.metallicFactor !== undefined) ? pbrMat.metallicFactor : 0.0;
+
+    if (matName === 'Skin' || matName === 'Skin_Darker') {
+      role = 1.0; roughness = 0.56; metallic = 0.0;
+    } else if (matName === 'Hair' || matName === 'Eyebrows') {
+      role = 2.0; roughness = 0.44; metallic = 0.04;
+    } else if (matName === 'Eye') {
+      role = 3.0; roughness = 0.14; metallic = 0.02;
+    } else if (matName === 'Red_Dark' || matName === 'White') {
+      role = 4.0; roughness = 0.30; metallic = 0.08;
+    } else {
+      role = 0.0;
+      roughness = Math.max(0.58, roughness);
+      metallic = Math.min(0.05, metallic);
+      const sk = String(skinId || '').toLowerCase();
+      if (sk.includes('gold') || sk.includes('championship') || sk.includes('emperor')) {
+        role = 5.0; metallic = 0.42; roughness = 0.30;
+      } else if (sk.includes('neon') || sk.includes('cyber') || sk.includes('dragon')) {
+        metallic = 0.22; roughness = 0.42;
+      } else if (sk.includes('frost') || sk.includes('tiffany') || sk.includes('sapphire')) {
+        metallic = 0.12; roughness = 0.46;
+      }
+    }
+    return { role, roughness, metallic };
+  }
+
   function initShader(gl) {
-    if (glProgram) return;
+    const st = getGLState(gl);
+    if (st.program) return st;
 
     function createShader(type, src) {
       const s = gl.createShader(type);
@@ -771,8 +885,8 @@
       throw new Error('GLB Shader Link Error: ' + err);
     }
 
-    glProgram = p;
-    glLocations = {
+    st.program = p;
+    st.locs = {
       uProj: gl.getUniformLocation(p, 'uProj'),
       uView: gl.getUniformLocation(p, 'uView'),
       uModel: gl.getUniformLocation(p, 'uModel'),
@@ -786,16 +900,19 @@
       uBaseColor: gl.getUniformLocation(p, 'uBaseColor'),
       uRoughness: gl.getUniformLocation(p, 'uRoughness'),
       uMetallic: gl.getUniformLocation(p, 'uMetallic'),
+      uMatRole: gl.getUniformLocation(p, 'uMatRole'),
       uTex: gl.getUniformLocation(p, 'uTex'),
       uHasTex: gl.getUniformLocation(p, 'uHasTex'),
       uRunPhase: gl.getUniformLocation(p, 'uRunPhase'),
       uRunSpeed: gl.getUniformLocation(p, 'uRunSpeed'),
       uKickPhase: gl.getUniformLocation(p, 'uKickPhase')
     };
+    return st;
   }
 
   function getOrCreateBuffers(gl, model) {
-    if (bufferCache.has(model)) return bufferCache.get(model);
+    const st = getGLState(gl);
+    if (st.bufferCache.has(model)) return st.bufferCache.get(model);
 
     const primitiveBuffers = [];
     model.primitives.forEach(prim => {
@@ -880,7 +997,7 @@
       });
     });
 
-    bufferCache.set(model, primitiveBuffers);
+    st.bufferCache.set(model, primitiveBuffers);
     return primitiveBuffers;
   }
 
@@ -990,7 +1107,7 @@
       }
     }
 
-    setAnimation(name, speed = 1.0) {
+    setAnimation(name, speed = 1.0, blendDuration) {
       if (!this.model) return;
       this.model.playbackSpeed = speed;
 
@@ -1002,9 +1119,15 @@
         targetClip = 'Walk';
       } else if (lower === 'run' || lower === 'sprint' || lower === 'anim_ea_sprintdrive') {
         targetClip = 'Run';
+      } else if (lower === 'run_back') {
+        targetClip = 'Run_Back';
+      } else if (lower === 'run_left') {
+        targetClip = 'Run_Left';
+      } else if (lower === 'run_right') {
+        targetClip = 'Run_Right';
       } else if (lower === 'kick' || lower === 'shot' || lower === 'shoot' || lower === 'kick_right' || lower === 'anim_ea_powerstrike') {
         const isHoops = (this.isHoops || this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops') || (this.matchView && this.matchView.mode === 'hoops'));
-        targetClip = isHoops ? 'Anim_2K_JumpShot' : 'Anim_EA_PowerStrike';
+        targetClip = (name === 'Kick_Right' || name === 'Anim_Kick_V1' || name === 'Anim_Shot_V1') ? name : (isHoops ? 'Anim_2K_JumpShot' : 'Anim_EA_PowerStrike');
       } else if (lower === 'kick_left') {
         targetClip = 'Kick_Left';
       } else if (lower === 'punch' || lower === 'punch_right') {
@@ -1013,23 +1136,52 @@
         targetClip = 'Punch_Left';
       } else if (lower === 'slide' || lower === 'tackle' || lower === 'anim_ea_slidetackle') {
         const isHoops = (this.isHoops || this.mode === 'hoops' || (this.agent && this.agent.char === 'hoops') || (this.matchView && this.matchView.mode === 'hoops'));
-        targetClip = isHoops ? 'Anim_2K_Steal' : 'Anim_EA_SlideTackle';
+        targetClip = (name === 'Anim_Slide_V1' || name === 'Anim_Steal_V1') ? name : (isHoops ? 'Anim_2K_Steal' : 'Anim_EA_SlideTackle');
       } else if (lower === 'dunk' || lower === 'slamdunk' || lower === 'anim_2k_slamdunk') {
-        targetClip = 'Anim_2K_SlamDunk';
+        targetClip = (name === 'Anim_Dunk_V1') ? 'Anim_Dunk_V1' : 'Anim_2K_SlamDunk';
       } else if (lower === 'steal' || lower === 'anim_2k_steal') {
-        targetClip = 'Anim_2K_Steal';
+        targetClip = (name === 'Anim_Steal_V1') ? 'Anim_Steal_V1' : 'Anim_2K_Steal';
       } else if (lower === 'roll' || lower === 'dive' || lower === 'anim_ea_keeperdive' || lower === 'save') {
-        targetClip = 'Anim_EA_KeeperDive';
+        targetClip = (lower === 'roll') ? 'Roll' : 'Anim_EA_KeeperDive';
       } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win' || lower === 'anim_celebration') {
-        targetClip = 'Anim_Celebration';
+        targetClip = (name === 'Anim_Celeb_V1' || name === 'Anim_Celeb_V2') ? name : 'Anim_Celebration';
       } else if (lower === 'hit' || lower === 'hitrecieve') {
         targetClip = 'HitRecieve';
       }
 
       if (this.currentAnim !== targetClip) {
+        const prevWasAction = /Kick|Shot|Dunk|Slide|Dive|Steal|Celeb|Hit|Roll|Punch/i.test(this.currentAnim || '');
+        const nextIsAction = /Kick|Shot|Dunk|Slide|Dive|Steal|Celeb|Hit|Roll|Punch/i.test(targetClip);
+        const blend = (typeof blendDuration === 'number')
+          ? blendDuration
+          : (nextIsAction ? 0.08 : (prevWasAction ? 0.22 : 0.15));
         this.currentAnim = targetClip;
-        this.model.setAnimation(targetClip);
+        this.model.setAnimation(targetClip, { blendDuration: blend, restart: nextIsAction });
       }
+    }
+
+    _pickLocomotionClip(vx, vz, speed) {
+      if (speed <= 0.22) return { clip: 'Idle', rate: 1.0 };
+      if (speed <= 1.35) {
+        return { clip: 'Walk', rate: Math.max(0.74, Math.min(1.52, speed / 1.48)) };
+      }
+      const fwdX = Math.sin(this.yaw);
+      const fwdZ = Math.cos(this.yaw);
+      const invS = 1 / (speed || 1);
+      const dotF = (vx * fwdX + vz * fwdZ) * invS;
+      const dotR = (vx * fwdZ - vz * fwdX) * invS;
+      const rate = Math.max(0.92, Math.min(2.05, speed / 3.05));
+      if (dotF < -0.52) return { clip: 'Run_Back', rate };
+      if (dotR > 0.72 && dotF < 0.48) return { clip: 'Run_Right', rate };
+      if (dotR < -0.72 && dotF < 0.48) return { clip: 'Run_Left', rate };
+      return { clip: 'Run', rate };
+    }
+
+    _cycleVariant(tag, list) {
+      this._varState = this._varState || {};
+      this._varSeq = this._varSeq || {};
+      const seq = (this._varSeq[tag] = (this._varSeq[tag] || 0) + 1);
+      return list[seq % list.length];
     }
 
     update(dt) {
@@ -1095,62 +1247,88 @@
 
       // Strict Mode Distinction: Any player in basketball match plays BASKETBALL with hands!
 
+      // Track clean action entry edges for variant clip variety
+      const curActionTag = (isBasketballMode
+        ? (a.dunk && a.dunk.active ? 'dunk' : a.shotT > 0 ? 'shot' : a.kickT > 0 ? 'pass' : a.jumpT > 0 ? 'jump' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'steal' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none')
+        : (a.role === 'keeper' && a.diveT > 0 ? 'dive' : a.role === 'keeper' && a.jumpT > 0 ? 'kjump' : a.shotT > 0 ? 'fshot' : a.kickT > 0 ? 'fkick' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'slide' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none'));
+      if (curActionTag !== 'none' && curActionTag !== this._lastActionTag) {
+        this._activeVariantClip = this._cycleVariant(curActionTag, ({
+          dunk: ['Anim_2K_SlamDunk', 'Anim_Dunk_V1'],
+          shot: ['Anim_2K_JumpShot', 'Anim_Shot_V1'],
+          pass: ['Anim_Shot_V1'],
+          jump: ['Anim_2K_JumpShot'],
+          steal: ['Anim_2K_Steal', 'Anim_Steal_V1'],
+          celeb: ['Anim_Celebration', 'Anim_Celeb_V1', 'Anim_Celeb_V2'],
+          hit: ['HitRecieve', 'HitRecieve_2'],
+          dive: ['Anim_EA_KeeperDive'],
+          kjump: ['Anim_EA_KeeperDive'],
+          fshot: ['Anim_EA_PowerStrike', 'Anim_Kick_V1'],
+          fkick: ['Kick_Right', 'Kick_Left'],
+          slide: ['Anim_EA_SlideTackle', 'Anim_Slide_V1']
+        })[curActionTag] || ['Idle']);
+      }
+      this._lastActionTag = curActionTag;
+
       // ==========================================
       // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
       // ==========================================
       if (isBasketballMode) {
-        // 1. Fortnite Meteor Slam Dunk: Explosive Anti-Gravity Suspension & Rim Hammer
+        // 1. Slam Dunk: Explosive Hang-Time & Rim Hammer
         if (a.dunk && a.dunk.active) {
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
-          // Soaring tomahawk elevation
           const hangTimeArc = Math.pow(Math.sin(dunkProgress * Math.PI), 0.65);
           this.elevationLift = hangTimeArc * 0.85;
           this.pitch = 0.20 * Math.sin(dunkProgress * Math.PI);
           this.roll = corneringLean + 0.08 * Math.sin(dunkProgress * Math.PI * 2);
-          this.setAnimation('Anim_2K_SlamDunk', 1.8);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', 1.75, 0.08);
         }
-        // 2. Jump Shot Elevation & Release (Overhead wrist flick with elevation)
+        // 2. Jump Shot / Block Elevation & Release
         else if (a.shotT > 0) {
           const shotProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.5));
           this.elevationLift = Math.sin(shotProgress * Math.PI) * 0.65;
-          this.pitch = -0.08; // High elevation arch
-          this.setAnimation('Anim_2K_JumpShot', 1.6);
+          this.pitch = -0.08;
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', 1.55, 0.08);
+        }
+        else if (a.jumpT > 0) {
+          const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.45));
+          this.elevationLift = Math.sin(jp * Math.PI) * 0.52;
+          this.pitch = -0.05;
+          this.setAnimation('Anim_2K_JumpShot', 1.45, 0.08);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
         else if (a.kickT > 0) {
           this.pitch = 0.12;
-          this.setAnimation('Anim_2K_JumpShot', 2.0);
+          this.setAnimation('Anim_Shot_V1', 2.0, 0.07);
         }
         // 4. Interception Lunge / Hand Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
           this.pitch = 0.18;
-          this.setAnimation('Anim_2K_Steal', 1.6);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', 1.6, 0.08);
         }
-        // 5. Celebration Victory Royale Emote
+        // 5. Recovery / Stumble
+        else if (a.stunT > 0) {
+          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.25, 0.09);
+        }
+        // 6. Celebration Emotes
         else if (a.celebrateT > 0) {
-          this.setAnimation('Anim_Celebration', 1.5);
+          this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
         }
-        // 6. Basketball Dribbling (Athletic crouch protecting the ball with hand bounce)
+        // 7. Basketball Dribbling (Athletic crouch protecting the ball)
         else if (isBallCarrier) {
           if (speed > 0.3) {
-            const sprintCadence = Math.max(1.1, Math.min(2.2, speed / 3.0));
-            this.setAnimation('Run', sprintCadence);
-            this.pitch = 0.14; // Athletic forward crouch protecting the ball
+            const sprintCadence = Math.max(1.05, Math.min(2.1, speed / 2.95));
+            this.setAnimation('Run', sprintCadence, 0.14);
+            this.pitch = 0.14;
           } else {
-            this.setAnimation('Idle', 1.0);
-            this.pitch = 0.12; // Ready triple-threat stance
+            this.setAnimation('Idle', 1.0, 0.16);
+            this.pitch = 0.11;
           }
         }
-        // 7. Outfield running / walking / idle
-        else if (speed > 1.8) {
-          const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
-          this.setAnimation('Run', sprintCadence);
-        } else if (speed > 0.25) {
-          const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
-          this.setAnimation('Walk', walkCadence);
-        } else {
-          this.setAnimation('Idle', 1.0);
+        // 8. Directional Defense / Outfield Running / Walking / Idle
+        else {
+          const loco = this._pickLocomotionClip(vx, vz, speed);
+          this.setAnimation(loco.clip, loco.rate);
         }
       }
       // ==========================================
@@ -1161,55 +1339,55 @@
         if (a.role === 'keeper' && a.diveT > 0) {
           const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.42));
           const diveArc = Math.sin(diveProg * Math.PI);
-          const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : 1);
+          const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1);
           this.roll = -diveDir * (0.85 + 0.25 * diveArc);
           this.elevationLift = 0.20 * diveArc;
           this.pitch = 0.15 * diveArc;
-          this.setAnimation('Anim_EA_KeeperDive', 1.6);
+          this.setAnimation('Anim_EA_KeeperDive', 1.6, 0.07);
         }
         else if (a.role === 'keeper' && a.jumpT > 0) {
           const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
-          this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.30;
+          this.elevationLift = Math.sin(jumpProg * Math.PI) * 0.34;
           this.pitch = -0.10;
-          this.setAnimation('Anim_EA_KeeperDive', 1.8);
+          this.setAnimation('Anim_EA_KeeperDive', 1.75, 0.08);
         }
-        // 2. Authentic Football Power Strike (EA FC / FIFA style: grounded plant foot, torso leaned over ball, sweet-spot strike)
-        else if (a.kickT > 0 || a.shotT > 0) {
-          const timer = a.kickT || a.shotT || 0;
-          const strikeProgress = Math.min(1, Math.max(0, 1 - timer / 0.45));
-          this.elevationLift = 0.0; // Plant foot stays grounded on pitch (no flying karate leap)
-          this.pitch = 0.22 * Math.sin(strikeProgress * Math.PI); // Torso leans over ball
-          this.roll = -0.06 * Math.sin(strikeProgress * Math.PI); // Subtle athletic torque
-          this.setAnimation('Anim_EA_PowerStrike', 1.5);
+        // 2. Football Power Shot vs Crisp Pass
+        else if (a.shotT > 0) {
+          const strikeProgress = Math.min(1, Math.max(0, 1 - a.shotT / 0.45));
+          this.elevationLift = 0.0;
+          this.pitch = 0.22 * Math.sin(strikeProgress * Math.PI);
+          this.roll = -0.06 * Math.sin(strikeProgress * Math.PI);
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', 1.55, 0.07);
         }
-        // 3. Authentic Football Turf Slide Tackle (Подкат - leg extended skimming grass, body reclined, NO SOMERSAULT ROLL)
+        else if (a.kickT > 0) {
+          const passProg = Math.min(1, Math.max(0, 1 - a.kickT / 0.35));
+          this.elevationLift = 0.0;
+          this.pitch = 0.12 * Math.sin(passProg * Math.PI);
+          this.setAnimation(this._activeVariantClip || 'Kick_Right', 1.5, 0.07);
+        }
+        // 3. Football Turf Slide Tackle
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
-          this.elevationLift = -0.38;
-          this.pitch = -0.45; // Dynamic backward lean skimming the turf
-          this.roll = -0.22;  // Banked slightly onto slide hip
-          this.setAnimation('Anim_EA_SlideTackle', 1.6);
+          this.elevationLift = -0.36;
+          this.pitch = -0.44;
+          this.roll = -0.20;
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_SlideTackle', 1.55, 0.08);
         }
-        // 4. Fortnite Victory Royale Emote: Hype Jump & Victory Flex
+        // 4. Recovery / Stumble after tackle collision
+        else if (a.stunT > 0) {
+          this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.2, 0.09);
+        }
+        // 5. Celebration Emotes
         else if (a.celebrateT > 0) {
           const cT = a.celebrateT || 0;
-          this.elevationLift = Math.max(0, Math.sin(cT * 9) * 0.32);
-          this.pitch = -0.12 * Math.sin(cT * 7);
-          this.roll = Math.sin(cT * 5) * 0.16;
-          this.setAnimation('Anim_Celebration', 1.5);
+          this.elevationLift = Math.max(0, Math.sin(cT * 9) * 0.28);
+          this.pitch = -0.10 * Math.sin(cT * 7);
+          this.roll = Math.sin(cT * 5) * 0.14;
+          this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.45, 0.12);
         }
-        // 5. Sprinting (Stable upright posture, zero side wobbling)
-        else if (speed > 1.8) {
-          const sprintCadence = Math.max(0.95, Math.min(2.1, speed / 3.4));
-          this.setAnimation('Run', sprintCadence);
-        }
-        // 6. Tactical jog / walking
-        else if (speed > 0.25) {
-          const walkCadence = Math.max(0.85, Math.min(1.6, speed / 1.5));
-          this.setAnimation('Walk', walkCadence);
-        }
-        // 7. Idle
+        // 6. Directional Strafe / Sprint / Walk / Idle
         else {
-          this.setAnimation('Idle', 1.0);
+          const loco = this._pickLocomotionClip(vx, vz, speed);
+          this.setAnimation(loco.clip, loco.rate);
         }
       }
 
@@ -1502,7 +1680,9 @@
       const gl = matchView.renderer.gl;
       if (!gl) return;
 
-      initShader(gl);
+      const glState = initShader(gl);
+      const glProgram = glState.program;
+      const glLocations = glState.locs;
 
       const cam = matchView.rig.cam;
       const scene = matchView.scene;
@@ -1523,11 +1703,12 @@
       gl.uniformMatrix4fv(glLocations.uView, false, cam.view);
       gl.uniform3fv(glLocations.uEye, cam.position);
 
-      // Set Lighting Uniforms from Match Scene
-      const sunDir = [0.45, 0.85, 0.38];
-      const sunCol = [1.25, 1.20, 1.12];
-      const skyCol = [0.72, 0.80, 0.92];
-      const gndCol = [0.45, 0.50, 0.55];
+      // Set balanced Stadium / Indoor Arena Bounce Lighting from Match Scene
+      const isFootyMatch = Boolean(matchView && matchView.isFooty);
+      const sunDir = [0.42, 0.86, 0.42];
+      const sunCol = isFootyMatch ? [1.28, 1.24, 1.15] : [1.32, 1.24, 1.08];
+      const skyCol = isFootyMatch ? [0.76, 0.85, 0.98] : [0.80, 0.84, 0.94];
+      const gndCol = isFootyMatch ? [0.34, 0.48, 0.36] : [0.52, 0.42, 0.32];
 
       gl.uniform3fv(glLocations.uSunDir, sunDir);
       gl.uniform3fv(glLocations.uSunColor, sunCol);
@@ -1585,24 +1766,11 @@
 
           gl.uniform4fv(glLocations.uBaseColor, baseCol);
 
-          // 3D PBR Material tuning based on equipped skin
-          let roughness = pBuf.material ? pBuf.material.roughnessFactor : 0.7;
-          let metallic = pBuf.material ? pBuf.material.metallicFactor : 0.0;
-          if (inst.skin && inst.skin.id) {
-            const skId = inst.skin.id;
-            if (skId.includes('gold') || skId.includes('championship')) {
-              metallic = 0.65;
-              roughness = 0.28;
-            } else if (skId.includes('neon') || skId.includes('cyber')) {
-              metallic = 0.35;
-              roughness = 0.38;
-            } else if (skId.includes('frost')) {
-              metallic = 0.20;
-              roughness = 0.30;
-            }
-          }
-          gl.uniform1f(glLocations.uRoughness, roughness);
-          gl.uniform1f(glLocations.uMetallic, metallic);
+          // 3D PBR Material tuning based on body-part material + equipped kit
+          const pbr = resolveMaterialPBR(matName, pBuf.material, inst.skin && inst.skin.id);
+          gl.uniform1f(glLocations.uRoughness, pbr.roughness);
+          gl.uniform1f(glLocations.uMetallic, pbr.metallic);
+          if (glLocations.uMatRole) gl.uniform1f(glLocations.uMatRole, pbr.role);
 
           gl.drawElements(gl.TRIANGLES, pBuf.indexCount, pBuf.indexType, 0);
         });
@@ -1624,8 +1792,374 @@
         this.instances.delete(matchView);
         activeMatches.delete(matchView);
       }
+    },
+
+    mountWardrobePreview(containerEl, charId, kitId, opts) {
+      if (typeof document === 'undefined' || !containerEl) return false;
+      const preview = ensureWardrobeStage();
+      if (!preview || !preview.gl) return false;
+
+      if (preview.canvas.parentElement !== containerEl) {
+        containerEl.innerHTML = '';
+        containerEl.appendChild(preview.canvas);
+      }
+      preview.resize(containerEl);
+      preview.setSubject(charId || 'footy', kitId || (charId === 'hoops' ? 'hoops_classic' : 'footy_classic'), opts);
+      preview.start();
+      return true;
+    },
+
+    setWardrobePreviewKit(charId, kitId) {
+      if (!wardrobeStageState) return false;
+      wardrobeStageState.setSubject(charId, kitId);
+      return true;
+    },
+
+    playWardrobePreviewAnim(animName) {
+      if (!wardrobeStageState || !wardrobeStageState.model) return false;
+      wardrobeStageState.model.setAnimation(animName, { blendDuration: 0.16, restart: true });
+      wardrobeStageState.animResetAt = performance.now() + 2200;
+      return true;
+    },
+
+    unmountWardrobePreview() {
+      if (wardrobeStageState) {
+        wardrobeStageState.stop();
+        if (wardrobeStageState.canvas && wardrobeStageState.canvas.parentElement) {
+          wardrobeStageState.canvas.remove();
+        }
+      }
+    },
+
+    async renderSnapshotPng(charId, kitId, opts) {
+      const o = opts || {};
+      const st = ensureWardrobeStage();
+      if (!st || !st.gl) return null;
+      const wasConnected = st.canvas.isConnected;
+      if (!wasConnected) {
+        st.canvas.style.position = 'fixed';
+        st.canvas.style.left = '-9999px';
+        st.canvas.style.top = '-9999px';
+        document.body.appendChild(st.canvas);
+      }
+      st.stop();
+      const w = o.width || 360;
+      const h = o.height || 360;
+      st.canvas.width = w;
+      st.canvas.height = h;
+      st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
+      // Ensure GLB model & kit atlas image finishes uploading
+      const loader = getLoader();
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb' : (charId === 'hoops' ? '/assets/characters/hoops23.glb' : '/assets/characters/footy10.glb');
+      if (loader && loader.loadGLB) {
+        const m = await loader.loadGLB(url);
+        st.modelsByChar[charId || 'footy'] = m;
+        st.model = m;
+        st.model.setAnimation(o.anim || 'Idle', { blendDuration: 0 });
+      }
+      const atlasUrl = KIT_ATLAS_MAP[kitId] || (charId === 'hoops' ? KIT_ATLAS_MAP.hoops_classic : (charId === 'keeper' ? KIT_ATLAS_MAP.keeper_0_volt : KIT_ATLAS_MAP.footy_classic));
+      if (atlasUrl) {
+        await new Promise(resolve => {
+          const im = preloadImage(atlasUrl);
+          if (!im || im.complete) return resolve();
+          im.addEventListener('load', resolve, { once: true });
+          im.addEventListener('error', resolve, { once: true });
+        });
+        st.customTexture = loadAtlasTexture(st.gl, atlasUrl);
+      }
+      st.drawFrame(0.016);
+      const dataUrl = st.canvas.toDataURL('image/png');
+      if (!wasConnected) st.canvas.remove();
+      return dataUrl;
     }
   };
+
+  // --- Persistent Instant In-Page 3D Showcase Stage (Zero Iframe Lag) ---
+  let wardrobeStageState = null;
+
+  function _mat4Perspective(out, fov, aspect, near, far) {
+    const f = 1.0 / Math.tan(fov / 2), nf = 1 / (near - far);
+    out.fill(0);
+    out[0] = f / aspect; out[5] = f;
+    out[10] = (far + near) * nf; out[11] = -1;
+    out[14] = (2 * far * near) * nf;
+  }
+
+  function _mat4LookAt(out, eye, center, up) {
+    let x0, x1, x2, y0, y1, y2, z0, z1, z2, len;
+    z0 = eye[0] - center[0]; z1 = eye[1] - center[1]; z2 = eye[2] - center[2];
+    len = 1 / (Math.hypot(z0, z1, z2) || 1);
+    z0 *= len; z1 *= len; z2 *= len;
+    x0 = up[1] * z2 - up[2] * z1; x1 = up[2] * z0 - up[0] * z2; x2 = up[0] * z1 - up[1] * z0;
+    len = Math.hypot(x0, x1, x2);
+    if (len) { x0 /= len; x1 /= len; x2 /= len; }
+    y0 = z1 * x2 - z2 * x1; y1 = z2 * x0 - z0 * x2; y2 = z0 * x1 - z1 * x0;
+    out[0] = x0; out[1] = y0; out[2] = z0; out[3] = 0;
+    out[4] = x1; out[5] = y1; out[6] = z1; out[7] = 0;
+    out[8] = x2; out[9] = y2; out[10] = z2; out[11] = 0;
+    out[12] = -(x0 * eye[0] + x1 * eye[1] + x2 * eye[2]);
+    out[13] = -(y0 * eye[0] + y1 * eye[1] + y2 * eye[2]);
+    out[14] = -(z0 * eye[0] + z1 * eye[1] + z2 * eye[2]);
+    out[15] = 1;
+  }
+
+  function ensureWardrobeStage() {
+    if (wardrobeStageState) return wardrobeStageState;
+    if (typeof document === 'undefined') return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'fvh-wardrobe-3d-canvas';
+    canvas.style.cssText = 'width:100%;height:100%;display:block;background:transparent;touch-action:none;cursor:grab;outline:none;';
+
+    const gl = canvas.getContext('webgl2', { antialias: true, alpha: true, premultipliedAlpha: false, depth: true });
+    if (!gl) return null;
+
+    const glState = initShader(gl);
+
+    // Soft studio ground contact shadow shader
+    const shVS = `#version 300 es
+    precision highp float;
+    layout(location=0) in vec2 aP;
+    uniform mat4 uProj, uView;
+    out vec2 vP;
+    void main(){ vP = aP; gl_Position = uProj * uView * vec4(aP.x * 0.72, 0.005, aP.y * 0.72, 1.0); }`;
+    const shFS = `#version 300 es
+    precision highp float;
+    in vec2 vP;
+    out vec4 o;
+    void main(){ float d = length(vP); float a = exp(-d * d * 4.5) * 0.65 * smoothstep(1.0, 0.25, d); o = vec4(0.0, 0.02, 0.06, a); }`;
+    const cs = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; };
+    const sp = gl.createProgram();
+    gl.attachShader(sp, cs(gl.VERTEX_SHADER, shVS));
+    gl.attachShader(sp, cs(gl.FRAGMENT_SHADER, shFS));
+    gl.linkProgram(sp);
+    glState.shadowProg = sp;
+    glState.shadowLocs = { uProj: gl.getUniformLocation(sp, 'uProj'), uView: gl.getUniformLocation(sp, 'uView') };
+    const sVao = gl.createVertexArray();
+    gl.bindVertexArray(sVao);
+    const sBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
+    glState.shadowVao = sVao;
+
+    const st = {
+      canvas, gl, glState,
+      charId: null, kitId: null,
+      modelsByChar: {},
+      model: null, customTexture: null,
+      yaw: 0.22, pitch: 0.08, dist: 3.15, target: [0, 0.90, 0], hideShadow: false,
+      dragging: false, lastX: 0, lastY: 0, autoSpin: true,
+      rafId: 0, lastT: performance.now(), animResetAt: 0,
+      proj: new Float32Array(16), view: new Float32Array(16), modelMat: new Float32Array(16),
+
+      resize(containerEl) {
+        const rect = (containerEl || canvas.parentElement || canvas).getBoundingClientRect();
+        const w = Math.max(240, Math.round(rect.width || 300));
+        const h = Math.max(240, Math.round(rect.height || 300));
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+        }
+      },
+
+      setSubject(charId, kitId, opts) {
+        const o = opts || {};
+        if (o.autoRotate !== undefined) st.autoSpin = Boolean(o.autoRotate);
+        if (o.yaw !== undefined) st.yaw = Number(o.yaw);
+        else if (o.targetYaw !== undefined) st.yaw = Number(o.targetYaw);
+        if (o.pitch !== undefined) st.pitch = Number(o.pitch);
+        if (o.dist !== undefined) st.dist = Number(o.dist);
+        if (o.targetY !== undefined) st.target[1] = Number(o.targetY);
+        if (o.hideShadow !== undefined) st.hideShadow = Boolean(o.hideShadow);
+        const nextChar = charId || 'footy';
+        const nextKit = kitId || (nextChar === 'hoops' ? 'hoops_classic' : nextChar === 'keeper' ? 'keeper_0_volt' : 'footy_classic');
+        const charChanged = (st.charId !== nextChar) || !st.model;
+        st.charId = nextChar;
+        st.kitId = nextKit;
+
+        const isFooty = nextChar === 'footy';
+        const isKeeper = nextChar === 'keeper';
+        const url = isKeeper ? '/assets/characters/keeper1.glb' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb' : '/assets/characters/footy10.glb');
+
+        // Apply texture immediately if mapped
+        const fakeSkin = { id: nextKit };
+        st.customTexture = getOrCreateSkinTexture(gl, st.model, fakeSkin, isFooty, isKeeper);
+
+        if (charChanged) {
+          if (st.modelsByChar[nextChar]) {
+            st.model = st.modelsByChar[nextChar];
+            st.model.setAnimation('Idle', { blendDuration: 0 });
+            return;
+          }
+          const loader = getLoader();
+          if (!loader) return;
+          const cached = loader.getCachedModel ? loader.getCachedModel(url) : null;
+          if (cached) {
+            st.modelsByChar[nextChar] = cached;
+            st.model = cached;
+            st.model.setAnimation('Idle', { blendDuration: 0 });
+          } else {
+            loader.loadGLB(url).then(m => {
+              st.modelsByChar[nextChar] = m;
+              if (st.charId === nextChar) {
+                st.model = m;
+                st.model.setAnimation('Idle', { blendDuration: 0 });
+              }
+            }).catch(e => console.warn('[Wardrobe3D] Load error:', e));
+          }
+        }
+      },
+
+      drawFrame(dt) {
+          const now = performance.now();
+          if (st.autoSpin && !st.dragging) {
+            st.yaw += dt * 0.35;
+          }
+          if (st.animResetAt && now > st.animResetAt && st.model) {
+            st.animResetAt = 0;
+            st.model.setAnimation('Idle', { blendDuration: 0.20 });
+          }
+
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.clearColor(0, 0, 0, 0);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+          const aspect = canvas.width / Math.max(1, canvas.height);
+          const fitDist = aspect < 0.85 ? st.dist / Math.max(0.68, aspect) * 0.88 : st.dist;
+          _mat4Perspective(st.proj, 38 * Math.PI / 180, aspect, 0.1, 40.0);
+          const eye = [
+            st.target[0] + Math.sin(st.yaw) * Math.cos(st.pitch) * fitDist,
+            st.target[1] + Math.sin(st.pitch) * fitDist,
+            st.target[2] + Math.cos(st.yaw) * Math.cos(st.pitch) * fitDist
+          ];
+          _mat4LookAt(st.view, eye, st.target, [0, 1, 0]);
+
+          if (!st.hideShadow) {
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.depthMask(false);
+            gl.useProgram(glState.shadowProg);
+            gl.uniformMatrix4fv(glState.shadowLocs.uProj, false, st.proj);
+            gl.uniformMatrix4fv(glState.shadowLocs.uView, false, st.view);
+            gl.bindVertexArray(glState.shadowVao);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            gl.bindVertexArray(null);
+            gl.depthMask(true);
+            gl.disable(gl.BLEND);
+          }
+
+          if (!st.model) return;
+          st.model.update(dt);
+
+          const p = glState.program, l = glState.locs;
+          gl.useProgram(p);
+          gl.enable(gl.DEPTH_TEST);
+          gl.depthMask(true);
+          gl.depthFunc(gl.LEQUAL);
+          gl.enable(gl.CULL_FACE);
+          gl.cullFace(gl.BACK);
+
+          gl.uniformMatrix4fv(l.uProj, false, st.proj);
+          gl.uniformMatrix4fv(l.uView, false, st.view);
+          gl.uniform3fv(l.uEye, eye);
+          gl.uniform3f(l.uSunDir, 0.45, 0.85, 0.55);
+          gl.uniform3f(l.uSunColor, 1.30, 1.24, 1.15);
+          gl.uniform3f(l.uSkyColor, 0.72, 0.82, 0.98);
+          gl.uniform3f(l.uGroundColor, 0.30, 0.34, 0.42);
+
+          makeTransformMatrix(st.modelMat, 0, 0, 0, 0, 1.0, 1.0, 1.0);
+          gl.uniformMatrix4fv(l.uModel, false, st.modelMat);
+          gl.uniform1f(l.uRunPhase, 0);
+          gl.uniform1f(l.uRunSpeed, 0);
+          gl.uniform1f(l.uKickPhase, 0);
+
+          const skinned = !!st.model.skin;
+          gl.uniform1i(l.uUseSkinning, skinned ? 1 : 0);
+          if (skinned) gl.uniformMatrix4fv(l.uBones, false, st.model.boneMatrices);
+
+          const buffers = getOrCreateBuffers(gl, st.model);
+          buffers.forEach(pBuf => {
+            gl.bindVertexArray(pBuf.vao);
+            const bindTex = st.customTexture || pBuf.texture;
+            const useTex = !!bindTex;
+            const baseCol = (!useTex && pBuf.material && pBuf.material.baseColorFactor) ? pBuf.material.baseColorFactor : [1, 1, 1, 1];
+            gl.uniform1i(l.uHasTex, useTex ? 1 : 0);
+            if (useTex) {
+              gl.activeTexture(gl.TEXTURE0);
+              gl.bindTexture(gl.TEXTURE_2D, bindTex);
+              gl.uniform1i(l.uTex, 0);
+            }
+            gl.uniform4fv(l.uBaseColor, baseCol);
+            const matName = (pBuf.material && pBuf.material.name) ? pBuf.material.name : '';
+            const pbr = resolveMaterialPBR(matName, pBuf.material, st.kitId);
+            gl.uniform1f(l.uRoughness, pbr.roughness);
+            gl.uniform1f(l.uMetallic, pbr.metallic);
+            if (l.uMatRole) gl.uniform1f(l.uMatRole, pbr.role);
+            gl.drawElements(gl.TRIANGLES, pBuf.indexCount, pBuf.indexType, 0);
+          });
+          gl.bindVertexArray(null);
+          gl.useProgram(null);
+      },
+
+      start() {
+        if (st.rafId) return;
+        st.lastT = performance.now();
+        const tick = (now) => {
+          if (!canvas.isConnected) {
+            st.rafId = 0;
+            return;
+          }
+          st.rafId = requestAnimationFrame(tick);
+          st.resize(canvas.parentElement);
+          const dt = Math.min(0.05, Math.max(0.001, (now - st.lastT) / 1000));
+          st.lastT = now;
+          st.drawFrame(dt);
+        };
+        st.rafId = requestAnimationFrame(tick);
+      },
+
+      stop() {
+        if (st.rafId) { cancelAnimationFrame(st.rafId); st.rafId = 0; }
+      }
+    };
+
+    // 360° Pointer/Touch Orbit & Wheel Zoom
+    canvas.addEventListener('pointerdown', (e) => {
+      st.dragging = true;
+      st.autoSpin = false;
+      st.lastX = e.clientX;
+      st.lastY = e.clientY;
+      canvas.style.cursor = 'grabbing';
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!st.dragging) return;
+      const dx = e.clientX - st.lastX;
+      const dy = e.clientY - st.lastY;
+      st.lastX = e.clientX;
+      st.lastY = e.clientY;
+      st.yaw -= dx * 0.011;
+      st.pitch = Math.max(-0.22, Math.min(0.65, st.pitch + dy * 0.008));
+    });
+    const endDrag = () => {
+      if (!st.dragging) return;
+      st.dragging = false;
+      canvas.style.cursor = 'grab';
+    };
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      st.dist = Math.max(2.15, Math.min(4.4, st.dist + e.deltaY * 0.002));
+    }, { passive: false });
+
+    wardrobeStageState = st;
+    return st;
+  }
 
   // --- Automatic Game & MatchView Hook Installation ---
   function installHook() {

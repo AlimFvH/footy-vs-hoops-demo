@@ -1864,50 +1864,76 @@ canvas {
   user-select: none !important;
 }
 
-/* Telegram Mini App Top Header Clearance for Match HUD */
+/* Top Header Clearance for Match HUD: Scoreboard slim top-center, Pause/Mute top-right out of goal sightline */
 .hud-top {
   position: absolute !important;
-  top: calc(max(var(--sat), 10px) + 8px) !important;
+  top: calc(max(var(--sat), 6px) + 4px) !important;
   left: 0 !important;
   right: 0 !important;
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   z-index: 40 !important;
   pointer-events: none !important;
-  gap: 6px !important;
+  gap: 8px !important;
 }
 
 .scoreboard {
   pointer-events: auto !important;
   display: inline-flex !important;
   align-items: center !important;
-  background: rgba(8, 14, 28, 0.92) !important;
+  background: rgba(8, 14, 28, 0.90) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.20) !important;
   border-radius: 14px !important;
   overflow: hidden !important;
   backdrop-filter: blur(10px) !important;
   font-weight: 800 !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75) !important;
-  max-width: min(calc(100vw - 32px), 300px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.72) !important;
+  max-width: min(calc(100vw - 118px), 290px) !important;
   margin: 0 auto !important;
 }
 
 .hud-top-ctrls {
-  position: static !important;
-  top: auto !important;
-  right: auto !important;
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 10px !important;
   left: auto !important;
   bottom: auto !important;
-  margin: 6px auto 0 auto !important;
+  margin: 0 !important;
   pointer-events: auto !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 12px !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
   z-index: 1000 !important;
+}
+
+@media (max-width: 680px) {
+  .hud-top {
+    justify-content: space-between !important;
+    padding: 0 8px !important;
+    gap: 6px !important;
+  }
+  .hud-top .scoreboard {
+    margin: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 90px) !important;
+  }
+  .hud-top .scoreboard .sb-team {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+  .hud-top .hud-top-ctrls {
+    position: static !important;
+    transform: none !important;
+    flex: 0 0 auto !important;
+    gap: 6px !important;
+  }
 }
 
 img[src*="user_football"], img[src*="user_basketball"], img[src*="ball_"] {
@@ -3671,22 +3697,24 @@ img[src*="user_football"], img[src*="user_basketball"], img[src*="ball_"] {
     min-width: 0 !important;
   }
   .fvh-wardrobe-avatar {
-    /* Responsive mobile 3D athlete stage */
-    height: clamp(260px, 35vh, 320px) !important;
-    max-width: 320px !important;
+    /* Responsive mobile 3D athlete stage (never clips rotate hint or pose chips) */
+    height: auto !important;
+    min-height: 292px !important;
+    max-width: 340px !important;
     width: 100% !important;
     margin: 0 auto !important;
+    overflow: visible !important;
   }
   .fvh-wardrobe-avatar iframe {
     width: 100% !important;
-    height: 100% !important;
-    min-height: 250px !important;
+    height: 245px !important;
+    min-height: 245px !important;
   }
   .fvh-wardrobe-avatar svg {
     max-height: clamp(190px, 26vh, 235px) !important;
   }
   .fvh-wardrobe-avatar .fvh-hero-real-img {
-    max-height: clamp(210px, 30vh, 275px) !important;
+    max-height: clamp(205px, 30vh, 270px) !important;
   }
   .fvh-equipped-list {
     margin: 6px 0 2px !important;
@@ -10146,4 +10174,258 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   border-radius: 999px !important;
   overflow: hidden !important;
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ==========================================================================
+   AAA PHASE A: FILTER DROPDOWN, IN-PAGE 3D SHOWCASE & LAYOUT CONTAINMENT
+   ========================================================================== */
+.screen.page-screen:not(.has-nav) {
+  padding-top: calc(max(var(--sat), 16px) + 52px) !important;
+}
+
+/* Dock bottom navigation cleanly outside the scroll viewport so scrolled cards never collide with .fvh-bottom-nav */
+.screen.solid.page-screen.has-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  padding: calc(max(var(--sat), 14px) + 46px) 0 0 0 !important;
+  box-sizing: border-box !important;
+}
+
+.screen.solid.page-screen.has-nav > .page {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 1040px !important;
+  padding: 0 12px 16px 12px !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+.screen.solid.page-screen.has-nav > .page > .page-body,
+.screen.solid.page-screen.has-nav .fvh-shop-container,
+.screen.solid.page-screen.has-nav .fvh-quests-container,
+.screen.solid.page-screen.has-nav .fvh-bp-container,
+.screen.solid.page-screen.has-nav .fvh-profile-container,
+.screen.solid.page-screen.has-nav .fvh-settings-container {
+  padding-bottom: 18px !important;
+}
+
+.screen.solid.page-screen.has-nav > .fvh-bottom-nav {
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  z-index: 60 !important;
+}
+
+.fvh-wardrobe-avatar {
+  height: auto !important;
+  min-height: 300px !important;
+}
+
+.fvh-wardrobe-3d-host {
+  position: relative !important;
+  width: 100% !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  touch-action: pan-y !important;
+  user-select: none !important;
+  background: radial-gradient(circle at 50% 42%, rgba(28, 48, 86, 0.55) 0%, rgba(10, 15, 28, 0.0) 74%) !important;
+}
+
+.fvh-wardrobe-3d-canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: auto !important;
+}
+
+.fvh-wardrobe-pose-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+}
+
+.fvh-pose-chip {
+  appearance: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: rgba(18, 28, 52, 0.85) !important;
+  color: #dbeafe !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease !important;
+  white-space: nowrap !important;
+}
+
+.fvh-pose-chip:hover,
+.fvh-pose-chip.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.24), rgba(16, 185, 129, 0.22)) !important;
+  border-color: rgba(0, 240, 255, 0.65) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Collapsible Rarity Filter Control */
+.fvh-filter-wrap {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 6px 0 10px !important;
+  z-index: 15 !important;
+}
+
+.fvh-filter-top-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.fvh-filter-trigger {
+  appearance: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 8px 14px !important;
+  border-radius: 12px !important;
+  border: 1.5px solid rgba(0, 240, 255, 0.38) !important;
+  background: linear-gradient(135deg, rgba(16, 26, 52, 0.96), rgba(9, 15, 32, 0.98)) !important;
+  color: #e2e8f0 !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.16s ease !important;
+}
+
+.fvh-filter-trigger:hover,
+.fvh-filter-trigger.open,
+.fvh-filter-trigger.filtered {
+  border-color: #00f0ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.28) !important;
+}
+
+.fvh-filter-reset-btn {
+  appearance: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(248, 113, 113, 0.45) !important;
+  background: rgba(127, 29, 29, 0.45) !important;
+  color: #fecaca !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+
+.fvh-filter-dropdown {
+  display: none !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  padding: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border-radius: 14px !important;
+  border: 1.5px solid rgba(0, 240, 255, 0.28) !important;
+  background: rgba(10, 16, 34, 0.96) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55) !important;
+  animation: fvhDropFade 0.16s ease-out !important;
+}
+
+.fvh-filter-dropdown.open {
+  display: flex !important;
+}
+
+.toast-ui {
+  bottom: calc(var(--sab) + 76px) !important;
+}
+
+@keyframes fvhDropFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fvh-filter-dropdown .fvh-rarity-btn {
+  flex: 0 0 auto !important;
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(20, 30, 56, 0.85) !important;
+  color: #cbd5e1 !important;
+  cursor: pointer !important;
+}
+
+.fvh-filter-dropdown .fvh-rarity-btn.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.28), rgba(16, 185, 129, 0.25)) !important;
+  border-color: #00f0ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.28) !important;
+}
+
+/* Main Menu Hero 3D Containment: never crop to crotch on desktop */
+.solo-hero .solo-avatar-box,
+.fvh-hero-card.solo-hero .solo-avatar-box {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: clamp(200px, 34vh, 330px) !important;
+  max-height: clamp(200px, 34vh, 330px) !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+.fvh-hero-3d-stage {
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+
+/* Shop categories clean mobile wrapping */
+.fvh-shop-categories {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  justify-content: center !important;
+}
+
+.fvh-shop-categories button {
+  flex: 1 1 auto !important;
+  min-width: 68px !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 520px) {
+  .fvh-shop-categories button {
+    font-size: 11px !important;
+    padding: 7px 8px !important;
+  }
 }

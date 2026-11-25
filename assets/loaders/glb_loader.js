@@ -322,6 +322,12 @@
       this.playbackSpeed = 1.0;
       this.stats = data.stats;
 
+      // Crossfade blend state for smooth AAA transitions (zero snapping)
+      this._blendFromPose = null;
+      this._blendElapsed = 0;
+      this._blendDuration = 0;
+      this._defaultBlendDuration = 0.14;
+
       // Up to 96 bones supported in vertex uniform array (standard in WebGL2)
       this.boneMatrices = new Float32Array(96 * 16);
       for (let b = 0; b < 96; b++) {
@@ -329,13 +335,22 @@
       }
     }
 
-    setAnimation(clipIndexOrName) {
+    _capturePose() {
+      return this.nodes.map(n => ({
+        t: [n.translation[0], n.translation[1], n.translation[2]],
+        r: [n.rotation[0], n.rotation[1], n.rotation[2], n.rotation[3]],
+        s: [n.scale[0], n.scale[1], n.scale[2]]
+      }));
+    }
+
+    setAnimation(clipIndexOrName, opts) {
+      const resetOnSame = opts && opts.restart === true;
+      const blendDur = (opts && typeof opts.blendDuration === 'number') ? opts.blendDuration : this._defaultBlendDuration;
+      let targetIdx = -1;
+
       if (typeof clipIndexOrName === 'number') {
         if (clipIndexOrName >= 0 && clipIndexOrName < this.animations.length) {
-          if (this.activeAnimIndex !== clipIndexOrName) {
-            this.activeAnimIndex = clipIndexOrName;
-            this.playbackTime = 0;
-          }
+          targetIdx = clipIndexOrName;
         }
       } else {
         const raw = String(clipIndexOrName).toLowerCase();
@@ -379,10 +394,19 @@
         } else if (idx === -1 && (query.includes('hit') || query.includes('hurt') || query.includes('stun'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase() === 'hitrecieve');
         }
-        if (idx !== -1 && this.activeAnimIndex !== idx) {
-          this.activeAnimIndex = idx;
-          this.playbackTime = 0;
+        targetIdx = idx;
+      }
+
+      if (targetIdx !== -1 && (this.activeAnimIndex !== targetIdx || resetOnSame)) {
+        if (blendDur > 0.005) {
+          this._blendFromPose = this._capturePose();
+          this._blendElapsed = 0;
+          this._blendDuration = blendDur;
+        } else {
+          this._blendFromPose = null;
         }
+        this.activeAnimIndex = targetIdx;
+        this.playbackTime = 0;
       }
     }
 
@@ -392,6 +416,33 @@
         const currentAnim = this.animations[this.activeAnimIndex];
         if (currentAnim) {
           currentAnim.apply(this.playbackTime, this.nodes);
+        }
+        if (this._blendFromPose && this._blendDuration > 0) {
+          this._blendElapsed += dt;
+          const rawW = Math.min(1, this._blendElapsed / this._blendDuration);
+          // Smoothstep ease so transition accelerates and settles organically
+          const w = rawW * rawW * (3 - 2 * rawW);
+          if (rawW >= 1) {
+            this._blendFromPose = null;
+          } else {
+            const qTmp = [0, 0, 0, 1];
+            for (let i = 0; i < this.nodes.length; i++) {
+              const prev = this._blendFromPose[i];
+              const node = this.nodes[i];
+              if (!prev || node.hasMatrix) continue;
+              node.translation[0] = prev.t[0] + (node.translation[0] - prev.t[0]) * w;
+              node.translation[1] = prev.t[1] + (node.translation[1] - prev.t[1]) * w;
+              node.translation[2] = prev.t[2] + (node.translation[2] - prev.t[2]) * w;
+              quatSlerp(qTmp, prev.r, node.rotation, w);
+              node.rotation[0] = qTmp[0];
+              node.rotation[1] = qTmp[1];
+              node.rotation[2] = qTmp[2];
+              node.rotation[3] = qTmp[3];
+              node.scale[0] = prev.s[0] + (node.scale[0] - prev.s[0]) * w;
+              node.scale[1] = prev.s[1] + (node.scale[1] - prev.s[1]) * w;
+              node.scale[2] = prev.s[2] + (node.scale[2] - prev.s[2]) * w;
+            }
+          }
         }
       }
 
@@ -473,12 +524,19 @@
   }
 
   // --- Master Cache & Synchronous Instant Instantiation ---
-  const masterCache = new Map();   // url -> Promise<GLBModel>
-  const resolvedCache = new Map(); // url -> GLBModel
+  const masterCache = new Map();   // canonicalKey -> Promise<GLBModel>
+  const resolvedCache = new Map(); // canonicalKey -> GLBModel
+
+  function normalizeGLBKey(url) {
+    if (typeof url !== 'string') return url;
+    const clean = url.split('?')[0].split('#')[0];
+    return clean.startsWith('/') ? clean : ('/' + clean);
+  }
 
   function getCachedModel(url) {
-    if (resolvedCache.has(url)) {
-      return resolvedCache.get(url).clone();
+    const key = normalizeGLBKey(url);
+    if (resolvedCache.has(key)) {
+      return resolvedCache.get(key).clone();
     }
     return null;
   }
@@ -492,37 +550,39 @@
 
   function preloadAll() {
     if (typeof window !== 'undefined' && typeof fetch === 'function') {
-      PRELOAD_URLS.forEach(u => {
-        loadGLB(u).catch(e => console.warn('[GLBLoader] Preload error for', u, e));
-      });
+      return Promise.all(PRELOAD_URLS.map(u =>
+        loadGLB(u).catch(e => { console.warn('[GLBLoader] Preload error for', u, e); return null; })
+      ));
     }
+    return Promise.resolve([]);
   }
 
-  // Auto-preload core character models on script execution
-  preloadAll();
+  // Auto-preload core character models after first tick so initial script parse isn't blocked
+  if (typeof setTimeout === 'function') setTimeout(preloadAll, 0);
 
   // --- Main Loader Function ---
 
   async function loadGLB(arrayBufferOrUrl) {
     if (typeof arrayBufferOrUrl === 'string') {
-      const url = arrayBufferOrUrl;
-      if (resolvedCache.has(url)) {
-        return resolvedCache.get(url).clone();
+      const key = normalizeGLBKey(arrayBufferOrUrl);
+      const url = key;
+      if (resolvedCache.has(key)) {
+        return resolvedCache.get(key).clone();
       }
-      if (masterCache.has(url)) {
-        const master = await masterCache.get(url);
+      if (masterCache.has(key)) {
+        const master = await masterCache.get(key);
         return master.clone();
       }
       const p = (async () => {
         const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-        const resp = await fetch(url);
+        const resp = await fetch(url, { cache: 'force-cache' });
         if (!resp.ok) throw new Error('Failed to load GLB file: ' + resp.status + ' ' + resp.statusText);
         const buf = await resp.arrayBuffer();
         const model = await parseAndBuildModel(buf, t0);
-        resolvedCache.set(url, model);
+        resolvedCache.set(key, model);
         return model;
       })();
-      masterCache.set(url, p);
+      masterCache.set(key, p);
       const master = await p;
       return master.clone();
     }

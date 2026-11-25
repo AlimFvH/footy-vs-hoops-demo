@@ -2147,12 +2147,191 @@
     'skin_cyber': 'skin_footy_cyber_strike',
     'skin_neon': 'skin_footy_neon_matrix',
     'skin_hydro': 'skin_frost',
+    'skin_rookie': 'footy_classic',
+    'skin_default': 'footy_classic',
+    'skin_footy_classic': 'footy_classic',
+    'skin_bb_onyx': 'hoops_classic',
+    'skin_solar': 'hoops_classic',
+    'skin_hoops_classic': 'hoops_classic',
+    'ball_footy_classic': 'ball_classic',
     'ball_footy_classic_pro': 'ball_classic',
     'ball_footy_neon': 'ball_cyber_hex',
     'ball_footy_gold': 'ball_gold_stitch',
+    'ball_hoops_street': 'ball_hoops_classic',
     'ball_hoops_classic_pro': 'ball_hoops_classic',
-    'ball_hoops_blaze': 'ball_molten'
+    'ball_hoops_blaze': 'ball_molten',
+    'footy_kit_classic': 'footy_classic',
+    'footy_kit_2_white': 'footy_2_white',
+    'footy_kit_6_crimson': 'footy_6_crimson',
+    'footy_kit_7_gold': 'footy_7_gold',
+    'footy_kit_1_sapphire': 'footy_1_sapphire',
+    'footy_kit_4_amber': 'footy_4_amber',
+    'footy_kit_5_amethyst': 'footy_5_amethyst',
+    'footy_kit_9_dragon': 'footy_9_dragon',
+    'footy_kit_3_neon': 'footy_3_neon',
+    'footy_kit_8_obsidian': 'footy_8_obsidian',
+    'footy_kit_0_tiffany': 'footy_0_tiffany',
+    'footy_star_holiday': 'footy_kit_star_holiday',
+    'footy_star_emperor': 'footy_kit_star_emperor',
+    'footy_star_samurai': 'footy_kit_star_samurai',
+    'hoops_kit_classic': 'hoops_classic',
+    'hoops_kit_2_crimson': 'hoops_2_chicago',
+    'hoops_kit_3_gold': 'hoops_3_la',
+    'hoops_kit_4_emerald': 'hoops_4_boston',
+    'hoops_kit_6_cyan': 'hoops_6_charlotte',
+    'hoops_kit_5_amethyst': 'hoops_5_raptor',
+    'hoops_kit_0_neon': 'hoops_0_neon',
+    'hoops_kit_7_amber': 'hoops_7_phoenix',
+    'hoops_kit_9_galaxy': 'hoops_9_beast',
+    'hoops_kit_8_stealth': 'hoops_8_mamba',
+    'hoops_kit_1_pink': 'hoops_1_miami',
+    'hoops_star_holiday': 'hoops_kit_star_holiday',
+    'hoops_star_astral': 'hoops_kit_star_astral',
+    'hoops_star_phantom': 'hoops_kit_star_phantom'
   };
+
+  function canonItemId(id) {
+    if (!id) return '';
+    return LEGACY_ITEM_ALIASES[id] || id;
+  }
+
+  function isItemForSport(itemId, charId) {
+    var id = canonItemId(itemId);
+    if (!id) return false;
+    if (charId === 'hoops') {
+      return id.startsWith('hoops_') || id.startsWith('skin_hoops') || id.startsWith('skin_bb_') || id === 'skin_solar' || id === 'skin_sunset' || id === 'skin_mars' || id.indexOf('ball_hoops') !== -1 || id === 'ball_gold_groove' || id === 'ball_cyber_grid' || id === 'ball_molten' || id === 'ball_glitch' || id === 'ball_supernova' || id === 'ball_sovereign_bb' || id.startsWith('std_hoops');
+    }
+    return id.startsWith('footy_') || id.startsWith('skin_footy') || (id.startsWith('skin_') && !id.startsWith('skin_hoops') && !id.startsWith('skin_bb_') && id !== 'skin_solar' && id !== 'skin_sunset' && id !== 'skin_mars') || (id.startsWith('ball_') && id.indexOf('hoops') === -1 && id !== 'ball_gold_groove' && id !== 'ball_cyber_grid' && id !== 'ball_molten' && id !== 'ball_glitch' && id !== 'ball_supernova' && id !== 'ball_sovereign_bb') || id.startsWith('std_footy');
+  }
+
+  function isItemOwnedInList(ownedList, itemId) {
+    if (!itemId) return false;
+    var list = Array.isArray(ownedList) ? ownedList : [];
+    var cId = canonItemId(itemId);
+    if (list.indexOf(itemId) !== -1 || list.indexOf(cId) !== -1) return true;
+    for (var k in LEGACY_ITEM_ALIASES) {
+      if (LEGACY_ITEM_ALIASES[k] === cId && list.indexOf(k) !== -1) return true;
+    }
+    return false;
+  }
+
+  function resolveEquippedItemId(eq, slotCat, charId) {
+    var e = eq || {};
+    var c = (charId === 'hoops') ? 'hoops' : 'footy';
+    if (slotCat === 'balls' || slotCat === 'balls_footy' || slotCat === 'balls_hoops') {
+      var bSlot = e['ball.' + c];
+      if (bSlot && isItemForSport(bSlot, c)) return canonItemId(bSlot);
+      if (e.ball && isItemForSport(e.ball, c)) return canonItemId(e.ball);
+      return c === 'hoops' ? 'ball_hoops_classic' : 'ball_classic';
+    }
+    if (slotCat === 'stadiums') {
+      var stSlot = e['stadium.' + c];
+      if (stSlot) return canonItemId(stSlot);
+      return c === 'hoops' ? 'std_hoops_street' : 'std_footy_classic';
+    }
+    var sSlot = e['skin.' + c];
+    if (sSlot && isItemForSport(sSlot, c)) return canonItemId(sSlot);
+    if (e.skin && isItemForSport(e.skin, c)) return canonItemId(e.skin);
+    return c === 'hoops' ? 'hoops_classic' : 'footy_classic';
+  }
+
+  // Reusable Collapsible Rarity Filter UI ("Фильтр" button -> opens rarity selector)
+  function createRarityFilterControl(onSelect) {
+    var curRarity = 'all';
+    var isOpen = false;
+    var lang = getActiveLang();
+
+    var rarities = [
+      { id: 'all', label: tr('rarity_all') || (lang === 'ru' ? 'Все' : 'All'), cls: '' },
+      { id: 'common', label: tr('rarity_common') || (lang === 'ru' ? 'Обычный' : 'Common'), cls: 'r-common' },
+      { id: 'rare', label: tr('rarity_rare') || (lang === 'ru' ? 'Редкий' : 'Rare'), cls: 'r-rare' },
+      { id: 'epic', label: tr('rarity_epic') || (lang === 'ru' ? 'Эпический' : 'Epic'), cls: 'r-epic' },
+      { id: 'legendary', label: tr('rarity_legendary') || (lang === 'ru' ? 'Легендарный' : 'Legendary'), cls: 'r-legendary' }
+    ];
+
+    var wrap = document.createElement('div');
+    wrap.className = 'fvh-filter-wrap';
+
+    var barRow = document.createElement('div');
+    barRow.className = 'fvh-filter-top-row';
+
+    var triggerBtn = document.createElement('button');
+    triggerBtn.type = 'button';
+    triggerBtn.className = 'fvh-filter-trigger';
+
+    function updateTriggerLabel() {
+      var activeR = rarities.find(function (r) { return r.id === curRarity; }) || rarities[0];
+      var filterWord = (lang === 'ru') ? 'Фильтр' : 'Filter';
+      triggerBtn.className = 'fvh-filter-trigger' + (isOpen ? ' open' : '') + (curRarity !== 'all' ? ' filtered' : '');
+      triggerBtn.innerHTML =
+        '<span class="fvh-filter-ico">🎛️</span>' +
+        '<span class="fvh-filter-text">' + filterWord + ': <b>' + activeR.label + '</b></span>' +
+        '<span class="fvh-filter-caret">' + (isOpen ? '▲' : '▼') + '</span>';
+    }
+    updateTriggerLabel();
+
+    var resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'fvh-filter-reset-btn';
+    resetBtn.textContent = '✕';
+    resetBtn.title = (lang === 'ru') ? 'Сбросить фильтр' : 'Reset filter';
+    resetBtn.style.display = 'none';
+    resetBtn.onclick = function (e) {
+      e.stopPropagation();
+      curRarity = 'all';
+      isOpen = false;
+      syncButtons();
+      app && app.audio && app.audio.play && app.audio.play('click');
+      onSelect(curRarity);
+    };
+
+    var dropdown = document.createElement('div');
+    dropdown.className = 'fvh-filter-dropdown';
+    dropdown.style.display = 'none';
+
+    function syncButtons() {
+      updateTriggerLabel();
+      resetBtn.style.display = (curRarity !== 'all') ? 'inline-flex' : 'none';
+      dropdown.classList.toggle('open', isOpen);
+      dropdown.style.display = isOpen ? 'flex' : 'none';
+      dropdown.querySelectorAll('.fvh-rarity-btn').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-rarity') === curRarity);
+      });
+    }
+
+    rarities.forEach(function (r) {
+      var rb = document.createElement('button');
+      rb.type = 'button';
+      rb.className = 'fvh-rarity-btn ' + (r.cls || '') + (r.id === curRarity ? ' active' : '');
+      rb.setAttribute('data-rarity', r.id);
+      rb.textContent = r.label;
+      rb.onclick = function () {
+        curRarity = r.id;
+        isOpen = false;
+        syncButtons();
+        if (window.app && window.app.audio) window.app.audio.play('click');
+        onSelect(curRarity);
+      };
+      dropdown.appendChild(rb);
+    });
+
+    triggerBtn.onclick = function () {
+      isOpen = !isOpen;
+      syncButtons();
+      if (window.app && window.app.audio) window.app.audio.play('click');
+    };
+
+    barRow.appendChild(triggerBtn);
+    barRow.appendChild(resetBtn);
+    wrap.appendChild(barRow);
+    wrap.appendChild(dropdown);
+
+    return {
+      el: wrap,
+      getValue: function () { return curRarity; },
+      setVisible: function (vis) { wrap.style.display = vis ? 'block' : 'none'; }
+    };
+  }
 
   // Translate item names to active language (fallback to English original)
   function trItem(name) {
@@ -2165,6 +2344,17 @@
   function getItemLabelById(id, fallback) {
     if (!id) return fallback || '';
     var lang = getActiveLang();
+    var cId = canonItemId(id);
+    if (typeof buildDefaultShopCatalog === 'function') {
+      try {
+        var catList = buildDefaultShopCatalog(isItemForSport(cId, 'hoops') ? 'hoops' : 'footy');
+        var foundCat = catList.find(function (x) { return x.id === cId || x.id === id; });
+        if (foundCat) {
+          if (lang === 'ru' && foundCat.name_ru) return foundCat.name_ru;
+          return trItem(foundCat.name) || foundCat.name;
+        }
+      } catch (e) {}
+    }
     if (typeof HERO_SKIN_PALETTES !== 'undefined' && HERO_SKIN_PALETTES[id]) {
       if (lang === 'ru' && HERO_SKIN_PALETTES[id].ru) return HERO_SKIN_PALETTES[id].ru;
       var palName = HERO_SKIN_PALETTES[id].name || id;
@@ -2632,25 +2822,43 @@
     var defaultSkin = isFooty ? 'footy_classic' : 'hoops_classic';
     var theApp = (typeof window !== 'undefined' && (window.App || window.__fvh || window.app)) || (typeof app !== 'undefined' ? app : null);
     var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
-    var charSpecificSkin = isFooty
-      ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('hoops_') && eq.skin !== 'skin_solar' ? eq.skin : null))
-      : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('hoops_') || eq.skin === 'skin_solar') ? eq.skin : null));
-    var skinId = specificSkinId || charSpecificSkin || defaultSkin;
-    var iframeSrc = 'benchmark/wardrobe_viewer.html?embed=1&transparent=1&sport=' + encodeURIComponent(charId) + '&kit=' + encodeURIComponent(skinId);
+    var skinId = canonItemId(specificSkinId || resolveEquippedItemId(eq, 'skins', charId) || defaultSkin);
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
-    var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.footy_classic : HERO_SKIN_PALETTES.hoops_classic);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
-    var skinLabel = (lang === 'ru') ? (pal && pal.ru) : (pal && pal.name);
-    var tagHtml = '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:6px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + (skinLabel || skinId) + '</span></div>';
-    var hintHtml = '<div class="fvh-3d-hint" style="font-size:10px;color:#94a3b8;margin-top:2px;display:flex;align-items:center;gap:4px;"><span style="font-size:12px;">🔄</span> <span>' + (lang === 'ru' ? 'Вращайте модель 360°' : 'Rotate model 360°') + '</span></div>';
+    var skinLabel = getItemLabelById(skinId, skinId);
+    var tagHtml = '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:6px;margin-bottom:4px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.92);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.38)' : 'rgba(251,146,60,0.38)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + escapeHtml(skinLabel) + '</span></div>';
+    var poseBtnsHtml = '<div class="fvh-wardrobe-pose-bar">' +
+      '<button type="button" class="fvh-pose-chip" data-anim="Idle">🧍 ' + (lang === 'ru' ? 'Стойка' : 'Idle') + '</button>' +
+      '<button type="button" class="fvh-pose-chip" data-anim="' + (isFooty ? 'Anim_EA_PowerStrike' : 'Anim_2K_SlamDunk') + '">' + (isFooty ? ('⚽ ' + (lang === 'ru' ? 'Удар' : 'Kick')) : ('🏀 ' + (lang === 'ru' ? 'Данк' : 'Dunk'))) + '</button>' +
+      '<button type="button" class="fvh-pose-chip" data-anim="Anim_Celebration">🎉 ' + (lang === 'ru' ? 'Эмоция' : 'Celebrate') + '</button>' +
+      '</div>';
+    var hintHtml = '<div class="fvh-3d-hint"><span>🔄</span> <span>' + (lang === 'ru' ? 'Вращайте модель 360°' : 'Rotate model 360°') + '</span></div>';
 
-    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
-      '<iframe class="fvh-3d-athlete-frame" allowtransparency="true" data-hero="' + charId + '" data-kit="' + skinId + '" src="' + iframeSrc + '" title="' + heroTitle + '" style="width:100%;flex:1 1 auto;min-height:300px;border:none;background:transparent;border-radius:18px;display:block;pointer-events:auto;" allow="autoplay" loading="eager"></iframe>' +
+    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:space-between;overflow:visible;border-radius:18px;background:transparent;">' +
+      '<div class="fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" aria-label="' + heroTitle + '" style="width:100%;height:clamp(240px,34vh,340px);position:relative;border-radius:16px;overflow:hidden;"></div>' +
+      poseBtnsHtml +
       tagHtml +
       hintHtml +
     '</div>';
   }
   window.getWardrobe3DViewerHtml = getWardrobe3DViewerHtml;
+
+  function mountWardrobe3DIntoContainer(containerEl, charId, kitId) {
+    if (!containerEl) return;
+    var host = containerEl.querySelector('.fvh-wardrobe-3d-host');
+    if (host && window.CharactersGLB && typeof window.CharactersGLB.mountWardrobePreview === 'function') {
+      window.CharactersGLB.mountWardrobePreview(host, charId, canonItemId(kitId));
+    }
+    containerEl.querySelectorAll('.fvh-pose-chip').forEach(function (btn) {
+      btn.onclick = function (e) {
+        e.stopPropagation();
+        var clip = btn.getAttribute('data-anim');
+        if (window.CharactersGLB && typeof window.CharactersGLB.playWardrobePreviewAnim === 'function') {
+          window.CharactersGLB.playWardrobePreviewAnim(clip);
+        }
+      };
+    });
+  }
 
   function getCharacterDisplayHtml(charId, specificSkinId, options) {
     var isFooty = charId === 'footy';
@@ -2658,29 +2866,22 @@
     var eq = (theApp && theApp.store && theApp.store.data && theApp.store.data.equipped) || {};
     var opts = options || {};
     var defaultSkin = isFooty ? 'footy_classic' : 'hoops_classic';
-    var charSpecificSkin = isFooty
-      ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_bb_') && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('hoops_') && eq.skin !== 'skin_solar' ? eq.skin : null))
-      : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_bb_') || eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('hoops_') || eq.skin === 'skin_solar') ? eq.skin : null));
-    var skinId = specificSkinId || charSpecificSkin || defaultSkin;
-    if (isFooty && (skinId.startsWith('skin_bb_') || skinId.startsWith('skin_hoops') || skinId.startsWith('hoops_') || skinId === 'skin_solar')) skinId = 'footy_classic';
-    if (!isFooty && (skinId === 'skin_rookie' || skinId === 'footy_classic' || skinId === 'footy_2_white' || skinId.startsWith('footy_') || skinId.startsWith('skin_footy'))) skinId = 'hoops_classic';
+    var skinId = canonItemId(specificSkinId || resolveEquippedItemId(eq, 'skins', charId) || defaultSkin);
 
-    var pal = HERO_SKIN_PALETTES[skinId] || (isFooty ? HERO_SKIN_PALETTES.skin_rookie : HERO_SKIN_PALETTES.skin_solar);
     var lang = (theApp && theApp.store && theApp.store.data && theApp.store.data.language) || 'ru';
-    var skinLabel = (lang === 'ru') ? (pal && pal.ru) : (pal && pal.name);
+    var skinLabel = getItemLabelById(skinId, skinId);
 
     var showJerseyTag = opts.showJerseyTag !== undefined ? opts.showJerseyTag : true;
     var tagHtml = showJerseyTag ?
-      '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:6px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + skinLabel + '</span></div>'
+      '<div class="fvh-hero-active-jersey-tag" style="position:relative;margin-top:6px;margin-bottom:2px;font-size:11px;font-weight:800;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';background:rgba(8,16,36,0.9);backdrop-filter:blur(6px);border:1.5px solid ' + (isFooty ? 'rgba(56,189,248,0.35)' : 'rgba(251,146,60,0.35)') + ';border-radius:999px;padding:4px 14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,0.55);z-index:2;"><span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <span>' + escapeHtml(skinLabel) + '</span></div>'
       : '';
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
-    var heroImgUrl = getRecoloredHeroUrl(charId, skinId);
+    var fallbackImgUrl = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
 
-    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
-      '<div class="fvh-hero-3d-stage" onmousemove="var rect=this.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width-0.5,y=(event.clientY-rect.top)/rect.height-0.5,img=this.querySelector(\'.fvh-hero-real-img\');if(img){img.style.transform=\'perspective(800px) rotateY(\'+(x*14)+\'deg) rotateX(\'+(-y*10)+\'deg) scale(1.02)\';}" onmouseleave="var img=this.querySelector(\'.fvh-hero-real-img\');if(img){img.style.transform=\'perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)\';}" style="position:relative;width:100%;flex:1 1 auto;display:flex;align-items:center;justify-content:center;perspective:800px;background:transparent;cursor:grab;">' +
-        '<div class="fvh-hero-shadow" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:180px;height:24px;border-radius:50%;background:radial-gradient(ellipse at center, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 72%);pointer-events:none;"></div>' +
-        '<img class="fvh-hero-real-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + heroImgUrl + '" alt="' + heroTitle + '" style="position:relative;max-height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 28px rgba(0,0,0,0.55));transition:transform 0.15s ease-out;transform-style:preserve-3d;pointer-events:none;z-index:1;" />' +
+    return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
+      '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
+        '<img class="fvh-hero-real-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + fallbackImgUrl + '" alt="' + heroTitle + '" style="position:relative;height:100%;width:auto;max-height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 28px rgba(0,0,0,0.55));pointer-events:none;z-index:1;" />' +
       '</div>' +
       tagHtml +
     '</div>';
@@ -5070,18 +5271,24 @@
     };
 
     if (cat === 'skins' || cat === 'stars' || (itemOrId && (itemOrId.category === 'skins' || itemOrId.category === 'stars')) || (id && (id.startsWith('footy_') || id.startsWith('hoops_') || id.startsWith('skin_')))) {
-      return getDetailedJerseySvg(itemOrId, size);
-    }
-
-    if (KNOWN_STORE_ASSETS[imgId]) {
-      var szPx = size === 'large' ? '120px' : '72px';
-      return '<img src="store/items/' + KNOWN_STORE_ASSETS[imgId] + '" style="max-width:100%;max-height:100%;width:' + szPx + ';height:' + szPx + ';object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.5));" onerror="this.style.display=\'none\';">';
+      var cKitId = canonItemId(imgId || id);
+      var kPx = size === 'large' ? '148px' : '82px';
+      var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
+      return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.0.0-aaa" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+      '</div>';
     }
 
     if (cat === 'crowd') return getDetailedCrowdSvg(itemOrId, size);
     if (cat === 'boosts') return getDetailedBoostSvg(itemOrId, size);
-    if (cat === 'skins') return getDetailedJerseySvg(itemOrId, size);
-    if (cat === 'balls') return getDetailedBallSvg(itemOrId, size);
+    if (cat === 'balls' || cat === 'balls_footy' || cat === 'balls_hoops') {
+      var cBallId = canonItemId(imgId || id);
+      var bPx = size === 'large' ? '132px' : '74px';
+      var svgFallbackBall = encodeURIComponent(getDetailedBallSvg(itemOrId, size));
+      return '<div class="fvh-art-ball-wrap" style="width:' + bPx + ';height:' + bPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
+        '<img class="fvh-art-3d-img" src="store/items/ball3d_' + cBallId + '.png?v=4.0.0-aaa" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.55));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackBall + '\');}" />' +
+      '</div>';
+    }
     if (cat === 'stadiums') return getDetailedStadiumSvg(itemOrId, size);
     if (cat === 'celebrations') return getDetailedCelebrationSvg(itemOrId, size);
     if (cat === 'trails') return getDetailedTrailSvg(itemOrId, size);
@@ -6645,7 +6852,8 @@
 
     // Slot Category Tabs (Football or Basketball based on team)
     var isFooty = (curChar === 'footy');
-    var validSlots = ['skins', 'stars'];
+    if (curSlot === 'balls_footy' || curSlot === 'balls_hoops') curSlot = 'balls';
+    var validSlots = ['skins', 'stars', 'balls'];
     if (validSlots.indexOf(curSlot) === -1) curSlot = 'skins';
     var slotSeg = document.createElement('div');
     slotSeg.className = 'seg fvh-wardrobe-seg';
@@ -6654,52 +6862,36 @@
     function renderWardrobeCategoryTabs() {
       slotSeg.innerHTML = '';
       var slots = [
-      { id: 'skins', icon: 'cat_skins', label: (isFooty ? (lang === 'ru' ? 'Формы' : 'Kits') : (lang === 'ru' ? 'Майки' : 'Tanks')) },
-      { id: 'stars', icon: 'star', label: (lang === 'ru' ? 'За Звёзды' : 'For Stars') }
-    ];
-    slots.forEach(function (s) {
-      var sb = document.createElement('button');
-      sb.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;">' + getUiIconSvg(s.icon, 16) + '<span>' + s.label + '</span></span>';
-      if (s.id === curSlot) sb.className = 'on';
-      sb.onclick = function () {
-        curSlot = s.id;
-        selectedItem = null;
-        slotSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
-        sb.className = 'on';
-        app.audio.play('click');
-        updateView();
-      };
-      slotSeg.appendChild(sb);
-    });
+        { id: 'skins', icon: 'cat_skins', label: (isFooty ? (lang === 'ru' ? 'Формы' : 'Kits') : (lang === 'ru' ? 'Майки' : 'Tanks')) },
+        { id: 'balls', icon: isFooty ? 'nav_home_footy' : 'nav_home_hoops', label: tr('catBalls') || (lang === 'ru' ? 'Мячи' : 'Balls') },
+        { id: 'stars', icon: 'star', label: (lang === 'ru' ? 'За Звёзды' : 'For Stars') }
+      ];
+      slots.forEach(function (s) {
+        var sb = document.createElement('button');
+        sb.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;">' + getUiIconSvg(s.icon, 16) + '<span>' + s.label + '</span></span>';
+        if (s.id === curSlot) sb.className = 'on';
+        sb.onclick = function () {
+          curSlot = s.id;
+          selectedItem = null;
+          slotSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
+          sb.className = 'on';
+          app.audio.play('click');
+          updateView();
+        };
+        slotSeg.appendChild(sb);
+      });
     }
     renderWardrobeCategoryTabs();
     itemsCol.appendChild(slotSeg);
 
-    // Rarity Filter Bar (All, Common, Rare, Epic, Legendary)
+    // Collapsible Rarity Filter ("Фильтр" button -> opens rarity selector)
     var curRarity = 'all';
-    var raritySeg = document.createElement('div');
-    raritySeg.className = 'fvh-rarity-filter-bar';
-    var rarities = [
-      { id: 'all', label: tr('rarity_all') || 'All' },
-      { id: 'common', label: tr('rarity_common') || 'Common', cls: 'r-common' },
-      { id: 'rare', label: tr('rarity_rare') || 'Rare', cls: 'r-rare' },
-      { id: 'epic', label: tr('rarity_epic') || 'Epic', cls: 'r-epic' },
-      { id: 'legendary', label: tr('rarity_legendary') || 'Legendary', cls: 'r-legendary' }
-    ];
-    rarities.forEach(function (r) {
-      var rb = document.createElement('button');
-      rb.className = 'fvh-rarity-btn ' + (r.cls || '') + (r.id === curRarity ? ' active' : '');
-      rb.textContent = r.label;
-      rb.onclick = function () {
-        curRarity = r.id;
-        raritySeg.querySelectorAll('.fvh-rarity-btn').forEach(function (b) { b.classList.remove('active'); });
-        rb.classList.add('active');
-        app.audio.play('click');
-        updateView();
-      };
-      raritySeg.appendChild(rb);
+    var rarityFilterCtrl = createRarityFilterControl(function (nextRarity) {
+      curRarity = nextRarity;
+      selectedItem = null;
+      updateView();
     });
-    itemsCol.appendChild(raritySeg);
+    itemsCol.appendChild(rarityFilterCtrl.el);
 
     var itemsGrid = document.createElement('div');
     itemsGrid.className = 'grid shop-grid';
@@ -6713,18 +6905,19 @@
     function updateWardrobeAvatar(charId, kitId) {
       var eq = (app && app.store && app.store.data && app.store.data.equipped) || {};
       var defaultKit = (charId === 'hoops') ? 'hoops_classic' : 'footy_classic';
-      var initialKit = kitId || eq['skin.' + charId] || eq.skin || defaultKit;
+      var initialKit = canonItemId(kitId || resolveEquippedItemId(eq, 'skins', charId) || defaultKit);
 
-      var frame = avatarBox.querySelector('.fvh-3d-athlete-frame');
-      if (frame && frame.contentWindow && frame.getAttribute('data-hero') === charId) {
-        frame.contentWindow.postMessage({ action: 'changeKit', kit: initialKit, athlete: charId }, '*');
-        frame.setAttribute('data-kit', initialKit);
-        var pal = HERO_SKIN_PALETTES[initialKit] || ((charId === 'footy') ? HERO_SKIN_PALETTES.footy_classic : HERO_SKIN_PALETTES.hoops_classic);
-        var sLabel = (lang === 'ru') ? (pal && pal.ru) : (pal && pal.name);
+      var host = avatarBox.querySelector('.fvh-wardrobe-3d-host');
+      var hasCanvas = host && host.querySelector('.fvh-wardrobe-3d-canvas');
+      if (host && hasCanvas && host.getAttribute('data-hero') === charId && window.CharactersGLB && typeof window.CharactersGLB.setWardrobePreviewKit === 'function') {
+        window.CharactersGLB.setWardrobePreviewKit(charId, initialKit);
+        host.setAttribute('data-kit', initialKit);
+        var sLabel = getItemLabelById(initialKit, initialKit);
         var tagSpan = avatarBox.querySelector('.fvh-hero-active-jersey-tag span:last-child');
         if (tagSpan && sLabel) tagSpan.textContent = sLabel;
       } else {
         avatarBox.innerHTML = getWardrobe3DViewerHtml(charId, initialKit);
+        mountWardrobe3DIntoContainer(avatarBox, charId, initialKit);
       }
     }
 
@@ -6741,12 +6934,11 @@
       var pLvl = Math.max(1, Math.min(10, up.power || 1));
       var sLvl = Math.max(1, Math.min(10, up.stamina || 1));
       var kLvl = Math.max(1, Math.min(10, up.keeper || 1));
-      var avgLvl = (pLvl + sLvl + kLvl) / 3;
-      var ovr = Math.round(70 + ((avgLvl - 1) / 9) * 29);
 
       if (curSlot === 'upgrades') {
-        raritySeg.style.display = 'none';
+        rarityFilterCtrl.setVisible(false);
         avatarBox.innerHTML = getCharacterDisplayHtml(curChar, null);
+        mountWardrobe3DIntoContainer(avatarBox, curChar, null);
         equipSlotList.innerHTML =
           '<div class="fvh-equipped-slot"><span>💥 ' + (lang === 'ru' ? 'Сила удара / броска:' : 'Power:') + '</span><b>Lvl ' + pLvl + ' / 10</b></div>' +
           '<div class="fvh-equipped-slot"><span>💨 ' + (lang === 'ru' ? 'Выносливость:' : 'Stamina:') + '</span><b>Lvl ' + sLvl + ' / 10</b></div>' +
@@ -6755,50 +6947,14 @@
         return;
       }
 
-// Packs tab permanently excluded from inventory
+      rarityFilterCtrl.setVisible(true);
 
-      raritySeg.style.display = 'flex';
+      // Equipped summary (Authoritative single ID per slot & sport)
+      var eq = (app.store && app.store.data && app.store.data.equipped) || {};
+      var owned = (app.store && app.store.data && app.store.data.owned) || [];
 
-      // Equipped summary
-      var eq = app.store.data.equipped || {};
-      var owned = app.store.data.owned || [];
-
-      // Sanitize equipped items to prevent unowned cosmetics from staying equipped
-      var defaultSlotItems = {
-        skin: 'footy_classic',
-        'ball.footy': 'ball_footy_classic',
-        'ball.hoops': 'ball_hoops_street',
-        'stadium.footy': 'std_footy_classic',
-        'stadium.hoops': 'std_hoops_street',
-        trail: 'trail_default',
-        frame: 'frame_default'
-      };
-      var changedEquip = false;
-      Object.keys(defaultSlotItems).forEach(function (slot) {
-        var currentEq = eq[slot];
-        if (currentEq && owned.indexOf(currentEq) === -1 && currentEq !== defaultSlotItems[slot]) {
-          eq[slot] = defaultSlotItems[slot];
-          changedEquip = true;
-        }
-      });
-      if (changedEquip) {
-        app.store.update(function (d) { d.equipped = eq; });
-      }
-
-      var activeCrowdId = eq.crowd || (curChar === 'hoops' ? 'crowd_hoops_allstars' : 'crowd_footy_ultras');
-      var crowdObj = CROWD_CATALOG.find(function(c) { return c.id === activeCrowdId; });
-      var crowdLabel = crowdObj ? (tr(crowdObj.nameKey) || crowdObj.name) : activeCrowdId;
-
-      var curCharSkin = isFooty
-        ? (eq['skin.footy'] || (eq.skin && !eq.skin.startsWith('skin_hoops') && !eq.skin.startsWith('skin_bb_') && eq.skin !== 'skin_solar' ? eq.skin : 'footy_classic'))
-        : (eq['skin.hoops'] || (eq.skin && (eq.skin.startsWith('skin_hoops') || eq.skin.startsWith('skin_bb_') || eq.skin === 'skin_solar') ? eq.skin : 'hoops_classic'));
-      updateWardrobeAvatar(curChar, curCharSkin);
-      var activeBallId = isFooty
-        ? (eq['ball.footy'] || (eq.ball && !eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_footy_classic'))
-        : (eq['ball.hoops'] || (eq.ball && eq.ball.startsWith('ball_hoops') ? eq.ball : 'ball_hoops_street'));
-      var activeArenaId = isFooty
-        ? (eq['stadium.footy'] || eq.stadium || 'std_footy_classic')
-        : (eq['stadium.hoops'] || eq.stadium || 'std_hoops_street');
+      var curCharSkin = resolveEquippedItemId(eq, 'skins', curChar);
+      var activeBallId = resolveEquippedItemId(eq, 'balls', curChar);
 
       equipSlotList.innerHTML =
         '<div class="fvh-equipped-slot"><span>' + tr('catSkins') + ':</span><b>' + getItemLabelById(curCharSkin, tr('defaultSkin')) + '</b></div>' +
@@ -6808,7 +6964,6 @@
       itemsGrid.innerHTML = '';
       function renderMatchingItems() {
         var baseCatalog = buildDefaultShopCatalog(curChar);
-        var owned = (app.store && app.store.data && app.store.data.owned) || [];
         var unseenItems = (app.store && app.store.data && app.store.data.unseenItems) || [];
 
         var matching = baseCatalog.filter(function (it) {
@@ -6816,6 +6971,8 @@
             if (it.category !== 'skins' || it.currency === 'star') return false;
           } else if (curSlot === 'stars') {
             if (it.category !== 'stars' && it.currency !== 'star') return false;
+          } else if (curSlot === 'balls') {
+            if (it.category !== 'balls' && it.category !== 'balls_footy' && it.category !== 'balls_hoops') return false;
           } else {
             return false;
           }
@@ -6823,18 +6980,17 @@
           if (isFooty && it.mode !== 'footy') return false;
           if (!isFooty && it.mode !== 'hoops') return false;
 
-          var isOwned = (owned.indexOf(it.id) !== -1) || Boolean(it.isDefault) ||
-            (isFooty && (it.id === 'footy_classic' || it.id === 'footy_2_white' || it.id === 'skin_rookie')) ||
-            (!isFooty && (it.id === 'hoops_classic' || it.id === 'hoops_2_chicago' || it.id === 'skin_bb_onyx' || it.id === 'skin_solar')) ||
-            (LEGACY_ITEM_ALIASES[it.id] && owned.indexOf(LEGACY_ITEM_ALIASES[it.id]) !== -1);
+          var isOwned = isItemOwnedInList(owned, it.id) || Boolean(it.isDefault) ||
+            (isFooty && (it.id === 'footy_classic' || it.id === 'footy_2_white' || it.id === 'ball_classic')) ||
+            (!isFooty && (it.id === 'hoops_classic' || it.id === 'hoops_2_chicago' || it.id === 'ball_hoops_classic'));
           return isOwned;
         });
 
-        // Deduplicate items so aliases or legacy entries never produce duplicates
+        // Deduplicate items canonically so aliases never duplicate cards
         var seenCanonIds = {};
         var uniqueMatching = [];
         matching.forEach(function (it) {
-          var cId = LEGACY_ITEM_ALIASES[it.id] || it.id;
+          var cId = canonItemId(it.id);
           if (!seenCanonIds[cId]) {
             seenCanonIds[cId] = true;
             uniqueMatching.push(it);
@@ -6844,6 +7000,7 @@
 
         if (matching.length === 0) {
           selectBtn.style.display = 'none';
+          if (curSlot === 'balls') updateWardrobeAvatar(curChar, curCharSkin);
           var emptyBox = document.createElement('div');
           emptyBox.className = 'fvh-empty-state fvh-empty-locker';
           emptyBox.innerHTML =
@@ -6862,23 +7019,30 @@
           return;
         }
 
+        // Single authoritative equipped ID for the currently displayed tab & athlete
+        var slotCategoryForMatch = (curSlot === 'balls') ? 'balls' : 'skins';
+        var expectedEqCanonId = resolveEquippedItemId(eq, slotCategoryForMatch, curChar);
+
         // Auto-select currently equipped item or first item if none selected
-        if (!selectedItem || matching.every(function (m) { return m.id !== selectedItem.id; })) {
+        if (!selectedItem || matching.every(function (m) { return canonItemId(m.id) !== canonItemId(selectedItem.id); })) {
           selectedItem = matching.find(function (it) {
-            var sKey = it.slot || (it.category === 'balls_footy' ? 'ball.footy' : it.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
-            return (eq[sKey] === it.id) || (it.category === 'skins' && (eq.skin === it.id || eq['skin.' + curChar] === it.id));
+            return canonItemId(it.id) === expectedEqCanonId;
           }) || matching[0] || null;
         }
 
         // Update left preview box & action button based on selected item
         if (selectedItem) {
-          if (selectedItem.category === 'skins' || selectedItem.category === 'stars' || selectedItem.currency === 'star' || (selectedItem.id && (selectedItem.id.startsWith('footy_') || selectedItem.id.startsWith('hoops_')))) {
+          var isBallSel = (selectedItem.category === 'balls' || selectedItem.category === 'balls_footy' || selectedItem.category === 'balls_hoops' || String(selectedItem.id).startsWith('ball_'));
+          if (!isBallSel) {
             updateWardrobeAvatar(curChar, selectedItem.id);
           } else {
-            avatarBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;padding:10px;box-sizing:border-box;">' + getDetailedBallSvg(selectedItem.id, 'large') + '</div>';
+            if (window.CharactersGLB && typeof window.CharactersGLB.unmountWardrobePreview === 'function') {
+              window.CharactersGLB.unmountWardrobePreview();
+            }
+            avatarBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;padding:10px;box-sizing:border-box;">' + renderItemArtwork(selectedItem, 'large') + '</div>';
           }
-          var selSlotKey = selectedItem.slot || (selectedItem.category === 'balls_footy' ? 'ball.footy' : selectedItem.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
-          var isSelEquipped = (eq[selSlotKey] === selectedItem.id) || (selectedItem.category === 'skins' && (eq.skin === selectedItem.id || eq['skin.' + curChar] === selectedItem.id));
+          var selSlotKey = isBallSel ? ('ball.' + curChar) : ('skin.' + curChar);
+          var isSelEquipped = canonItemId(selectedItem.id) === expectedEqCanonId;
           var selLocalizedName = trItem(selectedItem.name);
 
           selectBtn.style.display = 'block';
@@ -6890,7 +7054,7 @@
           } else {
             selectBtn.className = 'btn primary block';
             selectBtn.disabled = false;
-            selectBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg('jersey', 16) + ' <span>' + tr('equipAction') + ': ' + selLocalizedName + '</span></span>';
+            selectBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">' + getUiIconSvg(isBallSel ? (isFooty ? 'nav_home_footy' : 'nav_home_hoops') : 'jersey', 16) + ' <span>' + tr('equipAction') + ': ' + selLocalizedName + '</span></span>';
             selectBtn.onclick = function () {
               app.audio.play('click');
               doEquip(selectedItem, selSlotKey, selLocalizedName);
@@ -6902,35 +7066,52 @@
 
         function doEquip(itemToEquip, targetSlotKey, localizedName) {
           var pid = getAppPlayerId(app);
+          var cId = canonItemId(itemToEquip.id);
+          var isBallItem = (itemToEquip.category === 'balls' || itemToEquip.category === 'balls_footy' || itemToEquip.category === 'balls_hoops' || String(cId).startsWith('ball_'));
+          var canonicalSlot = isBallItem ? ('ball.' + curChar) : ('skin.' + curChar);
+
+          // Optimistic atomic update so only ONE item is ever marked equipped
+          app.store.update(function (d) {
+            if (!d.equipped) d.equipped = {};
+            d.equipped[canonicalSlot] = cId;
+            if (isBallItem) {
+              d.equipped['ball.' + curChar] = cId;
+              d.equipped.ball = cId;
+            } else {
+              d.equipped['skin.' + curChar] = cId;
+              d.equipped.skin = cId;
+            }
+          });
+          if (app.store && typeof app.store.flush === 'function') app.store.flush();
+          app.audio.play('claim');
+          showToast(tr('equippedState') + ': ' + localizedName);
+          selectedItem = itemToEquip;
+          updateView();
+
+          // Persist to authoritative server
           safeEconomyApi('/api/economy/equip', {
             playerId: pid,
-            slot: targetSlotKey,
-            itemId: itemToEquip.id
+            slot: canonicalSlot,
+            itemId: cId
           }).then(function (res) {
-            app.store.update(function (d) {
-              if (!d.equipped) d.equipped = {};
-              d.equipped[targetSlotKey] = itemToEquip.id;
-              if (itemToEquip.category === 'skins' || itemToEquip.category === 'stars' || itemToEquip.currency === 'star' || (itemToEquip.id && (itemToEquip.id.startsWith('footy_') || itemToEquip.id.startsWith('hoops_')))) {
-                d.equipped['skin.' + curChar] = itemToEquip.id;
-                d.equipped.skin = itemToEquip.id;
-              }
-              if (itemToEquip.category === 'balls_footy' || itemToEquip.category === 'balls_hoops') {
-                d.equipped['ball.' + curChar] = itemToEquip.id;
-                d.equipped.ball = itemToEquip.id;
-              }
-            });
-            app.audio.play('claim');
-            showToast(tr('equippedState') + ': ' + localizedName);
-            selectedItem = itemToEquip;
-            updateView();
+            if (res && res.ok && res.equipped) {
+              app.store.update(function (d) {
+                d.equipped = Object.assign({}, d.equipped || {}, res.equipped);
+                d.equipped[canonicalSlot] = cId;
+                if (!isBallItem) d.equipped.skin = cId;
+                else d.equipped.ball = cId;
+              });
+            }
           });
         }
 
         matching.forEach(function (item) {
-          var activeSlotKey = item.slot || (item.category === 'balls_footy' ? 'ball.footy' : item.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
-          var isEquipped = (eq[activeSlotKey] === item.id) || (item.category === 'skins' && (eq.skin === item.id || eq['skin.' + curChar] === item.id));
-          var isSelected = (selectedItem && selectedItem.id === item.id);
-          var isUnseen = unseenItems.indexOf(item.id) !== -1 || (LEGACY_ITEM_ALIASES[item.id] && unseenItems.indexOf(LEGACY_ITEM_ALIASES[item.id]) !== -1);
+          var isBallCard = (item.category === 'balls' || item.category === 'balls_footy' || item.category === 'balls_hoops' || String(item.id).startsWith('ball_'));
+          var activeSlotKey = isBallCard ? ('ball.' + curChar) : ('skin.' + curChar);
+          // Strict single-ID comparison prevents dual "Надето" badges permanently
+          var isEquipped = (canonItemId(item.id) === expectedEqCanonId);
+          var isSelected = (selectedItem && canonItemId(selectedItem.id) === canonItemId(item.id));
+          var isUnseen = unseenItems.some(function (u) { return canonItemId(u) === canonItemId(item.id); });
 
           var itemCard = document.createElement('div');
           var rarClass = item.rarity || 'common';
@@ -6953,10 +7134,9 @@
 
           function markItemSeen() {
             var unseen = (app.store && app.store.data && app.store.data.unseenItems) || [];
-            var targets = [item.id];
-            if (LEGACY_ITEM_ALIASES[item.id]) targets.push(LEGACY_ITEM_ALIASES[item.id]);
+            var targets = [item.id, canonItemId(item.id)];
             for (var k in LEGACY_ITEM_ALIASES) {
-              if (LEGACY_ITEM_ALIASES[k] === item.id) targets.push(k);
+              if (LEGACY_ITEM_ALIASES[k] === canonItemId(item.id)) targets.push(k);
             }
             var wasUnseen = targets.some(function (t) { return unseen.indexOf(t) !== -1; });
             if (wasUnseen) {
@@ -7168,11 +7348,11 @@
       }
 
       if (curSlot === 'packs') {
-        raritySeg.style.display = 'none';
+        rarityFilterCtrl.setVisible(false);
         selectBtn.style.display = 'none';
         renderPacksView();
       } else {
-        raritySeg.style.display = 'flex';
+        rarityFilterCtrl.setVisible(true);
         renderMatchingItems();
       }
     }
@@ -8180,13 +8360,12 @@
   ];
 
   // Default canonical Shop & Locker catalog (guarantees synchronous loading and resilience)
-  // Master Equipment Catalog (20 Kits + 20 Balls with exact user rarities)
+  // Master Equipment Catalog (20+ Kits + Star Kits + Balls + Pack Exclusives synced with server)
   function buildDefaultShopCatalog(curChar) {
     return [
       // FOOTY KITS (OFFICIAL KITS)
       { id: 'footy_classic', name: 'Классика #10', name_ru: 'Классика #10', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 0, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Оригинальная клубная форма Footy: лазурный шеврон победы, номер 10 и белоснежные шорты.' },
-
-      { id: 'footy_2_white', name: 'Чистый Дом', name_ru: 'Чистый Дом', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Традиции клуба: белоснежная текстура жаккардового плетения с королевской диагональной лентой побед.' },
+      { id: 'footy_2_white', name: 'Чистый Дом', name_ru: 'Чистый Дом', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 200, badge: 'ОБЫЧНЫЙ', desc: 'Традиции клуба: белоснежная текстура жаккардового плетения с королевской диагональной лентой побед.' },
       { id: 'footy_6_crimson', name: 'Багровый Гладиатор', name_ru: 'Багровый Гладиатор', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 250, badge: 'ОБЫЧНЫЙ', desc: 'Спартанский дух победы: золотой греческий меандр по контуру, античные линии анатомического доспеха.' },
       { id: 'footy_7_gold', name: 'Золотой Владыка', name_ru: 'Золотой Владыка', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'common', price: 300, badge: 'ОБЫЧНЫЙ', desc: 'Королевский триумф: золотая барочная филигрань в стиле Versace, чемпионские пятиконечные звезды славы.' },
       { id: 'footy_1_sapphire', name: 'Сапфир Страйкер', name_ru: 'Сапфир Страйкер', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 550, badge: '⭐ РЕДКИЙ', desc: 'Сверхзвуковые кинетические шевроны цвета сапфира с неоново-лазурной окантовкой.' },
@@ -8197,13 +8376,34 @@
       { id: 'footy_8_obsidian', name: 'Обсидиановый Шиноби', name_ru: 'Обсидиановый Шиноби', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Призрачный скрытный дриблинг: нано-карбоновые соты, пульсирующие неоновые магистрали.' },
       { id: 'footy_0_tiffany', name: 'Тиффани Оникс', name_ru: 'Тиффани Оникс', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2800, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Сбалансированный сплит: черный оникс (непробиваемость) и бирюзовый тиффани (скорость).' },
 
+      // FOOTY PACK & LEGACY REWARD KITS (Pack-exclusive / Special drops appear in Locker once owned)
+      { id: 'skin_footy_cyber_strike', name: 'Кибер Страйк', name_ru: 'Кибер Страйк', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1400, packExclusive: true, desc: 'Неоновая броня кибер-нападающего с лазерными полосами.' },
+      { id: 'skin_footy_golden_legend', name: 'Золотая Легенда', name_ru: 'Золотая Легенда', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 2500, packExclusive: true, desc: 'Чемпионская форма из чистого золотого переплетения.' },
+      { id: 'skin_footy_stealth_shadow', name: 'Тень Ниндзя', name_ru: 'Тень Ниндзя', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'rare', price: 550, packExclusive: true, desc: 'Скрытная тёмная экипировка ночного матча.' },
+      { id: 'skin_footy_neon_matrix', name: 'Неон Матрица', name_ru: 'Неон Матрица', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'epic', price: 1300, packExclusive: true, desc: 'Цифровой неоновый узор с матричным свечением.' },
+      { id: 'skin_footy_mythic_titan', name: 'Мифический Титан', name_ru: 'Мифический Титан', category: 'skins', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 9999, packExclusive: true, desc: 'Ультраредкий эксклюзив из Мистери Паков: сияющая титановая форма.' },
+
       // FOOTY STAR KITS (3 EXCLUSIVE KITS ЗА ЗВЁЗДЫ)
       { id: 'footy_kit_star_holiday', name: '🎄 Новогодняя 2027', name_ru: '🎄 Новогодняя 2027', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 250, currency: 'star', badge: '🎄 НОВОГОДНИЙ', desc: 'Эксклюзивный новогодний комплект: королевский алый бархат Санты, морозная белая опушка, вышитые золотые елочки, снежинки и номер 25.' },
       { id: 'footy_kit_star_emperor', name: '🌌 Галактический Император', name_ru: '🌌 Галактический Император', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 500, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Царственный космический индиго-пурпур, золотой лавровый шеврон славы, переливающийся бирюзовый кант и чемпионский номер 1.' },
       { id: 'footy_kit_star_samurai', name: '⚔️ Квантовый Самурай', name_ru: '⚔️ Квантовый Самурай', category: 'stars', slot: 'skin', mode: 'footy', rarity: 'legendary', price: 750, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Белоснежная нано-керамическая броня кибер-ронина со светящейся неоновой лазурью, японским орнаментом и номером 77.' },
 
-      // HOOPS KITS (10 OFFICIAL TANKS - МАЙКИ)
-      { id: 'hoops_2_chicago', name: 'Чикаго Классик 1998', name_ru: 'Чикаго Классик 1998', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Золотая эра 23 номера: бычий кармин с текстурой зерен баскетбольного мяча и золотыми звездами чемпионов.' },
+      // FOOTY BALLS
+      { id: 'ball_classic', name: 'Классик Телстар', name_ru: 'Классик Телстар', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 0, isDefault: true, desc: 'Классический матчевый футбольный мяч.' },
+      { id: 'ball_training', name: 'Тренировочный Оранж', name_ru: 'Тренировочный Оранж', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 120, desc: 'Яркий всепогодный тренировочный мяч высокой заметности.' },
+      { id: 'ball_pitch_white', name: 'Белоснежный Про', name_ru: 'Белоснежный Про', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'common', price: 200, desc: 'Профессиональный шовный мяч с аэродинамическими панелями.' },
+      { id: 'ball_vortex', name: 'Вихрь Неон', name_ru: 'Вихрь Неон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 380, desc: 'Заряженный неоновым лаймом и бирюзой энергетический мяч.' },
+      { id: 'ball_solar', name: 'Солнечная Вспышка', name_ru: 'Солнечная Вспышка', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 420, desc: 'Огненный мяч с золотистыми языками пламени в полёте.' },
+      { id: 'ball_cyber_hex', name: 'Кибер Гексагон', name_ru: 'Кибер Гексагон', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 500, desc: 'Карбоновый мяч со светящимися шестиугольными швами.' },
+      { id: 'ball_gold_stitch', name: 'Золотой Шов', name_ru: 'Золотой Шов', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'rare', price: 550, desc: 'Турнирный мяч с прошивкой 24K золотой нитью.' },
+      { id: 'ball_magma', name: 'Магма Ядро', name_ru: 'Магма Ядро', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'epic', price: 1200, desc: 'Раскалённое ядро вулкана под прочной обсидиановой кожей.' },
+      { id: 'ball_nebula', name: 'Космическая Туманность', name_ru: 'Космическая Туманность', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2100, desc: 'Мяч галактической арены с фиолетовым сиянием.' },
+      { id: 'ball_sovereign', name: 'Суверен Золото', name_ru: 'Суверен Золото', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 2600, desc: 'Чисто золотой чемпионский мяч высшей пробы.' },
+      { id: 'ball_footy_supernova', name: 'Сверхновая', name_ru: 'Сверхновая', category: 'balls_footy', slot: 'ball.footy', mode: 'footy', rarity: 'legendary', price: 9999, packExclusive: true, desc: 'Мифический футбольный мяч сверхновой звезды из Наборов.' },
+
+      // HOOPS KITS (OFFICIAL TANKS - МАЙКИ)
+      { id: 'hoops_classic', name: 'Классика #23', name_ru: 'Классика #23', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 0, isDefault: true, badge: 'ОБЫЧНЫЙ', desc: 'Оригинальная джерси Hoops All-Star #23 с фирменным чёрно-оранжевым кантом.' },
+      { id: 'hoops_2_chicago', name: 'Чикаго Классик 1998', name_ru: 'Чикаго Классик 1998', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 200, badge: 'ОБЫЧНЫЙ', desc: 'Золотая эра 23 номера: бычий кармин с текстурой зерен баскетбольного мяча и золотыми звездами чемпионов.' },
       { id: 'hoops_3_la', name: 'ЛА Династия', name_ru: 'ЛА Династия', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 250, badge: 'ОБЫЧНЫЙ', desc: 'Золото Голливуда и царский пурпур Лейкерс: солнечные лучи славы ShowTime и граненые кристаллы.' },
       { id: 'hoops_4_boston', name: 'Бостон Прайд', name_ru: 'Бостон Прайд', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'common', price: 300, badge: 'ОБЫЧНЫЙ', desc: 'Монолитная защита: изумрудные кельтские узлы бесконечности и кристаллическая огранка на груди.' },
       { id: 'hoops_6_charlotte', name: 'Шарлотт Бриз', name_ru: 'Шарлотт Бриз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 550, badge: '⭐ РЕДКИЙ', desc: 'Морской владыка: чешуя океанского дракона с фиолетовыми переливами и ветвями неоновых кораллов.' },
@@ -8214,10 +8414,27 @@
       { id: 'hoops_8_mamba', name: 'Чёрная Мамба', name_ru: 'Чёрная Мамба', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Инстинкт безжалостного финишера: рельефная змеиная чешуя с фиолетовым ядовитым отливом и клыками гадюки.' },
       { id: 'hoops_1_miami', name: 'Майами Роуз', name_ru: 'Майами Роуз', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2800, badge: '💎 ЛЕГЕНДАРНЫЙ', desc: 'Океанский закат Флориды: плавный закатный переход от фламинго к бирюзе с пальмовыми силуэтами Vice City.' },
 
+      // HOOPS PACK & LEGACY REWARD KITS
+      { id: 'skin_hoops_street_legend', name: 'Уличная Легенда', name_ru: 'Уличная Легенда', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'rare', price: 750, packExclusive: true, desc: 'Стритбольный дизайн Бруклина в монохроме.' },
+      { id: 'skin_hoops_phantom_black', name: 'Чёрный Фантом', name_ru: 'Чёрный Фантом', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 2500, packExclusive: true, desc: 'Матовая змеиная броня короля данков.' },
+      { id: 'skin_hoops_hyper_beast', name: 'Гипер-Зверь Эксклюзив', name_ru: 'Гипер-Зверь Эксклюзив', category: 'skins', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 9999, packExclusive: true, desc: 'Ультраредкая эксклюзивная майка из Мистери Паков.' },
+
       // HOOPS STAR KITS (3 EXCLUSIVE TANKS ЗА ЗВЁЗДЫ)
       { id: 'hoops_kit_star_holiday', name: '🎄 Новогодняя 2027', name_ru: '🎄 Новогодняя 2027', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 250, currency: 'star', badge: '🎄 НОВОГОДНИЙ', desc: 'Рождественская безрукавная майка Санты: алый бархат с изумрудными резинками, золотыми елочками, снежинками и номером 25.' },
       { id: 'hoops_kit_star_astral', name: '🌌 Астральный Владыка', name_ru: '🌌 Астральный Владыка', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 500, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Полночный сапфировый и ультрафиолетовый шелк с золотыми созвездиями, золотыми окантовками пройм и номером 99.' },
-      { id: 'hoops_kit_star_phantom', name: '⚡ Неоновый Фантом', name_ru: '⚡ Неоновый Фантом', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 750, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Матовый ультра-черный карбон с двойными лазерными розово-бирюзовыми неоновыми полосами в стиле Vice City и номером 0.' }
+      { id: 'hoops_kit_star_phantom', name: '⚡ Неоновый Фантом', name_ru: '⚡ Неоновый Фантом', category: 'stars', slot: 'skin', mode: 'hoops', rarity: 'legendary', price: 750, currency: 'star', badge: '🌟 ЗВЁЗДНЫЙ', desc: 'Матовый ультра-черный карбон с двойными лазерными розово-бирюзовыми неоновыми полосами в стиле Vice City и номером 0.' },
+
+      // HOOPS BALLS
+      { id: 'ball_hoops_classic', name: 'Классическая Кожа', name_ru: 'Классическая Кожа', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 0, isDefault: true, desc: 'Классический зернистый баскетбольный мяч лиги.' },
+      { id: 'ball_hoops_rubber', name: 'Уличный Каучук', name_ru: 'Уличный Каучук', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 120, desc: 'Износостойкий чёрный стритбольный мяч для бетонных площадок.' },
+      { id: 'ball_hoops_asphalt', name: 'Асфальт Грип', name_ru: 'Асфальт Грип', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'common', price: 180, desc: 'Графитовый мяч с янтарными каналами максимального сцепления.' },
+      { id: 'ball_hoops_lime', name: 'Неон Лайм', name_ru: 'Неон Лайм', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 380, desc: 'Уличный мяч со светящимся неоново-лаймовым покрытием.' },
+      { id: 'ball_gold_groove', name: 'Золотая Насечка', name_ru: 'Золотая Насечка', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'rare', price: 520, desc: 'Контрастные золотые канавки для точного контроля броска.' },
+      { id: 'ball_molten', name: 'Раскалённая Магма', name_ru: 'Раскалённая Магма', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 1100, desc: 'Огненный эффект лавовых прожилок при каждом дриблинге.' },
+      { id: 'ball_cyber_grid', name: 'Кибер Сетка LED', name_ru: 'Кибер Сетка LED', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'epic', price: 950, desc: 'Светящаяся кибер-разметка футуристической арены.' },
+      { id: 'ball_supernova', name: 'Галактика Supernova', name_ru: 'Галактика Supernova', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2200, desc: 'Глубокий космос и звёздная пыль с каждого трёхочкового.' },
+      { id: 'ball_sovereign_bb', name: 'Золотой All-Star', name_ru: 'Золотой All-Star', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 2600, desc: 'Эксклюзивный 24K золотой баскетбольный трофей-мяч.' },
+      { id: 'ball_hoops_vortex', name: 'Квантовый Вихрь', name_ru: 'Квантовый Вихрь', category: 'balls_hoops', slot: 'ball.hoops', mode: 'hoops', rarity: 'legendary', price: 9999, packExclusive: true, desc: 'Мифический баскетбольный мяч квантового вихря из Наборов.' }
     ];
   }
 
@@ -8284,6 +8501,7 @@
       catSeg.innerHTML = '';
       var categories = [
         { id: 'skins', icon: 'cat_skins', label: (shopSport === 'footy' ? (getActiveLang() === 'ru' ? 'Формы' : 'Jerseys') : (getActiveLang() === 'ru' ? 'Майки' : 'Tanks')) },
+        { id: shopSport === 'footy' ? 'balls_footy' : 'balls_hoops', icon: shopSport === 'footy' ? 'nav_home_footy' : 'nav_home_hoops', label: tr('catBalls') || (getActiveLang() === 'ru' ? 'Мячи' : 'Balls') },
         { id: 'stars', icon: 'star', label: (getActiveLang() === 'ru' ? 'За Звёзды' : 'For Stars') },
         { id: 'bundles', icon: 'cat_packs', label: tr('catBundles') },
         { id: 'coins', icon: 'coin', label: tr('catCoins') }
@@ -8299,6 +8517,9 @@
           curCategory = c.id;
           catSeg.querySelectorAll('button').forEach(function (b) { b.className = ''; });
           btn.className = 'on';
+          if (shopFilterCtrl) {
+            shopFilterCtrl.setVisible(curCategory === 'skins' || curCategory === 'balls_footy' || curCategory === 'balls_hoops' || curCategory === 'stars');
+          }
           app.audio.play('click');
           renderShop();
         };
@@ -8306,39 +8527,16 @@
       });
     }
 
+    // Collapsible Rarity Filter ("Фильтр" button)
+    var curRarity = 'all';
+    var shopFilterCtrl = createRarityFilterControl(function (nextRarity) {
+      curRarity = nextRarity;
+      renderShop();
+    });
     renderCategoryTabs();
     body.appendChild(catSeg);
-
-    // Rarity Filter Bar
-    var curRarity = 'all';
-    var rarityBar = document.createElement('div');
-    rarityBar.className = 'fvh-rarity-filter-bar';
-    rarityBar.style.display = 'flex';
-    rarityBar.style.gap = '8px';
-    rarityBar.style.overflowX = 'auto';
-    rarityBar.style.paddingBottom = '8px';
-    rarityBar.style.marginBottom = '12px';
-    var rarities = [
-      { id: 'all', label: (getActiveLang() === 'ru' ? 'Все' : 'All') },
-      { id: 'common', label: (getActiveLang() === 'ru' ? 'Обычный' : 'Common'), cls: 'r-common' },
-      { id: 'rare', label: (getActiveLang() === 'ru' ? '⭐ Редкий' : '⭐ Rare'), cls: 'r-rare' },
-      { id: 'epic', label: (getActiveLang() === 'ru' ? '👑 Эпический' : '👑 Epic'), cls: 'r-epic' },
-      { id: 'legendary', label: (getActiveLang() === 'ru' ? '💎 Легендарный' : '💎 Legendary'), cls: 'r-legendary' }
-    ];
-    rarities.forEach(function (r) {
-      var btn = document.createElement('button');
-      btn.className = 'fvh-rarity-btn ' + (r.cls || '') + (r.id === curRarity ? ' active' : '');
-      btn.textContent = r.label;
-      btn.onclick = function () {
-        curRarity = r.id;
-        rarityBar.querySelectorAll('.fvh-rarity-btn').forEach(function (b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        app.audio.play('click');
-        renderShop();
-      };
-      rarityBar.appendChild(btn);
-    });
-    body.appendChild(rarityBar);
+    body.appendChild(shopFilterCtrl.el);
+    shopFilterCtrl.setVisible(curCategory === 'skins' || curCategory === 'balls_footy' || curCategory === 'balls_hoops' || curCategory === 'stars');
 
     // Product Catalogue Grid
     var catalogueGrid = document.createElement('div');
@@ -8375,10 +8573,11 @@
       modal.className = 'modal fvh-item-modal';
 
       var owned = (app.store && app.store.data && app.store.data.owned) || [];
-      var slotKey = item.slot || (item.category === 'balls_footy' ? 'ball.footy' : item.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
+      var isBallModal = (item.category === 'balls' || item.category === 'balls_footy' || item.category === 'balls_hoops' || String(item.id).startsWith('ball_'));
       var curEquipped = (app.store && app.store.data && app.store.data.equipped) || {};
-      var isEquipped = (curEquipped[slotKey] === item.id) || (item.category === 'skins' && (curEquipped.skin === item.id || curEquipped['skin.' + curChar] === item.id));
-      var isOwned = (owned.indexOf(item.id) !== -1 || Boolean(item.isDefault) || (curChar === 'hoops' && item.id === 'skin_solar') || (curChar === 'footy' && item.id === 'skin_rookie'));
+      var expectedModalEq = resolveEquippedItemId(curEquipped, isBallModal ? 'balls' : 'skins', curChar);
+      var isEquipped = (canonItemId(item.id) === expectedModalEq);
+      var isOwned = (isItemOwnedInList(owned, item.id) || Boolean(item.isDefault) || (curChar === 'hoops' && item.id === 'skin_solar') || (curChar === 'footy' && item.id === 'skin_rookie'));
       var rarKey = item.rarity || 'common';
       var localizedRarity = tr('rarity_' + rarKey) || rarKey.toUpperCase();
       var localizedItemName = trItem(item.name);
@@ -8432,7 +8631,7 @@
         openWardrobeBtn.onclick = function () {
           overlay.remove();
           app.audio.play('click');
-          var targetSlot = (item.category === 'skins') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
+          var targetSlot = isBallModal ? 'balls' : (item.currency === 'star' || item.category === 'stars' ? 'stars' : 'skins');
           // app.showCharacters(curChar, targetSlot)
           app.go('characters', { char: curChar, slot: targetSlot });
         };
@@ -8791,6 +8990,7 @@
 
       var filtered = baseCatalog.filter(function (it) {
         if (it.packExclusive) return false;
+        if (curRarity !== 'all' && it.rarity !== curRarity) return false;
         if (curCategory === 'skins') {
           return it.category === 'skins' && it.mode === shopSport;
         }
@@ -8813,7 +9013,7 @@
       var seenShopCanonIds = {};
       var uniqueFiltered = [];
       filtered.forEach(function (it) {
-        var cId = LEGACY_ITEM_ALIASES[it.id] || it.id;
+        var cId = canonItemId(it.id);
         if (!seenShopCanonIds[cId]) {
           seenShopCanonIds[cId] = true;
           uniqueFiltered.push(it);
@@ -8838,10 +9038,13 @@
         return rB - rA;
       });
 
+      var resolvedSkinEq = resolveEquippedItemId(eq, 'skins', curChar);
+      var resolvedBallEq = resolveEquippedItemId(eq, 'balls', curChar);
+
       filtered.forEach(function (it) {
-        var slotKey = it.slot || (it.category === 'balls_footy' ? 'ball.footy' : it.category === 'balls_hoops' ? 'ball.hoops' : 'skin');
-        var isOwned = (owned.indexOf(it.id) !== -1 || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie'));
-        var isEquipped = isOwned && ((eq[slotKey] === it.id) || (it.category === 'skins' && (eq.skin === it.id || eq['skin.' + curChar] === it.id)));
+        var isBallShop = (it.category === 'balls_footy' || it.category === 'balls_hoops' || it.category === 'balls' || String(it.id).startsWith('ball_'));
+        var isOwned = (isItemOwnedInList(owned, it.id) || Boolean(it.isDefault) || (curChar === 'hoops' && it.id === 'skin_solar') || (curChar === 'footy' && it.id === 'skin_rookie'));
+        var isEquipped = isOwned && (canonItemId(it.id) === (isBallShop ? resolvedBallEq : resolvedSkinEq));
 
         var card = document.createElement('div');
         var rarKey = it.rarity || 'common';
@@ -8878,7 +9081,7 @@
           actionBtn.onclick = function (e) {
             e.stopPropagation();
             app.audio.play('click');
-            var targetSlot = (it.category === 'skins' || it.category === 'stars') ? 'skins' : (curChar === 'footy' ? 'balls_footy' : 'balls_hoops');
+            var targetSlot = isBallShop ? 'balls' : (it.category === 'stars' || it.currency === 'star' ? 'stars' : 'skins');
             app.go('characters', { char: curChar, slot: targetSlot });
           };
         } else if (isStarItem) {
@@ -12908,18 +13111,12 @@
     var badgeText = isFooty ? (getUiIconSvg('nav_home_footy', 14) + ' <span>FOOTY</span>') : (getUiIconSvg('nav_home_hoops', 14) + ' <span>HOOPS</span>');
     var rivalText = '<span style="display:inline-flex;align-items:center;gap:5px;">' + getUiIconSvg('swords', 13) + ' <span>' + tr('rivalTeamLabel') + ': ' + (isFooty ? 'HOOPS' : 'FOOTY') + '</span></span>';
 
-    // Equipped cosmetics labels
-    var equippedJersey = isFooty
-      ? (d.equippedFootyJersey || d.equippedKit || (lang === 'ru' ? 'Форма FOOTY' : 'FOOTY Kit'))
-      : (d.equippedHoopsJersey || d.equippedJersey || (lang === 'ru' ? 'Джерси HOOPS' : 'HOOPS Jersey'));
-    var equippedBall = isFooty
-      ? (d.equippedFootyBall || d.equippedBall || (lang === 'ru' ? 'Мяч Classic' : 'Classic Ball'))
-      : (d.equippedHoopsBall || (lang === 'ru' ? 'Баскетбольный мяч' : 'Pro Leather'));
-
-    if (typeof getItemLabelById === 'function') {
-      equippedJersey = getItemLabelById(equippedJersey, equippedJersey);
-      equippedBall = getItemLabelById(equippedBall, equippedBall);
-    }
+    // Equipped cosmetics labels (authoritative per chosen team)
+    var eq = d.equipped || {};
+    var activeKitId = resolveEquippedItemId(eq, 'skins', curChar);
+    var activeBallId = resolveEquippedItemId(eq, 'balls', curChar);
+    var equippedJersey = getItemLabelById(activeKitId, isFooty ? 'Классика #10' : 'Классика #23');
+    var equippedBall = getItemLabelById(activeBallId, isFooty ? 'Классик Телстар' : 'Классическая Кожа');
 
     var up = d.upgrades || { power: 1, stamina: 1, keeper: 1 };
     var pLvl = Math.max(1, Math.min(10, up.power || 1));
@@ -13052,6 +13249,9 @@
 
     // Show screen
     app.show(screen, 'menu');
+
+    // Mount instant cached interactive 3D athlete showcase on Main Menu hero card
+    mountWardrobe3DIntoContainer(heroCard, curChar, activeKitId);
 
     // Onboarding: Prompt player to choose Team Football or Team Basketball on initial entry
     if (!d.teamChosen) {
