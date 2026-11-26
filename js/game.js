@@ -195,8 +195,15 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             swish: ['assets/audio/shot_swish.wav', 'assets/audio/variants/swish_v1.wav', 'assets/audio/variants/swish_v2.wav', 'assets/audio/variants/swish_v3.wav', 'assets/audio/variants/swish_v4.wav', 'assets/audio/variants/swish_v5.wav'],
                             dunk: ['assets/audio/dunk_slam.wav', 'assets/audio/variants/dunk_v1.wav', 'assets/audio/variants/dunk_v2.wav', 'assets/audio/variants/dunk_v3.wav', 'assets/audio/variants/dunk_v4.wav', 'assets/audio/variants/dunk_v5.wav'],
                             steal: ['assets/audio/steal_swipe.wav', 'assets/audio/variants/steal_v1.wav', 'assets/audio/variants/steal_v2.wav', 'assets/audio/variants/steal_v3.wav', 'assets/audio/variants/steal_v4.wav', 'assets/audio/variants/steal_v5.wav'],
-                            steal_swoosh: ['assets/audio/steal_swipe.wav', 'assets/audio/variants/steal_v2.wav', 'assets/audio/variants/steal_v4.wav'],
+                            steal_swoosh: ['assets/audio/steal_swoosh.wav', 'assets/audio/variants/steal_swoosh_v1.wav'],
                             save: ['assets/audio/keeper_save.wav', 'assets/audio/variants/save_v1.wav', 'assets/audio/variants/save_v2.wav', 'assets/audio/variants/save_v3.wav'],
+                            rim: ['assets/audio/rim_clang.wav'],
+                            board: ['assets/audio/backboard_hit.wav'],
+                            post: ['assets/audio/goalpost_hit.wav'],
+                            buzzer: ['assets/audio/hoops_buzzer.wav'],
+                            crowd: ['assets/audio/crowd_cheer.wav', 'assets/audio/variants/celebrate_v3.wav'],
+                            ambience_footy: ['assets/audio/ambience_footy.wav'],
+                            ambience_hoops: ['assets/audio/ambience_hoops.wav'],
                             goal: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
                             score: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v2.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v4.wav', 'assets/audio/variants/celebrate_v5.wav'],
                             win: ['assets/audio/celebration.wav', 'assets/audio/variants/celebrate_v1.wav', 'assets/audio/variants/celebrate_v3.wav', 'assets/audio/variants/celebrate_v5.wav'],
@@ -211,7 +218,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.8.0-release';
+                        const AUDIO_VERSION = '4.9.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -356,21 +363,23 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
 
-                    // Per-action RMS gain calibration tuned for v4.8 studio WAVs
+                    // Per-action broadcast RMS calibration tuned for v4.9 authentic real-Foley WAVs
                     const gainMap = {
-                        whistle: 0.56, whistleStart: 0.54, whistleEnd: 0.58, whistleRestart: 0.50,
-                        step: 0.46, step_court: 0.50, squeak: 0.44, tackle: 0.84, swish: 0.86,
-                        steal: 0.86, steal_swoosh: 0.58, save: 0.92,
-                        dribble: 0.60, dribble_court: 0.82, bounce: 0.78, bounce_footy: 0.68,
-                        pass: 0.80, pass_hoops: 0.74, kick: 0.94, shot: 0.96, shot_hoops: 0.90, dunk: 1.00,
-                        goal: 0.82, score: 0.80, win: 0.82, celebration: 0.80
+                        whistle: 0.52, whistleStart: 0.50, whistleEnd: 0.54, whistleRestart: 0.48, buzzer: 0.62,
+                        step: 0.40, step_court: 0.42, squeak: 0.46, tackle: 0.86, swish: 0.90,
+                        steal: 0.86, steal_swoosh: 0.62, save: 0.92,
+                        dribble: 0.56, dribble_court: 0.80, bounce: 0.78, bounce_footy: 0.68,
+                        pass: 0.78, pass_hoops: 0.72, kick: 0.96, shot: 0.98, shot_hoops: 0.88, dunk: 1.00,
+                        rim: 0.78, board: 0.80, post: 0.84, crowd: 0.72,
+                        goal: 0.86, score: 0.84, win: 0.86, celebration: 0.84
                     };
                     const lpFreqMap = {
-                        whistle: 5800, whistleStart: 5800, whistleEnd: 5800, whistleRestart: 5800,
-                        step: 5800, step_court: 6200, tackle: 6800, steal: 8200, steal_swoosh: 6800, swish: 8600,
-                        dribble: 5200, dribble_court: 6400, bounce: 6400, bounce_footy: 5200,
-                        pass: 6200, pass_hoops: 6600, shot_hoops: 7800,
-                        goal: 7200, score: 7200, win: 7200, celebration: 7200
+                        whistle: 8200, whistleStart: 8200, whistleEnd: 8200, whistleRestart: 8200, buzzer: 6800,
+                        step: 8400, step_court: 6800, tackle: 9200, steal: 10500, steal_swoosh: 8800, swish: 11500,
+                        dribble: 7600, dribble_court: 8800, bounce: 8800, bounce_footy: 6800,
+                        pass: 8600, pass_hoops: 8600, shot_hoops: 9600,
+                        rim: 10500, board: 7200, post: 10500, crowd: 9600,
+                        goal: 10500, score: 10500, win: 10500, celebration: 10500
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.84);
@@ -558,22 +567,31 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             s.start(t0, Math.random() * 1.5);
             s.stop(t0 + dur + 0.1);
         }
-        startAmbience() {
+        startAmbience(mode) {
             const c = this.ctx;
-            const buf = this.pinkBuf || this.noiseBuf;
-            if (!c || !buf || !this.sfxGain || this.crowdNode)
+            if (!c || !this.sfxGain || this.crowdNode)
+                return;
+            const key = (mode === 'hoops') ? 'ambience_hoops' : 'ambience_footy';
+            const realBuf = (this.audioSamples && this.audioSamples[key]) || null;
+            const buf = realBuf || this.pinkBuf || this.noiseBuf;
+            if (!buf)
                 return;
             const src = c.createBufferSource();
             src.buffer = buf;
             src.loop = true;
-            const f = c.createBiquadFilter();
-            f.type = 'bandpass';
-            f.frequency.value = 520;
-            f.Q.value = 0.45;
             const gain = c.createGain();
-            gain.gain.value = 0.045;
-            src.connect(f);
-            f.connect(gain);
+            if (realBuf) {
+                gain.gain.value = 0.095;
+                src.connect(gain);
+            } else {
+                const f = c.createBiquadFilter();
+                f.type = 'bandpass';
+                f.frequency.value = 520;
+                f.Q.value = 0.45;
+                gain.gain.value = 0.042;
+                src.connect(f);
+                f.connect(gain);
+            }
             gain.connect(this.sfxGain);
             src.start();
             this.crowdNode = { src, gain };
@@ -15975,7 +15993,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     }
                 };
                 this.hud.show(true);
-                this.audio.startAmbience();
+                this.audio.startAmbience(this.cfg && this.cfg.mode);
             }
             else
                 this.hud.show(false);
@@ -16112,7 +16130,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     this.hud.toast('⏱️ Turbo Overdrive Expired', 1600);
                     break;
                 case 'whistle':
-                    a.play(e.kind === 'end' ? 'whistleEnd' : 'whistle');
+                    a.play(e.kind === 'end' ? (mode === 'hoops' ? 'buzzer' : 'whistleEnd') : 'whistle');
                     break;
                 case 'kick':
                     a.play(mode === 'hoops' ? 'pass_hoops' : 'kick', 0.5 + e.power * 0.65, mode === 'footy' ? 1 : 1.06);
@@ -16235,11 +16253,11 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 return;
             this.ended = true;
             (_a = this.cfg.online) === null || _a === void 0 ? void 0 : _a.markOver();
+            const cfg = this.cfg;
             const endBanner = winner === 0 ? (0, index_js_2.t)('hud.win') : winner === null ? (0, index_js_2.t)('hud.fullTime') : (0, index_js_2.t)('hud.lose');
             this.hud.showBanner(endBanner, 'big', 0);
-            this.audio.play(winner === 0 ? 'win' : winner === null ? 'whistleEnd' : 'lose');
+            this.audio.play(winner === 0 ? 'win' : winner === null ? (cfg.mode === 'hoops' ? 'buzzer' : 'whistleEnd') : 'lose');
             const sim = this.sim;
-            const cfg = this.cfg;
             const summary = {
                 mode: cfg.mode,
                 difficulty: cfg.difficulty,

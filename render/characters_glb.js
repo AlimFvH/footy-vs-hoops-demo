@@ -228,7 +228,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=4.8.0-release', '/assets/characters/hoops23.glb?v=4.8.0-release', '/assets/characters/keeper1.glb?v=4.8.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=4.9.0-release', '/assets/characters/hoops23.glb?v=4.9.0-release', '/assets/characters/keeper1.glb?v=4.9.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -807,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '4.8.0-release';
+  const ATLAS_VERSION = '4.9.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -1313,18 +1313,9 @@
         return;
       }
 
-      // 3. Basketball Dribble Hand Overlay (preserves full GLB stride/legs cleanly, adds natural ball dribble wrist/forearm motion)
+      // 3. Basketball Dribble: 60fps Anim_2K_DribbleRun / Anim_2K_DribbleIdle drive full body & wrist snap natively!
       if (action === 'dribble') {
-        const freq = speed > 0.35 ? 10.2 : 6.4;
-        const drib = Math.sin(t * freq);
-        const push = Math.max(0, -drib);
-        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.06);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.32 + 0.22 * push);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.14);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.45 + 0.34 * push);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.34 * push - 0.08);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.18);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.38);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, Math.sin(t * 1.4) * 0.04);
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
@@ -1434,6 +1425,12 @@
         targetClip = 'Walk';
       } else if (lower === 'run' || lower === 'sprint' || lower === 'anim_ea_sprintdrive') {
         targetClip = 'Run';
+      } else if (lower === 'anim_2k_dribblerun' || lower === 'dribblerun') {
+        targetClip = 'Anim_2K_DribbleRun';
+      } else if (lower === 'anim_2k_dribbleidle' || lower === 'dribbleidle') {
+        targetClip = 'Anim_2K_DribbleIdle';
+      } else if (lower === 'anim_ea_dribblerun') {
+        targetClip = 'Anim_EA_DribbleRun';
       } else if (lower === 'run_back') {
         targetClip = 'Run_Back';
       } else if (lower === 'run_left') {
@@ -1494,16 +1491,22 @@
     }
 
     _pickLocomotionClip(vx, vz, speed) {
-      if (speed <= 0.22) return { clip: 'Idle', rate: 1.0 };
-      if (speed <= 1.65) {
-        return { clip: 'Walk', rate: Math.max(0.75, Math.min(1.38, speed / 1.38)) };
+      if (speed <= 0.22) {
+        this._locoIsRun = false;
+        return { clip: 'Idle', rate: 1.0 };
       }
+      // Smooth 0.30 m/s hysteresis band prevents Walk/Run flickering near boundary velocity
+      if (this._locoIsRun ? (speed < 1.48) : (speed <= 1.78)) {
+        this._locoIsRun = false;
+        return { clip: 'Walk', rate: Math.max(0.75, Math.min(1.36, speed / 1.38)) };
+      }
+      this._locoIsRun = true;
       const fwdX = Math.sin(this.yaw);
       const fwdZ = Math.cos(this.yaw);
       const invS = 1 / (speed || 1);
       const dotF = (vx * fwdX + vz * fwdZ) * invS;
       const dotR = (vx * fwdZ - vz * fwdX) * invS;
-      const rate = Math.max(0.86, Math.min(1.92, speed / 3.45));
+      const rate = Math.max(0.86, Math.min(1.88, speed / 3.45));
       if (dotF < -0.52) return { clip: 'Run_Back', rate };
       if (dotR > 0.72 && dotF < 0.48) return { clip: 'Run_Right', rate };
       if (dotR < -0.72 && dotF < 0.48) return { clip: 'Run_Left', rate };
@@ -1676,16 +1679,16 @@
           bio.action = 'celeb';
           this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.05, 0.14);
         }
-        // 8. Basketball Dribbling (Athletic crouch protecting the ball)
+        // 8. Basketball Dribbling (Dedicated 60fps NBA DribbleRun & Triple-Threat DribbleIdle)
         else if (isBallCarrier) {
           bio.action = 'dribble';
           if (speed > 0.35) {
-            const sprintCadence = Math.max(0.88, Math.min(1.55, speed / 3.8));
-            this.setAnimation('Run', sprintCadence, 0.13);
-            targetPitch = 0.06;
-          } else {
-            this.setAnimation('Idle', 1.0, 0.18);
+            const sprintCadence = Math.max(0.88, Math.min(1.52, speed / 3.8));
+            this.setAnimation('Anim_2K_DribbleRun', sprintCadence, 0.14);
             targetPitch = 0.04;
+          } else {
+            this.setAnimation('Anim_2K_DribbleIdle', 1.0, 0.16);
+            targetPitch = 0.02;
           }
         }
         // 9. Directional Defense / Outfield Running / Walking / Idle
@@ -1763,9 +1766,9 @@
         // 7. Football Ball-Carrier Agility Dribble vs Directional Run / Walk / Idle
         else if (isBallCarrier && speed > 0.35) {
           bio.action = 'fdribble';
-          const dribCadence = Math.max(0.85, Math.min(1.55, speed / 3.9));
-          this.setAnimation('Run', dribCadence, 0.12);
-          targetPitch = 0.06 * Math.min(1.0, speed / 4.2);
+          const dribCadence = Math.max(0.88, Math.min(1.55, speed / 3.9));
+          this.setAnimation('Anim_EA_DribbleRun', dribCadence, 0.13);
+          targetPitch = 0.04 * Math.min(1.0, speed / 4.2);
         }
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
@@ -2019,7 +2022,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.8.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.9.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2028,7 +2031,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.8.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.9.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2037,7 +2040,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.8.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.9.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2307,7 +2310,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.8.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.8.0-release' : '/assets/characters/footy10.glb?v=4.8.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.9.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.9.0-release' : '/assets/characters/footy10.glb?v=4.9.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2468,7 +2471,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.8.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.8.0-release' : '/assets/characters/footy10.glb?v=4.8.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.9.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.9.0-release' : '/assets/characters/footy10.glb?v=4.9.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };
