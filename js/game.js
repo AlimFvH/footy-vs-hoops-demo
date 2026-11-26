@@ -226,10 +226,11 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
                         const AUDIO_VERSION = '6.0.0-release';
+                        const AUDIO_REVISION = '7.0.0-studio';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
-                                const fetchUrl = url.includes('?') ? url : (url + '?v=' + AUDIO_VERSION);
+                                const fetchUrl = url.includes('?') ? url : (url + '?v=' + AUDIO_VERSION + '&r=' + AUDIO_REVISION);
                                 decodedUrlPromises.set(url, fetch(fetchUrl)
                                     .then(res => res.ok ? res.arrayBuffer() : null)
                                     .then(buf => (buf && this.ctx) ? this.ctx.decodeAudioData(buf) : null)
@@ -775,6 +776,7 @@ define("gfx/geometry", ["require", "exports"], function (require, exports) {
     exports.ring = ring;
     exports.torus = torus;
     exports.openCone = openCone;
+    exports.lathe = lathe;
     class Geometry {
         constructor(positions, normals, uvs, indices) {
             this.positions = positions;
@@ -1277,13 +1279,13 @@ void main(){
 #endif
   vec4 wp = m * vec4(aPos, 1.0);
 #ifdef INSTANCED
-  float ph = fract(sin(dot(aM3.xz, vec2(12.9898, 78.233))) * 43758.5453) * 6.2831;
-  float fr = 5.5 + mod(ph * 1.7, 3.0);
-  wp.y += uWave * abs(sin(uTime * fr + ph));
-  if (uSway > 0.0) {
-    float sw = (0.07 + uWave * 0.9) * (aPos.y + 0.5);
+  if (uSway > 0.005) {
+    float ph = fract(sin(dot(aM3.xz, vec2(12.9898, 78.233))) * 43758.5453) * 6.2831;
+    float fr = 5.5 + mod(ph * 1.7, 3.0);
+    wp.y += uWave * 0.42 * abs(sin(uTime * fr + ph));
+    float sw = (0.014 + uWave * 0.055) * clamp(aPos.y + 0.5, 0.0, 1.0) * min(1.0, uSway * 2.5);
     wp.x += sin(uTime * (fr * 0.55) + ph) * sw;
-    wp.z += cos(uTime * (fr * 0.45) + ph * 1.3) * sw * 0.7;
+    wp.z += cos(uTime * (fr * 0.45) + ph * 1.3) * sw * 0.6;
   }
 #endif
   vWorld = wp.xyz;
@@ -1938,6 +1940,9 @@ void main(){
             }
             for (const n of casters)
                 this.drawNode(n, true, scene, false);
+            if (typeof window !== 'undefined' && window.CharactersGLB && typeof window.CharactersGLB.renderShadows === 'function') {
+                window.CharactersGLB.renderShadows(this, scene, this.lightVP);
+            }
             gl.disable(gl.POLYGON_OFFSET_FILL);
         }
         drawNode(n, depthOnly, scene, useShadow) {
@@ -7300,9 +7305,9 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
     exports.buildFootyArena = buildFootyArena;
     exports.buildCourtArena = buildCourtArena;
     G = __importStar(G);
-    const SKIN_TONES = [0xf1c8a5, 0xe0ac86, 0xc68642, 0x8d5524, 0x6b3f1f, 0xffdbb4].map((c) => (0, math_js_6.rgb)(c));
-    const HAIR_TONES = [0x15110d, 0x2a1b10, 0x5b3a1e, 0x8a6a3a, 0xc9a45c, 0x8a8a8a, 0x0a0a0a].map((c) => (0, math_js_6.rgb)(c));
-    const NEUTRAL_CLOTHES = [0x222831, 0x3b4a6b, 0x8a8f98, 0xe9e9e9, 0x5a3d2b, 0x2f5d50, 0xb85c38, 0x1d3557, 0x6c3a63].map((c) => (0, math_js_6.rgb)(c));
+    const SKIN_TONES = [0xe8bc98, 0xd8a178, 0xb8783c, 0x855024, 0x623a1d, 0xf2ccb0].map((c) => (0, math_js_6.rgb)(c));
+    const HAIR_TONES = [0x14100d, 0x281b12, 0x4c3019, 0x6f5331, 0x8d6c45, 0x22262f, 0x0b0b0e].map((c) => (0, math_js_6.rgb)(c));
+    const NEUTRAL_CLOTHES = [0x141c2b, 0x1b2538, 0x232a36, 0x2c3648, 0x333c4d, 0x2a2625, 0x1c313a, 0x23324d, 0x3a2a36].map((c) => (0, math_js_6.rgb)(c));
     function crowdAndStands(root, stands, palette, standColor, quality) {
         var _a, _b, _c;
         const rand = (() => {
@@ -7311,11 +7316,11 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         })();
         const pick = (a) => a[Math.floor(rand() * a.length)];
         const slabs = new scene_js_1.Node();
-        const pal = palette.map((c) => (0, math_js_6.rgb)(c));
-        const step = quality >= 1 ? 0.62 : 0.9;
+        const pal = palette.map((c) => (0, math_js_6.rgb)(c).map((v) => Math.min(0.84, v * 0.82)));
+        const step = quality >= 1 ? 0.56 : 0.84;
         const hi = quality >= 1;
-        const seatBase = (0, math_js_6.rgb)((_a = palette[0]) !== null && _a !== void 0 ? _a : 0x3355aa).map((v) => v * 0.34);
-        const seatAlt = (0, math_js_6.rgb)((_c = (_b = palette[1]) !== null && _b !== void 0 ? _b : palette[0]) !== null && _c !== void 0 ? _c : 0xaaaaaa).map((v) => v * 0.34);
+        const seatBase = (0, math_js_6.rgb)((_a = palette[0]) !== null && _a !== void 0 ? _a : 0x3355aa).map((v) => Math.max(0.05, v * 0.24));
+        const seatAlt = (0, math_js_6.rgb)((_c = (_b = palette[1]) !== null && _b !== void 0 ? _b : palette[0]) !== null && _c !== void 0 ? _c : 0x64748b).map((v) => Math.max(0.05, v * 0.24));
         const B = { m: [], c: [] };
         const H = { m: [], c: [] };
         const R = { m: [], c: [] };
@@ -7326,7 +7331,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             o.c.push(col[0], col[1], col[2]);
         };
         const shade = (c, k) => [Math.min(1, c[0] * k), Math.min(1, c[1] * k), Math.min(1, c[2] * k)];
-        const wallCol = (0, math_js_6.rgb)(standColor).map((v) => v * 0.55);
+        const wallCol = (0, math_js_6.rgb)(standColor).map((v) => v * 0.48);
         for (const st of stands) {
             const baseY = st.baseY || 0;
             const lastOut = st.offset + (st.rows - 1) * 0.95;
@@ -7336,7 +7341,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
                 wall.setPos(st.center, (lastH + 3.2) / 2, st.sign * (lastOut + 1.1));
             else
                 wall.setPos(st.sign * (lastOut + 1.1), (lastH + 3.2) / 2, st.center);
-            const rimMat = (0, scene_js_1.material)({ color: wallCol, emissive: [pal[0][0] * 0.14, pal[0][1] * 0.14, pal[0][2] * 0.14], spec: 0.48, shininess: 48 });
+            const rimMat = (0, scene_js_1.material)({ color: wallCol, emissive: [pal[0][0] * 0.12, pal[0][1] * 0.12, pal[0][2] * 0.12], spec: 0.48, shininess: 48 });
             const rim = new scene_js_1.Node(st.alongX ? G.box(st.length + 2, 0.14, 0.56) : G.box(0.56, 0.14, st.length + 2), rimMat);
             if (st.alongX)
                 rim.setPos(st.center, lastH + 3.2 + 0.07, st.sign * (lastOut + 1.1));
@@ -7346,61 +7351,64 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
             for (let r = 0; r < st.rows; r++) {
                 const out = st.offset + r * 0.95;
                 const h = baseY + 0.7 + r * 0.75;
-                const slab = new scene_js_1.Node(st.alongX ? G.box(st.length, h, 1.08) : G.box(1.08, h, st.length), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(standColor), receiveShadow: false }));
+                const slab = new scene_js_1.Node(st.alongX ? G.box(st.length, h, 1.08) : G.box(1.08, h, st.length), (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(standColor).map((v) => v * 0.78), receiveShadow: false }));
                 if (st.alongX)
                     slab.setPos(st.center, h / 2, st.sign * out);
                 else
                     slab.setPos(st.sign * out, h / 2, st.center);
                 slabs.add(slab);
                 const n = Math.floor(st.length / step);
-                const rowFill = 0.78 + rand() * 0.2;
-                const rowTint = 0.7 + rand() * 0.22;
+                const rowFill = 0.84 + rand() * 0.14;
+                const rowTint = 0.62 + rand() * 0.20 - Math.min(0.14, r * 0.02);
                 for (let i = 0; i < n; i++) {
-                    const aisle = i % 15 === 14;
+                    const aisle = i % 16 === 15;
                     const along = st.center - st.length / 2 + (i + 0.5) * step;
                     const ox = st.alongX ? along : st.sign * out;
                     const oz = st.alongX ? st.sign * out : along;
                     if (aisle) {
-                        push(S, st.alongX ? step * 0.9 : 0.9, 0.06, st.alongX ? 0.9 : step * 0.9, ox, h + 0.03, oz, [0.24, 0.27, 0.33]);
+                        push(S, st.alongX ? step * 0.92 : 0.92, 0.08, st.alongX ? 0.92 : step * 0.92, ox, h + 0.04, oz, [0.16, 0.20, 0.28]);
                         continue;
                     }
-                    const seatCol = (Math.floor(i / 5) + r) % 4 === 0 ? seatAlt : seatBase;
-                    push(S, st.alongX ? step * 0.78 : 0.5, 0.16, st.alongX ? 0.5 : step * 0.78, ox, h + 0.08, oz, seatCol);
+                    const seatCol = (Math.floor(i / 6) + r) % 4 === 0 ? seatAlt : seatBase;
+                    push(S, st.alongX ? step * 0.84 : 0.52, 0.24, st.alongX ? 0.52 : step * 0.84, ox, h + 0.12, oz, seatCol);
                     if (rand() > rowFill)
                         continue;
-                    const jx = st.alongX ? (rand() - 0.5) * 0.14 : (rand() - 0.5) * 0.08;
-                    const jz = st.alongX ? (rand() - 0.5) * 0.08 : (rand() - 0.5) * 0.14;
-                    const kid = rand() < 0.08;
-                    const sc = (kid ? 0.68 : 0.88 + rand() * 0.3) * (0.95 + rand() * 0.1);
-                    const wide = 0.42 + rand() * 0.14;
+                    const jx = st.alongX ? (rand() - 0.5) * 0.09 : (rand() - 0.5) * 0.06;
+                    const jz = st.alongX ? (rand() - 0.5) * 0.06 : (rand() - 0.5) * 0.09;
+                    const kid = rand() < 0.06;
+                    const sc = (kid ? 0.76 : 0.92 + rand() * 0.18);
                     const x = ox + jx;
                     const z = oz + jz;
-                    const bodyH = 0.5 * sc;
-                    const by = h + 0.14 + bodyH / 2;
-                    const clothes = rand() < 0.55 ? pick(pal) : pick(NEUTRAL_CLOTHES);
-                    const bright = rowTint * (0.8 + rand() * 0.35);
-                    push(B, sc * wide * (st.alongX ? 1 : 0.8), bodyH, sc * wide * (st.alongX ? 0.8 : 1), x, by, z, shade(clothes, bright));
-                    const hs = 0.27 * sc;
-                    const hy = h + 0.14 + bodyH + hs * 0.46;
+                    const inGoalZone = st.alongX && Math.abs(along) < 4.4;
+                    const zoneMute = inGoalZone ? 0.68 : 1.0;
+                    const shoulderW = (0.46 + rand() * 0.08) * sc;
+                    const chestD = (0.28 + rand() * 0.04) * sc;
+                    const bodyH = 0.48 * sc;
+                    const by = h + 0.18 + bodyH * 0.5;
+                    const useTeamAccent = rand() < (inGoalZone ? 0.14 : 0.26);
+                    const rawClothes = useTeamAccent ? pick(pal) : pick(NEUTRAL_CLOTHES);
+                    const clothes = shade(rawClothes, rowTint * zoneMute * (0.86 + rand() * 0.22));
+                    push(B, st.alongX ? shoulderW : chestD, bodyH, st.alongX ? chestD : shoulderW, x, by, z, clothes);
+                    const topOfTorso = by + bodyH * 0.49;
+                    const headDiam = 0.225 * sc;
+                    const hy = topOfTorso + headDiam * 0.44;
                     const skinC = pick(SKIN_TONES);
-                    push(H, hs, hs * 1.08, hs, x, hy, z, shade(skinC, 0.85 + rand() * 0.2));
+                    push(H, headDiam * 0.94, headDiam * 1.04, headDiam * 0.96, x, hy, z, shade(skinC, (0.82 + rand() * 0.16) * (inGoalZone ? 0.82 : 1.0)));
                     const hr = rand();
-                    if (hi && hr < 0.82) {
-                        const cap = hr < 0.2;
+                    if (hi && hr < 0.88) {
+                        const cap = hr < 0.18;
                         const hc = cap ? pick(pal) : pick(HAIR_TONES);
-                        push(R, hs * 1.08, hs * (cap ? 0.42 : 0.55), hs * 1.08, x, hy + hs * 0.34, z, shade(hc, 0.9));
+                        push(R, headDiam * 1.04, headDiam * (cap ? 0.52 : 0.64), headDiam * 1.05, x, hy + headDiam * 0.20, z, shade(hc, 0.80 * zoneMute));
+                    } else if (!hi && hr < 0.72) {
+                        push(R, headDiam * 1.02, headDiam * 0.58, headDiam * 1.02, x, hy + headDiam * 0.20, z, shade(pick(HAIR_TONES), 0.82));
                     }
-                    else if (!hi && hr < 0.7) {
-                        push(R, hs * 1.06, hs * 0.5, hs * 1.06, x, hy + hs * 0.33, z, pick(HAIR_TONES));
-                    }
-                    if (hi && rand() < 0.36) {
-                        const both = rand() < 0.3;
-                        for (const side of both ? [-1, 1] : [rand() < 0.5 ? -1 : 1]) {
-                            const ax = x + (st.alongX ? side * sc * wide * 0.62 : 0);
-                            const az = z + (st.alongX ? 0 : side * sc * wide * 0.62);
-                            const len = 0.42 * sc;
-                            push(A, 0.1 * sc, len, 0.1 * sc, ax, h + 0.14 + bodyH * 0.62 + len / 2, az, shade(skinC, 0.9));
-                        }
+                    if (hi && rand() < 0.24) {
+                        const armSide = rand() < 0.5 ? -1 : 1;
+                        const armW = 0.095 * sc;
+                        const armH = 0.34 * sc;
+                        const ax = x + (st.alongX ? armSide * shoulderW * 0.49 : 0);
+                        const az = z + (st.alongX ? 0 : armSide * shoulderW * 0.49);
+                        push(A, armW, armH, armW, ax, topOfTorso + 0.04 * sc, az, clothes);
                     }
                 }
             }
@@ -7408,24 +7416,32 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const mkBatch = (o, g, sway = 0, crowd = true) => {
             if (o.m.length === 0)
                 return null;
-            const node = new scene_js_1.Node(g, (0, scene_js_1.material)({ crowd, sway, receiveShadow: false, castShadow: false, spec: 0.18, rim: 0.28 }));
+            const node = new scene_js_1.Node(g, (0, scene_js_1.material)({ crowd, sway, receiveShadow: false, castShadow: false, spec: 0.10, shininess: 18, rim: 0.12 }));
             node.instances = { matrices: new Float32Array(o.m), colors: new Float32Array(o.c), count: o.m.length / 16, dirty: true };
             return node;
         };
-        // Modern Tiered Stadium Architecture with LED ribbons and Alive Cheering Fans!
-        const supporterSeat = G.box(0.92, 0.22, 0.88);
-        const supporterTorso = G.cylinder(0.24, 0.28, 0.52, 8, true);
-        const supporterHead = G.sphere(0.18, 8, 6);
-        const supporterHair = G.sphere(0.19, 8, 6);
-        const supporterArm = G.capsule(0.08, 0.42, 6, 2);
-        const supporterLightstick = G.cylinder(0.06, 0.06, 0.75, 6);
+        // Contoured Anatomical Stadium Supporters (broad rounded shoulders, tapered ribs, neck socket + unit sphere cranium -> zero floating cup cylinders!)
+        const supporterSeat = G.box(1.0, 1.0, 1.0);
+        const supporterTorso = (typeof G.lathe === 'function') ? G.lathe([
+            { r: 0.0, y: -0.50, nr: 0, ny: -1 },
+            { r: 0.34, y: -0.50, nr: 0.9, ny: -0.3 },
+            { r: 0.40, y: -0.18, nr: 0.98, ny: 0.15 },
+            { r: 0.48, y: 0.20, nr: 0.96, ny: 0.26 },
+            { r: 0.46, y: 0.36, nr: 0.65, ny: 0.76 },
+            { r: 0.24, y: 0.48, nr: 0.35, ny: 0.94 },
+            { r: 0.17, y: 0.54, nr: 0.95, ny: 0.20 },
+            { r: 0.0, y: 0.56, nr: 0, ny: 1 }
+        ], 10) : G.capsule(0.42, 1.0, 10, 4);
+        const supporterHead = G.sphere(0.5, 10, 8);
+        const supporterHair = G.sphere(0.5, 10, 6);
+        const supporterArm = G.capsule(0.5, 1.0, 8, 2);
         const crowd = new scene_js_1.Node();
         for (const n of [
             mkBatch(S, supporterSeat, 0, false),
-            mkBatch(B, supporterTorso, 0.15, true),
-            mkBatch(H, supporterHead, 0.15, true),
-            mkBatch(R, supporterHair, 0.15, true),
-            mkBatch(A, supporterArm, 0.35, true)
+            mkBatch(B, supporterTorso, 0.10, true),
+            mkBatch(H, supporterHead, 0.10, true),
+            mkBatch(R, supporterHair, 0.10, true),
+            mkBatch(A, supporterArm, 0.22, true)
         ]) {
             if (n) crowd.add(n);
         }
@@ -8439,7 +8455,7 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
 
         const [pw, pd] = (0, textures_js_1.courtPlaneSize)();
         // Satin Tournament Maple Hardwood Finish (overhead arena spotlight sheen)
-        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.44, shininess: 56, receiveShadow: true }));
+        const court = new scene_js_1.Node(G.plane(pw, pd), (0, scene_js_1.material)({ texture: new scene_js_1.Texture((0, textures_js_1.makeCourtTexture)(t), { mipmap: true, srgb: true }), spec: 0.56, shininess: 68, receiveShadow: true }));
         root.add(ground, court);
 
         const boardTex = new scene_js_1.Texture((0, textures_js_1.makeBackboardTexture)(), { srgb: true });
@@ -10169,11 +10185,11 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 }
                 case 'score':
                     fx.celebrate(e.x, 3, e.z * 0.8, e.points >= 3 || e.dunk);
-                    fx.burst(e.x, 3.1, e.z, e.swish ? 36 : 22, 6, e.points >= 3 ? 0xffd24a : 0xffffff, 0.7, 0.3, 3);
-                    fx.pulse(e.x, 3.05, e.z, e.points >= 3 ? 0xffd24a : 0xffa040, 9, 30);
+                    fx.burst(e.x, 3.1, e.z, e.swish ? 24 : 16, 7.5, e.points >= 3 ? 0xffd24a : 0xffffff, 0.45, 0.16, 9, true);
+                    fx.pulse(e.x, 3.05, e.z, e.points >= 3 ? 0xffd24a : 0xffa040, 11.5, 22);
                     this.excite = 1;
                     if (!rm)
-                        this.rig.shake(e.dunk ? 0.6 : 0.3);
+                        this.rig.shake(e.dunk ? 0.5 : 0.25);
                     break;
                 default:
                     break;

@@ -114,15 +114,22 @@
     vec3 L2 = normalize(vec3(-uSunDir.x * 0.85 - 0.38, 0.42, -uSunDir.z * 0.78 - 0.25));
     float fillDiff = clamp(dot(N, L2) * 0.5 + 0.5, 0.0, 1.0);
 
-    // High-clarity sRGB-to-linear texture sampling with subtle crisp micro-contrast (zero UV Moiré shimmer)
+    // High-clarity sRGB-to-linear texture sampling (zero Moire/derivative streaking on Hair & Skin!)
     vec4 baseColor = uBaseColor;
     baseColor.rgb = pow(max(baseColor.rgb, vec3(0.0001)), vec3(2.12));
     if (uHasTex) {
       vec4 tex = texture(uTex, vUv);
       vec3 texLin = pow(max(tex.rgb, vec3(0.0001)), vec3(2.12));
-      // Unsharp local detail contrast keeps numbers (#10 / #23), seams & eyes razor-sharp
-      vec3 blurredTex = texLin - (dFdx(texLin) * 0.22 + dFdy(texLin) * 0.22);
-      texLin = clamp(mix(texLin, texLin + (texLin - blurredTex) * 0.55, 0.85), vec3(0.0), vec3(1.2));
+      if (uMatRole < 0.5 || uMatRole > 4.5) {
+        // Subtle crisp micro-contrast strictly on jersey cloth/numbers (#10 / #23)
+        vec3 blurredTex = texLin - (dFdx(texLin) * 0.14 + dFdy(texLin) * 0.14);
+        texLin = clamp(mix(texLin, texLin + (texLin - blurredTex) * 0.35, 0.72), vec3(0.0), vec3(1.15));
+      } else if (uMatRole > 1.5 && uMatRole < 2.5) {
+        // Compress bright atlas hair-stripe contrast into rich silky brunette / dark tones
+        float lum = dot(texLin, vec3(0.299, 0.587, 0.114));
+        vec3 deepHair = texLin * (0.72 / max(0.20, sqrt(max(lum, 0.004)) * 2.2));
+        texLin = mix(texLin, min(texLin, deepHair), 0.74);
+      }
       baseColor.rgb *= texLin;
       baseColor.a *= tex.a;
     }
@@ -166,28 +173,28 @@
       specPow = 164.0;
       specStrength = 0.85;
     } else if (uMatRole > 1.5 && uMatRole < 2.5) {
-      // Satin hair crown highlight (anisotropic shifted half-vector)
+      // Silky soft natural hair crown sheen (zero harsh white stripe blowout)
       vec3 hairH = normalize(H + vec3(0.0, 0.22, 0.0));
-      float hSpec = pow(max(dot(N, hairH), 0.0), 34.0);
-      specStrength = 0.18;
-      diffuse += vec3(1.0, 0.95, 0.88) * hSpec * 0.16;
+      float hSpec = pow(max(dot(N, hairH), 0.0), 26.0);
+      specStrength = 0.04;
+      diffuse += baseColor.rgb * vec3(1.0, 0.88, 0.76) * hSpec * 0.30;
     } else if (uMatRole > 3.5) {
       // Cleats / Sneakers / Keeper Latex & Gold Trim
       specPow = mix(38.0, 104.0, 1.0 - uRoughness);
-      specStrength = mix(0.28, 0.70, uMetallic);
+      specStrength = mix(0.22, 0.64, uMetallic);
     } else if (uMatRole > 0.5 && uMatRole < 1.5) {
       // Subtle warm skin sheen
       specPow = 36.0;
-      specStrength = 0.07;
+      specStrength = 0.06;
     }
     float specInt = pow(max(dot(N, H), 0.0), specPow) * specStrength;
     vec3 specTint = mix(sunLin, baseColor.rgb * 1.18, uMetallic);
     vec3 specular = specTint * specInt;
 
-    // Crisp Broadcast Silhouette Rim Light (clean high-contrast edge separation against turf & hardwood)
-    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.35);
+    // Crisp Broadcast Silhouette Rim Light (softened on hair/skin so hair stays rich & natural)
+    float rim = pow(clamp(1.0 - NdotV, 0.0, 1.0), 2.5);
     vec3 rimColor = mix(vec3(0.72, 0.90, 1.0), vec3(1.0, 0.95, 0.84), clamp(N.y * 0.5 + 0.5, 0.0, 1.0));
-    float rimBoost = (uMatRole > 0.5 && uMatRole < 1.5) ? 0.19 : 0.36;
+    float rimBoost = (uMatRole > 1.5 && uMatRole < 2.5) ? 0.08 : ((uMatRole > 0.5 && uMatRole < 1.5) ? 0.16 : 0.30);
     vec3 rimLight = rim * rimColor * rimBoost * ao;
 
     // Linear HDR -> ACES Filmic Curve -> sRGB Gamma Output
@@ -223,7 +230,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=6.0.0-release', '/assets/characters/hoops23.glb?v=6.0.0-release', '/assets/characters/keeper1.glb?v=6.0.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=7.0.0-release', '/assets/characters/hoops23.glb?v=7.0.0-release', '/assets/characters/keeper1.glb?v=7.0.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -878,13 +885,17 @@
     let metallic = (pbrMat && pbrMat.metallicFactor !== undefined) ? pbrMat.metallicFactor : 0.0;
 
     if (matName === 'Skin' || matName === 'Skin_Darker') {
-      role = 1.0; roughness = 0.56; metallic = 0.0;
+      role = 1.0; roughness = 0.62; metallic = 0.0;
     } else if (matName === 'Hair' || matName === 'Eyebrows') {
-      role = 2.0; roughness = 0.44; metallic = 0.04;
+      role = 2.0; roughness = 0.68; metallic = 0.0;
     } else if (matName === 'Eye') {
       role = 3.0; roughness = 0.14; metallic = 0.02;
-    } else if (matName === 'Red_Dark' || matName === 'White') {
-      role = 4.0; roughness = 0.30; metallic = 0.08;
+    } else if (matName === 'Red_Dark') {
+      // Athletic knit socks & compression calf sleeves (matte cloth, zero greasy PVC sheen)
+      role = 0.0; roughness = 0.74; metallic = 0.0;
+    } else if (matName === 'White') {
+      // Matte athletic footwear & sole trim
+      role = 4.0; roughness = 0.44; metallic = 0.02;
     } else {
       role = 0.0;
       roughness = Math.max(0.58, roughness);
@@ -1005,6 +1016,45 @@
       gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
       gl.bindVertexArray(null);
       st.matchShadowVao = msVao;
+    }
+
+    // Skinned Depth Shadow-Map Program for true real-time 2048px PCF directional athlete shadows on turf & hardwood
+    if (!st.shadowSkinnedProg) {
+      const skShVS = `#version 300 es
+      precision highp float;
+      layout(location=0) in vec3 aPos;
+      layout(location=3) in vec4 aJoints;
+      layout(location=4) in vec4 aWeights;
+      uniform mat4 uViewProj;
+      uniform mat4 uModel;
+      uniform mat4 uBones[72];
+      uniform bool uUseSkinning;
+      void main(){
+        vec4 localPos = vec4(aPos, 1.0);
+        if (uUseSkinning) {
+          mat4 skinMat =
+            aWeights.x * uBones[int(aJoints.x)] +
+            aWeights.y * uBones[int(aJoints.y)] +
+            aWeights.z * uBones[int(aJoints.z)] +
+            aWeights.w * uBones[int(aJoints.w)];
+          localPos = skinMat * localPos;
+        }
+        gl_Position = uViewProj * uModel * localPos;
+      }`;
+      const skShFS = `#version 300 es
+      precision highp float;
+      void main(){}`;
+      const sp = gl.createProgram();
+      gl.attachShader(sp, createShader(gl.VERTEX_SHADER, skShVS));
+      gl.attachShader(sp, createShader(gl.FRAGMENT_SHADER, skShFS));
+      gl.linkProgram(sp);
+      st.shadowSkinnedProg = sp;
+      st.shadowSkinnedLocs = {
+        uViewProj: gl.getUniformLocation(sp, 'uViewProj'),
+        uModel: gl.getUniformLocation(sp, 'uModel'),
+        uBones: gl.getUniformLocation(sp, 'uBones[0]'),
+        uUseSkinning: gl.getUniformLocation(sp, 'uUseSkinning')
+      };
     }
 
     return st;
@@ -1273,14 +1323,7 @@
       }
 
       // 4. Sculpted Action Clips (shot, dunk, kick, pass, slide, steal, celeb, dive)
-      // All action clips now run 60fps FK-grounded keyframes natively in the GLB without double-rotation conflict!
-      // For left/right goalkeeper dive symmetry, steer torso roll gently toward diveDir:
-      if (action === 'dive' && diveDir < 0 && b.Body !== undefined && nodes[b.Body]) {
-        const br = nodes[b.Body].rotation;
-        br[1] = -br[1];
-        br[2] = -br[2];
-      }
-
+      // All action clips now run 60fps FK-grounded keyframes natively in the GLB (with dedicated L/R keeper dive clips!)
       applySmoothPoseFilter(nodes, action, dt);
     };
   }
@@ -1365,7 +1408,7 @@
       }
     }
 
-    setAnimation(name, speed = 1.0, blendDuration) {
+    setAnimation(name, speed = 1.0, blendDuration, startTime) {
       if (!this.model) return;
       this.model.playbackSpeed = speed;
 
@@ -1379,10 +1422,16 @@
         targetClip = 'Run';
       } else if (lower === 'anim_2k_dribblerun' || lower === 'dribblerun') {
         targetClip = 'Anim_2K_DribbleRun';
+      } else if (lower === 'anim_2k_dribblerun_l') {
+        targetClip = 'Anim_2K_DribbleRun_L';
       } else if (lower === 'anim_2k_dribbleidle' || lower === 'dribbleidle') {
         targetClip = 'Anim_2K_DribbleIdle';
+      } else if (lower === 'anim_2k_dribbleidle_l') {
+        targetClip = 'Anim_2K_DribbleIdle_L';
       } else if (lower === 'anim_ea_dribblerun') {
         targetClip = 'Anim_EA_DribbleRun';
+      } else if (lower === 'anim_ea_strikecharge' || lower === 'anim_2k_shotgather') {
+        targetClip = name;
       } else if (lower === 'run_back') {
         targetClip = 'Run_Back';
       } else if (lower === 'run_left') {
@@ -1422,6 +1471,8 @@
       } else if (lower === 'roll' || lower === 'dive' || lower === 'anim_ea_keeperdive' || lower === 'save') {
         if (lower === 'roll') targetClip = 'Roll';
         else targetClip = 'Anim_EA_KeeperDive';
+      } else if (lower === 'anim_ea_keeperdive_l' || lower === 'anim_ea_keeperlowdive' || lower === 'anim_ea_keeperlowdive_l') {
+        targetClip = name;
       } else if (lower === 'kjump' || lower === 'keeperjump' || lower === 'anim_ea_keeperjump') {
         targetClip = 'Anim_EA_KeeperJump';
       } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win' || lower === 'anim_celebration') {
@@ -1431,14 +1482,16 @@
         targetClip = 'HitRecieve';
       }
 
-      const nextIsOneShot = /Kick|Shot|Dunk|Slide|Dive|Jump|Steal|Hit|Roll|Punch/i.test(targetClip);
+      const nextIsOneShot = /Kick|Shot(?!Gather)|Dunk|Slide|Dive|Jump|Steal|Hit|Roll|Punch/i.test(targetClip);
       if (this.currentAnim !== targetClip) {
         const prevWasAction = /Kick|Shot|Dunk|Slide|Dive|Steal|Celeb|Hit|Roll|Punch/i.test(this.currentAnim || '');
         const blend = (typeof blendDuration === 'number')
           ? blendDuration
           : (nextIsOneShot ? 0.065 : (prevWasAction ? 0.22 : 0.14));
         this.currentAnim = targetClip;
-        this.model.setAnimation(targetClip, { blendDuration: blend, restart: nextIsOneShot, loop: !nextIsOneShot });
+        const animOpts = { blendDuration: blend, restart: nextIsOneShot, loop: !nextIsOneShot };
+        if (typeof startTime === 'number') animOpts.startTime = startTime;
+        this.model.setAnimation(targetClip, animOpts);
       }
     }
 
@@ -1581,6 +1634,9 @@
         return d > 0.2 ? Math.max(0.88, Math.min(1.24, (d * 0.94) / Math.max(0.28, targetWindowSec))) : fallbackRate;
       };
 
+      const wasCharging = Boolean(this._wasCharging);
+      const isChargingShot = Boolean(a.shootCharging && (a.shootCharge || 0) > 0.04 && isBallCarrier);
+
       // ==========================================
       // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
       // ==========================================
@@ -1603,7 +1659,7 @@
           targetPitch = 0.0;
           bio.action = 'shot';
           const cName = this._activeVariantClip || 'Anim_2K_JumpShot';
-          this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.05);
+          this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.045, wasCharging ? 0.09 : undefined);
         }
         else if (a.jumpT > 0) {
           const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.50));
@@ -1611,6 +1667,12 @@
           targetPitch = 0.0;
           bio.action = 'shot';
           this.setAnimation('Anim_2K_JumpShot', syncRate(0.52, 1.08, 'Anim_2K_JumpShot'), 0.05);
+        }
+        // 2b. Live Space-Hold Gather Pocket Anticipation
+        else if (isChargingShot) {
+          targetPitch = 0.04;
+          bio.action = 'gather';
+          this.setAnimation('Anim_2K_ShotGather', 1.0, 0.08);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
         else if (a.kickT > 0) {
@@ -1640,15 +1702,16 @@
           bio.action = 'celeb';
           this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.04, 0.12);
         }
-        // 8. Basketball Dribbling (Dedicated 60fps NBA DribbleRun & Triple-Threat DribbleIdle)
+        // 8. Basketball Dribbling (Left/Right Hand Mirror + Live Bounce Phase Cadence Lock)
         else if (isBallCarrier) {
           bio.action = 'dribble';
+          const isLeftDrib = (a.dribbleSide || 1) < 0;
           if (speed > 0.35) {
             const sprintCadence = Math.max(0.88, Math.min(1.62, speed / 2.90));
-            this.setAnimation('Anim_2K_DribbleRun', sprintCadence, 0.10);
+            this.setAnimation(isLeftDrib ? 'Anim_2K_DribbleRun_L' : 'Anim_2K_DribbleRun', sprintCadence, 0.09);
             targetPitch = 0.04;
           } else {
-            this.setAnimation('Anim_2K_DribbleIdle', 1.0, 0.14);
+            this.setAnimation(isLeftDrib ? 'Anim_2K_DribbleIdle_L' : 'Anim_2K_DribbleIdle', 1.0, 0.12);
             targetPitch = 0.02;
           }
         }
@@ -1664,16 +1727,18 @@
       // B. FOOTBALL (SOCCER) MATCH ACTIONS
       // ==========================================
       else {
-        // 1. Goalkeeper Dynamic Parrying Dives (Upper-Corner vs Low Turf Save) & Aerial Crossbar Saves
+        // 1. Goalkeeper Dynamic Parrying Dives (True Symmetrical L/R Dives!) & Aerial Crossbar Saves
         if (a.role === 'keeper' && a.diveT > 0) {
           const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.54));
           const diveArc = Math.sin(diveProg * Math.PI);
           const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1);
-          const diveClip = a.diveLow ? 'Anim_EA_KeeperLowDive' : 'Anim_EA_KeeperDive';
+          const diveClip = a.diveLow
+            ? (diveDir < 0 ? 'Anim_EA_KeeperLowDive_L' : 'Anim_EA_KeeperLowDive')
+            : (diveDir < 0 ? 'Anim_EA_KeeperDive_L' : 'Anim_EA_KeeperDive');
           this._activeVariantClip = diveClip;
           this._lingerClip = diveClip;
           bio.diveDir = diveDir;
-          targetRoll = -diveDir * (0.08 * diveArc);
+          targetRoll = -diveDir * (0.06 * diveArc);
           targetLift = (a.diveLow ? 0.02 : 0.05) * diveArc;
           targetPitch = 0.02 * diveArc;
           bio.action = 'dive';
@@ -1687,14 +1752,21 @@
           bio.action = 'kjump';
           this.setAnimation('Anim_EA_KeeperJump', syncRate(0.54, 1.04, 'Anim_EA_KeeperJump'), 0.06);
         }
-        // 2. Football Power Shot vs Crisp Pass
+        // 2. Football Power Shot vs Live Charge Coil vs Crisp Pass
         else if (a.shotT > 0) {
           targetLift = 0.0;
           targetPitch = 0.0;
           targetRoll = 0.0;
           bio.action = 'kick';
           const cName = this._activeVariantClip || 'Anim_EA_PowerStrike';
-          this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.05);
+          this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.045, wasCharging ? 0.13 : undefined);
+        }
+        else if (isChargingShot) {
+          targetLift = 0.0;
+          targetPitch = 0.0;
+          targetRoll = 0.0;
+          bio.action = 'charge';
+          this.setAnimation('Anim_EA_StrikeCharge', 1.0, 0.09);
         }
         else if (a.kickT > 0) {
           targetLift = 0.0;
@@ -1745,6 +1817,7 @@
           this.setAnimation(loco.clip, loco.rate, locoBlend);
         }
       }
+      this._wasCharging = isChargingShot;
 
       // Smooth exponential body attitude damping (zero snappy jumps between transitions)
       const attAlpha = 1 - Math.exp(-Math.min(0.05, dt) * 20.0);
@@ -2012,7 +2085,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=6.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=7.0.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2021,7 +2094,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=6.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=7.0.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2030,7 +2103,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=6.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=7.0.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2066,6 +2139,42 @@
       return inst.getHandSocketWorldPos(side || 'R');
     },
 
+    renderShadows(renderer, scene, lightVP) {
+      if (!this.enabled || this.mode !== 'glb' || !renderer || !renderer.gl || !lightVP) return;
+      const gl = renderer.gl;
+      const glState = initShader(gl);
+      const sp = glState.shadowSkinnedProg;
+      const locs = glState.shadowSkinnedLocs;
+      if (!sp || !locs) return;
+
+      let matchedList = null;
+      for (const [mv, list] of this.instances.entries()) {
+        if (mv && mv.renderer === renderer && !mv.disposed) {
+          matchedList = list;
+          break;
+        }
+      }
+      if (!matchedList || matchedList.length === 0) return;
+
+      gl.useProgram(sp);
+      gl.uniformMatrix4fv(locs.uViewProj, false, lightVP);
+      matchedList.forEach(inst => {
+        if (!inst || !inst.loaded || !inst.model) return;
+        const buffers = getOrCreateBuffers(gl, inst.model);
+        gl.uniformMatrix4fv(locs.uModel, false, inst.modelMatrix);
+        const skinActive = !!inst.model.skin;
+        gl.uniform1i(locs.uUseSkinning, skinActive ? 1 : 0);
+        if (skinActive) {
+          gl.uniformMatrix4fv(locs.uBones, false, inst.model.boneMatrices);
+        }
+        buffers.forEach(pBuf => {
+          gl.bindVertexArray(pBuf.vao);
+          gl.drawElements(gl.TRIANGLES, pBuf.indexCount, pBuf.indexType, 0);
+        });
+      });
+      gl.bindVertexArray(null);
+    },
+
     renderMatch(matchView, dt) {
       if (!this.enabled || !matchView || !matchView.renderer || this.mode === 'procedural') return;
       const list = this.instances.get(matchView);
@@ -2099,9 +2208,11 @@
         inst.update(dt);
       });
 
-      // Grounded Contact AO + Soft Directional Cast Shadows beneath every GLB Athlete
+      // Tight Grounded Plantar Contact AO + Directional Cast Shadow Complement
       const isFootyMatch = Boolean(matchView && (matchView.isFooty || matchView.mode === 'footy'));
-      const sunDir = [0.42, 0.86, 0.42];
+      const sceneSun = (scene && scene.sunDir && scene.sunDir.length >= 3) ? scene.sunDir : [0.42, 0.86, 0.42];
+      const sunLen = Math.hypot(sceneSun[0], sceneSun[1], sceneSun[2]) || 1;
+      const sunDir = [sceneSun[0] / sunLen, sceneSun[1] / sunLen, sceneSun[2] / sunLen];
       if (glState.matchShadowProg && glState.matchShadowVao) {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -2119,8 +2230,8 @@
           const ax = inst.agent.x || 0;
           const az = inst.agent.z || 0;
           const lift = Math.max(0, (inst.agent.y || 0) + (inst.elevationLift || 0));
-          const spread = (inst.scale || 1.96) * 0.44 * (1.0 + Math.min(0.65, lift * 0.18));
-          const fade = Math.max(0.28, 1.0 - lift * 0.28);
+          const spread = (inst.scale || 2.15) * 0.28 * (1.0 + Math.min(0.45, lift * 0.14));
+          const fade = Math.max(0.18, (1.0 - lift * 0.35) * 0.48);
           gl.uniform3f(glState.matchShadowLocs.uPos, ax, 0, az);
           gl.uniform1f(glState.matchShadowLocs.uScale, spread);
           gl.uniform1f(glState.matchShadowLocs.uFade, fade);
@@ -2488,7 +2599,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=6.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=6.0.0-release' : '/assets/characters/footy10.glb?v=6.0.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=7.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=7.0.0-release' : '/assets/characters/footy10.glb?v=7.0.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };

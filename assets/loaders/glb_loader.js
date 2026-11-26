@@ -442,7 +442,7 @@
       }
 
       const targetClip = targetIdx !== -1 ? this.animations[targetIdx] : null;
-      const defaultLoop = targetClip ? !/kick|shot|dunk|slide|tackle|dive|steal|hit|roll|punch/i.test(targetClip.name) : true;
+      const defaultLoop = targetClip ? !/kick|shot(?!gather)|dunk|slide|tackle|dive|steal|hit|roll|punch/i.test(targetClip.name) : true;
       const shouldLoop = (opts && typeof opts.loop === 'boolean') ? opts.loop : defaultLoop;
 
       if (targetIdx !== -1 && (this.activeAnimIndex !== targetIdx || resetOnSame)) {
@@ -467,6 +467,7 @@
         this.activeAnimIndex = targetIdx;
         this.activeAnimLoop = shouldLoop;
         this.playbackTime = 0;
+        if (opts && typeof opts.startTime === 'number') this.playbackTime = opts.startTime;
       } else if (targetIdx !== -1) {
         this.activeAnimLoop = shouldLoop;
       }

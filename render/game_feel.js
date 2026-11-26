@@ -179,10 +179,10 @@
         break;
       }
       case 'dunk': {
-        emitCourtDust(fx, e.x || 0, e.z || 0, 14, true);
-        emitImpactRing(fx, e.x || 0, Math.max(0.2, e.y || 2.8), e.z || 0, 0xf59e0b, 11.5, 28);
+        emitCourtDust(fx, e.x || 0, e.z || 0, 10, false);
+        emitImpactRing(fx, e.x || 0, Math.max(0.2, e.y || 3.02), e.z || 0, 0xf59e0b, 12.5, 20);
         if (fx && typeof fx.burst === 'function') {
-          fx.burst(e.x || 0, 2.95, e.z || 0, 24, 7.5, 0xfbbf24, 0.55, 0.26, 7.5, true);
+          fx.burst(e.x || 0, 3.02, e.z || 0, 18, 9.0, 0xfbbf24, 0.42, 0.15, 9.5, true);
         }
         matchView._ballSquashT = 0.11;
         if (!rm) punchCamera(rig, dx, dz, 0.62, 2.6);
