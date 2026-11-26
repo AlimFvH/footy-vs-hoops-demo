@@ -228,7 +228,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=4.6.0-release', '/assets/characters/hoops23.glb?v=4.6.0-release', '/assets/characters/keeper1.glb?v=4.6.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=4.7.0-release', '/assets/characters/hoops23.glb?v=4.7.0-release', '/assets/characters/keeper1.glb?v=4.7.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -807,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '4.6.0-release';
+  const ATLAS_VERSION = '4.7.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -1295,57 +1295,36 @@
       const diveDir = st.diveDir || 1;
       const speed = st.speed || 0;
 
-      // 1. Subtle expressive idle scan & goalkeeper alert sway (GLB clip handles knee flex + FK contact cleanly!)
+      // 1. Subtle expressive idle head scan (60fps GLB clips handle full body stance & FK foot grounding!)
       if (action === 'idle') {
         const scan = Math.sin(t * 0.85);
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, (isKeeper ? 0.09 : 0.06) * scan);
-        if (isHoops) {
-          _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.035);
-          _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.06);
-        }
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, (isKeeper ? 0.08 : 0.05) * scan);
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 2. Run / Walk / Football Dribble: clip drives natural stride + arms; add subtle look-ahead + agility ball lean
+      // 2. Run / Walk / Football Dribble: clip drives authentic grounded stride & arms cleanly
       if (action === 'run' || action === 'walk' || action === 'fdribble') {
-        const spK = Math.min(1.0, speed / 3.8);
+        const spK = Math.min(1.0, speed / 4.2);
         if (action === 'fdribble') {
-          _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.08 * spK);
-          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.06 * spK); // glance between ball & field
-          _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.14 * spK);
-          _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.14 * spK);
+          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.06 * spK); // glance lightly toward ball & pitch
         }
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 3. True Basketball Dribble Overlay (athletic stance + rhythmic palm push + off-arm shield!)
+      // 3. Basketball Dribble Hand Overlay (preserves full GLB stride/legs cleanly, adds natural ball dribble wrist/forearm motion)
       if (action === 'dribble') {
-        const freq = speed > 0.35 ? 10.6 : 6.8;
+        const freq = speed > 0.35 ? 10.2 : 6.4;
         const drib = Math.sin(t * freq);
         const push = Math.max(0, -drib);
-        const crossSway = Math.sin(t * freq * 0.5);
-        const bodyNode = b.Body !== undefined ? nodes[b.Body] : null;
-        if (bodyNode) bodyNode.translation[1] -= 0.036 + 0.010 * push;
-
-        _rotCharAxis(nodes, rig, b['UpperLeg.L'], 1, 0, 0, -0.14);
-        _rotCharAxis(nodes, rig, b['LowerLeg.L'], 1, 0, 0, 0.24);
-        _rotCharAxis(nodes, rig, b['Foot.L'], 1, 0, 0, -0.10);
-        _rotCharAxis(nodes, rig, b['UpperLeg.R'], 1, 0, 0, -0.14);
-        _rotCharAxis(nodes, rig, b['LowerLeg.R'], 1, 0, 0, 0.24);
-        _rotCharAxis(nodes, rig, b['Foot.R'], 1, 0, 0, -0.10);
-
-        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.12);
-        _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.12 * crossSway);
-        _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.10);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.18);
-        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.44 + 0.30 * push);
-        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.58 + 0.46 * push);
-        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.38 * push - 0.10);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 0, 0, 1, 0.26);
-        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.38);
-        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.72);
+        _rotCharAxis(nodes, rig, b.Torso, 1, 0, 0, 0.06);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 1, 0, 0, -0.32 + 0.22 * push);
+        _rotCharAxis(nodes, rig, b['UpperArm.R'], 0, 0, 1, -0.14);
+        _rotCharAxis(nodes, rig, b['LowerArm.R'], 1, 0, 0, -0.45 + 0.34 * push);
+        _rotCharAxis(nodes, rig, b['Wrist.R'], 1, 0, 0, 0.34 * push - 0.08);
+        _rotCharAxis(nodes, rig, b['UpperArm.L'], 1, 0, 0, -0.18);
+        _rotCharAxis(nodes, rig, b['LowerArm.L'], 1, 0, 0, -0.38);
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
@@ -1567,13 +1546,11 @@
       }
       this.yaw += dy * Math.min(1, dt * 13.5);
 
-      // 2. Fortnite-Style Kinetic Animation Tracks & Procedural Motion Mechanics
-      // A. Dynamic body bank & cornering lean (lean into turns at speed like Fortnite & Rocket League)
-      const corneringLean = Math.max(-0.22, Math.min(0.22, -dy * Math.min(1.0, speed / 2.4)));
-      const sprintDrive = Math.min(1.0, speed / 3.4);
+      // Clean turn banking only — pitch/bounce are authored cleanly inside the 60fps IK/FK GLB clips without floor penetration
+      const corneringLean = Math.max(-0.14, Math.min(0.14, -dy * Math.min(1.0, speed / 3.2)));
       let targetRoll = corneringLean;
-      let targetPitch = 0.16 * sprintDrive;
-      let targetLift = (speed > 1.2) ? Math.sin((this.model.playbackTime || 0) * 16) * 0.035 * sprintDrive : 0;
+      let targetPitch = 0;
+      let targetLift = 0;
 
       // Real-time athletic leg locomotion
       this.runSpeed = Math.min(1.0, speed / 2.6);
@@ -2036,7 +2013,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.6.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.7.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2045,7 +2022,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.6.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.7.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2054,7 +2031,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.6.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.7.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2324,7 +2301,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.6.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.6.0-release' : '/assets/characters/footy10.glb?v=4.6.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.7.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.7.0-release' : '/assets/characters/footy10.glb?v=4.7.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2335,13 +2312,19 @@
         st.model.setAnimation(o.anim || 'Idle', { blendDuration: 0 });
       }
       if (st.model && st.model._bioRig) st.model._bioRig.hasPrevPose = false;
+      st.camLift = 0;
       st._bioState.action = o.action || (o.anim ? 'action' : 'idle');
       st._bioState.isHoops = (charId === 'hoops');
       st._bioState.isKeeper = (charId === 'keeper');
       st._bioState.dt = 0.016;
-      if (typeof o.animTime === 'number' && st.model) {
+      if (st.model) {
         st.model.playbackSpeed = 1.0;
-        st.model.playbackTime = Math.max(0, o.animTime - 0.016);
+        if (typeof o.u === 'number') {
+          const d = st.model.getActiveClipDuration ? (st.model.getActiveClipDuration() || 0.7) : 0.7;
+          st.model.playbackTime = Math.max(0, o.u * d - 0.016);
+        } else if (typeof o.animTime === 'number') {
+          st.model.playbackTime = Math.max(0, o.animTime - 0.016);
+        }
       }
       const atlasUrl = KIT_ATLAS_MAP[kitId] || (charId === 'hoops' ? KIT_ATLAS_MAP.hoops_classic : (charId === 'keeper' ? KIT_ATLAS_MAP.keeper_0_volt : KIT_ATLAS_MAP.footy_classic));
       if (atlasUrl) {
@@ -2479,7 +2462,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.6.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.6.0-release' : '/assets/characters/footy10.glb?v=4.6.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.7.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.7.0-release' : '/assets/characters/footy10.glb?v=4.7.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };

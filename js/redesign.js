@@ -2897,7 +2897,7 @@
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var genericFallback = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
-    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.6.0-release';
+    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.7.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
       '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
@@ -5295,7 +5295,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.6.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.7.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -9046,7 +9046,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.6.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.7.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -9162,7 +9162,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=4.6.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=4.7.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -13075,10 +13075,12 @@
       lobbyHero.innerHTML =
         '<div class="fvh-mode-sport-switch">' +
         '  <button type="button" class="fvh-sport-tab footy' + (sp === 'footy' ? ' on' : '') + '" data-sport="footy">' +
-        getUiIconSvg('nav_home_footy', 18) + ' <span>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</span>' +
+        '    <span class="fvh-stab-ico footy">' + getUiIconSvg('nav_home_footy', 18) + '</span>' +
+        '    <span class="fvh-stab-txt"><b>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</b><small>1v1 Arena</small></span>' +
         '  </button>' +
         '  <button type="button" class="fvh-sport-tab hoops' + (sp === 'hoops' ? ' on' : '') + '" data-sport="hoops">' +
-        getUiIconSvg('nav_home_hoops', 18) + ' <span>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</span>' +
+        '    <span class="fvh-stab-ico hoops">' + getUiIconSvg('nav_home_hoops', 18) + '</span>' +
+        '    <span class="fvh-stab-txt"><b>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</b><small>1v1 Court</small></span>' +
         '  </button>' +
         '</div>' +
         '<div class="fvh-mode-lobby-meta">' +
@@ -13087,10 +13089,10 @@
         '    <span class="fvh-mu-vs">VS</span>' +
         '    <span class="fvh-mu-side" style="color:' + cpuColor + ';"><span>' + cpuTeamName + '</span> ' + getUiIconSvg(isPlayerFooty ? 'nav_home_hoops' : 'nav_home_footy', 14) + '</span>' +
         '  </div>' +
-        '  <button type="button" class="fvh-mode-arena-pill" id="fvh-mode-pick-arena">' +
+        '  <button type="button" class="fvh-mode-arena-pill fvh-mbtn-arena" id="fvh-mode-pick-arena">' +
         '    <span class="fvh-arena-pill-dot">' + arenaInfo.icon + '</span>' +
         '    <span class="fvh-arena-pill-label">' + (lang === 'ru' ? 'Арена:' : 'Arena:') + ' <b>' + escapeHtml(arenaInfo.name) + '</b></span>' +
-        '    <span class="fvh-arena-pill-change">' + (lang === 'ru' ? 'Сменить ▾' : 'Change ▾') + '</span>' +
+        '    <span class="fvh-arena-pill-change">' + (lang === 'ru' ? 'Сменить' : 'Change') + '</span>' +
         '  </button>' +
         '</div>';
 
@@ -13142,8 +13144,10 @@
           '</div>' +
         '</div>' +
         '<div class="fvh-mode-card-actions">' +
-          '<button type="button" class="btn primary block fvh-btn-matchmaking">' +
-            getUiIconSvg('lightning', 14) + ' <span>' + (lang === 'ru' ? 'НАЙТИ СОПЕРНИКА' : 'FIND OPPONENT') + '</span>' +
+          '<button type="button" class="fvh-mbtn fvh-mbtn--online ' + selSport + ' fvh-btn-matchmaking">' +
+            '<span class="fvh-mbtn-ico">' + getUiIconSvg('lightning', 16) + '</span>' +
+            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'НАЙТИ СОПЕРНИКА' : 'FIND OPPONENT') + '</span>' +
+            '<span class="fvh-mbtn-tag">1v1 LIVE</span>' +
           '</button>' +
         '</div>';
 
@@ -13172,8 +13176,14 @@
           '</div>' +
         '</div>' +
         '<div class="fvh-mode-card-actions two-btn">' +
-          '<button type="button" class="btn primary block fvh-btn-create-room">' + (lang === 'ru' ? '+ Создать комнату' : '+ Create Room') + '</button>' +
-          '<button type="button" class="btn block fvh-btn-join-room">' + (lang === 'ru' ? 'Войти по коду' : 'Join Code') + '</button>' +
+          '<button type="button" class="fvh-mbtn fvh-mbtn--friend fvh-btn-create-room">' +
+            '<span class="fvh-mbtn-ico">+</span>' +
+            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'Создать комнату' : 'Create Room') + '</span>' +
+          '</button>' +
+          '<button type="button" class="fvh-mbtn fvh-mbtn--code fvh-btn-join-room">' +
+            '<span class="fvh-mbtn-ico">#</span>' +
+            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'Войти по коду' : 'Join Code') + '</span>' +
+          '</button>' +
         '</div>';
 
       privateCard.querySelector('.fvh-btn-create-room').onclick = function () {
@@ -13214,26 +13224,28 @@
           '<div class="fvh-mode-controls fvh-practice-controls">' +
             '<div class="fvh-ctrl-row">' +
               '<span class="fvh-ctrl-label">' + tr('difficulty') + '</span>' +
-              '<div class="seg seg-diff">' +
-                '<button type="button" class="' + (selDiff === 'easy' ? 'on' : '') + '" data-diff="easy">' + tr('easy') + '</button>' +
-                '<button type="button" class="' + (selDiff === 'normal' ? 'on' : '') + '" data-diff="normal">' + tr('normal') + '</button>' +
-                '<button type="button" class="' + (selDiff === 'hard' ? 'on' : '') + '" data-diff="hard">' + tr('hard') + '</button>' +
+              '<div class="seg seg-diff fvh-chip-group">' +
+                '<button type="button" class="fvh-chip' + (selDiff === 'easy' ? ' on' : '') + '" data-diff="easy"><span class="fvh-chip-dot"></span>' + tr('easy') + '</button>' +
+                '<button type="button" class="fvh-chip' + (selDiff === 'normal' ? ' on' : '') + '" data-diff="normal"><span class="fvh-chip-dot"></span>' + tr('normal') + '</button>' +
+                '<button type="button" class="fvh-chip' + (selDiff === 'hard' ? ' on' : '') + '" data-diff="hard"><span class="fvh-chip-dot"></span>' + tr('hard') + '</button>' +
               '</div>' +
             '</div>' +
             '<div class="fvh-ctrl-row">' +
               '<span class="fvh-ctrl-label">' + (lang === 'ru' ? 'Таймер' : 'Duration') + '</span>' +
-              '<div class="seg seg-mins">' +
-                '<button type="button" class="' + (selMinutes === 1 ? 'on' : '') + '" data-mins="1">' + (lang === 'ru' ? '1 мин' : '1m') + '</button>' +
-                '<button type="button" class="' + (selMinutes === 2 ? 'on' : '') + '" data-mins="2">' + (lang === 'ru' ? '2 мин' : '2m') + '</button>' +
-                '<button type="button" class="' + (selMinutes === 3 ? 'on' : '') + '" data-mins="3">' + (lang === 'ru' ? '3 мин' : '3m') + '</button>' +
-                '<button type="button" class="' + (selMinutes === 5 ? 'on' : '') + '" data-mins="5">' + (lang === 'ru' ? '5 мин' : '5m') + '</button>' +
+              '<div class="seg seg-mins fvh-chip-group">' +
+                '<button type="button" class="fvh-chip' + (selMinutes === 1 ? ' on' : '') + '" data-mins="1">' + (lang === 'ru' ? '1 мин' : '1m') + '</button>' +
+                '<button type="button" class="fvh-chip' + (selMinutes === 2 ? ' on' : '') + '" data-mins="2">' + (lang === 'ru' ? '2 мин' : '2m') + '</button>' +
+                '<button type="button" class="fvh-chip' + (selMinutes === 3 ? ' on' : '') + '" data-mins="3">' + (lang === 'ru' ? '3 мин' : '3m') + '</button>' +
+                '<button type="button" class="fvh-chip' + (selMinutes === 5 ? ' on' : '') + '" data-mins="5">' + (lang === 'ru' ? '5 мин' : '5m') + '</button>' +
               '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
         '<div class="fvh-mode-card-actions">' +
-          '<button type="button" class="btn primary block fvh-btn-start-practice">' +
-            getUiIconSvg('play', 14) + ' <span>' + (lang === 'ru' ? 'ИГРАТЬ ПРОТИВ ИИ' : 'PLAY VS AI') + '</span>' +
+          '<button type="button" class="fvh-mbtn fvh-mbtn--ai ' + selSport + ' fvh-btn-start-practice">' +
+            '<span class="fvh-mbtn-ico">' + getUiIconSvg('play', 14) + '</span>' +
+            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'ИГРАТЬ ПРОТИВ ИИ' : 'PLAY VS AI') + '</span>' +
+            '<span class="fvh-mbtn-tag">' + (lang === 'ru' ? 'СТАРТ' : 'GO') + '</span>' +
           '</button>' +
         '</div>';
 

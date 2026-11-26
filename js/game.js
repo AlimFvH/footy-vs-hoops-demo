@@ -211,7 +211,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.6.0-release';
+                        const AUDIO_VERSION = '4.7.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -2902,7 +2902,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
         RIM_TUBE: 0.045,
         RIM_T: 0.045,
         NET_H: 0.68,
-        BALL_R: 0.3,
+        BALL_R: 0.34,
         BOARD_OFFSET: 0.86,
         BOARD_W: 1.25,
         BOARD_BOTTOM: 2.85,
@@ -3885,7 +3885,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         GH: 2.5,
         GD: 2.6,
         POST_R: 0.11,
-        BALL_R: 0.42,
+        BALL_R: 0.38,
         BOX_W: 8.5,
         BOX_D: 8,
         SIX_W: 5,
@@ -4779,17 +4779,25 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 return;
             }
             const inBox = Math.abs(b.x) <= (exports.FB.BOX_W - 0.5) && (exports.FB.L - Math.abs(b.z)) <= (exports.FB.BOX_D + 0.5) && (b.z * s > 0);
-            // Goalkeeper Smother / Aggressive Box Tackle Logic:
-            // When an opponent enters the penalty box with the ball, keeper charges and executes a dive tackle!
-            if (b.owner && b.owner.team !== k.team && inBox) {
-                k.sprint = true;
-                const dToCarrier = Math.hypot(b.owner.x - k.x, b.owner.z - k.z);
-                if (dToCarrier < 2.5 && k.diveT <= 0 && k.aiTimer <= 0) {
-                    k.diveT = 0.45;
-                    k.aiTimer = 0.75;
+            // Positional Goal-Line & Angle-Narrowing Keeper AI:
+            // Tracks shooting lane along the goal mouth and never chases carriers into the box corners leaving an open net!
+            if (b.owner && b.owner.team !== k.team) {
+                const distFromGoalZ = Math.max(0.5, exports.FB.L - Math.abs(b.owner.z));
+                // Hold central-angle shadow within goalposts [-GW+0.35 .. +GW-0.35]
+                k.aiTargetX = (0, math_js_5.clamp)(b.owner.x * 0.45, -(exports.FB.GW - 0.35), exports.FB.GW - 0.35);
+                if (inBox && Math.abs(b.owner.x) <= exports.FB.GW + 2.0) {
+                    // Narrow angle only slightly forward inside the 6-yard area without abandoning the goal line
+                    const stepOut = (0, math_js_5.clamp)((7.2 - distFromGoalZ) * 0.28, 0, 1.35);
+                    k.aiTargetZ = lineZ - s * stepOut;
+                    const dToCarrier = Math.hypot(b.owner.x - k.x, b.owner.z - k.z);
+                    if (dToCarrier < 1.65 && k.diveT <= 0 && k.aiTimer <= 0) {
+                        k.diveDir = (b.owner.x >= k.x) ? 1 : -1;
+                        k.diveT = 0.42;
+                        k.aiTimer = 0.85;
+                    }
+                } else {
+                    k.aiTargetZ = lineZ;
                 }
-                k.aiTargetX = (0, math_js_5.clamp)(b.owner.x, -exports.FB.BOX_W + 1.2, exports.FB.BOX_W - 1.2);
-                k.aiTargetZ = (0, math_js_5.clamp)(b.owner.z, s > 0 ? exports.FB.L - 7.5 : -(exports.FB.L - 0.7), s > 0 ? exports.FB.L - 0.7 : -(exports.FB.L - 7.5));
                 return;
             }
             const toward = b.vz * s;
@@ -4820,10 +4828,10 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 tx = (0, math_js_5.clamp)(b.x * 0.4, -exports.FB.GW + 0.5, exports.FB.GW - 0.5);
             }
             let tz = lineZ;
-            const looseBox = Math.abs(b.x) < exports.FB.BOX_W - 1 && exports.FB.L - Math.abs(b.z) < exports.FB.BOX_D - 0.5 && b.z * s > 0;
-            if (!b.owner && looseBox && Math.hypot(b.vx, b.vz) < 8) {
-                tx = b.x;
-                tz = b.z;
+            const looseBox = Math.abs(b.x) < exports.FB.GW + 0.6 && exports.FB.L - Math.abs(b.z) < 4.5 && b.z * s > 0;
+            if (!b.owner && looseBox && Math.hypot(b.vx, b.vz) < 7) {
+                tx = (0, math_js_5.clamp)(b.x, -(exports.FB.GW + 0.4), exports.FB.GW + 0.4);
+                tz = (0, math_js_5.clamp)(b.z, s > 0 ? exports.FB.L - 4.2 : -(exports.FB.L - 0.9), s > 0 ? exports.FB.L - 0.9 : -(exports.FB.L - 4.2));
             }
             k.aiTargetX = tx;
             k.aiTargetZ = tz;
@@ -5555,8 +5563,8 @@ define("data/ads", ["require", "exports"], function (require, exports) {
     exports.AD_CONFIG = void 0;
     exports.AD_CONFIG = {
         enabled: true,
-        brightness: 1.15,
-        pulse: 0.12,
+        brightness: 1.32,
+        pulse: 0.14,
         fadeIn: 0.5,
         visible: 6.0,
         fadeOut: 0.5,
@@ -6383,9 +6391,9 @@ function drawOfficialCenterEmblem(g, cx, cy, radius, isBasketball) {
 
             let slideText = s.text || 'ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА';
 
-            let fs = s.sub ? 62 : 76;
+            let fs = s.sub ? 70 : 88;
             g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
-            while (g.measureText(slideText).width > pw - 250 && fs > 28) {
+            while (g.measureText(slideText).width > pw - 210 && fs > 34) {
                 fs -= 2;
                 g.font = `900 ${fs}px system-ui, -apple-system, sans-serif`;
             }
@@ -7320,36 +7328,33 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const defaultTex = textures[0];
         const k = ads_js_1.AD_CONFIG.brightness;
         const mk = (rep) => (0, scene_js_1.material)({ texture: defaultTex, unlit: true, fog: false, receiveShadow: false, castShadow: false, uvScale: [rep, 1], emissive: [0.22 * k, 0.22 * k, 0.22 * k], color: [k, k, k] });
-        const reps = (len) => Math.max(1, Math.round(len / (1.0 * 16)));
+        const reps = (len) => Math.max(1, Math.round(len / (1.0 * 20)));
         const long = mk(reps(longLen));
         const end = mk(reps(endLen));
         const largeEnd = mk(1);
         const frame = (0, scene_js_1.material)({ color: (0, math_js_6.rgb)(0x050912), spec: 0.45, shininess: 64, receiveShadow: false });
         return { long, end, largeEnd, frame, all: [long, end, largeEnd], textures: textures, currentSlide: 0 };
     }
-    function ledBoard(root, mats, alongZ, len, x, z, faceSign, height = 1.0, isLarge = false, customTilt = null) {
-        const baseH = isLarge ? 0.5 : 0.4;
-        const base = new scene_js_1.Node(alongZ ? G.box(0.34, baseH, len) : G.box(len, baseH, 0.34), mats.frame);
+    function ledBoard(root, mats, alongZ, len, x, z, faceSign, height = 1.65, isLarge = false, customTilt = null) {
+        const baseH = isLarge ? 0.55 : 0.42;
+        const base = new scene_js_1.Node(alongZ ? G.box(0.42, baseH, len) : G.box(len, baseH, 0.42), mats.frame);
         base.setPos(x, baseH / 2, z);
         root.add(base);
         const pivot = new scene_js_1.Node();
-        pivot.setPos(x + (alongZ ? -faceSign * 0.12 : 0), baseH, z + (alongZ ? 0 : -faceSign * 0.12));
-        let tilt = isLarge ? -0.22 : -0.62;
+        pivot.setPos(x + (alongZ ? -faceSign * 0.14 : 0), baseH, z + (alongZ ? 0 : -faceSign * 0.14));
+        let tilt = isLarge ? -0.18 : -0.28;
         if (customTilt !== null) {
             tilt = customTilt;
             pivot.rotation = alongZ ? [0, -faceSign * (Math.PI / 2), 0] : [0, 0, 0];
         } else if (!alongZ) {
-            // Baseline courtside tables along X axis:
-            // Top baseline (z < 0): faces south (+Z) toward camera, tilted up [0.38, 0, 0]
-            // Bottom baseline (z > 0): camera is at +Z (south) looking north, so board MUST face +Z (toward camera), tilted up [-0.42, 0, 0]
             pivot.rotation = [0, 0, 0];
-            tilt = (z < 0) ? 0.38 : -0.42;
+            tilt = (z < 0) ? 0.24 : -0.24;
         } else {
             pivot.rotation = [0, -faceSign * (Math.PI / 2), 0];
         }
         const mat = alongZ ? mats.long : (isLarge && mats.largeEnd ? mats.largeEnd : mats.end);
         const face = new scene_js_1.Node(G.quad(len, height), mat);
-        face.setPos(0, height * 0.46, 0);
+        face.setPos(0, height * 0.48, 0);
         face.rotation = [tilt, 0, 0];
         pivot.add(face);
         root.add(pivot);
@@ -8238,14 +8243,14 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
         const led = ads_js_1.AD_CONFIG.enabled ? ledMaterials(t.boards, 2 * L + 2, (2 * W + 2 - (2 * GW + 3)) / 2, 'footy') : null;
         if (led) {
             for (const s of [-1, 1]) {
-                ledBoard(root, led, true, 2 * L + 2, s * (W + 1.4), 0, s);
+                ledBoard(root, led, true, 2 * L + 2, s * (W + 1.5), 0, s, 1.72);
                 for (const e of [-1, 1]) {
                     const seg = (2 * W + 2 - (2 * GW + 3)) / 2;
-                    ledBoard(root, led, false, seg, s * (GW + 1.5 + seg / 2), e * (L + GD + 0.9), e);
+                    ledBoard(root, led, false, seg, s * (GW + 1.5 + seg / 2), e * (L + GD + 1.0), e, 1.72);
                 }
             }
             for (const e of [-1, 1]) {
-                ledBoard(root, led, false, 11.4, 0, e * (L + GD + 2.4), e, 1.35, true);
+                ledBoard(root, led, false, 14.0, 0, e * (L + GD + 2.7), e, 2.25, true);
             }
         }
 
@@ -8436,16 +8441,16 @@ define("render/arena", ["require", "exports", "gfx/geometry", "gfx/math", "gfx/s
 
         const led = ads_js_1.AD_CONFIG.enabled ? ledMaterials(t.board, 2 * L, 2 * W, 'hoops') : null;
         if (led) {
-            // 1. Sideline full-length digital ribbons along East and West boundaries
+            // 1. Larger high-contrast sideline LED ribbons along East and West boundaries
             for (const s of [-1, 1]) {
-                ledBoard(root, led, true, 2 * L, s * (W + APRON + 0.3), 0, s);
+                ledBoard(root, led, true, 2 * L, s * (W + APRON + 0.45), 0, s, 1.55);
             }
-            // 2. Clean Courtside Baseline LED boards flanking both hoops (no distracting double-stacked upper ribbon behind backboard!)
+            // 2. Large crisp Courtside Baseline LED boards flanking both hoops
             for (const e of [-1, 1]) {
-                const bz = e * (L + APRON + 0.55);
-                const segW = 5.8;
-                ledBoard(root, led, false, segW, -4.4, bz, e, 0.92);
-                ledBoard(root, led, false, segW, 4.4, bz, e, 0.92);
+                const bz = e * (L + APRON + 0.72);
+                const segW = 6.4;
+                ledBoard(root, led, false, segW, -4.6, bz, e, 1.48);
+                ledBoard(root, led, false, segW, 4.6, bz, e, 1.48);
             }
         }
 
@@ -8511,7 +8516,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CameraRig = exports.CLOSE_UP = void 0;
     const NDC_LIMIT = 0.9;
-    exports.CLOSE_UP = { footy: 0.70, hoops: 0.74 };
+    exports.CLOSE_UP = { footy: 0.80, hoops: 0.74 };
     class CameraRig {
         constructor(mode, aspect, halfW, halfL) {
             this.mode = mode;
@@ -8524,9 +8529,9 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
             this.shakeT = 0;
             this.snap = true;
             this.zoom = 1;
-            this.cam.fov = mode === 'footy' ? 38 : 36;
-            this.elev = ((mode === 'footy' ? 32 : 33) * Math.PI) / 180;
-            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 10.6 : 9.4) : (aspect < 0.9 ? 9.6 : 7.8);
+            this.cam.fov = mode === 'footy' ? 41 : 36;
+            this.elev = ((mode === 'footy' ? 35 : 33) * Math.PI) / 180;
+            this.fitHalfZ = mode === 'footy' ? (aspect < 0.9 ? 12.2 : 10.8) : (aspect < 0.9 ? 9.6 : 7.8);
             this.maxHalfX = halfW + (mode === 'footy' ? 2.5 : 1.2);
             this.limitX = halfW;
             this.limitZ = halfL;
@@ -8537,7 +8542,7 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         setAspect(aspect) {
             this.aspect = aspect;
             this.cam.aspect = aspect;
-            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 10.6 : 9.4) : (aspect < 0.9 ? 9.6 : 7.8);
+            this.fitHalfZ = this.mode === 'footy' ? (aspect < 0.9 ? 12.2 : 10.8) : (aspect < 0.9 ? 9.6 : 7.8);
             this.snap = true;
         }
         shake(amount) {
@@ -8545,12 +8550,12 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         }
         halfExtents() {
             const hz = this.fitHalfZ * this.zoom;
-            let hx = Math.min(this.maxHalfX, hz * this.aspect * 0.95, this.mode === 'footy' ? 12.5 : 6.6);
-            hx = Math.max(hx, this.mode === 'footy' ? 7.6 : 4.8);
+            let hx = Math.min(this.maxHalfX, hz * this.aspect * 0.95, this.mode === 'footy' ? 13.8 : 6.6);
+            hx = Math.max(hx, this.mode === 'footy' ? 8.4 : 4.8);
             if (this.aspect < 0.9) {
                 if (this.mode === 'footy') {
-                    // Mobile portrait close-up broadcast framing: keeps characters ~35-45% larger
-                    hx = Math.min(this.maxHalfX, Math.max(7.8, this.fitHalfZ * this.aspect * 1.25));
+                    // Balanced mobile football broadcast framing: clear players + wider pitch visibility
+                    hx = Math.min(this.maxHalfX, Math.max(8.8, this.fitHalfZ * this.aspect * 1.28));
                 } else {
                     hx = Math.min(this.maxHalfX, 7.6);
                 }
@@ -9955,10 +9960,11 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 ? { mode: 'footy', base: 0xf8fafc, accent: 0x0f172a, style: 'classic', rarity: 'common', id: 'ball_footy_classic' }
                 : { mode: 'hoops', base: 0xd95f18, accent: 0x1a1412, style: 'classic', rarity: 'common', id: 'ball_hoops_street' };
             const bt = new scene_js_5.Texture((0, textures_js_3.makeBallTexture)(this.ballVisual), { repeat: true, mipmap: true, srgb: true });
-            // Prominent, clearly trackable ball size proportional to 3D player models (r = 0.23m for soccer, 0.24m for basketball)
-            const r = (mode === 'footy') ? 0.23 : 0.24;
+            // Clearly visible, bold tournament balls matching physics contact (r = 0.38m footy, 0.34m hoops)
+            const r = (mode === 'footy') ? 0.38 : 0.34;
+            this.ballRadius = r;
             this.ball = new scene_js_5.Node(G.sphere(r, 36, 24), (0, scene_js_5.material)({ texture: bt, spec: mode === 'footy' ? 0.42 : 0.26, shininess: mode === 'footy' ? 38 : 22, castShadow: true, rim: 0.18, emissive: [0, 0, 0] }));
-            this.ballShadow = new scene_js_5.Node(G.plane(r * 2.8, r * 2.8), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
+            this.ballShadow = new scene_js_5.Node(G.plane(r * 2.7, r * 2.7), (0, scene_js_5.material)({ texture: (0, characters_js_1.shadowBlobTexture)(), color: [1, 1, 1], unlit: true, transparent: true, alpha: 0.9, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.ballGlow = new scene_js_5.Node(G.ring(r * 1.18, r * 1.48, 24), (0, scene_js_5.material)({ color: (0, math_js_10.rgb)(mode === 'footy' ? 0x93c5fd : 0xfdba74), unlit: true, transparent: true, alpha: 0.22, additive: true, depthWrite: false, receiveShadow: false, castShadow: false, fog: false }));
             this.scene.root.add(this.ball, this.ballShadow, this.ballGlow);
             this.fx = new effects_js_1.Particles(opts.quality, visualOf(eq.trail, 'trail_default'), null);
@@ -10086,7 +10092,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
             const b = sim.ball;
             if (b && typeof b.x === 'number' && !isNaN(b.x)) {
                 this.ball.setPos(b.x, b.y, b.z);
-                const br = (typeof b.r === 'number' && b.r > 0) ? b.r : ((this.sim && this.sim.mode === 'footy') ? 0.22 : 0.30);
+                const br = this.ballRadius || ((this.sim && this.sim.mode === 'footy') ? 0.38 : 0.34);
                 if (!isNaN(b.vz)) this.ball.rotation[0] += (b.vz / br) * dt;
                 if (!isNaN(b.vx)) this.ball.rotation[2] -= (b.vx / br) * dt;
                 const h = Math.max(0, b.y - br);
@@ -10120,7 +10126,7 @@ define("render/matchview", ["require", "exports", "gfx/geometry", "gfx/math", "g
                 this.ball.setPos(b.bx, b.by, b.bz);
                 if (this.ballShadow) {
                     this.ballShadow.setPos(b.bx, 0.025, b.bz);
-                    const br = this.mode === 'footy' ? 0.22 : 0.30;
+                    const br = this.ballRadius || (this.mode === 'footy' ? 0.38 : 0.34);
                     const h = Math.max(0, b.by - br);
                     const bs = (br * 3.2 + 0.3) * Math.max(0.35, 1 - h * 0.07);
                     this.ballShadow.setScale(bs);
