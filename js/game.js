@@ -85,26 +85,33 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.master = this.ctx.createGain();
                     this.master.gain.value = this.muted ? 0 : 0.9;
 
-                    // Mastering Bus: gentle low warmth + upper fizz tame + smooth limiter compressor
+                    // Crystal Broadcast Mastering Bus: tight sub warmth + 3.8kHz presence crispness + clean limiter
                     const lowWarmth = this.ctx.createBiquadFilter();
                     lowWarmth.type = 'lowshelf';
-                    lowWarmth.frequency.value = 115;
-                    lowWarmth.gain.value = 1.4;
+                    lowWarmth.frequency.value = 95;
+                    lowWarmth.gain.value = 1.6;
+
+                    const presenceEq = this.ctx.createBiquadFilter();
+                    presenceEq.type = 'peaking';
+                    presenceEq.frequency.value = 3800;
+                    presenceEq.Q.value = 0.85;
+                    presenceEq.gain.value = 2.0;
 
                     const airTame = this.ctx.createBiquadFilter();
                     airTame.type = 'highshelf';
-                    airTame.frequency.value = 7200;
-                    airTame.gain.value = -2.2;
+                    airTame.frequency.value = 13500;
+                    airTame.gain.value = -1.2;
 
                     const comp = this.ctx.createDynamicsCompressor();
-                    comp.threshold.value = -14;
-                    comp.knee.value = 12;
-                    comp.ratio.value = 4.2;
-                    comp.attack.value = 0.004;
-                    comp.release.value = 0.16;
+                    comp.threshold.value = -12;
+                    comp.knee.value = 10;
+                    comp.ratio.value = 3.5;
+                    comp.attack.value = 0.005;
+                    comp.release.value = 0.14;
 
                     this.master.connect(lowWarmth);
-                    lowWarmth.connect(airTame);
+                    lowWarmth.connect(presenceEq);
+                    presenceEq.connect(airTame);
                     airTame.connect(comp);
                     comp.connect(this.ctx.destination);
 
@@ -112,25 +119,25 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.sfxGain.gain.value = this.sfxVol;
                     this.sfxGain.connect(this.master);
 
-                    // Subtle Arena Early-Reflection Room Reverb Bus (glues dry samples together smoothly)
+                    // Tight Arena Early-Reflection Room Bus (clean space without smearing transients)
                     try {
-                        const irDur = 0.28;
+                        const irDur = 0.22;
                         const irLen = Math.floor(this.ctx.sampleRate * irDur);
                         const irBuf = this.ctx.createBuffer(2, irLen, this.ctx.sampleRate);
                         for (let ch = 0; ch < 2; ch++) {
                             const chData = irBuf.getChannelData(ch);
                             let lp = 0;
                             for (let i = 0; i < irLen; i++) {
-                                const env = Math.pow(1 - i / irLen, 2.8);
+                                const env = Math.pow(1 - i / irLen, 3.2);
                                 const raw = (Math.random() * 2 - 1) * env;
-                                lp = lp * 0.72 + raw * 0.28;
-                                chData[i] = lp * (i < 180 ? (i / 180) : 1);
+                                lp = lp * 0.62 + raw * 0.38;
+                                chData[i] = lp * (i < 160 ? (i / 160) : 1);
                             }
                         }
                         const convolver = this.ctx.createConvolver();
                         convolver.buffer = irBuf;
                         this.sfxWet = this.ctx.createGain();
-                        this.sfxWet.gain.value = 0.16;
+                        this.sfxWet.gain.value = 0.11;
                         convolver.connect(this.sfxWet);
                         this.sfxWet.connect(this.sfxGain);
                         this.sfxReverbIn = convolver;
@@ -218,7 +225,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '5.2.0-release';
+                        const AUDIO_VERSION = '6.0.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -377,28 +384,24 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
 
-                    // Per-action broadcast RMS calibration tuned for v4.9 authentic real-Foley WAVs
+                    // Per-action broadcast RMS calibration tuned for v6.0 crystal-clear Foley WAVs
                     const gainMap = {
                         whistle: 0.52, whistleStart: 0.50, whistleEnd: 0.54, whistleRestart: 0.48, buzzer: 0.62,
-                        step: 0.40, step_court: 0.42, squeak: 0.46, tackle: 0.86, swish: 0.90,
-                        steal: 0.86, steal_swoosh: 0.62, save: 0.92,
-                        dribble: 0.56, dribble_court: 0.80, bounce: 0.78, bounce_footy: 0.68,
-                        pass: 0.78, pass_hoops: 0.72, kick: 0.96, shot: 0.98, shot_hoops: 0.88, dunk: 1.00,
-                        rim: 0.78, board: 0.80, post: 0.84, crowd: 0.72,
-                        goal: 0.86, score: 0.84, win: 0.86, celebration: 0.84
+                        step: 0.44, step_court: 0.44, squeak: 0.44, tackle: 0.88, swish: 0.94,
+                        steal: 0.88, steal_swoosh: 0.64, save: 0.94,
+                        dribble: 0.62, dribble_court: 0.84, bounce: 0.82, bounce_footy: 0.74,
+                        pass: 0.82, pass_hoops: 0.78, kick: 0.98, shot: 1.00, shot_hoops: 0.90, dunk: 1.00,
+                        rim: 0.82, board: 0.84, post: 0.88, crowd: 0.72,
+                        goal: 0.88, score: 0.86, win: 0.88, celebration: 0.86
                     };
+                    // Only tame extreme ultrasonic shrillness on loud whistles/squeaks — keep all ball/boot/rim attacks crystal sharp!
                     const lpFreqMap = {
-                        whistle: 8200, whistleStart: 8200, whistleEnd: 8200, whistleRestart: 8200, buzzer: 6800,
-                        step: 8400, step_court: 6800, tackle: 9200, steal: 10500, steal_swoosh: 8800, swish: 11500,
-                        dribble: 7600, dribble_court: 8800, bounce: 8800, bounce_footy: 6800,
-                        pass: 8600, pass_hoops: 8600, shot_hoops: 9600,
-                        rim: 10500, board: 7200, post: 10500, crowd: 9600,
-                        goal: 10500, score: 10500, win: 10500, celebration: 10500
+                        whistle: 9600, whistleStart: 9600, whistleEnd: 9600, whistleRestart: 9600, buzzer: 8400, squeak: 10800
                     };
                     const sGain = c.createGain();
-                    const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.84);
+                    const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.86);
                     sGain.gain.setValueAtTime(0.001, now);
-                    sGain.gain.linearRampToValueAtTime(gVal, now + 0.004);
+                    sGain.gain.linearRampToValueAtTime(gVal, now + 0.0025);
 
                     const lpFreq = lpFreqMap[name];
                     if (lpFreq) {
@@ -3186,7 +3189,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const b = this.ball;
             const hoop = this.hoopFor(a.team);
             if (dunk) {
-                const targetZ = hoop.z - hoop.dir * 0.7;
+                const targetZ = hoop.z - hoop.dir * 1.15;
                 a.dunk = {
                     active: true,
                     t: 0,
@@ -13276,15 +13279,20 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
                 /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
             );
-            if (this.ema > 28)
+            if (this.ema > 36)
                 this.slowFrames++;
-            else
-                this.slowFrames = Math.max(0, this.slowFrames - 2);
-            const maxSlow = isMob ? 35 : 60;
+            else {
+                this.slowFrames = Math.max(0, this.slowFrames - 3);
+                if (this.ema < 19 && this.dprScale < 1.0) {
+                    this.dprScale = Math.min(1.0, this.dprScale + 0.05);
+                    this.resize();
+                }
+            }
+            const maxSlow = isMob ? 45 : 70;
             if (this.slowFrames > maxSlow) {
                 this.slowFrames = 0;
-                if (this.dprScale > 0.70) {
-                    this.dprScale *= 0.8;
+                if (this.dprScale > 0.82) {
+                    this.dprScale = Math.max(0.80, this.dprScale * 0.88);
                     this.resize();
                 }
                 else if (this.renderer.shadowsEnabled) {

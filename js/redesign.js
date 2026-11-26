@@ -5923,7 +5923,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=5.2.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=6.0.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -6039,7 +6039,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=5.2.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=6.0.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +

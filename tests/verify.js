@@ -417,6 +417,16 @@ it('v5.2 Perfection: Input buffering, Magnus curl spin, spatial stereo audio, ca
   assert(g.includes('matchDropPts'), 'Solo result panel must display earned Drop PTS progression');
 });
 
+// 27. v6.0 Pro Animation Clarity & Crystal Broadcast Audio Mastering
+it('v6.0 Clarity: Raw 60fps skeletal precision, incoming clip syncRate, unsharp detail & crystal audio EQ', () => {
+  const cgl = fs.readFileSync('render/characters_glb.js', 'utf8');
+  const g = fs.readFileSync('js/game.js', 'utf8');
+  assert(!cgl.includes('sin(vUv.x * 760.0)'), 'Jersey shader must not apply aliasing 760Hz UV Moire shimmer');
+  assert(cgl.includes('blurredTex') && cgl.includes('Zero temporal blur on 60fps'), 'CharactersGLB must use unsharp tex detail contrast and zero temporal pose smearing');
+  assert(cgl.includes('syncRate = (targetWindowSec, fallbackRate, clipName)'), 'syncRate must inspect incoming target clip duration directly');
+  assert(g.includes('presenceEq') && g.includes("AUDIO_VERSION = '6.0.0-release'"), 'AudioEngine must include crystal broadcast presence EQ and v6.0 asset cache buster');
+});
+
 console.log(`\nResults: ${passedTests}/${totalTests} tests passed.\n`);
 if (passedTests === totalTests) {
   process.exit(0);
