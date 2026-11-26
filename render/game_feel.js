@@ -256,6 +256,32 @@
     }
     if (matchView.ballGlow) {
       matchView.ballGlow.setPos(vx, 0.04, vz);
+      const hum = sim.human;
+      if (hum && hum.shootCharging && hum.shootCharge > 0.06) {
+        const ch = clamp(hum.shootCharge, 0, 1);
+        matchView.ballGlow.setScale(1.1 + ch * 0.9);
+        if (matchView.ballGlow.material) {
+          matchView.ballGlow.material.alpha = 0.25 + ch * 0.55;
+        }
+      } else if (matchView.ballGlow.material) {
+        matchView.ballGlow.material.alpha = 0.22;
+      }
+    }
+
+    // Continuous Turf Grass Skid Spray while any athlete is mid slide-tackle on grass
+    if (sim.mode === 'footy' && sim.agents && matchView.fx) {
+      matchView._slideEmitTimer = Math.max(0, (matchView._slideEmitTimer || 0) - dt);
+      if (matchView._slideEmitTimer <= 0) {
+        let emitted = false;
+        for (let i = 0; i < sim.agents.length; i++) {
+          const ag = sim.agents[i];
+          if (ag && ag.tackle && ag.tackle.phase === 'lunge' && (ag.tackle.power || 0) > 0.15) {
+            emitTurfSpray(matchView.fx, ag.x, ag.z, ag.tackle.dx || ag.fx, ag.tackle.dz || ag.fz, 4, 4.2);
+            emitted = true;
+          }
+        }
+        if (emitted) matchView._slideEmitTimer = 0.032;
+      }
     }
 
     // Brief elastic squash-and-stretch on impacts & hardwood bounces

@@ -218,7 +218,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '5.1.0-release';
+                        const AUDIO_VERSION = '5.2.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -322,7 +322,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             s.start(t0, Math.random());
             s.stop(t0 + dur + 0.05);
         }
-        play(name, v = 1, pitch = 1) {
+        play(name, v = 1, pitch = 1, opts = null) {
             var _a;
             if (!this.ctx || this.ctx.state !== 'running') {
                 this.unlock();
@@ -337,6 +337,20 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 if (now - ((_a = this.lastPlay[name]) !== null && _a !== void 0 ? _a : -9) < g)
                     return;
                 this.lastPlay[name] = now;
+            }
+
+            let outDest = this.sfxGain;
+            if (opts && typeof opts.x === 'number' && typeof c.createStereoPanner === 'function') {
+                try {
+                    const hw = opts.halfW || 17;
+                    const panVal = Math.max(-0.72, Math.min(0.72, (opts.x / Math.max(1, hw)) * 0.72));
+                    if (Math.abs(panVal) > 0.04) {
+                        const panner = c.createStereoPanner();
+                        panner.pan.setValueAtTime(panVal, now);
+                        panner.connect(this.sfxGain);
+                        outDest = panner;
+                    }
+                } catch (_) {}
             }
 
             // High-fidelity studio audio variant pool playback with calibrated perceptual RMS & EQ polish
@@ -397,8 +411,8 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     } else {
                         src.connect(sGain);
                     }
-                    sGain.connect(this.sfxGain);
-                    if (this.sfxReverbIn && (isWhistle || name === 'kick' || name === 'shot' || name === 'dunk' || name === 'swish' || name === 'goal' || name === 'score')) {
+                    sGain.connect(outDest);
+                    if (this.sfxReverbIn && (isWhistle || name === 'kick' || name === 'shot' || name === 'dunk' || name === 'swish' || name === 'goal' || name === 'score' || name === 'post' || name === 'rim')) {
                         sGain.connect(this.sfxReverbIn);
                     }
                     src.start(now);
@@ -594,7 +608,29 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             }
             gain.connect(this.sfxGain);
             src.start();
-            this.crowdNode = { src, gain };
+            this.crowdNode = { src, gain, baseGain: realBuf ? 0.095 : 0.042 };
+        }
+        triggerArenaSwell(boostMul = 3.2, holdSec = 1.6) {
+            const c = this.ctx;
+            if (!c) return;
+            const now = c.currentTime;
+            if (this.crowdNode && this.crowdNode.gain) {
+                const bg = this.crowdNode.baseGain || 0.08;
+                const peak = Math.min(0.42, bg * boostMul);
+                try {
+                    this.crowdNode.gain.gain.cancelScheduledValues(now);
+                    this.crowdNode.gain.gain.setTargetAtTime(peak, now, 0.08);
+                    this.crowdNode.gain.gain.setTargetAtTime(bg, now + Math.max(0.25, holdSec), 0.45);
+                } catch (_) {}
+            }
+            if (this.musicGain && this.musicOn) {
+                const baseM = (typeof this.musicVol === 'number' ? this.musicVol : 0.35) * 0.45;
+                try {
+                    this.musicGain.gain.cancelScheduledValues(now);
+                    this.musicGain.gain.setTargetAtTime(baseM * 0.48, now, 0.06);
+                    this.musicGain.gain.setTargetAtTime(baseM, now + Math.max(0.3, holdSec), 0.55);
+                } catch (_) {}
+            }
         }
         stopAmbience() {
             var _a;
@@ -2247,6 +2283,9 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             aiTimer: 0,
             aiTargetX: 0,
             aiTargetZ: 0,
+            passBufferT: 0,
+            shootBufferT: 0,
+            shootBufferCharge: 0,
             slot,
         };
     }
@@ -2619,6 +2658,19 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                         a.z -= nz * push * 2 * (wa / tot);
                         b.x += nx * push * 2 * (wb / tot);
                         b.z += nz * push * 2 * (wb / tot);
+                        // Absorb colliding inward relative velocity along normal to eliminate shoulder-to-shoulder jitter
+                        if (a.tackle.phase !== 'lunge' && b.tackle.phase !== 'lunge') {
+                            const rvx = b.vx - a.vx;
+                            const rvz = b.vz - a.vz;
+                            const vn = rvx * nx + rvz * nz;
+                            if (vn < 0) {
+                                const imp = vn * 0.45;
+                                a.vx += nx * imp;
+                                a.vz += nz * imp;
+                                b.vx -= nx * imp;
+                                b.vz -= nz * imp;
+                            }
+                        }
                     }
                 }
             }
@@ -2637,10 +2689,23 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             }
         }
         controlAgent(a, inp, e, h) {
+            a.passBufferT = Math.max(0, (a.passBufferT || 0) - h);
+            a.shootBufferT = Math.max(0, (a.shootBufferT || 0) - h);
             if (inp) {
                 if (inp.moveX !== undefined) a.mx = inp.moveX;
                 if (inp.moveZ !== undefined) a.mz = inp.moveZ;
                 if (inp.sprint !== undefined) a.sprint = inp.sprint;
+            }
+            if (e.pass && a.stun < 0.2 && a.tackle.phase !== 'lunge') {
+                const canActNow = this.ball.owner === a || (!this.ball.owner && Math.hypot(a.x - this.ball.x, a.z - this.ball.z) < a.radius + this.ball.r + 0.85 && this.ball.y < 1.3);
+                if (canActNow && typeof this.humanPass === 'function') {
+                    this.humanPass(a);
+                } else {
+                    a.passBufferT = 0.16;
+                }
+            } else if (a.passBufferT > 0 && this.ball.owner === a && a.stun < 0.2 && a.tackle.phase !== 'lunge') {
+                a.passBufferT = 0;
+                if (typeof this.humanPass === 'function') this.humanPass(a);
             }
             if (e.shootPressed && !a.shootCharging && a.stun < 0.2 && a.tackle.phase !== 'lunge') {
                 a.shootCharging = true;
@@ -2654,8 +2719,20 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                     a.shootCharging = false;
                     const c = a.shootCharge;
                     a.shootCharge = 0;
-                    this.humanShootRelease(a, c);
+                    const canShootNow = this.ball.owner === a || (!this.ball.owner && Math.hypot(a.x - this.ball.x, a.z - this.ball.z) < a.radius + this.ball.r + 0.85 && this.ball.y < 1.3);
+                    if (canShootNow) {
+                        this.humanShootRelease(a, c);
+                    } else {
+                        // Queue brief one-touch shot buffer so tapping right before collecting fires cleanly
+                        a.shootBufferT = 0.16;
+                        a.shootBufferCharge = Math.max(0.22, c);
+                        this.humanShootRelease(a, c);
+                    }
                 }
+            } else if (a.shootBufferT > 0 && this.ball.owner === a && a.stun < 0.2 && a.tackle.phase !== 'lunge') {
+                const bc = a.shootBufferCharge || 0.35;
+                a.shootBufferT = 0;
+                this.humanShootRelease(a, bc);
             }
             const t = a.tackle;
             if (e.tacklePressed && t.phase === 'idle' && t.cooldown <= 0 && a.stun < 0.3) {
@@ -2874,6 +2951,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 return;
             this.ball.owner = a;
             this.ball.orbitAngle = undefined;
+            this.ball.curveSpin = 0;
             if (a) {
                 this.ball.lastTouch = a;
                 this.emit({ type: 'possession', id: a.id, team: a.team });
@@ -2934,7 +3012,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
         RIM_POINTS: 24,
     };
     const TACKLE = {
-        quickCost: 8,
+        quickCost: 7,
         chargedCost: 16,
         chargedExtra: 16,
         quickCd: 0.55,
@@ -2964,8 +3042,8 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
         agentRadius: 0.55,
         halfW: exports.BB.W + 0.4,
         halfL: exports.BB.L + 0.2,
-        staminaDrain: 22,
-        staminaRegen: 14,
+        staminaDrain: 21,
+        staminaRegen: 17,
         tackle: TACKLE,
         step: 1 / 240,
         countdown: 3,
@@ -3205,11 +3283,12 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const fx = a.fx / fLen;
             const fz = a.fz / fLen;
 
-            if (dist < 3.2 && charge > 0.12) {
+            const moveSpeed = Math.hypot(a.vx || 0, a.vz || 0);
+            if (dist < 3.6 && (charge > 0.14 || (a.sprint && moveSpeed > 5.8))) {
                 const toRimX = dx / (dist || 1);
                 const toRimZ = dz / (dist || 1);
                 const dunkDot = fx * toRimX + fz * toRimZ;
-                if (dunkDot > 0.5 || dunkDot > 0.40) {
+                if (dunkDot > 0.35) {
                     this.launchShot(a, 0, 0, true);
                     return;
                 }
@@ -3794,11 +3873,11 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             }
             if (owner) {
                 const mark = (_a = this.agents.find((o) => o.team !== a.team && o.slot === a.slot)) !== null && _a !== void 0 ? _a : owner;
-                const target = a.slot === owner.slot || (!mate && true) ? owner : mark;
+                const target = (a.slot === owner.slot || !mate) ? owner : mark;
                 const press = (0, math_js_4.dist2)(a.x, a.z, owner.x, owner.z) <= (0, math_js_4.dist2)((_b = mate === null || mate === void 0 ? void 0 : mate.x) !== null && _b !== void 0 ? _b : 99, (_c = mate === null || mate === void 0 ? void 0 : mate.z) !== null && _c !== void 0 ? _c : 99, owner.x, owner.z) ? owner : mark;
                 const tgt = press === owner ? owner : target === owner ? mark : mark;
-                const tx = tgt.x * 0.85;
-                const tz = tgt.z + (ownHoopZ > tgt.z ? 1 : -1) * 1.4;
+                const tx = tgt.x * 0.80;
+                const tz = tgt.z + (ownHoopZ > tgt.z ? 1 : -1) * 1.35;
                 [a.aiTargetX, a.aiTargetZ] = this.clampCourt(tx, tz);
                 a.sprint = a.stamina > 30 && (0, math_js_4.dist2)(a.x, a.z, tx, tz) > 5;
                 if (tgt === owner) {
@@ -3914,7 +3993,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         CEILING: 16,
     };
     const TACKLE = {
-        quickCost: 10,
+        quickCost: 8,
         chargedCost: 20,
         chargedExtra: 20,
         quickCd: 0.45,
@@ -3944,8 +4023,8 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         agentRadius: 0.62,
         halfW: exports.FB.W - 0.7,
         halfL: exports.FB.L - 0.7,
-        staminaDrain: 24,
-        staminaRegen: 13,
+        staminaDrain: 23,
+        staminaRegen: 16,
         tackle: TACKLE,
         step: 1 / 120,
         countdown: 3,
@@ -4097,6 +4176,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             b.vx = dx * speed + a.vx * 0.2;
             b.vz = dz * speed + a.vz * 0.2;
             b.vy = vy;
+            b.curveSpin = 0;
             b.lastTouch = a;
             a.pickupLock = 0.55;
             if (kind === 'shot') {
@@ -4161,7 +4241,11 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             const forwardPush = (dz * att < -0.15) || (Math.hypot(a.mx, a.mz) > 0.3 && (a.mz * att < -0.15));
             const loft = forwardPush ? 2.8 : 0;
             const vy = (0, math_js_5.lerp)(2.8, 11.2, power) + loft;
-            this.kickBall(a, dx, dz, Math.min(speed, 36), vy, 'shot');
+            if (this.kickBall(a, dx, dz, Math.min(speed, 36), vy, 'shot')) {
+                // Aerodynamic Magnus curl spin driven by cross-movement at strike release
+                const latCross = (a.mx || 0) * (-dz) + (a.mz || 0) * dx;
+                this.ball.curveSpin = (0, math_js_5.clamp)(latCross * 3.0 * power, -2.8, 2.8);
+            }
         }
         humanPass(a) {
             const b = this.ball;
@@ -4349,6 +4433,18 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             b.x += b.vx * h;
             b.y += b.vy * h;
             b.z += b.vz * h;
+            if (!this.onGround && b.curveSpin) {
+                const hSpd = Math.hypot(b.vx, b.vz);
+                if (hSpd > 7.0) {
+                    const nx = -b.vz / hSpd;
+                    const nz = b.vx / hSpd;
+                    const curveA = b.curveSpin * (hSpd * 0.14);
+                    b.vx += nx * curveA * h;
+                    b.vz += nz * curveA * h;
+                }
+                b.curveSpin *= Math.exp(-h * 0.85);
+                if (Math.abs(b.curveSpin) < 0.05) b.curveSpin = 0;
+            }
             const drag = 1 - 0.05 * h;
             b.vx *= drag;
             b.vz *= drag;
@@ -8631,8 +8727,10 @@ define("render/camera", ["require", "exports", "gfx/scene", "gfx/math"], functio
         }
         update(dt, ball, human, forceFull = false) {
             const [hx, hz] = this.halfExtents();
-            let tx = ball.x * 0.65 + human.x * 0.35;
-            let tz = ball.z * 0.65 + human.z * 0.35 - (this.mode === 'footy' ? 2.6 : 1.6);
+            const leadX = Math.max(-2.2, Math.min(2.2, ((human && human.vx) || 0) * 0.16));
+            const leadZ = Math.max(-2.6, Math.min(2.6, ((human && human.vz) || 0) * 0.18));
+            let tx = ball.x * 0.65 + human.x * 0.35 + leadX;
+            let tz = ball.z * 0.65 + human.z * 0.35 + leadZ - (this.mode === 'footy' ? 2.6 : 1.6);
             const maxX = Math.max(0, this.limitX - hx * 0.55);
             tx = Math.max(-maxX, Math.min(maxX, tx));
             const maxZ = Math.max(2.0, this.limitZ - hz * 0.66);
@@ -13205,12 +13303,13 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
             const mine = (id) => sim.human.id === id;
             if (demo)
                 return;
+            const spatial = (typeof e.x === 'number') ? { x: e.x, halfW: mode === 'footy' ? 17 : 8.5 } : null;
             switch (e.type) {
                 case 'countdown':
                     if (e.n > 0 && e.n !== this.lastCountdownN) {
                         this.lastCountdownN = e.n;
                         this.hud.showBanner(String(e.n), 'big', 900);
-                        a.play('tick', 1, 1 + (3 - e.n) * 0.05);
+                        a.play('tick', 1, 0.94 + (3 - e.n) * 0.08);
                     }
                     else if (e.n === 0) {
                         this.hud.showBanner((0, index_js_2.t)('hud.go'), 'big', 700);
@@ -13233,66 +13332,69 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     a.play(e.kind === 'end' ? (mode === 'hoops' ? 'buzzer' : 'whistleEnd') : 'whistle');
                     break;
                 case 'kick':
-                    a.play(mode === 'hoops' ? 'pass_hoops' : 'kick', 0.5 + e.power * 0.65, mode === 'footy' ? 1 : 1.06);
+                    a.play(mode === 'hoops' ? 'pass_hoops' : 'kick', 0.5 + e.power * 0.65, mode === 'footy' ? 1 : 1.06, spatial);
                     if (e.power > 0.72 && typeof window !== 'undefined' && window.GameFeel)
                         window.GameFeel.triggerHitStop(this, 0.028);
                     if (mine(e.id) && e.power > 0.5)
                         telegram_js_1.telegram.haptic('light');
                     break;
                 case 'pass':
-                    a.play(mode === 'hoops' ? 'pass_hoops' : 'pass', 0.88);
+                    a.play(mode === 'hoops' ? 'pass_hoops' : 'pass', 0.88, 1, spatial);
                     break;
                 case 'shot':
                     if (!e.dunk)
-                        a.play(mode === 'hoops' ? 'shot_hoops' : 'shot', mode === 'hoops' ? 0.94 : 0.96);
+                        a.play(mode === 'hoops' ? 'shot_hoops' : 'shot', mode === 'hoops' ? 0.94 : 0.96, 1, spatial);
                     if (mode === 'footy' && typeof window !== 'undefined' && window.GameFeel)
                         window.GameFeel.triggerHitStop(this, 0.026);
                     if (mine(e.id))
                         telegram_js_1.telegram.haptic('light');
                     break;
                 case 'dunk':
-                    a.play('dunk', 1.0);
+                    a.play('dunk', 1.0, 1, spatial);
+                    setTimeout(() => a.play('crowd', 0.48, 1.0, spatial), 85);
+                    if (typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(3.4, 1.5);
                     if (typeof window !== 'undefined' && window.GameFeel)
                         window.GameFeel.triggerHitStop(this, 0.044);
                     if (mine(e.id))
                         telegram_js_1.telegram.haptic('heavy');
                     break;
                 case 'bounce':
-                    a.play(mode === 'hoops' ? 'bounce' : 'bounce_footy', Math.min(1.15, (e.speed || 4) / 8), mode === 'hoops' ? 1.02 : 1.0);
+                    a.play(mode === 'hoops' ? 'bounce' : 'bounce_footy', Math.min(1.15, (e.speed || 4) / 8), mode === 'hoops' ? 1.02 : 1.0, spatial);
                     break;
                 case 'dribble':
-                    a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', mode === 'hoops' ? 0.85 : 0.72);
+                    a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', mode === 'hoops' ? 0.85 : 0.72, 1, spatial);
                     break;
                 case 'step':
-                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.68, (e.speed || 5) / 9), mode === 'hoops' ? 1.04 : 0.98);
+                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.68, (e.speed || 5) / 9), mode === 'hoops' ? 1.04 : 0.98, spatial);
                     break;
                 case 'post':
-                    a.play('post', Math.min(1.2, e.speed / 12));
+                    a.play('post', Math.min(1.2, e.speed / 12), 1, spatial);
                     if (typeof window !== 'undefined' && window.GameFeel)
                         window.GameFeel.triggerHitStop(this, 0.036);
                     telegram_js_1.telegram.haptic('medium');
                     break;
                 case 'rim':
-                    a.play('rim', Math.min(1.2, e.speed / 8));
+                    a.play('rim', Math.min(1.2, e.speed / 8), 1, spatial);
                     break;
                 case 'board':
-                    a.play('board', Math.min(1.2, e.speed / 8));
+                    a.play('board', Math.min(1.2, e.speed / 8), 1, spatial);
                     break;
                 case 'save':
-                    a.play('save', 0.96);
+                    a.play('save', 0.96, 1, spatial);
                     break;
                 case 'tackleStart':
                     if (mine(e.id) || (e.dist === undefined || e.dist < 14)) {
                         if (mode === 'hoops')
-                            a.play('squeak', 0.85);
+                            a.play('squeak', 0.85, 1, spatial);
                         else if (e.power > 0.15)
-                            a.play('tackle', 0.82, 1.04);
+                            a.play('tackle', 0.82, 1.04, spatial);
                         else
-                            a.play('steal_swoosh', 0.88);
+                            a.play('steal_swoosh', 0.88, 1, spatial);
                     }
                     break;
                 case 'tackleHit':
-                    a.play(e.stolen ? 'steal' : 'tackle', 1);
+                    a.play(e.stolen ? 'steal' : 'tackle', 1, 1, spatial);
                     if (e.stolen && typeof window !== 'undefined' && window.GameFeel)
                         window.GameFeel.triggerHitStop(this, 0.028);
                     if (mine(e.id))
@@ -13310,21 +13412,25 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     }
                     break;
                 case 'goal':
-                    a.play('goal');
+                    a.play('goal', 1, 1, spatial);
+                    if (typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(3.8, 1.8);
                     this.hud.showBanner(e.ownGoal ? (0, index_js_2.t)('hud.ownGoal') : (0, index_js_2.t)('hud.goal'), 'goal', 1800);
                     this.hud.scoreFx(e.team, 1, true, this.reducedFx());
                     telegram_js_1.telegram.haptic(e.team === 0 ? 'success' : 'warning');
                     break;
                 case 'score':
                     if (e.dunk) {
-                        a.play('swish', 0.72);
-                        setTimeout(() => a.play('score', 0.84), 110);
+                        a.play('swish', 0.72, 1, spatial);
+                        setTimeout(() => a.play('score', 0.84, 1, spatial), 110);
                     } else if (e.swish) {
-                        a.play('swish');
-                        setTimeout(() => a.play('score', 0.8), 120);
+                        a.play('swish', 1, 1, spatial);
+                        setTimeout(() => a.play('score', 0.8, 1, spatial), 120);
                     } else {
-                        a.play('score');
+                        a.play('score', 1, 1, spatial);
                     }
+                    if (typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(3.2, 1.6);
                     if (e.dunk)
                         this.hud.showBanner((0, index_js_2.t)('hud.dunk'), 'goal', 1600);
                     else if (e.points === 3)
@@ -15414,6 +15520,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 d.xp += rewards.xp;
                 const st = d.stats;
                 st.played++;
+                st.matches = Math.max(st.matches || 0, st.played);
                 st.playedByMode[sum.mode]++;
                 if (rewards.outcome === 'win') {
                     st.wins++;
@@ -15425,8 +15532,10 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                     st.losses++;
                 if (sum.mode === 'footy')
                     st.goals += sum.stats.humanGoals;
-                else
+                else {
                     st.points += sum.stats.humanGoals;
+                    st.baskets = (st.baskets || 0) + sum.stats.humanGoals;
+                }
                 st.tackles += sum.stats.humanTackles;
                 st.shots += sum.stats.humanShots;
                 st.passes += sum.stats.humanPasses;
@@ -15496,6 +15605,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 d.xp += rewards.xp;
                 const st = d.stats;
                 st.played++;
+                st.matches = Math.max(st.matches || 0, st.played);
                 st.playedByMode[sum.mode]++;
                 if (rewards.outcome === 'win') {
                     st.wins++;
@@ -15507,8 +15617,10 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                     st.losses++;
                 if (sum.mode === 'footy')
                     st.goals += sum.stats.humanGoals;
-                else
+                else {
                     st.points += sum.stats.humanGoals;
+                    st.baskets = (st.baskets || 0) + sum.stats.humanGoals;
+                }
                 st.tackles += sum.stats.humanTackles;
                 st.shots += sum.stats.humanShots;
                 st.passes += sum.stats.humanPasses;
@@ -15549,6 +15661,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 else
                     xpTxt.textContent = (0, index_js_7.t)('profile.xp', { a: lvAfter.into, b: lvAfter.need });
             }, 350);
+            const matchDropPts = 10 + (rewards.outcome === 'win' ? 25 : 0) + Math.min(30, (sum.stats.humanGoals || 0) * (sum.mode === 'footy' ? 6 : 2));
             const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: `panel result-panel res-${rewards.outcome}`, style: 'max-width:480px;text-align:center' },
                 (0, dom_js_6.h)('div', { class: 'note' }, (0, index_js_7.t)('result.title')),
                 (0, dom_js_6.h)('h2', { class: `result-title ${rewards.outcome}` }, title),
@@ -15556,7 +15669,8 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 winnerLine ? (0, dom_js_6.h)('div', { class: 'res-win' }, `🏆 ${winnerLine}`) : null,
                 (0, dom_js_6.h)('div', { class: 'rew' },
                     (0, dom_js_6.h)('span', { class: 'chip gold' }, (0, dom_js_6.h)('span', { class: 'w-ico' }), ' ', (0, index_js_7.t)('result.coins', { n: rewards.coins })),
-                    (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ ', (0, index_js_7.t)('result.xp', { n: rewards.xp }))),
+                    (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ ', (0, index_js_7.t)('result.xp', { n: rewards.xp })),
+                    (0, dom_js_6.h)('span', { class: 'chip', style: 'border-color:rgba(56,189,248,0.45);color:#7dd3fc;' }, `💎 +${matchDropPts} Drop PTS`)),
                 (0, dom_js_6.h)('div', { class: 'res-xp' }, (0, dom_js_6.h)('div', { class: 'row2' }, lvTxt, xpTxt), (0, dom_js_6.h)('div', { class: 'pbar' }, fill)),
                 leveled ? (0, dom_js_6.h)('div', { class: 'lvl-up' }, '⬆ ', (0, index_js_7.t)('result.levelUp', { n: after })) : null,
                 (0, dom_js_6.h)('div', { class: 'rew' }, chip((0, index_js_7.t)('result.shots'), sum.stats.humanShots), chip((0, index_js_7.t)(steal ? 'result.steals' : 'result.tackles'), sum.stats.humanTackles), chip((0, index_js_7.t)('result.passes'), sum.stats.humanPasses), steal ? chip((0, index_js_7.t)('result.threes'), sum.humanThrees) : null),

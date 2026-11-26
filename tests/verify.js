@@ -407,6 +407,16 @@ it('Modular Architecture & 3D Game Feel: Standalone GameFeel, Artwork, Locale & 
   assert(fs.existsSync('server/lib/online_legacy.js'), 'server/lib/online_legacy.js must exist');
 });
 
+// 26. v5.2 Gameplay Mechanics, Physics, Spatial Audio & Drop PTS Progression
+it('v5.2 Perfection: Input buffering, Magnus curl spin, spatial stereo audio, camera look-ahead & Drop PTS recap', () => {
+  const g = fs.readFileSync('js/game.js', 'utf8');
+  assert(g.includes('passBufferT') && g.includes('shootBufferT'), 'BaseSim must support input buffering for one-touch passes & shots');
+  assert(g.includes('curveSpin'), 'FootballSim must integrate aerodynamic Magnus curl spin on angled shots');
+  assert(g.includes('createStereoPanner') && g.includes('triggerArenaSwell'), 'AudioEngine must support stereo spatial panning and dynamic crowd/music ducking');
+  assert(g.includes('leadX') && g.includes('leadZ'), 'CameraRig must apply forward velocity look-ahead framing');
+  assert(g.includes('matchDropPts'), 'Solo result panel must display earned Drop PTS progression');
+});
+
 console.log(`\nResults: ${passedTests}/${totalTests} tests passed.\n`);
 if (passedTests === totalTests) {
   process.exit(0);

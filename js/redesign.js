@@ -5923,7 +5923,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=5.1.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=5.2.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -6039,7 +6039,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=5.1.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=5.2.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -7768,9 +7768,9 @@
     var d = data || (window.app && window.app.store && window.app.store.data) || {};
     var st = d.stats || {};
     var wins = Number(st.wins || d.wins || 0);
-    var matches = Number(st.matches || d.matches || (wins + Number(st.losses || 0)));
+    var matches = Math.max(Number(st.played || 0), Number(st.matches || d.matches || 0), wins + Number(st.losses || 0) + Number(st.draws || 0));
     var goals = Number(st.goals || d.goals || 0);
-    var baskets = Number(st.baskets || d.baskets || 0);
+    var baskets = Math.max(Number(st.baskets || d.baskets || 0), Number(st.points || 0));
 
     var refData = d.referrals || [];
     var refCount = Array.isArray(refData) ? refData.length : (refData.total || 0);

@@ -228,7 +228,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=5.1.0-release', '/assets/characters/hoops23.glb?v=5.1.0-release', '/assets/characters/keeper1.glb?v=5.1.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=5.2.0-release', '/assets/characters/hoops23.glb?v=5.2.0-release', '/assets/characters/keeper1.glb?v=5.2.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -807,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '5.1.0-release';
+  const ATLAS_VERSION = '5.2.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -1695,7 +1695,8 @@
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
           bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
-          this.setAnimation(loco.clip, loco.rate);
+          const locoBlend = loco.clip === 'Idle' ? 0.18 : 0.11;
+          this.setAnimation(loco.clip, loco.rate, locoBlend);
         }
       }
       // ==========================================
@@ -1776,7 +1777,8 @@
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
           bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
-          this.setAnimation(loco.clip, loco.rate);
+          const locoBlend = loco.clip === 'Idle' ? 0.18 : 0.11;
+          this.setAnimation(loco.clip, loco.rate, locoBlend);
         }
       }
 
@@ -2046,7 +2048,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=5.1.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=5.2.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2055,7 +2057,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=5.1.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=5.2.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2064,7 +2066,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=5.1.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=5.2.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2361,7 +2363,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=5.1.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=5.1.0-release' : '/assets/characters/footy10.glb?v=5.1.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=5.2.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=5.2.0-release' : '/assets/characters/footy10.glb?v=5.2.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2522,7 +2524,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=5.1.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=5.1.0-release' : '/assets/characters/footy10.glb?v=5.1.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=5.2.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=5.2.0-release' : '/assets/characters/footy10.glb?v=5.2.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };
