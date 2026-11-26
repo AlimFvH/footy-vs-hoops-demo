@@ -404,7 +404,8 @@
     var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=6.0.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
-      '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
+      '<div class="fvh-hero-stage-floor ' + charId + '" aria-hidden="true"></div>' +
+      '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;z-index:1;">' +
         '<img class="fvh-hero-real-img" data-hero="' + charId + '" data-skin="' + skinId + '" src="' + fallbackImgUrl + '" onerror="this.onerror=null;this.src=\'' + genericFallback + '\';" alt="' + heroTitle + '" style="position:relative;height:100%;width:auto;max-height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 28px rgba(0,0,0,0.55));pointer-events:none;z-index:1;transition:opacity 0.16s ease;" />' +
       '</div>' +
       tagHtml +
@@ -3086,10 +3087,18 @@
 
       case 'cat_skins':
       case 'jersey':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<path d="M8 3L4 7L6.5 10L8 8.5V21H16V8.5L17.5 10L20 7L16 3C15 4.5 13.5 5 12 5C10.5 5 9 4.5 8 3Z" fill="url(#fvh_jers_bg)" stroke="' + (active ? '#00f0ff' : '#94a3b8') + '" stroke-width="1.2" stroke-linejoin="round"/>' +
-          '<path d="M10 11.5H14" stroke="' + (active ? '#00f0ff' : '#64748b') + '" stroke-width="1.2" stroke-linecap="round"/>' +
-          '<defs><linearGradient id="fvh_jers_bg" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/></linearGradient></defs>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <linearGradient id="fvh_jers_bg" x1="6" y1="6" x2="42" y2="44" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="48%" stop-color="#0284c7"/><stop offset="100%" stop-color="#0f172a"/></linearGradient>' +
+          '  <linearGradient id="fvh_jers_trim" x1="12" y1="6" x2="36" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#eab308"/></linearGradient>' +
+          '</defs>' +
+          '<ellipse cx="24" cy="43.5" rx="14" ry="2.5" fill="#000000" opacity="0.55"/>' +
+          '<path d="M16 7L5 15L10.5 21.5L14.5 18V41H33.5V18L37.5 21.5L43 15L32 7C30.2 10.2 27.3 11.6 24 11.6C20.7 11.6 17.8 10.2 16 7Z" fill="url(#fvh_jers_bg)" stroke="' + (active ? '#bef264' : '#7dd3fc') + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+          '<path d="M16.5 7.5C18.5 10.8 21.1 12.2 24 12.2C26.9 12.2 29.5 10.8 31.5 7.5" stroke="url(#fvh_jers_trim)" stroke-width="2.2" stroke-linecap="round"/>' +
+          '<path d="M8.5 12.5L13.5 16.5M39.5 12.5L34.5 16.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>' +
+          '<path d="M14.5 26H33.5" stroke="url(#fvh_jers_trim)" stroke-width="3.2"/>' +
+          '<path d="M14.5 22.5H33.5" stroke="#ffffff" stroke-width="1.2" opacity="0.55"/>' +
+          '<path d="M21 16.5H27" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.85"/>' +
           '</svg>';
 
       case 'cat_packs':
@@ -3162,9 +3171,17 @@
 
       case 'profile':
       case 'user':
-        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-          '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>' +
-          '<circle cx="12" cy="7" r="4"/>' +
+        return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<defs>' +
+          '  <linearGradient id="fvh_prof_shield" x1="10" y1="4" x2="38" y2="44" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1e293b"/><stop offset="55%" stop-color="#0f172a"/><stop offset="100%" stop-color="#020617"/></linearGradient>' +
+          '  <linearGradient id="fvh_prof_rim" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="50%" stop-color="#a855f7"/><stop offset="100%" stop-color="#f97316"/></linearGradient>' +
+          '  <radialGradient id="fvh_prof_head" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="65%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#475569"/></radialGradient>' +
+          '</defs>' +
+          '<ellipse cx="24" cy="44" rx="12" ry="2.2" fill="#000000" opacity="0.55"/>' +
+          '<path d="M24 4L40 10V23C40 33.5 32.8 41 24 44C15.2 41 8 33.5 8 23V10L24 4Z" fill="url(#fvh_prof_shield)" stroke="url(#fvh_prof_rim)" stroke-width="2.2" stroke-linejoin="round"/>' +
+          '<circle cx="24" cy="18.5" r="5.5" fill="url(#fvh_prof_head)" stroke="#e2e8f0" stroke-width="1"/>' +
+          '<path d="M14.5 34.5C15.5 28.8 19.2 26 24 26C28.8 26 32.5 28.8 33.5 34.5" fill="#0284c7" stroke="#7dd3fc" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<polygon points="34,9 35.4,11.8 38.5,12.2 36.2,14.4 36.8,17.5 34,16 31.2,17.5 31.8,14.4 29.5,12.2 32.6,11.8" fill="#facc15" stroke="#ca8a04" stroke-width="0.6"/>' +
           '</svg>';
 
       default:

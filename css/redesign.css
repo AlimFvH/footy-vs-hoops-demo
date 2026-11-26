@@ -12065,3 +12065,653 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
     font-size: 11px !important;
   }
 }
+
+
+/* ==========================================================================
+   V8.0 AAA BROADCAST STADIUM DESIGN SYSTEM (DESKTOP WIDESCREEN + MOBILE)
+   ========================================================================== */
+
+/* 1. Sleek Custom Dark Scrollbars (Removes harsh bright grey system bars) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.28) transparent;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.55);
+}
+
+/* 2. Global Stadium Atmospheric Surface & Subpage Container Balance */
+.screen.menu-bg,
+.screen.solid.page-screen {
+  background:
+    radial-gradient(ellipse 85% 48% at 18% 8%, rgba(0, 240, 255, 0.11) 0%, transparent 62%),
+    radial-gradient(ellipse 80% 48% at 84% 12%, rgba(249, 115, 22, 0.10) 0%, transparent 64%),
+    radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #060a14 0%, #04070e 100%) !important;
+}
+
+.screen.page-screen .page {
+  max-width: 1120px !important;
+}
+
+/* Unified Broadcast Subpage Header */
+.page-head {
+  background: linear-gradient(135deg, rgba(14, 21, 39, 0.90) 0%, rgba(8, 12, 24, 0.96) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: 18px !important;
+  padding: 9px 12px !important;
+  margin-bottom: 14px !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.page-head .btn.back {
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  border-radius: 11px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+.page-head .btn.back:hover {
+  border-color: rgba(56, 189, 248, 0.55) !important;
+  background: rgba(56, 189, 248, 0.14) !important;
+}
+.page-head h1 {
+  font-size: clamp(16px, 4.2vw, 21px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.4px !important;
+}
+.fvh-pagehead-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+@media (max-width: 440px) {
+  .fvh-pagehead-hud .fvh-pagehead-lb {
+    display: none !important;
+  }
+}
+
+/* 3. Top Console Pill Header */
+.fvh-topbar {
+  max-width: 1120px !important;
+  background: linear-gradient(135deg, rgba(13, 20, 38, 0.90) 0%, rgba(7, 11, 22, 0.96) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+  padding: 8px 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.09) !important;
+  margin-bottom: 14px !important;
+}
+
+/* 4. Home Broadcast Grid: 2 Columns on Desktop (>=880px), Crisp Stack on Mobile */
+.fvh-home-grid {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 auto 10px;
+  box-sizing: border-box;
+}
+.fvh-home-command {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+@media (min-width: 880px) {
+  .fvh-home-grid {
+    max-width: 1120px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) !important;
+    gap: 18px !important;
+    align-items: stretch !important;
+    margin: 4px auto 14px !important;
+  }
+  .fvh-home-grid .fvh-hero-stage.solo-stage.compact {
+    max-width: none !important;
+    height: 100% !important;
+    margin: 0 !important;
+  }
+  .fvh-home-grid .fvh-hero-card.solo-hero-compact {
+    max-width: none !important;
+    height: 100% !important;
+    min-height: 492px;
+    justify-content: space-between !important;
+    padding: 16px 18px !important;
+  }
+  .fvh-home-grid .solo-avatar-box {
+    flex: 1 1 auto !important;
+    height: clamp(305px, 44vh, 410px) !important;
+    min-height: 300px !important;
+  }
+  .fvh-home-command {
+    justify-content: space-between;
+    gap: 11px;
+  }
+  .fvh-home-command .fvh-action-deck,
+  .fvh-home-command .fvh-airdrop-banner,
+  .fvh-home-command .fvh-rivalry-ticker {
+    max-width: none !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Hero Card Stage Illumination & Floating Pedestal Glow */
+.fvh-hero-card.solo-hero-compact {
+  position: relative !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(ellipse 85% 58% at 50% 42%, rgba(25, 40, 74, 0.72) 0%, rgba(9, 14, 28, 0.96) 75%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  overflow: hidden !important;
+}
+.fvh-hero-card.solo-hero-compact.footy {
+  border-color: rgba(0, 240, 255, 0.38) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.65), 0 0 36px rgba(0, 240, 255, 0.16), inset 0 1px 0 rgba(125, 211, 252, 0.25) !important;
+}
+.fvh-hero-card.solo-hero-compact.hoops {
+  border-color: rgba(249, 115, 22, 0.42) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.65), 0 0 36px rgba(249, 115, 22, 0.16), inset 0 1px 0 rgba(253, 186, 116, 0.25) !important;
+}
+
+.solo-avatar-box {
+  position: relative !important;
+  width: 100% !important;
+  height: clamp(192px, 24.5vh, 232px) !important;
+  min-height: 185px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 2px 0 !important;
+  background: transparent !important;
+}
+
+.fvh-hero-stage-floor {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 74%;
+  height: 44px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 240, 255, 0.34) 0%, rgba(16, 185, 129, 0.16) 45%, transparent 74%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.25);
+}
+.fvh-hero-stage-floor.hoops {
+  background: radial-gradient(ellipse at 50% 50%, rgba(249, 115, 22, 0.38) 0%, rgba(245, 158, 11, 0.16) 45%, transparent 74%);
+  border-color: rgba(251, 146, 60, 0.40);
+  box-shadow: 0 0 28px rgba(249, 115, 22, 0.28);
+}
+
+.fvh-hero-ovr-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  padding: 5px 9px;
+  border-radius: 13px;
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96));
+  border: 1.5px solid rgba(56, 189, 248, 0.55);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.48), 0 0 16px rgba(0, 240, 255, 0.18);
+  pointer-events: none;
+}
+.fvh-hero-ovr-badge.hoops {
+  border-color: rgba(249, 115, 22, 0.60);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.48), 0 0 16px rgba(249, 115, 22, 0.20);
+}
+.fvh-hero-ovr-badge small {
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  line-height: 1;
+}
+.fvh-hero-ovr-badge b {
+  font-size: 19px;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.1;
+}
+
+.fvh-hero-rotate-hint {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  z-index: 4;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 10px;
+  font-weight: 800;
+  color: #cbd5e1;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+}
+
+.fvh-equipped-preview-bar {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 9px 12px !important;
+  margin: 4px 0 0 !important;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(6, 10, 20, 0.94)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+}
+.fvh-equipped-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.fvh-equipped-ico {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fvh-equipped-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fvh-equipped-meta strong {
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fvh-equipped-meta small {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fvh-equipped-cta {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
+/* Right Command Column Telemetry Card */
+.fvh-home-telemetry {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(7, 11, 22, 0.97));
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.fvh-tele-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.fvh-tele-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  color: #e2e8f0;
+  text-transform: uppercase;
+}
+.fvh-tele-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00f0ff;
+  box-shadow: 0 0 8px #00f0ff;
+}
+.fvh-tele-dot.hoops {
+  background: #f97316;
+  box-shadow: 0 0 8px #f97316;
+}
+.fvh-tele-arena {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  white-space: nowrap;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fvh-tele-bars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.fvh-tele-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fvh-tele-stat > span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+.fvh-tele-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.fvh-tele-track > i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00f0ff, #10b981);
+}
+.fvh-home-telemetry.hoops .fvh-tele-track > i {
+  background: linear-gradient(90deg, #fb923c, #facc15);
+}
+.fvh-tele-stat > b {
+  font-size: 11px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+@media (max-width: 879px) {
+  .fvh-home-telemetry {
+    display: none;
+  }
+}
+
+/* Flagship Beveled Championship PLAY Button */
+.fvh-action-deck {
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 0 !important;
+}
+.fvh-btn-play-hero {
+  min-height: 68px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.fvh-btn-play-hero.footy {
+  background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 45%, #10b981 100%) !important;
+  box-shadow: 0 5px 0 #0369a1, 0 12px 30px rgba(0, 240, 255, 0.34), inset 0 1.5px 0 rgba(255, 255, 255, 0.65) !important;
+  color: #03111f !important;
+}
+.fvh-btn-play-hero.hoops {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 48%, #e11d48 100%) !important;
+  box-shadow: 0 5px 0 #9a3412, 0 12px 30px rgba(249, 115, 22, 0.38), inset 0 1.5px 0 rgba(255, 255, 255, 0.52) !important;
+  color: #ffffff !important;
+}
+.fvh-btn-play-hero:active {
+  transform: translateY(3px) !important;
+}
+
+/* 4-Tile Studio Quick Command Hub */
+.fvh-home-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+@media (min-width: 880px) {
+  .fvh-home-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+.fvh-quick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border-radius: 16px;
+  background: linear-gradient(155deg, rgba(18, 27, 49, 0.90) 0%, rgba(9, 14, 28, 0.96) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  color: #f8fafc;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  text-align: center;
+  min-width: 0;
+}
+@media (min-width: 880px) {
+  .fvh-quick-tile {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 12px 14px;
+    gap: 11px;
+  }
+}
+.fvh-quick-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.48);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.48), 0 0 16px rgba(0, 240, 255, 0.14);
+}
+.fvh-quick-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fvh-quick-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fvh-quick-txt b {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 880px) {
+  .fvh-quick-txt b { font-size: 13px; }
+}
+.fvh-quick-txt small {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Clean Non-Truncating Airdrop Banner */
+.fvh-airdrop-banner {
+  border-radius: 18px !important;
+  padding: 11px 13px !important;
+}
+.fvh-airdrop-banner-sub {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.3 !important;
+  font-size: 11px !important;
+}
+.fvh-airdrop-banner-badge {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: 1px solid rgba(125, 211, 252, 0.45) !important;
+  border-radius: 12px !important;
+  padding: 8px 13px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.30) !important;
+}
+
+/* Visual Split Gauge Rivalry Ticker */
+.fvh-rivalry-ticker {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+  border-radius: 18px !important;
+  padding: 10px 14px !important;
+  background: linear-gradient(135deg, rgba(12, 18, 35, 0.92), rgba(7, 10, 20, 0.96)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  margin-bottom: 0 !important;
+}
+.fvh-ticker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fvh-ticker-gauge {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.fvh-ticker-gauge-footy {
+  height: 100%;
+  background: linear-gradient(90deg, #00f0ff, #10b981);
+  border-radius: 999px 2px 2px 999px;
+  transition: width 0.35s ease;
+}
+.fvh-ticker-gauge-hoops {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #fbbf24);
+  border-radius: 2px 999px 999px 2px;
+  transition: width 0.35s ease;
+}
+
+/* 5. Mode Select Widescreen Studio Polish */
+.fvh-mode-page-body {
+  width: 100% !important;
+  max-width: 920px !important;
+  margin: 0 auto !important;
+}
+.fvh-mode-lobby-hero {
+  border-radius: 22px !important;
+  padding: 16px !important;
+  background: linear-gradient(145deg, rgba(16, 24, 44, 0.94), rgba(8, 12, 24, 0.98)) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5) !important;
+}
+.fvh-mode-lobby-meta--center {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 4px 0;
+}
+.fvh-mode-arena-readout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+.fvh-mode-grid--solo .fvh-mode-card--solo {
+  max-width: 920px !important;
+  border-radius: 22px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 20px !important;
+}
+@media (min-width: 820px) {
+  .fvh-practice-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) !important;
+    gap: 20px !important;
+    align-items: center !important;
+  }
+}
+.fvh-mbtn--ai.footy {
+  background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 48%, #10b981 100%) !important;
+  border-color: rgba(165, 243, 252, 0.65) !important;
+  color: #03111f !important;
+  box-shadow: 0 5px 0 #0369a1, 0 12px 26px rgba(0, 240, 255, 0.30) !important;
+}
+.fvh-mbtn--ai.hoops {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 48%, #e11d48 100%) !important;
+  border-color: rgba(254, 215, 170, 0.55) !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 0 #9a3412, 0 12px 26px rgba(249, 115, 22, 0.34) !important;
+}
+
+/* 6. Unified Bottom Navigation Glass Rail */
+.fvh-bottom-nav {
+  background: linear-gradient(180deg, rgba(10, 15, 28, 0.94) 0%, rgba(5, 8, 16, 0.98) 100%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+@media (min-width: 720px) {
+  .fvh-nav-item {
+    max-width: 132px !important;
+  }
+}
+.fvh-nav-item {
+  border-radius: 14px !important;
+  justify-content: center !important;
+}
+.fvh-nav-item.active {
+  background: radial-gradient(circle at 50% 35%, rgba(190, 242, 100, 0.13) 0%, transparent 72%) !important;
+}

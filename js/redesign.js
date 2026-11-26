@@ -2586,6 +2586,33 @@
       nav.appendChild(btn);
     });
 
+    // Decorate subpage .page-head with cohesive top-right Coins + quick nav HUD
+    if (activeTab && app && app.store && app.store.data) {
+      setTimeout(function () {
+        var rootEl = nav.parentElement;
+        if (!rootEl) return;
+        var head = rootEl.querySelector('.page-head');
+        if (!head || head.querySelector('.fvh-pagehead-hud')) return;
+        var hud = document.createElement('div');
+        hud.className = 'fvh-pagehead-hud';
+        var hasCoins = Boolean(head.querySelector('.fvh-wallet-chips, .fvh-pill.gold'));
+        var coinsVal = (app.store.data.coins || 0).toLocaleString();
+        hud.innerHTML =
+          (hasCoins ? '' : ('<button type="button" class="fvh-pill gold fvh-pagehead-coins" title="' + tr('shop') + '">' + getFvhCoinSvg('inline') + '<span>' + coinsVal + '</span></button>')) +
+          '<button type="button" class="fvh-pill icon-only fvh-pagehead-lb" title="' + tr('leaderboard') + '">' +
+          getUiIconSvg('trophy', 15) + '</button>' +
+          '<button type="button" class="fvh-pill icon-only fvh-pagehead-set" title="' + tr('settings') + '">' +
+          getUiIconSvg('settings', 15) + '</button>';
+        var cBtn = hud.querySelector('.fvh-pagehead-coins');
+        var lBtn = hud.querySelector('.fvh-pagehead-lb');
+        var sBtn = hud.querySelector('.fvh-pagehead-set');
+        if (cBtn) cBtn.onclick = function () { app.audio.play('click'); app.go('shop'); };
+        if (lBtn) lBtn.onclick = function () { app.audio.play('click'); app.go('leaderboard'); };
+        if (sBtn) sBtn.onclick = function () { app.audio.play('click'); app.go('settings'); };
+        head.appendChild(hud);
+      }, 0);
+    }
+
     return nav;
   }
 
@@ -8785,15 +8812,16 @@
 
     function renderLobbyHero() {
       var sp = selSport;
+      var arenaNow = resolveActiveArenaInfo(sp);
       lobbyHero.className = 'fvh-mode-lobby-hero ' + sp;
       lobbyHero.innerHTML =
         '<div class="fvh-mode-sport-switch">' +
         '  <button type="button" class="fvh-sport-tab footy' + (sp === 'footy' ? ' on' : '') + '" data-sport="footy">' +
-        '    <span class="fvh-stab-ico footy">' + getUiIconSvg('nav_home_footy', 18) + '</span>' +
+        '    <span class="fvh-stab-ico footy">' + getUiIconSvg('nav_home_footy', 20) + '</span>' +
         '    <span class="fvh-stab-txt"><b>' + (lang === 'ru' ? 'Футбол' : 'Football') + '</b><small>1v1 Arena</small></span>' +
         '  </button>' +
         '  <button type="button" class="fvh-sport-tab hoops' + (sp === 'hoops' ? ' on' : '') + '" data-sport="hoops">' +
-        '    <span class="fvh-stab-ico hoops">' + getUiIconSvg('nav_home_hoops', 18) + '</span>' +
+        '    <span class="fvh-stab-ico hoops">' + getUiIconSvg('nav_home_hoops', 20) + '</span>' +
         '    <span class="fvh-stab-txt"><b>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</b><small>1v1 Court</small></span>' +
         '  </button>' +
         '</div>' +
@@ -8802,6 +8830,10 @@
         '    <span class="fvh-mu-side" style="color:' + youColor + ';">' + getUiIconSvg(isPlayerFooty ? 'nav_home_footy' : 'nav_home_hoops', 14) + ' <span>' + youTeamName + '</span></span>' +
         '    <span class="fvh-mu-vs">VS</span>' +
         '    <span class="fvh-mu-side" style="color:' + cpuColor + ';"><span>' + cpuTeamName + '</span> ' + getUiIconSvg(isPlayerFooty ? 'nav_home_hoops' : 'nav_home_footy', 14) + '</span>' +
+        '  </div>' +
+        '  <div class="fvh-mode-arena-readout">' +
+        '    <span>' + arenaNow.icon + '</span>' +
+        '    <span>' + escapeHtml(arenaNow.name) + '</span>' +
         '  </div>' +
         '</div>';
 
@@ -9024,19 +9056,26 @@
     function renderTickerHtml() {
       var fPct = Math.round(currentLiveWar.footyPct);
       var hPct = Math.round(100 - fPct);
+      var clampedF = Math.max(8, Math.min(92, fPct));
       var isFootyLead = (currentLiveWar.winningTeam === 'footy');
-      var leadText = isFootyLead ? '⚽ FOOTY ведёт!' : '🏀 HOOPS ведут!';
+      var leadText = isFootyLead ? 'FOOTY ведёт!' : 'HOOPS ведут!';
       if (getActiveLang() !== 'ru') {
-        leadText = isFootyLead ? '⚽ FOOTY leads!' : '🏀 HOOPS leads!';
+        leadText = isFootyLead ? 'FOOTY leads!' : 'HOOPS leads!';
       }
       ticker.innerHTML =
-        '<div class="fvh-ticker-left">' +
-        '<span class="footy-dot">●</span> <b>$FOOTY</b> ' + fPct + '%' +
-        '<span class="vs-text">vs</span>' +
-        hPct + '% <b>$HOOPS</b> <span class="hoops-dot">●</span>' +
+        '<div class="fvh-ticker-row">' +
+        '  <div class="fvh-ticker-left">' +
+        '    <span class="footy-dot">●</span> <b>$FOOTY</b> ' + fPct + '%' +
+        '    <span class="vs-text">vs</span>' +
+        '    ' + hPct + '% <b>$HOOPS</b> <span class="hoops-dot">●</span>' +
+        '  </div>' +
+        '  <div class="fvh-ticker-right">' +
+        '    <span>' + leadText + '</span> ➔' +
+        '  </div>' +
         '</div>' +
-        '<div class="fvh-ticker-right">' +
-        '<span>' + leadText + '</span> ➔' +
+        '<div class="fvh-ticker-gauge" aria-hidden="true">' +
+        '  <div class="fvh-ticker-gauge-footy" style="width:' + clampedF + '%"></div>' +
+        '  <div class="fvh-ticker-gauge-hoops" style="width:' + (100 - clampedF) + '%"></div>' +
         '</div>';
     }
 
@@ -9379,6 +9418,9 @@
     var eq = d.equipped || {};
     var activeKitId = resolveEquippedItemId(eq, 'skins', curChar);
     var equippedJersey = getItemLabelById(activeKitId, isFooty ? 'Классика #10' : 'Классика #23');
+    var activeArenaId = isFooty ? (eq['stadium.footy'] || 'std_footy_classic') : (eq['stadium.hoops'] || 'std_hoops_street');
+    var activeArenaObj = (Array.isArray(SCENIC_ARENAS_CATALOG)) ? SCENIC_ARENAS_CATALOG.find(function (a) { return a.id === activeArenaId; }) : null;
+    var activeArenaName = activeArenaObj ? trItem(activeArenaObj.name) : (isFooty ? trItem('Classic Grass') : trItem('Street Classic'));
 
     var up = d.upgrades || { power: 1, stamina: 1, keeper: 1 };
     var pLvl = Math.max(1, Math.min(10, up.power || 1));
@@ -9386,13 +9428,12 @@
     var kLvl = Math.max(1, Math.min(10, up.keeper || 1));
     var avgLvl = (pLvl + sLvl + kLvl) / 3;
     var ovr = Math.round(70 + ((avgLvl - 1) / 9) * 29);
+    var ownedCount = Array.isArray(d.owned) ? d.owned.length : 0;
 
     var charPortraitHtml = getCharacterDisplayHtml(curChar, null, { showJerseyTag: false });
 
     var footyActive = isFooty ? ' active' : '';
     var hoopsActive = !isFooty ? ' active' : '';
-    var footyOvr = ovr;
-    var hoopsOvr = ovr;
 
     heroCard.innerHTML =
       '<div class="fvh-rivalry-bar-symmetrical fvh-solo-compact-header">' +
@@ -9412,14 +9453,20 @@
       '    </div>' +
       '  </div>' +
       '</div>' +
-      '<div class="solo-avatar-box" style="width:100%;height:clamp(225px, 32vh, 285px);display:flex;align-items:center;justify-content:center;position:relative;margin:2px 0;">' +
+      '<div class="solo-avatar-box">' +
+      '  <div class="fvh-hero-ovr-badge ' + curChar + '"><small>OVR</small><b>' + ovr + '</b></div>' +
+      '  <div class="fvh-hero-rotate-hint">' + (lang === 'ru' ? '3D · Вращай' : '3D · Spin') + '</div>' +
       charPortraitHtml +
       '</div>' +
-      '<div class="fvh-equipped-preview-bar" style="width:100%;background:rgba(0,0,0,0.32);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:7px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#cbd5e1;box-sizing:border-box;">' +
-      '  <div style="display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-      '    <span style="display:inline-flex;align-items:center;">' + getUiIconSvg('jersey', 14) + '</span> <strong style="color:#fff;">' + escapeHtml(equippedJersey) + '</strong>' +
+      '<div class="fvh-equipped-preview-bar">' +
+      '  <div class="fvh-equipped-left">' +
+      '    <span class="fvh-equipped-ico">' + getUiIconSvg('jersey', 16) + '</span>' +
+      '    <div class="fvh-equipped-meta">' +
+      '      <strong>' + escapeHtml(equippedJersey) + '</strong>' +
+      '      <small>' + (isFooty ? 'STRIKER #10' : 'GUARD #23') + ' · ' + escapeHtml(activeArenaName) + '</small>' +
+      '    </div>' +
       '  </div>' +
-      '  <span style="font-size:11px;font-weight:700;color:' + (isFooty ? '#38bdf8' : '#fb923c') + ';white-space:nowrap;">' + (isFooty ? 'FOOTY #10' : 'HOOPS #23') + '</span>' +
+      '  <span class="fvh-equipped-cta">' + (lang === 'ru' ? 'Гардероб ➔' : 'Locker ➔') + '</span>' +
       '</div>';
 
     heroCard.querySelectorAll('.fvh-rival-side').forEach(function (sideEl) {
@@ -9446,14 +9493,35 @@
     };
 
     stage.appendChild(heroCard);
-    screen.appendChild(stage);
+
+    var homeGrid = document.createElement('div');
+    homeGrid.className = 'fvh-home-grid';
+    homeGrid.appendChild(stage);
+
+    var commandCol = document.createElement('div');
+    commandCol.className = 'fvh-home-command';
+
+    // Desktop & Broadcast Player Telemetry Card
+    var telemetryCard = document.createElement('div');
+    telemetryCard.className = 'fvh-home-telemetry ' + curChar;
+    telemetryCard.innerHTML =
+      '<div class="fvh-tele-head">' +
+      '  <div class="fvh-tele-title">' +
+      '    <span class="fvh-tele-dot ' + curChar + '"></span>' +
+      '    <span>' + (lang === 'ru' ? 'СЕЗОН 1 · ПРОФИЛЬ АТЛЕТА' : 'SEASON 1 · ATHLETE FORM') + '</span>' +
+      '  </div>' +
+      '  <span class="fvh-tele-arena">' + escapeHtml(activeArenaName) + '</span>' +
+      '</div>' +
+      '<div class="fvh-tele-bars">' +
+      '  <div class="fvh-tele-stat"><span>' + (lang === 'ru' ? 'Сила' : 'Power') + '</span><div class="fvh-tele-track"><i style="width:' + (pLvl * 10) + '%"></i></div><b>' + pLvl + '/10</b></div>' +
+      '  <div class="fvh-tele-stat"><span>' + (lang === 'ru' ? 'Выносл.' : 'Stamina') + '</span><div class="fvh-tele-track"><i style="width:' + (sLvl * 10) + '%"></i></div><b>' + sLvl + '/10</b></div>' +
+      '  <div class="fvh-tele-stat"><span>' + (lang === 'ru' ? 'Защита' : 'Defense') + '</span><div class="fvh-tele-track"><i style="width:' + (kLvl * 10) + '%"></i></div><b>' + kLvl + '/10</b></div>' +
+      '</div>';
+    commandCol.appendChild(telemetryCard);
 
     // 3. Dominant PLAY Button: The primary call-to-action on the screen
     var actionDeck = document.createElement('div');
     actionDeck.className = 'fvh-action-deck';
-    actionDeck.style.width = '100%';
-    actionDeck.style.maxWidth = '480px';
-    actionDeck.style.marginBottom = '10px';
 
     var playBtn = document.createElement('button');
     playBtn.className = 'fvh-btn-play-hero ' + curChar;
@@ -9462,7 +9530,7 @@
 
     playBtn.innerHTML =
       '<div class="play-row">' +
-      '  <span class="play-icon">' + getUiIconSvg('play', 16) + '</span>' +
+      '  <span class="play-icon">' + getUiIconSvg('play', 18) + '</span>' +
       '  <span class="play-text">' + playTitle + '</span>' +
       '</div>' +
       '<span class="play-sub">' + playSub + '</span>';
@@ -9472,7 +9540,31 @@
       app.showModeSelect();
     };
     actionDeck.appendChild(playBtn);
-    screen.appendChild(actionDeck);
+    commandCol.appendChild(actionDeck);
+
+    // 3.2 Quick Studio Command Tiles (Upgrades, Arenas, Shop, Quests)
+    var quickGrid = document.createElement('div');
+    quickGrid.className = 'fvh-home-quick-grid';
+    var quickItems = [
+      { id: 'upgrades', icon: 'lightning', title: lang === 'ru' ? 'Прокачка' : 'Upgrades', sub: 'OVR ' + ovr },
+      { id: 'arenas', icon: isFooty ? 'nav_home_footy' : 'nav_home_hoops', title: lang === 'ru' ? 'Арены' : 'Arenas', sub: '10 3D' },
+      { id: 'shop', icon: 'nav_shop', title: lang === 'ru' ? 'Магазин' : 'Store', sub: ownedCount + ' ' + (lang === 'ru' ? 'предм.' : 'items') },
+      { id: 'quests', icon: 'nav_quests', title: lang === 'ru' ? 'Задания' : 'Quests', sub: lang === 'ru' ? 'Бонусы' : 'Rewards' }
+    ];
+    quickItems.forEach(function (qi) {
+      var tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'fvh-quick-tile ' + qi.id;
+      tile.innerHTML =
+        '<span class="fvh-quick-ico">' + getUiIconSvg(qi.icon, 20) + '</span>' +
+        '<span class="fvh-quick-txt"><b>' + qi.title + '</b><small>' + qi.sub + '</small></span>';
+      tile.onclick = function () {
+        app.audio.play('click');
+        app.go(qi.id);
+      };
+      quickGrid.appendChild(tile);
+    });
+    commandCol.appendChild(quickGrid);
 
     // 3.5 Play-to-Airdrop Banner: Direct access to $FOOTY / $HOOPS token earning
     var airdropStats = calculateAirdropStats(d);
@@ -9482,13 +9574,13 @@
 
     airdropBanner.innerHTML =
       '<div class="fvh-airdrop-banner-left">' +
-      '  <div class="fvh-airdrop-banner-icon">' + getUiIconSvg('coin', 26) + '</div>' +
+      '  <div class="fvh-airdrop-banner-icon">' + getUiIconSvg('coin', 24) + '</div>' +
       '  <div class="fvh-airdrop-banner-text">' +
-      '    <div class="fvh-airdrop-banner-title">' + (lang === 'ru' ? 'PLAY-TO-AIRDROP · ' + airdropTokenTag : 'PLAY-TO-AIRDROP · ' + airdropTokenTag) + '</div>' +
+      '    <div class="fvh-airdrop-banner-title">PLAY-TO-AIRDROP · ' + airdropTokenTag + '</div>' +
       '    <div class="fvh-airdrop-banner-sub">' +
       (lang === 'ru'
-        ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Буст: <b>' + airdropStats.multiplier + '</b> · ' + (airdropStats.hasWallet ? '💎 Кошелёк ок' : 'Как получить? →')
-        : 'Score: <b>' + airdropStats.pts.toLocaleString() + ' PTS</b> · Boost: <b>' + airdropStats.multiplier + '</b> · ' + (airdropStats.hasWallet ? '💎 Wallet OK' : 'How to claim →')) +
+        ? 'Очки: <b>' + airdropStats.pts.toLocaleString() + '</b> · <b>' + airdropStats.multiplier + '</b> · ' + (airdropStats.hasWallet ? '💎 TON OK' : 'TON Drop →')
+        : 'Score: <b>' + airdropStats.pts.toLocaleString() + '</b> · <b>' + airdropStats.multiplier + '</b> · ' + (airdropStats.hasWallet ? '💎 TON OK' : 'Claim →')) +
       '    </div>' +
       '  </div>' +
       '</div>' +
@@ -9498,10 +9590,12 @@
       app.audio.play('click');
       app.go('airdrop');
     };
-    screen.appendChild(airdropBanner);
+    commandCol.appendChild(airdropBanner);
 
     // 5. Token Rivalry Compact Ticker
-    screen.appendChild(createRivalryTicker(app));
+    commandCol.appendChild(createRivalryTicker(app));
+    homeGrid.appendChild(commandCol);
+    screen.appendChild(homeGrid);
 
     // Bottom Spacer for iOS WebKit Telegram Mini App safe scrolling
     screen.appendChild(createScrollBottomSpacer());
