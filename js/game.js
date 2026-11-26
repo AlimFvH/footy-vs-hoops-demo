@@ -211,7 +211,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.7.0-release';
+                        const AUDIO_VERSION = '4.8.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -356,21 +356,21 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
 
-                    // Per-action RMS gain calibration tuned for remastered studio WAVs
+                    // Per-action RMS gain calibration tuned for v4.8 studio WAVs
                     const gainMap = {
                         whistle: 0.56, whistleStart: 0.54, whistleEnd: 0.58, whistleRestart: 0.50,
-                        step: 0.34, step_court: 0.38, squeak: 0.36, tackle: 0.68, swish: 0.78,
-                        steal: 0.76, steal_swoosh: 0.42, save: 0.84,
-                        dribble: 0.54, dribble_court: 0.78, bounce: 0.74, bounce_footy: 0.62,
-                        pass: 0.76, pass_hoops: 0.68, kick: 0.88, shot: 0.94, shot_hoops: 0.84, dunk: 1.00,
+                        step: 0.46, step_court: 0.50, squeak: 0.44, tackle: 0.84, swish: 0.86,
+                        steal: 0.86, steal_swoosh: 0.58, save: 0.92,
+                        dribble: 0.60, dribble_court: 0.82, bounce: 0.78, bounce_footy: 0.68,
+                        pass: 0.80, pass_hoops: 0.74, kick: 0.94, shot: 0.96, shot_hoops: 0.90, dunk: 1.00,
                         goal: 0.82, score: 0.80, win: 0.82, celebration: 0.80
                     };
                     const lpFreqMap = {
-                        whistle: 5600, whistleStart: 5600, whistleEnd: 5600, whistleRestart: 5600,
-                        step: 2800, step_court: 3200, tackle: 3800, steal: 5200, steal_swoosh: 4600, swish: 6400,
-                        dribble: 3400, dribble_court: 4400, bounce: 4200, bounce_footy: 3000,
-                        pass: 3800, pass_hoops: 4400, shot_hoops: 5200,
-                        goal: 6800, score: 6800, win: 6800, celebration: 6800
+                        whistle: 5800, whistleStart: 5800, whistleEnd: 5800, whistleRestart: 5800,
+                        step: 5800, step_court: 6200, tackle: 6800, steal: 8200, steal_swoosh: 6800, swish: 8600,
+                        dribble: 5200, dribble_court: 6400, bounce: 6400, bounce_footy: 5200,
+                        pass: 6200, pass_hoops: 6600, shot_hoops: 7800,
+                        goal: 7200, score: 7200, win: 7200, celebration: 7200
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.84);
@@ -3139,8 +3139,8 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             b.vz = vz;
             b.lastTouch = a;
             a.pickupLock = 0.85;
-            a.shotT = 0.5;
-            a.jumpT = 0.55;
+            a.shotT = 0.58;
+            a.jumpT = 0.60;
             this.shotReleaseState = {
                 shooterId: a.id,
                 cleared: false,
@@ -3164,13 +3164,12 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             if (a === this.human)
                 this.stats.humanShots++;
             this.emit({ type: 'shot', id: a.id, team: a.team, points: this.shot.points, x: a.x, z: a.z });
-            this.emit({ type: 'kick', id: a.id, team: a.team, power: 0.8, x: b.x, y: b.y, z: b.z });
             this.dribbleSign = 1;
         }
         humanShootRelease(a, charge) {
             const b = this.ball;
             if (b.owner !== a) {
-                a.shotT = 0.3;
+                a.shotT = 0.48;
                 return;
             }
             const hoop = this.hoopFor(a.team);
@@ -3270,7 +3269,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             b.vy = (0, math_js_4.clamp)(b.vy, 0.5, 6);
             b.lastTouch = a;
             a.pickupLock = 0.35;
-            a.kickT = 0.3;
+            a.kickT = 0.42;
             this.emit({ type: 'pass', id: a.id, team: a.team, x: b.x, y: b.y, z: b.z });
             return true;
         }
@@ -3397,7 +3396,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 this.stats.shots[a.team]++;
                 if (a === this.human)
                     this.stats.humanShots++;
-                this.emit({ type: 'shot', id: a.id, team: a.team, points: 2, x: a.x, z: a.z });
+                this.emit({ type: 'shot', id: a.id, team: a.team, points: 2, dunk: true, x: a.x, z: a.z });
             }
             if (dk.t >= dk.dur) {
                 dk.active = false;
@@ -4083,9 +4082,9 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             b.lastTouch = a;
             a.pickupLock = 0.55;
             if (kind === 'shot') {
-                a.shotT = 0.44;
+                a.shotT = 0.56;
             } else {
-                a.kickT = 0.28;
+                a.kickT = 0.42;
             }
             this.onGround = false;
             this.shotReleaseState = {
@@ -4096,15 +4095,17 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 maxLockTime: 2.2
             };
             const power = (0, math_js_5.clamp)((speed - 12) / 20, 0, 1);
-            if (kind === 'pass')
+            if (kind === 'pass') {
                 this.emit({ type: 'pass', id: a.id, team: a.team, x: b.x, y: b.y, z: b.z });
-            else
-                this.emit({ type: 'kick', id: a.id, team: a.team, power, x: b.x, y: b.y, z: b.z });
-            if (kind === 'shot') {
+            }
+            else if (kind === 'shot') {
                 this.stats.shots[a.team]++;
                 if (a === this.human)
                     this.stats.humanShots++;
-                this.emit({ type: 'shot', id: a.id, team: a.team, points: 1, x: a.x, z: a.z });
+                this.emit({ type: 'shot', id: a.id, team: a.team, power, points: 1, x: a.x, z: a.z });
+            }
+            else {
+                this.emit({ type: 'kick', id: a.id, team: a.team, power, x: b.x, y: b.y, z: b.z });
             }
             return true;
         }
@@ -4113,7 +4114,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             const owns = b.owner === a;
             const reach = !b.owner && (0, math_js_5.dist2)(a.x, a.z, b.x, b.z) < a.radius + b.r + 0.85 && b.y < 1.3;
             if (!owns && !reach) {
-                a.kickT = 0.25;
+                a.kickT = 0.40;
                 return;
             }
             const att = a.team === 0 ? -1 : 1;
@@ -4281,7 +4282,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 const d = Math.hypot(k.x - owner.x, k.z - owner.z);
                 const reach = k.radius + owner.radius + (k.diveT > 0 ? 1.25 : 0.85);
                 if (d <= reach) {
-                    k.diveT = 0.45;
+                    k.diveT = 0.55;
                     this.setOwner(k);
                     k.holdTimer = 0;
                     owner.stun = Math.max(owner.stun, 0.45);
@@ -4792,7 +4793,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                     const dToCarrier = Math.hypot(b.owner.x - k.x, b.owner.z - k.z);
                     if (dToCarrier < 1.65 && k.diveT <= 0 && k.aiTimer <= 0) {
                         k.diveDir = (b.owner.x >= k.x) ? 1 : -1;
-                        k.diveT = 0.42;
+                        k.diveT = 0.54;
                         k.aiTimer = 0.85;
                     }
                 } else {
@@ -4813,14 +4814,14 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
 
                 // High shot detection: goalkeeper jumps with arms overhead for aerial save
                 if (ballYAtLine > 1.25 && ballYAtLine <= 2.65 && k.jumpT <= 0 && k.aiTimer <= 0) {
-                    k.jumpT = 0.5;
+                    k.jumpT = 0.58;
                     k.aiTimer = 0.8;
                 }
 
                 // Lateral dive detection: goalkeeper dives left or right to save shots away from body
                 if (speed > 8.5 && t < 0.65 && Math.abs(dX) > 0.6 && k.diveT <= 0 && k.aiTimer <= 0) {
                     k.diveDir = dX > 0 ? 1 : -1;
-                    k.diveT = 0.42;
+                    k.diveT = 0.54;
                     k.aiTimer = 0.85;
                 }
             }
@@ -16122,9 +16123,15 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     a.play(mode === 'hoops' ? 'pass_hoops' : 'pass', 0.88);
                     break;
                 case 'shot':
-                    a.play(mode === 'hoops' ? 'shot_hoops' : 'shot', mode === 'hoops' ? 0.92 : 0.96);
+                    if (!e.dunk)
+                        a.play(mode === 'hoops' ? 'shot_hoops' : 'shot', mode === 'hoops' ? 0.94 : 0.96);
                     if (mine(e.id))
                         telegram_js_1.telegram.haptic('light');
+                    break;
+                case 'dunk':
+                    a.play('dunk', 1.0);
+                    if (mine(e.id))
+                        telegram_js_1.telegram.haptic('heavy');
                     break;
                 case 'bounce':
                     a.play(mode === 'hoops' ? 'bounce' : 'bounce_footy', Math.min(1.15, (e.speed || 4) / 8), mode === 'hoops' ? 1.02 : 1.0);
@@ -16133,7 +16140,7 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', mode === 'hoops' ? 0.85 : 0.72);
                     break;
                 case 'step':
-                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.62, (e.speed || 5) / 10), mode === 'hoops' ? 1.04 : 0.98);
+                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.68, (e.speed || 5) / 9), mode === 'hoops' ? 1.04 : 0.98);
                     break;
                 case 'post':
                     a.play('post', Math.min(1.2, e.speed / 12));
@@ -16146,11 +16153,17 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     a.play('board', Math.min(1.2, e.speed / 8));
                     break;
                 case 'save':
-                    a.play('save');
+                    a.play('save', 0.96);
                     break;
                 case 'tackleStart':
-                    if (mine(e.id) || (e.dist === undefined || e.dist < 14))
-                        a.play(mode === 'hoops' ? 'squeak' : 'steal_swoosh', 0.85);
+                    if (mine(e.id) || (e.dist === undefined || e.dist < 14)) {
+                        if (mode === 'hoops')
+                            a.play('squeak', 0.85);
+                        else if (e.power > 0.15)
+                            a.play('tackle', 0.82, 1.04);
+                        else
+                            a.play('steal_swoosh', 0.88);
+                    }
                     break;
                 case 'tackleHit':
                     a.play(e.stolen ? 'steal' : 'tackle', 1);
@@ -16176,7 +16189,8 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                     break;
                 case 'score':
                     if (e.dunk) {
-                        a.play('dunk');
+                        a.play('swish', 0.72);
+                        setTimeout(() => a.play('score', 0.84), 110);
                     } else if (e.swish) {
                         a.play('swish');
                         setTimeout(() => a.play('score', 0.8), 120);

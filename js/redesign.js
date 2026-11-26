@@ -2897,7 +2897,7 @@
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var genericFallback = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
-    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.7.0-release';
+    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.8.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
       '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
@@ -5295,7 +5295,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.7.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.8.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -9046,7 +9046,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.7.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.8.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -9162,7 +9162,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=4.7.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=4.8.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -13070,7 +13070,6 @@
 
     function renderLobbyHero() {
       var sp = selSport;
-      var arenaInfo = resolveActiveArenaInfo(sp);
       lobbyHero.className = 'fvh-mode-lobby-hero ' + sp;
       lobbyHero.innerHTML =
         '<div class="fvh-mode-sport-switch">' +
@@ -13083,17 +13082,12 @@
         '    <span class="fvh-stab-txt"><b>' + (lang === 'ru' ? 'Баскетбол' : 'Basketball') + '</b><small>1v1 Court</small></span>' +
         '  </button>' +
         '</div>' +
-        '<div class="fvh-mode-lobby-meta">' +
+        '<div class="fvh-mode-lobby-meta fvh-mode-lobby-meta--center">' +
         '  <div class="fvh-mode-matchup-pill">' +
         '    <span class="fvh-mu-side" style="color:' + youColor + ';">' + getUiIconSvg(isPlayerFooty ? 'nav_home_footy' : 'nav_home_hoops', 14) + ' <span>' + youTeamName + '</span></span>' +
         '    <span class="fvh-mu-vs">VS</span>' +
         '    <span class="fvh-mu-side" style="color:' + cpuColor + ';"><span>' + cpuTeamName + '</span> ' + getUiIconSvg(isPlayerFooty ? 'nav_home_hoops' : 'nav_home_footy', 14) + '</span>' +
         '  </div>' +
-        '  <button type="button" class="fvh-mode-arena-pill fvh-mbtn-arena" id="fvh-mode-pick-arena">' +
-        '    <span class="fvh-arena-pill-dot">' + arenaInfo.icon + '</span>' +
-        '    <span class="fvh-arena-pill-label">' + (lang === 'ru' ? 'Арена:' : 'Arena:') + ' <b>' + escapeHtml(arenaInfo.name) + '</b></span>' +
-        '    <span class="fvh-arena-pill-change">' + (lang === 'ru' ? 'Сменить' : 'Change') + '</span>' +
-        '  </button>' +
         '</div>';
 
       lobbyHero.querySelectorAll('.fvh-sport-tab').forEach(function (btn) {
@@ -13104,25 +13098,16 @@
           app.audio.play('click');
           renderLobbyHero();
           renderQuickCard();
-          renderPrivateCard();
           renderPracticeCard();
         };
       });
-
-      var arenaBtn = lobbyHero.querySelector('#fvh-mode-pick-arena');
-      if (arenaBtn) {
-        arenaBtn.onclick = function () {
-          app.audio.play('click');
-          app.showArenas();
-        };
-      }
     }
 
     body.appendChild(lobbyHero);
 
-    // Responsive Ergonomic Grid: Top row Online PvP + Friend Duel, Bottom wide row Practice vs AI
+    // Responsive Clean Dual Mode Grid: Quick Match (Online 1v1 PvP) & Single Match (vs AI)
     var grid = document.createElement('div');
-    grid.className = 'fvh-mode-grid fvh-mode-grid--hub';
+    grid.className = 'fvh-mode-grid fvh-mode-grid--dual';
 
     // 1. Quick Match (Online 1v1 PvP)
     var quickCard = document.createElement('div');
@@ -13157,48 +13142,9 @@
       };
     }
 
-    // 2. Private Match (Duel with a Friend via Room Code / Invite)
-    var privateCard = document.createElement('div');
-    privateCard.className = 'fvh-mode-card private-card';
-
-    function renderPrivateCard() {
-      privateCard.innerHTML =
-        '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge private">' + getUiIconSvg('share', 13) + ' <span>' + (lang === 'ru' ? 'С ДРУГОМ' : 'WITH FRIEND') + '</span></span>' +
-          '<span class="fvh-mode-instant-pill">' + (lang === 'ru' ? 'КОД / ССЫЛКА' : 'CODE / LINK') + '</span>' +
-        '</div>' +
-        '<div class="fvh-mode-card-body">' +
-          '<div class="fvh-mode-title">' + tr('privateMatchTitle') + '</div>' +
-          '<div class="fvh-mode-desc">' +
-          (lang === 'ru'
-            ? 'Создайте приватную комнату и пригласите друга или брата по коду <b>FVH-XXXX</b>.'
-            : 'Create a private room and invite a friend using a <b>FVH-XXXX</b> room code.') +
-          '</div>' +
-        '</div>' +
-        '<div class="fvh-mode-card-actions two-btn">' +
-          '<button type="button" class="fvh-mbtn fvh-mbtn--friend fvh-btn-create-room">' +
-            '<span class="fvh-mbtn-ico">+</span>' +
-            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'Создать комнату' : 'Create Room') + '</span>' +
-          '</button>' +
-          '<button type="button" class="fvh-mbtn fvh-mbtn--code fvh-btn-join-room">' +
-            '<span class="fvh-mbtn-ico">#</span>' +
-            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'Войти по коду' : 'Join Code') + '</span>' +
-          '</button>' +
-        '</div>';
-
-      privateCard.querySelector('.fvh-btn-create-room').onclick = function () {
-        app.audio.play('click');
-        showCreateRoomModal(app, selSport);
-      };
-      privateCard.querySelector('.fvh-btn-join-room').onclick = function () {
-        app.audio.play('click');
-        showJoinRoomModal(app, selSport);
-      };
-    }
-
-    // 3. Practice vs AI (Single Match with quick Difficulty & Match Duration controls)
+    // 2. Practice vs AI (Single Match with quick Difficulty & Match Duration controls)
     var practiceCard = document.createElement('div');
-    practiceCard.className = 'fvh-mode-card practice-card fvh-mode-card--wide';
+    practiceCard.className = 'fvh-mode-card practice-card';
 
     function getDiffRewardText(dKey) {
       if (dKey === 'easy') return tr('diffEasyReward');
@@ -13290,11 +13236,9 @@
 
     renderLobbyHero();
     renderQuickCard();
-    renderPrivateCard();
     renderPracticeCard();
 
     grid.appendChild(quickCard);
-    grid.appendChild(privateCard);
     grid.appendChild(practiceCard);
 
     body.appendChild(grid);

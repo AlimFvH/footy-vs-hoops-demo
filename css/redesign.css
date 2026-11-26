@@ -11338,6 +11338,9 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   gap: 8px;
   padding-top: 6px;
 }
+.fvh-mode-lobby-meta--center {
+  justify-content: center;
+}
 .fvh-mode-arena-pill {
   display: inline-flex;
   align-items: center;
@@ -11382,7 +11385,7 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   .fvh-mode-card--wide {
     grid-column: 1 / -1;
   }
-  .fvh-practice-layout {
+  .fvh-mode-card--wide .fvh-practice-layout {
     display: grid;
     grid-template-columns: 1fr 1.15fr;
     gap: 16px;

@@ -228,7 +228,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=4.7.0-release', '/assets/characters/hoops23.glb?v=4.7.0-release', '/assets/characters/keeper1.glb?v=4.7.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=4.8.0-release', '/assets/characters/hoops23.glb?v=4.8.0-release', '/assets/characters/keeper1.glb?v=4.8.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -807,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '4.7.0-release';
+  const ATLAS_VERSION = '4.8.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -1237,8 +1237,8 @@
     function applySmoothPoseFilter(nodes, action, dt) {
       if (!(dt > 0)) return;
       const hipIdx = b.Body !== undefined ? b.Body : b.Hips;
-      const isFastAction = (action === 'kick' || action === 'pass' || action === 'shot' || action === 'dunk' || action === 'dive' || action === 'slide' || action === 'steal');
-      const rate = isFastAction ? 30.0 : 16.0;
+      const isFastAction = (action === 'kick' || action === 'pass' || action === 'shot' || action === 'dunk' || action === 'dive' || action === 'kjump' || action === 'slide' || action === 'steal');
+      const rate = isFastAction ? 42.0 : 18.0;
       const alpha = 1 - Math.exp(-Math.min(0.05, dt) * rate);
 
       if (!rig.hasPrevPose) {
@@ -1468,9 +1468,13 @@
         targetClip = (name === 'Anim_Dunk_V1') ? 'Anim_Dunk_V1' : 'Anim_2K_SlamDunk';
       } else if (lower === 'steal' || lower === 'anim_2k_steal') {
         targetClip = (name === 'Anim_Steal_V1') ? 'Anim_Steal_V1' : 'Anim_2K_Steal';
+      } else if (lower === 'fb_steal' || lower === 'anim_fb_steal') {
+        targetClip = 'Anim_FB_Steal';
       } else if (lower === 'roll' || lower === 'dive' || lower === 'anim_ea_keeperdive' || lower === 'save') {
         if (lower === 'roll') targetClip = 'Roll';
         else targetClip = 'Anim_EA_KeeperDive';
+      } else if (lower === 'kjump' || lower === 'keeperjump' || lower === 'anim_ea_keeperjump') {
+        targetClip = 'Anim_EA_KeeperJump';
       } else if (lower === 'wave' || lower === 'celebrate' || lower === 'win' || lower === 'anim_celebration') {
         if (lower === 'wave') targetClip = 'Wave';
         else targetClip = (name === 'Anim_Celeb_V1' || name === 'Anim_Celeb_V2') ? name : 'Anim_Celebration';
@@ -1478,7 +1482,7 @@
         targetClip = 'HitRecieve';
       }
 
-      const nextIsOneShot = /Kick|Shot|Dunk|Slide|Dive|Steal|Hit|Roll|Punch/i.test(targetClip);
+      const nextIsOneShot = /Kick|Shot|Dunk|Slide|Dive|Jump|Steal|Hit|Roll|Punch/i.test(targetClip);
       if (this.currentAnim !== targetClip) {
         const prevWasAction = /Kick|Shot|Dunk|Slide|Dive|Steal|Celeb|Hit|Roll|Punch/i.test(this.currentAnim || '');
         const blend = (typeof blendDuration === 'number')
@@ -1584,23 +1588,24 @@
       // Track clean action entry edges for variant clip variety & follow-through linger
       const curActionTag = (isBasketballMode
         ? (a.dunk && a.dunk.active ? 'dunk' : a.shotT > 0 ? 'shot' : a.kickT > 0 ? 'pass' : a.jumpT > 0 ? 'jump' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'steal' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none')
-        : (a.role === 'keeper' && a.diveT > 0 ? 'dive' : a.role === 'keeper' && a.jumpT > 0 ? 'kjump' : a.shotT > 0 ? 'fshot' : a.kickT > 0 ? 'fkick' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'slide' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none'));
+        : (a.role === 'keeper' && a.diveT > 0 ? 'dive' : a.role === 'keeper' && a.jumpT > 0 ? 'kjump' : a.shotT > 0 ? 'fshot' : a.kickT > 0 ? 'fkick' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? ((a.tackle.power || 0) > 0.15 ? 'slide' : 'fsteal') : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none'));
       if (curActionTag !== 'none' && curActionTag !== this._lastActionTag) {
         this._activeVariantClip = this._cycleVariant(curActionTag, ({
           dunk: ['Anim_2K_SlamDunk', 'Anim_Dunk_V1'],
-          shot: ['Anim_2K_JumpShot', 'Anim_Shot_V1'],
+          shot: ['Anim_2K_JumpShot'],
           pass: ['Anim_Shot_V1'],
           jump: ['Anim_2K_JumpShot'],
           steal: ['Anim_2K_Steal', 'Anim_Steal_V1'],
+          fsteal: ['Anim_FB_Steal'],
           celeb: ['Anim_Celebration', 'Anim_Celeb_V1', 'Anim_Celeb_V2'],
           hit: ['HitRecieve', 'HitRecieve_2'],
           dive: ['Anim_EA_KeeperDive'],
-          kjump: ['Anim_EA_KeeperDive'],
+          kjump: ['Anim_EA_KeeperJump'],
           fshot: ['Anim_EA_PowerStrike', 'Anim_Kick_V1'],
           fkick: ['Kick_Right', 'Kick_Left'],
           slide: ['Anim_EA_SlideTackle', 'Anim_Slide_V1']
         })[curActionTag] || ['Idle']);
-        this._lingerTimer = (curActionTag === 'fshot' || curActionTag === 'fkick' || curActionTag === 'shot' || curActionTag === 'dunk') ? 0.22 : 0;
+        this._lingerTimer = (curActionTag === 'fshot' || curActionTag === 'fkick' || curActionTag === 'shot' || curActionTag === 'pass' || curActionTag === 'dunk' || curActionTag === 'slide' || curActionTag === 'steal' || curActionTag === 'fsteal' || curActionTag === 'dive' || curActionTag === 'kjump') ? 0.28 : 0;
         this._lingerClip = this._activeVariantClip;
         this._lingerTag = curActionTag;
       }
@@ -1612,14 +1617,14 @@
       // Helper to calibrate sculpted 60fps clip playback rate cleanly near natural 1.0x tempo
       const syncRate = (targetWindowSec, fallbackRate) => {
         const d = this.model && this.model.getActiveClipDuration ? this.model.getActiveClipDuration() : 0;
-        return d > 0.2 ? Math.max(0.88, Math.min(1.42, (d * 0.90) / Math.max(0.28, targetWindowSec))) : fallbackRate;
+        return d > 0.2 ? Math.max(0.88, Math.min(1.28, (d * 0.92) / Math.max(0.28, targetWindowSec))) : fallbackRate;
       };
 
       // ==========================================
       // A. BASKETBALL MATCH ACTIONS (100% HANDS, NO FOOT KICKS!)
       // ==========================================
       if (isBasketballMode) {
-        // 1. Slam Dunk: Explosive Hang-Time & Rim Hammer (GLB carries core arc; add rim boost)
+        // 1. Slam Dunk: Explosive Hang-Time & Rim Hammer
         if (a.dunk && a.dunk.active) {
           const dk = a.dunk;
           const dunkProgress = Math.min(1, Math.max(0, dk.t / (dk.dur || 0.65)));
@@ -1628,38 +1633,38 @@
           targetPitch = 0.04 * Math.sin(dunkProgress * Math.PI);
           targetRoll = corneringLean * 0.5;
           bio.action = 'dunk';
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', syncRate(dk.dur || 0.70, 1.08), 0.09);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_SlamDunk', syncRate(dk.dur || 0.72, 1.04), 0.07);
         }
         // 2. Jump Shot / Block Elevation & Release
         else if (a.shotT > 0) {
           targetLift = 0.0;
           targetPitch = 0.0;
           bio.action = 'shot';
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', syncRate(0.62, 1.12), 0.08);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_JumpShot', syncRate(0.64, 1.06), 0.06);
         }
         else if (a.jumpT > 0) {
-          const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.45));
+          const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.50));
           targetLift = Math.sin(jp * Math.PI) * 0.08;
           targetPitch = 0.0;
           bio.action = 'shot';
-          this.setAnimation('Anim_2K_JumpShot', syncRate(0.54, 1.2), 0.08);
+          this.setAnimation('Anim_2K_JumpShot', syncRate(0.58, 1.10), 0.06);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
         else if (a.kickT > 0) {
           targetPitch = 0.04;
           bio.action = 'pass';
-          this.setAnimation('Anim_Shot_V1', syncRate(0.42, 1.1), 0.07);
+          this.setAnimation('Anim_Shot_V1', syncRate(0.42, 1.05), 0.06);
         }
         // 4. Interception Lunge / Hand Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
           targetPitch = 0.05;
           bio.action = 'steal';
-          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', syncRate(0.45, 1.05), 0.07);
+          this.setAnimation(this._activeVariantClip || 'Anim_2K_Steal', syncRate(0.46, 1.04), 0.06);
         }
-        // 5. Smooth Follow-Through Linger right after releasing shot/dunk/pass
-        else if (this._lingerTimer > 0 && (this._lingerTag === 'shot' || this._lingerTag === 'dunk')) {
-          bio.action = this._lingerTag === 'dunk' ? 'dunk' : 'shot';
-          this.setAnimation(this._lingerClip || 'Anim_2K_JumpShot', 0.92, 0.11);
+        // 5. Smooth Follow-Through Linger right after releasing shot/dunk/pass/steal
+        else if (this._lingerTimer > 0 && (this._lingerTag === 'shot' || this._lingerTag === 'dunk' || this._lingerTag === 'pass' || this._lingerTag === 'steal')) {
+          bio.action = this._lingerTag;
+          this.setAnimation(this._lingerClip || 'Anim_2K_JumpShot', 0.94, 0.12);
         }
         // 6. Recovery / Stumble
         else if (a.stunT > 0) {
@@ -1694,25 +1699,25 @@
       // B. FOOTBALL (SOCCER) MATCH ACTIONS
       // ==========================================
       else {
-        // 1. Goalkeeper Dynamic Parrying Dives & Aerial Saves
+        // 1. Goalkeeper Dynamic Parrying Dives & Aerial Crossbar Saves
         if (a.role === 'keeper' && a.diveT > 0) {
-          const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.42));
+          const diveProg = Math.max(0, Math.min(1, 1 - a.diveT / 0.54));
           const diveArc = Math.sin(diveProg * Math.PI);
           const diveDir = a.diveDir || (a.aiTargetX !== undefined && a.aiTargetX >= a.x ? 1 : -1);
           bio.diveDir = diveDir;
-          targetRoll = -diveDir * (0.14 * diveArc);
-          targetLift = 0.08 * diveArc;
-          targetPitch = 0.04 * diveArc;
+          targetRoll = -diveDir * (0.08 * diveArc);
+          targetLift = 0.05 * diveArc;
+          targetPitch = 0.02 * diveArc;
           bio.action = 'dive';
-          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.54, 1.18), 0.08);
+          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.56, 1.08), 0.07);
         }
         else if (a.role === 'keeper' && a.jumpT > 0) {
-          const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.5));
+          const jumpProg = Math.max(0, Math.min(1, 1 - a.jumpT / 0.58));
           bio.diveDir = 1;
-          targetLift = Math.sin(jumpProg * Math.PI) * 0.16;
+          targetLift = Math.sin(jumpProg * Math.PI) * 0.12;
           targetPitch = -0.02;
-          bio.action = 'dive';
-          this.setAnimation('Anim_EA_KeeperDive', syncRate(0.56, 1.15), 0.08);
+          bio.action = 'kjump';
+          this.setAnimation('Anim_EA_KeeperJump', syncRate(0.58, 1.05), 0.07);
         }
         // 2. Football Power Shot vs Crisp Pass
         else if (a.shotT > 0) {
@@ -1720,26 +1725,27 @@
           targetPitch = 0.0;
           targetRoll = 0.0;
           bio.action = 'kick';
-          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', syncRate(0.56, 1.10), 0.07);
+          this.setAnimation(this._activeVariantClip || 'Anim_EA_PowerStrike', syncRate(0.62, 1.05), 0.06);
         }
         else if (a.kickT > 0) {
           targetLift = 0.0;
           targetPitch = 0.0;
           bio.action = 'pass';
-          this.setAnimation(this._activeVariantClip || 'Kick_Right', syncRate(0.42, 1.08), 0.07);
+          this.setAnimation(this._activeVariantClip || 'Kick_Right', syncRate(0.46, 1.05), 0.06);
         }
-        // 3. Football Turf Slide Tackle (centered & turf-skimming inside GLB)
+        // 3. Football Turf Slide Tackle vs Standing Poke Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
           targetLift = 0.0;
           targetPitch = 0.0;
           targetRoll = 0.0;
-          bio.action = 'slide';
-          this.setAnimation(this._activeVariantClip || 'Anim_EA_SlideTackle', syncRate(0.54, 1.15), 0.08);
+          const isSlide = (a.tackle.power || 0) > 0.15;
+          bio.action = isSlide ? 'slide' : 'steal';
+          this.setAnimation(this._activeVariantClip || (isSlide ? 'Anim_EA_SlideTackle' : 'Anim_FB_Steal'), syncRate(isSlide ? 0.58 : 0.44, 1.05), 0.06);
         }
-        // 4. Smooth Follow-Through Linger after Kick/Pass
-        else if (this._lingerTimer > 0 && (this._lingerTag === 'fshot' || this._lingerTag === 'fkick')) {
-          bio.action = this._lingerTag === 'fshot' ? 'kick' : 'pass';
-          this.setAnimation(this._lingerClip || 'Kick_Right', 0.92, 0.11);
+        // 4. Smooth Follow-Through Linger after Kick / Pass / Slide / Poke / Save
+        else if (this._lingerTimer > 0 && (this._lingerTag === 'fshot' || this._lingerTag === 'fkick' || this._lingerTag === 'slide' || this._lingerTag === 'fsteal' || this._lingerTag === 'dive' || this._lingerTag === 'kjump')) {
+          bio.action = this._lingerTag === 'fshot' ? 'kick' : (this._lingerTag === 'fkick' ? 'pass' : (this._lingerTag === 'slide' ? 'slide' : (this._lingerTag === 'fsteal' ? 'steal' : 'dive')));
+          this.setAnimation(this._lingerClip || 'Kick_Right', 0.94, 0.12);
         }
         // 5. Recovery / Stumble after tackle collision
         else if (a.stunT > 0) {
@@ -2013,7 +2019,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.7.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=4.8.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2022,7 +2028,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.7.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=4.8.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2031,7 +2037,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.7.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=4.8.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2301,7 +2307,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.7.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.7.0-release' : '/assets/characters/footy10.glb?v=4.7.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=4.8.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=4.8.0-release' : '/assets/characters/footy10.glb?v=4.8.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2462,7 +2468,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.7.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.7.0-release' : '/assets/characters/footy10.glb?v=4.7.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=4.8.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=4.8.0-release' : '/assets/characters/footy10.glb?v=4.8.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };
