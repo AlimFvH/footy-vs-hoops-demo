@@ -189,8 +189,8 @@ it('Official Emblem: authentic emblem.png exists and is referenced with 1:1 prop
   assert(fs.existsSync('assets/emblem.png'), 'assets/emblem.png must exist');
   const stat = fs.statSync('assets/emblem.png');
   assert(stat.size > 100000, 'assets/emblem.png must be the authentic high-resolution asset');
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
-  assert(code.includes('assets/emblem.png'), 'js/redesign.js must use assets/emblem.png');
+  const code = fs.readFileSync('js/redesign.js', 'utf8') + '\n' + fs.readFileSync('js/ui/artwork_svg.js', 'utf8');
+  assert(code.includes('assets/emblem.png'), 'Frontend UI must use assets/emblem.png');
   assert(code.includes('fvh-official-emblem'), 'Must use fvh-official-emblem class');
   const css = fs.readFileSync('css/redesign.css', 'utf8');
   assert(css.includes('.fvh-official-emblem'), 'css/redesign.css must style .fvh-official-emblem with 1:1 aspect-ratio');
@@ -208,7 +208,7 @@ it('Mode Selection: buildModeSelectPage renders focused Solo Match vs AI showcas
 
 // 13. High-Fidelity Character Art Quality
 it('Character Art: FOOTY and HOOPS have layered, detailed SVGs with accurate identities', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
+  const code = fs.readFileSync('js/redesign.js', 'utf8') + '\n' + fs.readFileSync('js/ui/artwork_svg.js', 'utf8');
   assert(code.includes('getFootyAvatarSvg'), 'getFootyAvatarSvg must exist');
   assert(code.includes('getHoopsAvatarSvg'), 'getHoopsAvatarSvg must exist');
   // Check FOOTY details: jersey #10, cyan chevron/visor, hexagonal football
@@ -223,7 +223,7 @@ it('Character Art: FOOTY and HOOPS have layered, detailed SVGs with accurate ide
 
 // 14. Detailed Shop & Wardrobe Previews
 it('Previews: renderItemArtwork renders vector SVGs for jerseys, balls, stadiums, packs', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
+  const code = fs.readFileSync('js/redesign.js', 'utf8') + '\n' + fs.readFileSync('js/ui/artwork_svg.js', 'utf8');
   assert(code.includes('renderItemArtwork'), 'renderItemArtwork dispatcher must exist');
   assert(code.includes('getDetailedJerseySvg'), 'Must render detailed jersey SVGs');
   assert(code.includes('getDetailedBallSvg'), 'Must render detailed 3D ball SVGs');
@@ -233,7 +233,7 @@ it('Previews: renderItemArtwork renders vector SVGs for jerseys, balls, stadiums
 
 // 15. Themed Arena Environments (Ocean & Forest Courts)
 it('Arenas: Coastal Sunset Court and Redwood Forest Arena are configured with scenic visuals', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
+  const code = fs.readFileSync('js/redesign.js', 'utf8') + '\n' + fs.readFileSync('js/ui/artwork_svg.js', 'utf8');
   assert(code.includes('std_ocean_sunset'), 'std_ocean_sunset arena must exist');
   assert(code.includes('std_forest_redwood'), 'std_forest_redwood arena must exist');
   assert(code.includes('oceanSky') || code.includes('oceanWater'), 'Coastal Sunset Court must feature ocean visuals');
@@ -258,7 +258,7 @@ it('Quests: 3 separated categories (Gameplay, Official Socials, Referral Squad H
 
 // 17. All 10 Distinct Scenic Arenas
 it('Arenas: Exactly 10 unique world environments are configured with detailed SVG visuals', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
+  const code = fs.readFileSync('js/redesign.js', 'utf8') + '\n' + fs.readFileSync('js/ui/artwork_svg.js', 'utf8');
   const arenas = [
     'std_ocean_sunset',
     'std_forest_redwood',
@@ -338,7 +338,7 @@ it('Production Webhook Security: TELEGRAM_WEBHOOK_SECRET strictly required in pr
 
 // 22. Shop Dedicated Bundles (7 Thematic Collections)
 it('Shop Bundles: 7 thematic collections with item breakdowns, discount pills, and multi-currency pricing', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
+  const code = fs.readFileSync('js/redesign.js', 'utf8') + '\n' + fs.readFileSync('js/ui/artwork_svg.js', 'utf8');
   assert(code.includes('catBundles'), 'Must have catBundles category');
   assert(code.includes('bundle_footy_starter'), 'Must include FOOTY Starter Bundle');
   assert(code.includes('bundle_hoops_starter'), 'Must include HOOPS Starter Bundle');
@@ -389,6 +389,22 @@ it('Enterprise Mechanics & 3D Animation Integrity: 1,000 simulated users, GLB sk
   assert.strictEqual(report.usersProcessed, 1000, 'Must process 1,000 users');
   assert.strictEqual(report.errors, 0, 'Must have zero errors');
   assert.strictEqual(report.attacksBlocked, '10/10', 'Must block 10/10 attacks');
+});
+
+// 25. Modular Architecture & 3D Game Feel Engine
+it('Modular Architecture & 3D Game Feel: Standalone GameFeel, Artwork, Locale & Server modules wired cleanly', () => {
+  const idxHtml = fs.readFileSync('index.html', 'utf8');
+  assert(idxHtml.includes('render/game_feel.js'), 'index.html must load render/game_feel.js');
+  assert(idxHtml.includes('js/i18n/locales_extra.js'), 'index.html must load js/i18n/locales_extra.js');
+  assert(idxHtml.includes('js/ui/artwork_svg.js'), 'index.html must load js/ui/artwork_svg.js');
+
+  const gf = fs.readFileSync('render/game_feel.js', 'utf8');
+  assert(gf.includes('triggerHitStop') && gf.includes('punchCamera'), 'GameFeel must implement hit-stop & camera punch');
+  assert(gf.includes('emitTurfSpray') && gf.includes('emitCourtDust'), 'GameFeel must emit surface-specific turf & court particles');
+  assert(gf.includes('applyBallFeel'), 'GameFeel must bind basketball hand-to-ball socket & squash-stretch');
+
+  assert(fs.existsSync('server/lib/static_server.js'), 'server/lib/static_server.js must exist');
+  assert(fs.existsSync('server/lib/online_legacy.js'), 'server/lib/online_legacy.js must exist');
 });
 
 console.log(`\nResults: ${passedTests}/${totalTests} tests passed.\n`);

@@ -228,7 +228,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=5.0.0-release', '/assets/characters/hoops23.glb?v=5.0.0-release', '/assets/characters/keeper1.glb?v=5.0.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=5.1.0-release', '/assets/characters/hoops23.glb?v=5.1.0-release', '/assets/characters/keeper1.glb?v=5.1.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -807,7 +807,7 @@
   };
 
   const _preloadedImages = new Map();
-  const ATLAS_VERSION = '5.0.0-release';
+  const ATLAS_VERSION = '5.1.0-release';
   function preloadImage(url) {
     if (_preloadedImages.has(url)) return _preloadedImages.get(url);
     if (typeof Image === 'undefined') return null;
@@ -1799,6 +1799,27 @@
       const sy = this.isFooty ? this.scale : this.scale * 1.02;
       const sz = this.scale * 0.98;
       makeTransformMatrix(this.modelMatrix, px, py, pz, this.yaw, sx, sy, sz, this.pitch, this.roll);
+      this._poseFrameStamp = true;
+    }
+
+    getHandSocketWorldPos(side) {
+      if (!this.loaded || !this.model || !this.model.nodes) return null;
+      if (this._wristRIdx === undefined) {
+        const nodes = this.model.nodes;
+        this._wristRIdx = nodes.findIndex(n => n && n.name === 'Wrist.R');
+        this._wristLIdx = nodes.findIndex(n => n && n.name === 'Wrist.L');
+      }
+      const idx = side === 'L' ? (this._wristLIdx >= 0 ? this._wristLIdx : this._wristRIdx) : (this._wristRIdx >= 0 ? this._wristRIdx : this._wristLIdx);
+      if (idx < 0 || !this.model.nodes[idx]) return null;
+      const W = this.model.nodes[idx].worldMatrix;
+      const M = this.modelMatrix;
+      if (!W || !M) return null;
+      const wx = W[12], wy = W[13], wz = W[14];
+      return {
+        x: M[0] * wx + M[4] * wy + M[8] * wz + M[12],
+        y: M[1] * wx + M[5] * wy + M[9] * wz + M[13],
+        z: M[2] * wx + M[6] * wy + M[10] * wz + M[14]
+      };
     }
   }
 
@@ -2025,7 +2046,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=5.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=5.1.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2034,7 +2055,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=5.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=5.1.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2043,7 +2064,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=5.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=5.1.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2061,6 +2082,24 @@
       }
     },
 
+    updatePose(matchView, dt) {
+      if (!this.enabled || !matchView || this.mode === 'procedural') return;
+      const list = this.instances.get(matchView);
+      if (!list || list.length === 0) return;
+      list.forEach(inst => {
+        inst.update(dt);
+      });
+    },
+
+    getOwnerHandSocket(matchView, agent, side) {
+      if (!this.enabled || !matchView || !agent) return null;
+      const list = this.instances.get(matchView);
+      if (!list) return null;
+      const inst = list.find(c => c && c.agent === agent && c.loaded);
+      if (!inst || typeof inst.getHandSocketWorldPos !== 'function') return null;
+      return inst.getHandSocketWorldPos(side || 'R');
+    },
+
     renderMatch(matchView, dt) {
       if (!this.enabled || !matchView || !matchView.renderer || this.mode === 'procedural') return;
       const list = this.instances.get(matchView);
@@ -2068,7 +2107,10 @@
 
       // In 2.5D Mode, instances update their transforms and the scene graph renders them natively!
       if (this.mode === '2.5d') {
-        list.forEach(inst => inst.update(dt));
+        list.forEach(inst => {
+          if (inst._poseFrameStamp) { inst._poseFrameStamp = false; return; }
+          inst.update(dt);
+        });
         return;
       }
 
@@ -2082,8 +2124,14 @@
       const cam = matchView.rig.cam;
       const scene = matchView.scene;
 
-      // Update character transforms and skeletal animation
-      list.forEach(inst => inst.update(dt));
+      // Update character transforms and skeletal animation (skip duplicate update if updatePose already ran this frame)
+      list.forEach(inst => {
+        if (inst._poseFrameStamp) {
+          inst._poseFrameStamp = false;
+          return;
+        }
+        inst.update(dt);
+      });
 
       // Grounded Contact AO + Soft Directional Cast Shadows beneath every GLB Athlete
       const isFootyMatch = Boolean(matchView && (matchView.isFooty || matchView.mode === 'footy'));
@@ -2313,7 +2361,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=5.0.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=5.0.0-release' : '/assets/characters/footy10.glb?v=5.0.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=5.1.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=5.1.0-release' : '/assets/characters/footy10.glb?v=5.1.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2474,7 +2522,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=5.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=5.0.0-release' : '/assets/characters/footy10.glb?v=5.0.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=5.1.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=5.1.0-release' : '/assets/characters/footy10.glb?v=5.1.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };
