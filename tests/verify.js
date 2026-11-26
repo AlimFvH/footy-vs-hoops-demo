@@ -196,14 +196,13 @@ it('Official Emblem: authentic emblem.png exists and is referenced with 1:1 prop
   assert(css.includes('.fvh-official-emblem'), 'css/redesign.css must style .fvh-official-emblem with 1:1 aspect-ratio');
 });
 
-// 12. Full Mode Selection Screen
-it('Mode Selection: buildModeSelectPage defines Quick Match, Private Match, Practice vs AI', () => {
+// 12. Full Mode Selection Screen (Solo vs AI Showcase, zero online card)
+it('Mode Selection: buildModeSelectPage renders focused Solo Match vs AI showcase with discipline, difficulty, timer', () => {
   const code = fs.readFileSync('js/redesign.js', 'utf8');
   assert(code.includes('buildModeSelectPage'), 'buildModeSelectPage must exist');
-  assert(code.includes('quickMatchTitle'), 'Must define Quick Match');
-  assert(code.includes('privateMatchTitle'), 'Must define Private Match');
-  assert(code.includes('practiceAITitle'), 'Must define Practice vs AI');
-  assert(code.includes('showQuickMatchSearchModal'), 'Must provide online matchmaking search modal');
+  assert(code.includes('fvh-mode-grid--solo'), 'Must use single-player fvh-mode-grid--solo layout');
+  assert(code.includes('fvh-btn-start-practice'), 'Must include Solo Match start button');
+  assert(!code.includes('grid.appendChild(quickCard)'), 'Online Quick Match card must not be mounted in Mode Select');
   assert(code.includes('app.showModeSelect'), 'app.showModeSelect must be wired up');
 });
 
@@ -294,16 +293,15 @@ it('Arena Selection: buildArenaSelectPage renders gallery of 10 worlds with equi
   assert(code.includes('arenaSelectTitle'), 'arenaSelectTitle must exist');
 });
 
-// 19. Online Multiplayer Architecture (Quick Match + Private 6-char Rooms)
-it('Online Multiplayer: Automated WebRTC signaling via backend server without manual SDP copy-paste', () => {
-  const code = fs.readFileSync('js/redesign.js', 'utf8');
-  assert(code.includes('startWebRTCSession'), 'startWebRTCSession helper must exist');
-  assert(code.includes('/api/matchmaking/join'), 'Must connect to /api/matchmaking/join');
-  assert(code.includes('/api/room/create'), 'Must connect to /api/room/create');
-  assert(code.includes('/api/room/join'), 'Must connect to /api/room/join');
-  assert(code.includes('/api/room/signal'), 'Must exchange signals via /api/room/signal');
-  assert(code.includes('showCreateRoomModal'), 'showCreateRoomModal must exist');
-  assert(code.includes('showJoinRoomModal'), 'showJoinRoomModal must exist');
+// 19. Server Load Protection (Online Multiplayer Disabled by Default, Solo Full Rewards)
+it('Server Load Protection: Online matchmaking/WS disabled by default and Solo AI grants full rewards', () => {
+  const srvCode = fs.readFileSync('server/server.js', 'utf8');
+  assert(srvCode.includes('ONLINE_MODE_ENABLED'), 'server.js must gate online endpoints via ONLINE_MODE_ENABLED');
+  assert(srvCode.includes("pathname.startsWith('/api/matchmaking/')"), 'server.js must short-circuit matchmaking load when online is disabled');
+  assert(srvCode.includes("if (!ONLINE_MODE_ENABLED)"), 'server.js must block WS/online loops when disabled');
+  const gameCode = fs.readFileSync('js/game.js', 'utf8');
+  assert(gameCode.includes('computeRewards)(sum, boostMul)'), 'Solo match end must compute full Coin & XP rewards');
+  assert(!gameCode.includes("'+0 FvH Coin'") && !gameCode.includes(" +0 FvH Coin"), 'Solo match result must no longer hardcode +0 FvH Coin');
 });
 
 // 20. Dynamic 3D Advertising Boards

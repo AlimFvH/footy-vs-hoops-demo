@@ -333,11 +333,17 @@
       this.playbackSpeed = 1.0;
       this.stats = data.stats;
 
-      // Crossfade blend state for smooth AAA transitions (zero snapping)
-      this._blendFromPose = null;
+      // Dual live-clip crossfade blend state (zero snapping, zero frozen-pose smearing)
+      this._restPose = this._capturePose();
+      this._prevPoseBuf = null;
+      this._redirectFreezeBuf = null;
+      this._prevAnimIndex = -1;
+      this._prevAnimTime = 0;
+      this._prevAnimLoop = true;
+      this._prevAnimSpeed = 1.0;
       this._blendElapsed = 0;
       this._blendDuration = 0;
-      this._defaultBlendDuration = 0.14;
+      this._defaultBlendDuration = 0.16;
       this._qTmp = new Float32Array(4);
 
       // Up to 96 bones supported in vertex uniform array (standard in WebGL2)
@@ -351,8 +357,28 @@
       return this.nodes.map(n => ({
         t: [n.translation[0], n.translation[1], n.translation[2]],
         r: [n.rotation[0], n.rotation[1], n.rotation[2], n.rotation[3]],
-        s: [n.scale[0], n.scale[1], n.scale[2]]
+        s: [n.scale[0], n.scale[1], n.scale[2]],
+        hasMatrix: !!n.hasMatrix
       }));
+    }
+
+    _restoreRestPose() {
+      if (!this._restPose) return;
+      for (let i = 0; i < this.nodes.length; i++) {
+        const rest = this._restPose[i];
+        const node = this.nodes[i];
+        if (!rest || rest.hasMatrix || node.hasMatrix) continue;
+        node.translation[0] = rest.t[0];
+        node.translation[1] = rest.t[1];
+        node.translation[2] = rest.t[2];
+        node.rotation[0] = rest.r[0];
+        node.rotation[1] = rest.r[1];
+        node.rotation[2] = rest.r[2];
+        node.rotation[3] = rest.r[3];
+        node.scale[0] = rest.s[0];
+        node.scale[1] = rest.s[1];
+        node.scale[2] = rest.s[2];
+      }
     }
 
     setAnimation(clipIndexOrName, opts) {
@@ -400,8 +426,10 @@
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('slamdunk') || a.name.toLowerCase().includes('interact'));
         } else if (idx === -1 && (query.includes('steal') || query.includes('strip'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase().includes('steal') || a.name.toLowerCase().includes('hitrecieve'));
+        } else if (idx === -1 && (query.includes('lowdive') || query.includes('lowsave'))) {
+          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('keeperlowdive') || a.name.toLowerCase().includes('keeperdive'));
         } else if (idx === -1 && (query.includes('dive') || query.includes('save') || query.includes('keeper'))) {
-          idx = this.animations.findIndex(a => a.name.toLowerCase().includes('keeperdive') || a.name.toLowerCase().includes('kick_left'));
+          idx = this.animations.findIndex(a => a.name.toLowerCase() === 'anim_ea_keeperdive' || a.name.toLowerCase().includes('keeperdive') || a.name.toLowerCase().includes('kick_left'));
         } else if (idx === -1 && (query.includes('punch') || query.includes('pass'))) {
           idx = this.animations.findIndex(a => a.name.toLowerCase() === 'punch_right');
           if (idx === -1) idx = this.animations.findIndex(a => a.name.toLowerCase().includes('punch'));
@@ -418,12 +446,23 @@
       const shouldLoop = (opts && typeof opts.loop === 'boolean') ? opts.loop : defaultLoop;
 
       if (targetIdx !== -1 && (this.activeAnimIndex !== targetIdx || resetOnSame)) {
-        if (blendDur > 0.005) {
-          this._blendFromPose = this._capturePose();
+        if (blendDur > 0.005 && this.activeAnimIndex >= 0 && this.animations[this.activeAnimIndex]) {
+          // If interrupting an active crossfade, freeze current live blended pose as bridge
+          if (this._blendDuration > 0 && this._blendElapsed < this._blendDuration) {
+            this._redirectFreezeBuf = this._capturePose();
+          } else {
+            this._redirectFreezeBuf = null;
+          }
+          this._prevAnimIndex = this.activeAnimIndex;
+          this._prevAnimTime = this.playbackTime;
+          this._prevAnimLoop = this.activeAnimLoop !== false;
+          this._prevAnimSpeed = this.playbackSpeed || 1.0;
           this._blendElapsed = 0;
           this._blendDuration = blendDur;
         } else {
-          this._blendFromPose = null;
+          this._redirectFreezeBuf = null;
+          this._prevAnimIndex = -1;
+          this._blendDuration = 0;
         }
         this.activeAnimIndex = targetIdx;
         this.activeAnimLoop = shouldLoop;
@@ -440,22 +479,55 @@
 
     update(dt) {
       if (this.animations.length > 0 && this.playing) {
-        this.playbackTime += dt * this.playbackSpeed;
         const currentAnim = this.animations[this.activeAnimIndex];
-        if (currentAnim) {
-          currentAnim.apply(this.playbackTime, this.nodes, this.activeAnimLoop !== false);
-        }
-        if (this._blendFromPose && this._blendDuration > 0) {
+        const canBlendPrev = this._redirectFreezeBuf || (this._prevAnimIndex >= 0 && this.animations[this._prevAnimIndex]);
+        if (this._blendDuration > 0 && canBlendPrev) {
           this._blendElapsed += dt;
           const rawW = Math.min(1, this._blendElapsed / this._blendDuration);
           // Smoothstep ease so transition accelerates and settles organically
           const w = rawW * rawW * (3 - 2 * rawW);
           if (rawW >= 1) {
-            this._blendFromPose = null;
+            this._redirectFreezeBuf = null;
+            this._prevAnimIndex = -1;
+            this._blendDuration = 0;
+            this._restoreRestPose();
+            this.playbackTime += dt * this.playbackSpeed;
+            if (currentAnim) {
+              currentAnim.apply(this.playbackTime, this.nodes, this.activeAnimLoop !== false);
+            }
           } else {
+            if (!this._prevPoseBuf) this._prevPoseBuf = this._capturePose();
+            if (this._redirectFreezeBuf) {
+              for (let i = 0; i < this.nodes.length; i++) {
+                const s = this._redirectFreezeBuf[i];
+                const dst = this._prevPoseBuf[i];
+                if (!s || !dst) continue;
+                dst.t[0] = s.t[0]; dst.t[1] = s.t[1]; dst.t[2] = s.t[2];
+                dst.r[0] = s.r[0]; dst.r[1] = s.r[1]; dst.r[2] = s.r[2]; dst.r[3] = s.r[3];
+                dst.s[0] = s.s[0]; dst.s[1] = s.s[1]; dst.s[2] = s.s[2];
+              }
+            } else {
+              // Dual live-clip crossfade: keep advancing outgoing clip so velocity/inertia carries cleanly
+              this._prevAnimTime += dt * this._prevAnimSpeed;
+              this._restoreRestPose();
+              this.animations[this._prevAnimIndex].apply(this._prevAnimTime, this.nodes, this._prevAnimLoop);
+              for (let i = 0; i < this.nodes.length; i++) {
+                const n = this.nodes[i];
+                const dst = this._prevPoseBuf[i];
+                if (!dst || n.hasMatrix) continue;
+                dst.t[0] = n.translation[0]; dst.t[1] = n.translation[1]; dst.t[2] = n.translation[2];
+                dst.r[0] = n.rotation[0]; dst.r[1] = n.rotation[1]; dst.r[2] = n.rotation[2]; dst.r[3] = n.rotation[3];
+                dst.s[0] = n.scale[0]; dst.s[1] = n.scale[1]; dst.s[2] = n.scale[2];
+              }
+            }
+            this._restoreRestPose();
+            this.playbackTime += dt * this.playbackSpeed;
+            if (currentAnim) {
+              currentAnim.apply(this.playbackTime, this.nodes, this.activeAnimLoop !== false);
+            }
             const qTmp = this._qTmp || (this._qTmp = new Float32Array(4));
             for (let i = 0; i < this.nodes.length; i++) {
-              const prev = this._blendFromPose[i];
+              const prev = this._prevPoseBuf[i];
               const node = this.nodes[i];
               if (!prev || node.hasMatrix) continue;
               node.translation[0] = prev.t[0] + (node.translation[0] - prev.t[0]) * w;
@@ -470,6 +542,12 @@
               node.scale[1] = prev.s[1] + (node.scale[1] - prev.s[1]) * w;
               node.scale[2] = prev.s[2] + (node.scale[2] - prev.s[2]) * w;
             }
+          }
+        } else {
+          this.playbackTime += dt * this.playbackSpeed;
+          if (currentAnim) {
+            this._restoreRestPose();
+            currentAnim.apply(this.playbackTime, this.nodes, this.activeAnimLoop !== false);
           }
         }
       }

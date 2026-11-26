@@ -218,7 +218,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
-                        const AUDIO_VERSION = '4.9.0-release';
+                        const AUDIO_VERSION = '5.0.0-release';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -4811,6 +4811,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                     const dToCarrier = Math.hypot(b.owner.x - k.x, b.owner.z - k.z);
                     if (dToCarrier < 1.65 && k.diveT <= 0 && k.aiTimer <= 0) {
                         k.diveDir = (b.owner.x >= k.x) ? 1 : -1;
+                        k.diveLow = (b.y < 0.72);
                         k.diveT = 0.54;
                         k.aiTimer = 0.85;
                     }
@@ -4836,9 +4837,10 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                     k.aiTimer = 0.8;
                 }
 
-                // Lateral dive detection: goalkeeper dives left or right to save shots away from body
+                // Lateral dive detection: goalkeeper dives left or right (low turf save vs upper corner save)
                 if (speed > 8.5 && t < 0.65 && Math.abs(dX) > 0.6 && k.diveT <= 0 && k.aiTimer <= 0) {
                     k.diveDir = dX > 0 ? 1 : -1;
+                    k.diveLow = (ballYAtLine < 0.80);
                     k.diveT = 0.54;
                     k.aiTimer = 0.85;
                 }
@@ -10348,9 +10350,9 @@ define("i18n/en", ["require", "exports"], function (require, exports) {
         'pause.quit': 'Quit to menu',
         'pause.quitConfirm': 'Quit the match? Progress in this match will be lost.',
         'result.title': 'Match result',
-        'result.practiceAiNote': '🎯 Practice vs AI: Match rewards and FvH Coins are earned in Online PvP!',
-        'result.reward': 'Rewards (demo)',
-        'result.coins': '+{n} demo coins',
+        'result.practiceAiNote': '🏆 Solo Match vs AI: Full FvH Coins, XP, and Drop PTS credited!',
+        'result.reward': 'Rewards',
+        'result.coins': '+{n} FvH Coin',
         'result.xp': '+{n} XP',
         'result.rematch': 'Rematch',
         'result.menu': 'Main menu',
@@ -11685,7 +11687,7 @@ define("i18n/ru", ["require", "exports"], function (require, exports) {
         'hud.draw': 'Ничья', 'hud.possession': 'Мяч', 'hud.mini.footy': 'Гол {a}:{b}',
         'pause.title': 'Пауза', 'pause.resume': 'Продолжить', 'pause.restart': 'Начать заново', 'pause.settings': 'Настройки', 'pause.quit': 'Выйти в меню',
         'pause.quitConfirm': 'Выйти из матча? Прогресс этого матча будет потерян.',
-        'result.title': 'Итог матча', 'result.practiceAiNote': '🎯 Тренировка против ИИ: Награды и FvH Coins начисляются только в Онлайн PvP!', 'result.reward': 'Награды (демо)', 'result.coins': '+{n} демо-монет', 'result.xp': '+{n} опыта', 'result.rematch': 'Реванш',
+        'result.title': 'Итог матча', 'result.practiceAiNote': '🏆 Одиночный матч: начислены полные награды FvH Coin, Опыт и Drop PTS!', 'result.reward': 'Награды', 'result.coins': '+{n} FvH Coin', 'result.xp': '+{n} опыта', 'result.rematch': 'Реванш',
         'result.menu': 'Главное меню', 'result.shots': 'Удары', 'result.tackles': 'Отборы', 'result.steals': 'Перехваты', 'result.passes': 'Пасы', 'result.threes': 'Трёхочковые',
         'result.levelUp': 'Новый уровень! Ты достиг уровня {n}', 'result.boostUsed': 'Использован буст: {name}',
         'tut.title': 'Как играть', 'tut.skip': 'Пропустить обучение', 'tut.next': 'Далее', 'tut.done': 'Играем', 'tut.step': 'Шаг {a} из {b}',
@@ -18230,7 +18232,7 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 this.launch({ mode: this.selMode, char: playerChar, difficulty, minutes, boostId: this.store.data.armedBoost }, false);
             });
             const back = (0, dom_js_6.h)('button', { class: 'btn icon back', type: 'button', on: { click: () => (this.audio.play('click'), this.showMenu()) } }, document.documentElement.dir === 'rtl' ? '→' : '←');
-            const el = (0, dom_js_6.h)('div', { class: 'screen solid page-screen has-nav' }, (0, dom_js_6.h)('div', { class: 'page mode-page' }, (0, dom_js_6.h)('div', { class: 'page-head' }, back, (0, dom_js_6.h)('h1', null, (0, index_js_7.t)('mode.title'))), (0, dom_js_6.h)('div', { class: 'page-body' }, (0, dom_js_6.h)('div', { class: 'modes' }, mkCard('footy'), mkCard('hoops')), (0, dom_js_6.h)('div', { class: 'opt-card' }, (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.difficulty')), (0, kit_js_4.seg)([{ value: 'easy', label: (0, index_js_7.t)('diff.easy') }, { value: 'normal', label: (0, index_js_7.t)('diff.normal') }, { value: 'hard', label: (0, index_js_7.t)('diff.hard') }], difficulty, (v) => (difficulty = v)), (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.duration')), (0, kit_js_4.seg)([1, 2, 3, 5].map((n) => ({ value: n, label: (0, index_js_7.t)('mode.minutes', { n }) })), minutes, (v) => (minutes = v)), (0, dom_js_6.h)('div', { class: 'boost-line' }, boostLine))), (0, dom_js_6.h)('div', { class: 'start-bar' }, startBtn, (0, dom_js_6.h)('button', { class: 'btn block online-entry', type: 'button', on: { click: () => this.showOnline(this.selMode) } }, '🌐 ', (0, index_js_7.t)('mode.online'))), (0, kit_js_4.bottomNav)(null, (n) => this.go(n))));
+            const el = (0, dom_js_6.h)('div', { class: 'screen solid page-screen has-nav' }, (0, dom_js_6.h)('div', { class: 'page mode-page' }, (0, dom_js_6.h)('div', { class: 'page-head' }, back, (0, dom_js_6.h)('h1', null, (0, index_js_7.t)('mode.title'))), (0, dom_js_6.h)('div', { class: 'page-body' }, (0, dom_js_6.h)('div', { class: 'modes' }, mkCard('footy'), mkCard('hoops')), (0, dom_js_6.h)('div', { class: 'opt-card' }, (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.difficulty')), (0, kit_js_4.seg)([{ value: 'easy', label: (0, index_js_7.t)('diff.easy') }, { value: 'normal', label: (0, index_js_7.t)('diff.normal') }, { value: 'hard', label: (0, index_js_7.t)('diff.hard') }], difficulty, (v) => (difficulty = v)), (0, dom_js_6.h)('div', { class: 'field-label' }, (0, index_js_7.t)('mode.duration')), (0, kit_js_4.seg)([1, 2, 3, 5].map((n) => ({ value: n, label: (0, index_js_7.t)('mode.minutes', { n }) })), minutes, (v) => (minutes = v)), (0, dom_js_6.h)('div', { class: 'boost-line' }, boostLine))), (0, dom_js_6.h)('div', { class: 'start-bar' }, startBtn), (0, kit_js_4.bottomNav)(null, (n) => this.go(n))));
             refresh();
             this.show(el, 'mode');
         }
@@ -18546,13 +18548,13 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
             }
             this.state = 'results';
             telegram_js_4.telegram.leaveMatch();
-            // Practice vs AI: strictly ZERO coins and ZERO XP (rewards only in online PvP)
-            const rewards = {
-                outcome: sum.winner === 0 ? 'win' : sum.winner === null ? 'draw' : 'loss',
-                coins: 0,
-                xp: 0
-            };
+            const boostMul = (0, shop_js_11.boostEffectsOf)(sum.boostId).coins;
+            const rewards = (0, rewards_js_1.computeRewards)(sum, boostMul);
+            const lvBefore = (0, save_js_3.levelFor)(this.store.data.xp);
+            const before = lvBefore.level;
             this.store.update((d) => {
+                d.coins += rewards.coins;
+                d.xp += rewards.xp;
                 const st = d.stats;
                 st.played++;
                 st.playedByMode[sum.mode]++;
@@ -18576,27 +18578,56 @@ define("app", ["require", "exports", "core/audio", "core/game", "core/input", "c
                 d.lastResult = { mode: sum.mode, score: sum.score, at: Date.now() };
                 (0, quests_js_3.applyMatchToQuests)(d, sum);
             });
+            if (this.store.flush) this.store.flush();
+            const lvAfter = (0, save_js_3.levelFor)(this.store.data.xp);
+            const after = lvAfter.level;
             this.game.stop();
             this.startBackdrop();
             const title = rewards.outcome === 'win' ? (0, index_js_7.t)('hud.win') : rewards.outcome === 'draw' ? (0, index_js_7.t)('hud.draw') : (0, index_js_7.t)('hud.lose');
             const chip = (a, b) => (0, dom_js_6.h)('span', { class: 'chip' }, a, ' ', (0, dom_js_6.h)('b', null, String(b)));
             const steal = sum.mode === 'hoops';
             const winnerLine = rewards.outcome === 'win' ? (0, index_js_7.t)('hud.you') : rewards.outcome === 'loss' ? (0, index_js_7.t)('hud.cpu') : '';
+            const pct = (l) => Math.max(0, Math.min(100, (l.into / l.need) * 100));
+            const fill = (0, dom_js_6.h)('i', { style: `width:${pct(lvBefore)}%` });
+            const xpTxt = (0, dom_js_6.h)('span', null, (0, index_js_7.t)('profile.xp', { a: lvBefore.into, b: lvBefore.need }));
+            const lvTxt = (0, dom_js_6.h)('span', null, (0, index_js_7.t)('common.level', { n: before }));
+            const leveled = after > before;
+            window.setTimeout(() => {
+                fill.style.width = leveled ? '100%' : `${pct(lvAfter)}%`;
+                if (leveled) {
+                    window.setTimeout(() => {
+                        fill.style.transition = 'none';
+                        fill.style.width = '0%';
+                        void fill.offsetWidth;
+                        fill.style.transition = '';
+                        fill.style.width = `${pct(lvAfter)}%`;
+                        lvTxt.textContent = (0, index_js_7.t)('common.level', { n: after });
+                        xpTxt.textContent = (0, index_js_7.t)('profile.xp', { a: lvAfter.into, b: lvAfter.need });
+                        this.audio.play('claim');
+                        telegram_js_4.telegram.haptic('success');
+                    }, 1150);
+                }
+                else
+                    xpTxt.textContent = (0, index_js_7.t)('profile.xp', { a: lvAfter.into, b: lvAfter.need });
+            }, 350);
             const el = (0, dom_js_6.h)('div', { class: 'screen dim' }, (0, dom_js_6.h)('div', { class: `panel result-panel res-${rewards.outcome}`, style: 'max-width:480px;text-align:center' },
                 (0, dom_js_6.h)('div', { class: 'note' }, (0, index_js_7.t)('result.title')),
                 (0, dom_js_6.h)('h2', { class: `result-title ${rewards.outcome}` }, title),
                 (0, dom_js_6.h)('div', { class: 'result-score' }, `${sum.score[0]} : ${sum.score[1]}`, (0, dom_js_6.h)('small', null, `${(0, index_js_7.t)('hud.you')} — ${(0, index_js_7.t)('hud.cpu')}`)),
                 winnerLine ? (0, dom_js_6.h)('div', { class: 'res-win' }, `🏆 ${winnerLine}`) : null,
-                (0, dom_js_6.h)('div', { class: 'rew', style: 'opacity:0.85;' },
-                    (0, dom_js_6.h)('span', { class: 'chip' }, (0, dom_js_6.h)('span', { class: 'w-ico' }), ' +0 FvH Coin'),
-                    (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ +0 XP')),
-                (0, dom_js_6.h)('div', { class: 'fvh-practice-notice', style: 'margin:8px 0 12px;padding:8px 12px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.25);border-radius:10px;font-size:12px;color:var(--neon-cyan);font-weight:700;' },
-                    (0, index_js_7.t)('result.practiceAiNote') || '🎯 Тренировка против ИИ: Награды и FvH Coins начисляются только в Онлайн PvP!'),
+                (0, dom_js_6.h)('div', { class: 'rew' },
+                    (0, dom_js_6.h)('span', { class: 'chip gold' }, (0, dom_js_6.h)('span', { class: 'w-ico' }), ' ', (0, index_js_7.t)('result.coins', { n: rewards.coins })),
+                    (0, dom_js_6.h)('span', { class: 'chip' }, '⭐ ', (0, index_js_7.t)('result.xp', { n: rewards.xp }))),
+                (0, dom_js_6.h)('div', { class: 'res-xp' }, (0, dom_js_6.h)('div', { class: 'row2' }, lvTxt, xpTxt), (0, dom_js_6.h)('div', { class: 'pbar' }, fill)),
+                leveled ? (0, dom_js_6.h)('div', { class: 'lvl-up' }, '⬆ ', (0, index_js_7.t)('result.levelUp', { n: after })) : null,
                 (0, dom_js_6.h)('div', { class: 'rew' }, chip((0, index_js_7.t)('result.shots'), sum.stats.humanShots), chip((0, index_js_7.t)(steal ? 'result.steals' : 'result.tackles'), sum.stats.humanTackles), chip((0, index_js_7.t)('result.passes'), sum.stats.humanPasses), steal ? chip((0, index_js_7.t)('result.threes'), sum.humanThrees) : null),
                 (0, dom_js_6.h)('div', { class: 'actions-row' },
                     (0, dom_js_6.h)('button', { class: 'btn primary', type: 'button', on: { click: () => { this.audio.play('click'); const c = this.lastCfg; if (c) this.launch(Object.assign(Object.assign({}, c), { boostId: null }), false); } } }, '↻ ', (0, index_js_7.t)('result.rematch')),
                     (0, dom_js_6.h)('button', { class: 'btn', type: 'button', on: { click: () => { this.audio.play('click'); this.showMenu(); } } }, (0, index_js_7.t)('result.menu')))));
             this.show(el, 'results');
+            if (rewards.coins > 0) {
+                (0, kit_js_4.toast)(`+${rewards.coins} FvH Coin`, 1600);
+            }
         }
     }
     exports.App = App;

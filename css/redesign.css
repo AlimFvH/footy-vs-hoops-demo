@@ -11129,6 +11129,14 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
   letter-spacing: 0.4px;
 }
 @media (min-width: 720px) {
+  .fvh-mode-grid--solo {
+    display: flex;
+    justify-content: center;
+  }
+  .fvh-mode-grid--solo .fvh-mode-card--solo {
+    width: 100%;
+    max-width: 600px;
+  }
   .fvh-mode-grid--dual {
     display: grid;
     grid-template-columns: 1fr 1fr;

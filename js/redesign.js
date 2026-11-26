@@ -589,9 +589,9 @@
       warTokenFactionFooty: 'Token Faction: $FOOTY',
       warTokenFactionHoops: 'Token Faction: $HOOPS',
       warQualifyingContrib: 'Qualifying contribution for TGE allocation snapshot',
-      diffEasyReward: '🟢 Easy AI: +15 Leaderboard pts on victory (0.5x rewards)',
-      diffNormalReward: '🟡 Normal AI: +30 Leaderboard pts on victory (1.0x standard)',
-      diffHardReward: '🔴 Hard AI: +60 Leaderboard pts on victory (2.0x MAX rewards!)',
+      diffEasyReward: '🟢 Easy AI: +15 Leaderboard pts on victory (0.8x Coins & XP)',
+      diffNormalReward: '🟡 Normal AI: +30 Leaderboard pts on victory (1.0x Coins & XP)',
+      diffHardReward: '🔴 Hard AI: +60 Leaderboard pts on victory (1.35x MAX Coins & XP!)',
       warDiffBreakdown: 'AI Victory Points: Easy +15 · Normal +30 · Hard +60 pts',
       airdropHubTitle: 'Play-to-Airdrop Hub',
       airdropBannerTitle: 'Earn $FOOTY & $HOOPS Tokens',
@@ -642,7 +642,7 @@
       packStarsChampionDesc: '4,000 FvH Coin + guaranteed EPIC kit for your team!',
       packStarsLegendDesc: '10,000 FvH Coin + guaranteed LEGENDARY kit for your team!',
       upgradesTitle: 'Skills & Training',
-      upgradesSubtitle: 'Upgrade your athlete skills to dominate in 1v1 PvP & single player matches',
+      upgradesSubtitle: 'Upgrade your athlete skills to win every Footy & Hoops match!',
       upgradeSkillPowerFooty: 'Shot Power',
       upgradeSkillPowerFootyDesc: 'Increases ball speed and breakthrough power against goalkeeper',
       upgradeSkillPowerHoops: 'Dunk & Accuracy',
@@ -1177,9 +1177,9 @@
       warTokenFactionFooty: 'Фракция токена: $FOOTY',
       warTokenFactionHoops: 'Фракция токена: $HOOPS',
       warQualifyingContrib: 'Квалификационный вклад в будущий снимок (Snapshot) аллокации',
-      diffEasyReward: '🟢 Лёгкий ИИ: +15 очков в Лидерборд за победу (0.5x наград)',
-      diffNormalReward: '🟡 Обычный ИИ: +30 очков в Лидерборд за победу (1.0x стандарт)',
-      diffHardReward: '🔴 Сложный ИИ: +60 очков в Лидерборд за победу (2.0x МАКСИМУМ наград!)',
+      diffEasyReward: '🟢 Лёгкий ИИ: +15 очков в Лидерборд за победу (0.8x Монет и Опыта)',
+      diffNormalReward: '🟡 Обычный ИИ: +30 очков в Лидерборд за победу (1.0x Монет и Опыта)',
+      diffHardReward: '🔴 Сложный ИИ: +60 очков в Лидерборд за победу (1.35x МАКС награды!)',
       warDiffBreakdown: 'Очки за победу над ИИ: Лёгкий +15 · Обычный +30 · Сложный +60',
       airdropHubTitle: 'Play-to-Airdrop Хаб',
       airdropBannerTitle: 'Зарабатывай токены $FOOTY и $HOOPS',
@@ -2897,7 +2897,7 @@
 
     var heroTitle = isFooty ? 'FOOTY #10' : 'HOOPS #23';
     var genericFallback = isFooty ? 'assets/hero_footy_real.png?v=4.0.0-aaa' : 'assets/hero_hoops_real.png?v=4.0.0-aaa';
-    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=4.9.0-release';
+    var fallbackImgUrl = 'store/items/kit3d_' + skinId + '.png?v=5.0.0-release';
 
     return '<div class="fvh-hero-portrait-wrap fvh-3d-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;min-height:0;justify-content:center;overflow:hidden;border-radius:18px;background:transparent;">' +
       '<div class="fvh-hero-3d-stage fvh-wardrobe-3d-host" data-hero="' + charId + '" data-kit="' + skinId + '" style="position:relative;width:100%;height:100%;min-height:0;flex:1 1 auto;display:flex;align-items:center;justify-content:center;background:transparent;cursor:grab;overflow:hidden;">' +
@@ -5295,7 +5295,7 @@
       var kPx = size === 'large' ? '148px' : '82px';
       var svgFallbackKit = encodeURIComponent(getDetailedJerseySvg(itemOrId, size));
       return '<div class="fvh-art-kit-wrap" style="width:' + kPx + ';height:' + kPx + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=4.9.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
+        '<img class="fvh-art-3d-img" src="store/items/kit3d_' + cKitId + '.png?v=5.0.0-release" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6));" onerror="var p=this.parentElement;if(p){p.innerHTML=decodeURIComponent(\'' + svgFallbackKit + '\');}" />' +
       '</div>';
     }
 
@@ -9046,7 +9046,7 @@
                 var cOwned = isItemOwnedInList(owned, c.id);
                 var cOn = c.id === activeCosmetic.id;
                 return '<button type="button" class="fvh-bundle-tab-btn' + (cOn ? ' on' : '') + (c.exclusive ? ' is-excl' : '') + '" data-kit="' + c.id + '">' +
-                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=4.9.0-release" alt="" />' +
+                  '<img src="store/items/kit3d_' + canonItemId(c.id) + '.png?v=5.0.0-release" alt="" />' +
                   '<span>' + escapeHtml(trItem(c.name || c.id)) + '</span>' +
                   (c.exclusive ? '<b>' + (langB === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCL') + '</b>' : (cOwned ? '<i>✓</i>' : '')) +
                 '</button>';
@@ -9162,7 +9162,7 @@
             cosmeticKits.map(function (it, idx) {
               var cId = canonItemId(it.id);
               return '<div class="fvh-bundle-kit-slot' + (it.exclusive ? ' is-exclusive' : '') + (idx === 0 ? ' is-lead' : '') + '" data-kit="' + it.id + '">' +
-                '<img src="store/items/kit3d_' + cId + '.png?v=4.9.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
+                '<img src="store/items/kit3d_' + cId + '.png?v=5.0.0-release" alt="' + escapeHtml(it.name || it.id) + '" />' +
                 (it.exclusive ? '<span class="fvh-bundle-excl-tag">' + (getActiveLang() === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVE') + '</span>' : '') +
               '</div>';
             }).join('') +
@@ -13097,54 +13097,19 @@
           selSport = nextSp;
           app.audio.play('click');
           renderLobbyHero();
-          renderQuickCard();
-          renderPracticeCard();
+          renderSoloCard();
         };
       });
     }
 
     body.appendChild(lobbyHero);
 
-    // Responsive Clean Dual Mode Grid: Quick Match (Online 1v1 PvP) & Single Match (vs AI)
+    // Clean Single-Player Solo Mode Grid (Offline vs AI with full Coin, XP & Drop PTS rewards — zero server PvP load)
     var grid = document.createElement('div');
-    grid.className = 'fvh-mode-grid fvh-mode-grid--dual';
+    grid.className = 'fvh-mode-grid fvh-mode-grid--solo';
 
-    // 1. Quick Match (Online 1v1 PvP)
-    var quickCard = document.createElement('div');
-    quickCard.className = 'fvh-mode-card quick-card';
-
-    function renderQuickCard() {
-      var isFooty = (selSport === 'footy');
-      quickCard.innerHTML =
-        '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge online">' + getUiIconSvg('lightning', 13) + ' <span>' + tr('quickMatchBadge') + '</span></span>' +
-          '<span class="fvh-mode-server-status"><span class="status-dot live"></span> 1v1 Live</span>' +
-        '</div>' +
-        '<div class="fvh-mode-card-body">' +
-          '<div class="fvh-mode-title">' + tr('quickMatchTitle') + '</div>' +
-          '<div class="fvh-mode-desc">' +
-          (lang === 'ru'
-            ? 'Матч с живым игроком в реальном времени (' + (isFooty ? '⚽ Футбол' : '🏀 Баскетбол') + '). <b>+25 Drop PTS</b> за победу!'
-            : 'Real-time 1v1 match against a live opponent (' + (isFooty ? '⚽ Football' : '🏀 Basketball') + '). <b>+25 Drop PTS</b> per win!') +
-          '</div>' +
-        '</div>' +
-        '<div class="fvh-mode-card-actions">' +
-          '<button type="button" class="fvh-mbtn fvh-mbtn--online ' + selSport + ' fvh-btn-matchmaking">' +
-            '<span class="fvh-mbtn-ico">' + getUiIconSvg('lightning', 16) + '</span>' +
-            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'НАЙТИ СОПЕРНИКА' : 'FIND OPPONENT') + '</span>' +
-            '<span class="fvh-mbtn-tag">1v1 LIVE</span>' +
-          '</button>' +
-        '</div>';
-
-      quickCard.querySelector('.fvh-btn-matchmaking').onclick = function () {
-        app.audio.play('click');
-        showQuickMatchSearchModal(app, selSport);
-      };
-    }
-
-    // 2. Practice vs AI (Single Match with quick Difficulty & Match Duration controls)
     var practiceCard = document.createElement('div');
-    practiceCard.className = 'fvh-mode-card practice-card';
+    practiceCard.className = 'fvh-mode-card practice-card fvh-mode-card--solo';
 
     function getDiffRewardText(dKey) {
       if (dKey === 'easy') return tr('diffEasyReward');
@@ -13152,18 +13117,20 @@
       return tr('diffNormalReward');
     }
 
-    function renderPracticeCard() {
+    function renderSoloCard() {
       var isFootyMode = (selSport === 'footy');
       practiceCard.innerHTML =
         '<div class="fvh-mode-card-header">' +
-          '<span class="fvh-mode-badge practice">' + getUiIconSvg('bot', 14) + ' <span>' + tr('practiceAITitle') + '</span></span>' +
+          '<span class="fvh-mode-badge practice">' + getUiIconSvg('bot', 14) + ' <span>' + (lang === 'ru' ? 'ОДИНОЧНЫЙ МАТЧ' : 'SOLO MATCH') + '</span></span>' +
           '<span class="fvh-mode-instant-pill">' + getUiIconSvg('lightning', 12) + ' <span>' + (lang === 'ru' ? 'МГНОВЕННЫЙ СТАРТ' : 'INSTANT PLAY') + '</span></span>' +
         '</div>' +
         '<div class="fvh-mode-card-body fvh-practice-layout">' +
           '<div class="fvh-practice-info">' +
-            '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч против ИИ' : 'Single Match vs AI') + '</div>' +
+            '<div class="fvh-mode-title">' + (lang === 'ru' ? 'Одиночный матч против ИИ' : 'Solo Match vs AI') + '</div>' +
             '<div class="fvh-mode-desc">' +
-              (isFootyMode ? (lang === 'ru' ? 'Футбольный матч против умного вратаря и бота.' : 'Football match against smart AI & keeper.') : (lang === 'ru' ? 'Динамичный баскетбол 1 на 1 против ИИ.' : 'Fast-paced 1v1 basketball against AI.')) +
+              (isFootyMode
+                ? (lang === 'ru' ? 'Динамичный футбол против умного вратаря и бота. Полные награды: <b>FvH Coins, Опыт и Drop PTS</b>!' : 'Fast football match against smart AI & keeper. Full rewards: <b>FvH Coins, XP & Drop PTS</b>!')
+                : (lang === 'ru' ? 'Быстрый баскетбол 1 на 1 против ИИ. Полные награды: <b>FvH Coins, Опыт и Drop PTS</b>!' : 'Fast-paced 1v1 basketball vs AI. Full rewards: <b>FvH Coins, XP & Drop PTS</b>!')) +
             '</div>' +
             '<div class="fvh-practice-reward-hint" id="fvh-mode-diff-hint">' + getDiffRewardText(selDiff) + '</div>' +
           '</div>' +
@@ -13190,7 +13157,7 @@
         '<div class="fvh-mode-card-actions">' +
           '<button type="button" class="fvh-mbtn fvh-mbtn--ai ' + selSport + ' fvh-btn-start-practice">' +
             '<span class="fvh-mbtn-ico">' + getUiIconSvg('play', 14) + '</span>' +
-            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'ИГРАТЬ ПРОТИВ ИИ' : 'PLAY VS AI') + '</span>' +
+            '<span class="fvh-mbtn-label">' + (lang === 'ru' ? 'ИГРАТЬ МАТЧ' : 'PLAY MATCH') + '</span>' +
             '<span class="fvh-mbtn-tag">' + (lang === 'ru' ? 'СТАРТ' : 'GO') + '</span>' +
           '</button>' +
         '</div>';
@@ -13235,10 +13202,8 @@
     }
 
     renderLobbyHero();
-    renderQuickCard();
-    renderPracticeCard();
+    renderSoloCard();
 
-    grid.appendChild(quickCard);
     grid.appendChild(practiceCard);
 
     body.appendChild(grid);
@@ -13778,7 +13743,7 @@
     var playBtn = document.createElement('button');
     playBtn.className = 'fvh-btn-play-hero ' + curChar;
     var playTitle = lang === 'ru' ? 'ИГРАТЬ' : 'PLAY MATCH';
-    var playSub = lang === 'ru' ? '1v1 Онлайн и Одиночный матч' : '1v1 PvP & vs AI';
+    var playSub = lang === 'ru' ? 'Одиночный матч • Футбол и Баскетбол' : 'Solo Match • Football & Basketball';
 
     playBtn.innerHTML =
       '<div class="play-row">' +
@@ -14740,13 +14705,6 @@
       app.show(buildLeaderboardPage(app, targetCat || 'season'), 'leaderboard');
     } else if (targetPage === 'mode') {
       app.show(buildModeSelectPage(app), 'mode');
-      if (quicksearch) {
-        setTimeout(function () { showQuickMatchSearchModal(app, targetChar || 'footy'); }, 300);
-      } else if (privateroom) {
-        setTimeout(function () { showCreateRoomModal(app, targetChar || 'footy'); }, 300);
-      } else if (params && (params.get('joinroom') || params.get('room'))) {
-        setTimeout(function () { showJoinRoomModal(app, targetChar || 'footy'); }, 300);
-      }
     } else if (targetPage && targetPage !== 'menu') {
       app.go(targetPage);
     } else {

@@ -36,6 +36,8 @@ const TON_RECIPIENT_ADDRESS = process.env.TON_RECIPIENT_ADDRESS || 'EQBvW8Z5huBk
 // Authoritative Server-Controlled Season & Pre-Launch State (Item 1)
 // The season must not start automatically during development, testing, or initial visits.
 // Zero seasonal competition points are awarded before the official launch.
+const ONLINE_MODE_ENABLED = process.env.ONLINE_MODE_ENABLED === 'true';
+
 const SEASON_CONFIG = {
   state: process.env.SEASON_STATE || 'prelaunch', // 'prelaunch' | 'active' | 'ended'
   seasonNumber: 1,
@@ -1012,6 +1014,9 @@ function persistState() {
 
 // Clean up stale queue items, rooms, matches, WS handles, and bounded rolling caches every 30 seconds
 setInterval(() => {
+  if (!ONLINE_MODE_ENABLED && state.queue.length === 0 && Object.keys(state.rooms).length === 0 && Object.keys(state.matches).length === 0 && Object.keys(state.wsClients).length === 0) {
+    return;
+  }
   const now = Date.now();
   state.queue = state.queue.filter(q => (now - q.timestamp) < 30000);
   Object.keys(state.rooms).forEach(code => {
@@ -1926,8 +1931,20 @@ const server = http.createServer((req, res) => {
   }
 
   // ==========================================
-  // API: Matchmaking (Quick Match)
+  // API: Matchmaking & Online Rooms (Disabled by default to eliminate server load)
   // ==========================================
+  if (!ONLINE_MODE_ENABLED && (
+    pathname.startsWith('/api/matchmaking/') ||
+    pathname.startsWith('/api/room/') ||
+    pathname.startsWith('/api/match/')
+  )) {
+    return sendJson(res, 410, {
+      ok: false,
+      disabled: true,
+      error: 'online_mode_disabled',
+      message: 'Online multiplayer mode is disabled to eliminate server load; Solo Match vs AI grants full rewards.'
+    });
+  }
 
   // 1. Join Matchmaking Queue
   if (pathname === '/api/matchmaking/join' && req.method === 'POST') {
@@ -4751,20 +4768,19 @@ const server = http.createServer((req, res) => {
         const goals = Number(meta.goals || (meta.stats && meta.stats.humanGoals) || 0);
         const tackles = Number(meta.tackles || (meta.stats && meta.stats.humanTackles) || 0);
 
-        // Stage 1 Approved Economy Rule:
-        // Verified PvP victory: 20 FvH Coin.
-        // AI matches do NOT grant PvP victory rewards (0 coins).
-        let coinsEarned = 0;
-        let xpEarned = 10;
+        // Solo & Competitive Economy Rule:
+        // Reward both Solo AI matches and verified PvP matches fairly with difficulty & skill scaling.
+        const diffMul = diff === 'easy' ? 0.8 : diff === 'hard' ? 1.35 : 1.0;
+        const safeGoals = Math.min(25, Math.max(0, Math.floor(goals)));
+        const safeTackles = Math.min(15, Math.max(0, Math.floor(tackles)));
+        const baseCoins = outcome === 'win' ? 60 : outcome === 'draw' ? 30 : 15;
+        const scoringBonus = meta.mode === 'footy' ? Math.min(8, safeGoals) * 10 : Math.min(40, safeGoals * 2);
+        const skillBonus = Math.min(30, safeTackles * 3);
+        let coinsEarned = Math.max(0, Math.round((baseCoins + scoringBonus + skillBonus) * diffMul));
+        let xpEarned = Math.round((outcome === 'win' ? 50 : outcome === 'draw' ? 30 : 20) * diffMul + Math.min(20, safeGoals) * 3);
         if (isOnline && outcome === 'win') {
-          coinsEarned = 20;
-          xpEarned = 30;
-        } else if (isOnline && outcome === 'draw') {
-          coinsEarned = 0;
-          xpEarned = 15;
-        } else if (!isOnline) {
-          coinsEarned = 0;
-          xpEarned = outcome === 'win' ? 20 : 10;
+          coinsEarned = Math.max(coinsEarned, 80);
+          xpEarned = Math.max(xpEarned, 60);
         }
 
         player.coins += coinsEarned;
@@ -5451,6 +5467,10 @@ function makeWsTextFrame(str) {
 }
 
 server.on('upgrade', (req, socket, head) => {
+  if (!ONLINE_MODE_ENABLED) {
+    socket.destroy();
+    return;
+  }
   const host = req.headers.host || "localhost";
   const u = new URL(req.url, "http://" + host);
   const parsed = {
