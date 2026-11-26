@@ -218,7 +218,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             bounce: ['assets/audio/ball_bounce.wav', 'assets/audio/variants/dribble_v1.wav'],
                             bounce_footy: ['assets/audio/bounce_footy.wav', 'assets/audio/variants/bounce_footy_v1.wav', 'assets/audio/variants/bounce_footy_v2.wav'],
                             dribble: ['assets/audio/pass_footy.wav', 'assets/audio/variants/pass_footy_v1.wav', 'assets/audio/variants/pass_footy_v2.wav', 'assets/audio/variants/pass_footy_v3.wav'],
-                            dribble_court: ['assets/audio/dribble.wav', 'assets/audio/variants/dribble_v1.wav'],
+                            dribble_court: ['assets/audio/dribble.wav', 'assets/audio/variants/dribble_v1.wav', 'assets/audio/variants/dribble_v2.wav'],
                             whistle: ['assets/audio/whistle.wav', 'assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav', 'assets/audio/variants/whistle_v3.wav'],
                             whistleStart: ['assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav'],
                             whistleEnd: ['assets/audio/whistle.wav', 'assets/audio/variants/whistle_v2.wav', 'assets/audio/variants/whistle_v3.wav'],
@@ -226,7 +226,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
                         const AUDIO_VERSION = '6.0.0-release';
-                        const AUDIO_REVISION = '7.0.0-studio';
+                        const AUDIO_REVISION = '9.0.0-studio';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -385,19 +385,19 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
 
-                    // Per-action broadcast RMS calibration tuned for v6.0 crystal-clear Foley WAVs
+                    // Per-action broadcast RMS calibration tuned for v9.0 studio-mastered Foley WAVs
                     const gainMap = {
-                        whistle: 0.52, whistleStart: 0.50, whistleEnd: 0.54, whistleRestart: 0.48, buzzer: 0.62,
-                        step: 0.44, step_court: 0.44, squeak: 0.44, tackle: 0.88, swish: 0.94,
-                        steal: 0.88, steal_swoosh: 0.64, save: 0.94,
-                        dribble: 0.62, dribble_court: 0.84, bounce: 0.82, bounce_footy: 0.74,
-                        pass: 0.82, pass_hoops: 0.78, kick: 0.98, shot: 1.00, shot_hoops: 0.90, dunk: 1.00,
-                        rim: 0.82, board: 0.84, post: 0.88, crowd: 0.72,
-                        goal: 0.88, score: 0.86, win: 0.88, celebration: 0.86
+                        whistle: 0.44, whistleStart: 0.44, whistleEnd: 0.46, whistleRestart: 0.42, buzzer: 0.56,
+                        step: 0.42, step_court: 0.42, squeak: 0.36, tackle: 0.88, swish: 0.96,
+                        steal: 0.88, steal_swoosh: 0.62, save: 0.96,
+                        dribble: 0.64, dribble_court: 0.88, bounce: 0.84, bounce_footy: 0.76,
+                        pass: 0.84, pass_hoops: 0.80, kick: 1.00, shot: 1.00, shot_hoops: 0.90, dunk: 1.00,
+                        rim: 0.84, board: 0.84, post: 0.90, crowd: 0.74,
+                        goal: 0.90, score: 0.88, win: 0.88, celebration: 0.88
                     };
-                    // Only tame extreme ultrasonic shrillness on loud whistles/squeaks — keep all ball/boot/rim attacks crystal sharp!
+                    // Gentle high-shelf rounding on referee whistles/squeaks while keeping leather/wood/rim impact crisp
                     const lpFreqMap = {
-                        whistle: 9600, whistleStart: 9600, whistleEnd: 9600, whistleRestart: 9600, buzzer: 8400, squeak: 10800
+                        whistle: 7600, whistleStart: 7600, whistleEnd: 7600, whistleRestart: 7600, buzzer: 7200, squeak: 8600
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.86);
@@ -514,49 +514,49 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.noise(0.08, 0.28 * v, 1800, 520, 'bandpass');
                     break;
                 case 'miss':
-                    this.noise(0.18, 0.16 * v, 440, 140, 'lowpass');
+                    this.noise(0.14, 0.14 * v, 620, 180, 'bandpass', 0, 1.2);
                     break;
                 case 'save':
                     this.noise(0.10, 0.35 * v, 1200, 300, 'bandpass');
                     this.tone(145, 0.16, 'sine', 0.48 * v, 0, 68);
                     break;
                 case 'noStamina':
-                    this.tone(196, 0.12, 'triangle', 0.16 * v, 0, 148);
-                    this.tone(148, 0.14, 'sine', 0.14 * v, 0.11, 110);
+                    this.tone(165, 0.10, 'sine', 0.12 * v, 0, 118);
+                    this.noise(0.09, 0.08 * v, 420, 190, 'lowpass');
                     break;
                 case 'tick':
-                    // Clean warm broadcast countdown marimba/bell pip (no harsh square buzz)
-                    this.tone(587.33 * pitch, 0.11, 'sine', 0.16 * v, 0, 585 * pitch);
-                    this.tone(1174.66 * pitch, 0.08, 'sine', 0.06 * v, 0.004);
+                    // Soft felt broadcast countdown tap
+                    this.tone(440 * pitch, 0.075, 'sine', 0.11 * v, 0, 415 * pitch);
+                    this.noise(0.015, 0.05 * v, 1200, 700, 'bandpass');
                     break;
                 case 'go':
-                    // Uplifting stadium chime
-                    this.tone(783.99, 0.24, 'sine', 0.22 * v);
-                    this.tone(1174.66, 0.28, 'triangle', 0.15 * v, 0.02);
-                    this.tone(1567.98, 0.22, 'sine', 0.08 * v, 0.04);
+                    // Warm stadium chord burst
+                    this.tone(523.25, 0.22, 'sine', 0.14 * v);
+                    this.tone(783.99, 0.26, 'sine', 0.11 * v, 0.015);
+                    this.tone(1046.5, 0.22, 'sine', 0.06 * v, 0.03);
                     break;
                 case 'click':
-                    // Silky modern soft UI glass tap
-                    this.tone(620 * pitch, 0.036, 'sine', 0.11 * v, 0, 410 * pitch);
-                    this.tone(1480 * pitch, 0.018, 'sine', 0.035 * v, 0);
+                    // Subtle wooden/glass tactile UI press (zero shrill sine ping)
+                    this.tone(360 * pitch, 0.024, 'sine', 0.075 * v, 0, 190 * pitch);
+                    this.noise(0.012, 0.04 * v, 1650 * pitch, 950 * pitch, 'bandpass');
                     break;
                 case 'buy':
-                    [587.33, 880, 1174.66].forEach((f, i) => this.tone(f, 0.14, 'sine', 0.18 * v, i * 0.065));
+                    [587.33, 880, 1174.66].forEach((f, i) => this.tone(f, 0.14, 'sine', 0.14 * v, i * 0.065));
                     break;
                 case 'claim':
-                    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.18, 'sine', 0.16 * v, i * 0.06));
+                    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.16, 'sine', 0.13 * v, i * 0.06));
                     break;
                 case 'error':
-                    // Gentle muted low marimba thud (zero harsh buzz)
-                    this.tone(220, 0.12, 'triangle', 0.16 * v, 0, 175);
-                    this.tone(165, 0.16, 'sine', 0.15 * v, 0.09, 130);
+                    // Gentle warm wooden thud
+                    this.tone(185, 0.10, 'sine', 0.13 * v, 0, 130);
+                    this.tone(140, 0.14, 'sine', 0.11 * v, 0.08, 105);
                     break;
                 case 'win':
-                    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => this.tone(f, 0.26, 'triangle', 0.18 * v, i * 0.11));
+                    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.26, 'sine', 0.13 * v, i * 0.11));
                     this.crowdRoar(1.4, 0.52 * v);
                     break;
                 case 'lose':
-                    [392, 349.23, 311.13, 261.63].forEach((f, i) => this.tone(f, 0.26, 'sine', 0.16 * v, i * 0.18));
+                    [392, 349.23, 311.13, 261.63].forEach((f, i) => this.tone(f, 0.26, 'sine', 0.14 * v, i * 0.18));
                     break;
             }
         }
