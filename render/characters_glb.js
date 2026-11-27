@@ -230,7 +230,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=12.0.0-release', '/assets/characters/hoops23.glb?v=12.0.0-release', '/assets/characters/keeper1.glb?v=12.0.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=12.1.0-release', '/assets/characters/hoops23.glb?v=12.1.0-release', '/assets/characters/keeper1.glb?v=12.1.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -1299,12 +1299,16 @@
       const ballYaw = st.ballYaw || 0;
       const charge = st.charge || 0;
 
-      // 1. Expressive idle head scan + soft gaze tracking toward ball
-      if (action === 'idle') {
+      // 1. Expressive idle / ball-ready head scan + soft gaze tracking toward ball
+      if (action === 'idle' || action === 'fready') {
         const scan = Math.sin(t * 0.85);
         const gazeYaw = Math.max(-0.28, Math.min(0.28, ballYaw * 0.42));
         _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, (isKeeper ? 0.06 : 0.04) * scan + gazeYaw);
-        if (isKeeper && Math.abs(ballYaw) > 0.05) {
+        if (action === 'fready') {
+          _rotCharAxis(nodes, rig, b.Abdomen, 1, 0, 0, 0.08);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, 0.10);
+          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.05);
+        } else if (isKeeper && Math.abs(ballYaw) > 0.05) {
           _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, Math.max(-0.14, Math.min(0.14, ballYaw * 0.18)));
         }
         applySmoothPoseFilter(nodes, action, dt);
@@ -1553,7 +1557,7 @@
       if (this._locoIsRun ? (speed < 1.55) : (speed <= 1.85)) {
         this._locoIsRun = false;
         this._locoIsSprint = false;
-        return { clip: 'Walk', rate: Math.max(0.82, Math.min(1.38, speed / 1.48)) };
+        return { clip: 'Walk', rate: Math.max(0.84, Math.min(1.36, speed / 1.35)) };
       }
       this._locoIsRun = true;
       const fwdX = Math.sin(this.yaw);
@@ -1577,9 +1581,9 @@
       const enterSprint = dotF > 0.55 && (this._locoIsSprint ? speed >= 4.25 : speed >= 4.75);
       this._locoIsSprint = enterSprint;
       if (enterSprint) {
-        return { clip: 'Anim_EA_SprintDrive', rate: Math.max(0.92, Math.min(1.42, speed / 5.45)) };
+        return { clip: 'Anim_EA_SprintDrive', rate: Math.max(0.92, Math.min(1.38, speed / 5.75)) };
       }
-      return { clip: 'Run', rate: Math.max(0.84, Math.min(1.34, speed / 3.65)) };
+      return { clip: 'Run', rate: Math.max(0.86, Math.min(1.32, speed / 3.85)) };
     }
 
     _cycleVariant(tag, list) {
@@ -1909,17 +1913,21 @@
           bio.action = 'celeb';
           this.setAnimation(this._activeVariantClip || 'Anim_Celebration', 1.04, 0.12);
         }
-        // 7. Football Ball-Carrier Agility Dribble vs Directional Run / Walk / Idle
-        else if (isBallCarrier && speed > 0.35) {
+        // 7. Football Ball-Carrier Agility Dribble vs Protective Ready Stance vs Directional Run / Walk / Idle
+        else if (isBallCarrier && speed > 0.28) {
           bio.action = 'fdribble';
-          const dribCadence = Math.max(0.84, Math.min(1.38, speed / 4.25));
+          const dribCadence = Math.max(0.84, Math.min(1.36, speed / 4.15));
           this.setAnimation('Anim_EA_DribbleRun', dribCadence, 0.10);
-          targetPitch = 0.04 * Math.min(1.0, speed / 4.2);
+          targetPitch = 0.045 * Math.min(1.0, speed / 4.2);
+        }
+        else if (isBallCarrier) {
+          bio.action = 'fready';
+          this.setAnimation('Idle', 1.0, 0.14);
         }
         else {
           const loco = this._pickLocomotionClip(vx, vz, speed);
           bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
-          const locoBlend = loco.clip === 'Idle' ? 0.16 : 0.095;
+          const locoBlend = loco.clip === 'Idle' ? 0.16 : 0.11;
           this.setAnimation(loco.clip, loco.rate, locoBlend);
         }
       }
@@ -2191,7 +2199,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=11.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=12.1.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2200,7 +2208,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=11.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=12.1.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2209,7 +2217,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=11.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=12.1.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2544,7 +2552,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=11.0.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=11.0.0-release' : '/assets/characters/footy10.glb?v=11.0.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=12.1.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=12.1.0-release' : '/assets/characters/footy10.glb?v=12.1.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2705,7 +2713,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=11.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=11.0.0-release' : '/assets/characters/footy10.glb?v=11.0.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=12.1.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=12.1.0-release' : '/assets/characters/footy10.glb?v=12.1.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };

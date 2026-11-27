@@ -236,10 +236,18 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             music_chord_0: ['assets/audio/music/music_chord_0.wav'],
                             music_chord_1: ['assets/audio/music/music_chord_1.wav'],
                             music_chord_2: ['assets/audio/music/music_chord_2.wav'],
-                            music_chord_3: ['assets/audio/music/music_chord_3.wav']
+                            music_chord_3: ['assets/audio/music/music_chord_3.wav'],
+                            music_bass_0: ['assets/audio/music/music_bass_0.wav'],
+                            music_bass_1: ['assets/audio/music/music_bass_1.wav'],
+                            music_bass_2: ['assets/audio/music/music_bass_2.wav'],
+                            music_bass_3: ['assets/audio/music/music_bass_3.wav'],
+                            music_pluck_0: ['assets/audio/music/music_pluck_0.wav'],
+                            music_pluck_1: ['assets/audio/music/music_pluck_1.wav'],
+                            music_pluck_2: ['assets/audio/music/music_pluck_2.wav'],
+                            music_pluck_3: ['assets/audio/music/music_pluck_3.wav']
                         };
                         const AUDIO_VERSION = '6.0.0-release';
-                        const AUDIO_REVISION = '12.0.0-studio';
+                        const AUDIO_REVISION = '12.1.0-pro';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -258,6 +266,9 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                                     if (!decoded) return;
                                     this.samplePools[sName].push(decoded);
                                     if (idx === 0 || !this.audioSamples[sName]) this.audioSamples[sName] = decoded;
+                                    if ((sName === 'ambience_footy' || sName === 'ambience_hoops') && this._ambienceActive && this._ambienceKey === sName && this.crowdNode && this.crowdNode.isFallback) {
+                                        this.startAmbience(this._ambienceMode);
+                                    }
                                 });
                             });
                         }
@@ -429,7 +440,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         src.connect(sGain);
                     }
                     sGain.connect(outDest);
-                    if (this.sfxReverbIn && (isWhistle || name === 'kick' || name === 'shot' || name === 'dunk' || name === 'swish' || name === 'goal' || name === 'score' || name === 'post' || name === 'rim')) {
+                    if (this.sfxReverbIn && (isWhistle || name === 'kick' || name === 'shot' || name === 'dunk' || name === 'swish' || name === 'goal' || name === 'score' || name === 'post' || name === 'rim' || name === 'save' || name === 'board')) {
                         sGain.connect(this.sfxReverbIn);
                     }
                     src.start(now);
@@ -600,10 +611,24 @@ define("core/audio", ["require", "exports"], function (require, exports) {
         }
         startAmbience(mode) {
             const c = this.ctx;
-            if (!c || !this.sfxGain || this.crowdNode)
-                return;
             const key = (mode === 'hoops') ? 'ambience_hoops' : 'ambience_footy';
+            this._ambienceMode = mode;
+            this._ambienceKey = key;
+            this._ambienceActive = true;
+            if (!c || !this.sfxGain)
+                return;
             const realBuf = (this.audioSamples && this.audioSamples[key]) || null;
+            if (this.crowdNode) {
+                if (!this.crowdNode.isFallback || !realBuf) return;
+                const oldNode = this.crowdNode;
+                try {
+                    const tNow = c.currentTime;
+                    oldNode.gain.gain.cancelScheduledValues(tNow);
+                    oldNode.gain.gain.setTargetAtTime(0.0001, tNow, 0.09);
+                    oldNode.src.stop(tNow + 0.4);
+                } catch (_) {}
+                this.crowdNode = null;
+            }
             const buf = realBuf || this.pinkBuf || this.noiseBuf;
             if (!buf)
                 return;
@@ -611,21 +636,23 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             src.buffer = buf;
             src.loop = true;
             const gain = c.createGain();
+            const targetG = realBuf ? 0.115 : 0.042;
             if (realBuf) {
-                gain.gain.value = 0.095;
+                gain.gain.setValueAtTime(0.001, c.currentTime);
+                gain.gain.linearRampToValueAtTime(targetG, c.currentTime + 0.32);
                 src.connect(gain);
             } else {
                 const f = c.createBiquadFilter();
                 f.type = 'bandpass';
                 f.frequency.value = 520;
                 f.Q.value = 0.45;
-                gain.gain.value = 0.042;
+                gain.gain.value = targetG;
                 src.connect(f);
                 f.connect(gain);
             }
             gain.connect(this.sfxGain);
             src.start();
-            this.crowdNode = { src, gain, baseGain: realBuf ? 0.095 : 0.042 };
+            this.crowdNode = { src, gain, baseGain: targetG, isFallback: !realBuf };
         }
         triggerArenaSwell(boostMul = 3.2, holdSec = 1.6) {
             const c = this.ctx;
@@ -651,6 +678,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
         }
         stopAmbience() {
             var _a;
+            this._ambienceActive = false;
             try {
                 (_a = this.crowdNode) === null || _a === void 0 ? void 0 : _a.src.stop();
             }
@@ -675,7 +703,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             if (!dest) return;
             this.nextNote = c.currentTime + 0.1;
             this.step = 0;
-            // Studio 4-Bar Neo-Soul / Stadium Groove (~114 BPM) using sample-accurate WAV Rhodes/Drums with swing & turnaround
+            // Studio 8-Bar Neo-Soul / Stadium Groove (~114 BPM) using sample-accurate Rhodes, Analog Bass, Melodic Plucks & Drums
             const tempo = 0.132;
             const trigStem = (key, when, gainVal, rate = 1.0) => {
                 const buf = this.audioSamples && this.audioSamples[key];
@@ -693,7 +721,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             const chords = [
                 [220.0, 261.63, 329.63, 392.0, 493.88],
                 [174.61, 220.0, 261.63, 329.63, 392.0],
-                [196.0, 246.94, 293.66, 329.63, 493.88],
+                [196.0, 261.63, 293.66, 329.63, 493.88],
                 [196.0, 246.94, 293.66, 329.63, 440.0],
             ];
             const bassNotes = [55.0, 43.65, 65.41, 49.0];
@@ -702,7 +730,9 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 if (!cx || !this.musicGain || cx.state !== 'running')
                     return;
                 while (this.nextNote < cx.currentTime + 0.36) {
-                    const bar = Math.floor(this.step / 16) % 4;
+                    const loopBar = Math.floor(this.step / 16) % 8;
+                    const bar = loopBar % 4;
+                    const isChorus = loopBar >= 4;
                     const i = this.step % 16;
                     const swingOffset = (i % 2 === 1) ? 0.011 : 0;
                     const t0 = this.nextNote + swingOffset;
@@ -731,42 +761,57 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         o.stop(t0 + d + 0.04);
                     };
 
-                    // 1. Studio Stereo Rhodes Mark I + Warm Sub Chord Hits (on beat 1 + syncopated "and" of 2)
+                    // 1. Studio Stereo Rhodes Mark I Chords (Beat 1 + Syncopated Push)
                     if (i === 0 || (i === 6 && bar % 2 === 0)) {
-                        const hitGain = i === 0 ? 0.34 : 0.19;
+                        const hitGain = i === 0 ? 0.32 : 0.18;
                         if (!trigStem('music_chord_' + bar, t0, hitGain, 1.0)) {
                             const ch = chords[bar];
-                            warmTone(bassNotes[bar], tempo * 4.0, 0.24, 'sine', null, 340);
                             ch.slice(0, 4).forEach((freq, ci) => {
-                                warmTone(freq, tempo * 3.8, (0.032 - ci * 0.004) * (i === 0 ? 1 : 0.7), 'sine', null, 2400);
+                                warmTone(freq, tempo * 3.8, (0.030 - ci * 0.004) * (i === 0 ? 1 : 0.7), 'sine', null, 2400);
                             });
                         }
                     }
 
-                    // 2. Studio Analog Kick Pattern (with bar-4 turnaround pickup)
-                    const isKick = (i === 0 || i === 10 || (bar % 2 === 1 && i === 7) || (bar === 3 && i === 14));
-                    if (isKick) {
-                        const kVol = (i === 0 || i === 10) ? 0.36 : 0.22;
-                        if (!trigStem('music_kick', t0, kVol)) {
-                            warmTone(104, 0.08, 0.26, 'sine', 46, 280);
+                    // 2. Warm Punchy Moog Analog Bassline (Pocket 0, 6, 10 + Bar Turnaround)
+                    if (i === 0 || i === 6 || i === 10 || (bar === 3 && i === 14)) {
+                        const bVol = i === 0 ? 0.31 : (i === 10 ? 0.27 : 0.21);
+                        const bRate = (i === 14) ? 1.122 : 1.0;
+                        if (!trigStem('music_bass_' + bar, t0, bVol, bRate)) {
+                            warmTone(bassNotes[bar] * bRate, tempo * 2.2, 0.22, 'sine', null, 320);
                         }
                     }
 
-                    // 3. Studio Crisp Snare / Clap Pocket + Turnaround Ghost Fill
+                    // 3. Chorus Uplifting Melodic Pluck Hook (Bars 5-8)
+                    if (isChorus && (i === 2 || i === 8 || i === 12 || (bar === 3 && i === 14))) {
+                        const pIdx = (i === 14) ? ((bar + 1) % 4) : bar;
+                        const pVol = (i === 2) ? 0.19 : 0.15;
+                        trigStem('music_pluck_' + pIdx, t0, pVol, (i === 12) ? 1.25 : 1.0);
+                    }
+
+                    // 4. Studio Analog Kick Pattern (with bar turnaround pickup)
+                    const isKick = (i === 0 || i === 10 || (bar % 2 === 1 && i === 7) || (bar === 3 && i === 14));
+                    if (isKick) {
+                        const kVol = (i === 0 || i === 10) ? 0.34 : 0.21;
+                        if (!trigStem('music_kick', t0, kVol)) {
+                            warmTone(104, 0.08, 0.24, 'sine', 46, 280);
+                        }
+                    }
+
+                    // 5. Studio Crisp Snare / Clap Pocket + Turnaround Ghost Fill
                     const isSnare = (i === 4 || i === 12);
                     const isGhostSnare = (bar === 3 && (i === 13 || i === 15)) || (bar === 1 && i === 15);
                     if (isSnare || isGhostSnare) {
-                        const sVol = isSnare ? 0.26 : 0.09;
+                        const sVol = isSnare ? 0.25 : 0.09;
                         if (!trigStem('music_snare', t0, sVol, isSnare ? 1.0 : 1.06)) {
                             warmTone(185, 0.05, sVol * 0.35, 'sine', 96, 1200);
                         }
                     }
 
-                    // 4. Tight Hat Groove + Off-Beat Open Hat Lift
+                    // 6. Tight Hat Groove + Off-Beat Open Hat Lift
                     if (i === 14 && bar < 3) {
-                        trigStem('music_open_hat', t0, 0.13);
+                        trigStem('music_open_hat', t0, 0.12);
                     } else if (i % 2 === 0 || (i === 11 && bar % 2 === 0)) {
-                        const hVol = (i % 4 === 2) ? 0.14 : (i % 2 === 0 ? 0.085 : 0.055);
+                        const hVol = (i % 4 === 2) ? 0.13 : (i % 2 === 0 ? 0.08 : 0.05);
                         trigStem('music_hat', t0, hVol, (i % 4 === 2) ? 1.0 : 1.06);
                     }
 
