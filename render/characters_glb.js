@@ -230,7 +230,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=10.0.0-release', '/assets/characters/hoops23.glb?v=10.0.0-release', '/assets/characters/keeper1.glb?v=10.0.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=11.0.0-release', '/assets/characters/hoops23.glb?v=11.0.0-release', '/assets/characters/keeper1.glb?v=11.0.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -1546,7 +1546,7 @@
       const invS = 1 / (speed || 1);
       const dotF = (vx * fwdX + vz * fwdZ) * invS;
       const dotR = (vx * fwdZ - vz * fwdX) * invS;
-      const rate = Math.max(0.84, Math.min(1.92, speed / 2.68));
+      const rate = Math.max(0.84, Math.min(1.42, speed / 4.25));
       if (dotF < -0.52) return { clip: 'Run_Back', rate };
       if (dotR > 0.72 && dotF < 0.48) return { clip: 'Run_Right', rate };
       if (dotR < -0.72 && dotF < 0.48) return { clip: 'Run_Left', rate };
@@ -1706,13 +1706,13 @@
           const cName = this._activeVariantClip || 'Anim_2K_SlamDunk';
           this.setAnimation(cName, syncRate(dk.dur || 0.66, 1.02, cName), 0.05, undefined, enteringNewAction);
         }
-        // 2. Jump Shot Release (Synced directly with ball release arc!)
+        // 2. Jump Shot Release (Crisp rise + overhead crown release!)
         else if (a.shotT > 0) {
           targetLift = 0.0;
           targetPitch = 0.0;
           bio.action = 'shot';
           const cName = this._activeVariantClip || 'Anim_2K_JumpShot';
-          this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.04, wasCharging ? 0.145 : 0.085, enteringNewAction);
+          this.setAnimation(cName, syncRate(0.58, 1.04, cName), 0.045, wasCharging ? 0.095 : 0.04, enteringNewAction);
         }
         // 2b. Defensive Block / Contest Leap (High Overhead Swat — NO fake shot release!)
         else if (a.jumpT > 0) {
@@ -1770,7 +1770,7 @@
             if (errU > 0.5) errU -= 1;
             if (errU < -0.5) errU += 1;
             const phaseMul = Math.max(0.84, Math.min(1.18, 1.0 + errU * 1.15));
-            const sprintCadence = Math.max(0.88, Math.min(1.62, speed / 2.90)) * phaseMul;
+            const sprintCadence = Math.max(0.84, Math.min(1.38, speed / 4.25)) * phaseMul;
             this.setAnimation(isLeftDrib ? 'Anim_2K_DribbleRun_L' : 'Anim_2K_DribbleRun', sprintCadence, 0.09);
             targetPitch = 0.04;
           } else {
@@ -1821,14 +1821,14 @@
           bio.action = 'kjump';
           this.setAnimation('Anim_EA_KeeperJump', syncRate(0.54, 1.04, 'Anim_EA_KeeperJump'), 0.055, undefined, enteringNewAction);
         }
-        // 2. Football Power Shot vs Live Charge Coil vs Crisp Pass (Instant Foot-to-Ball Sync!)
+        // 2. Football Power Shot vs Live Charge Coil vs Crisp Pass (Crisp windup whip!)
         else if (a.shotT > 0) {
           targetLift = 0.0;
           targetPitch = 0.0;
           targetRoll = 0.0;
           bio.action = 'kick';
           const cName = this._activeVariantClip || 'Anim_EA_PowerStrike';
-          this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.04, wasCharging ? 0.175 : 0.115, enteringNewAction);
+          this.setAnimation(cName, syncRate(0.58, 1.04, cName), 0.045, wasCharging ? 0.11 : 0.055, enteringNewAction);
         }
         else if (isChargingShot) {
           targetLift = 0.0;
@@ -1843,7 +1843,7 @@
           targetPitch = 0.0;
           bio.action = 'pass';
           const cName = this._activeVariantClip || 'Kick_Right';
-          this.setAnimation(cName, syncRate(0.40, 1.04, cName), 0.045, 0.085, enteringNewAction);
+          this.setAnimation(cName, syncRate(0.44, 1.04, cName), 0.045, 0.04, enteringNewAction);
         }
         // 3. Football Turf Slide Tackle vs Standing Poke Steal
         else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge' || a.tackle.phase === 'charging')) {
@@ -1853,7 +1853,7 @@
           const isSlide = (a.tackle.power || 0) > 0.15;
           bio.action = isSlide ? 'slide' : 'steal';
           const cName = this._activeVariantClip || (isSlide ? 'Anim_EA_SlideTackle' : 'Anim_FB_Steal');
-          this.setAnimation(cName, syncRate(isSlide ? 0.56 : 0.40, 1.04, cName), 0.045, isSlide ? 0.04 : 0.05, enteringNewAction);
+          this.setAnimation(cName, syncRate(isSlide ? 0.60 : 0.44, 1.04, cName), 0.045, isSlide ? 0.025 : 0.03, enteringNewAction);
         }
         // 4. Smooth Follow-Through Linger after Kick / Pass / Slide / Poke / Save
         else if (this._lingerTimer > 0 && (this._lingerTag === 'fshot' || this._lingerTag === 'fkick' || this._lingerTag === 'slide' || this._lingerTag === 'fsteal' || this._lingerTag === 'dive' || this._lingerTag === 'kjump')) {
@@ -1876,7 +1876,7 @@
         // 7. Football Ball-Carrier Agility Dribble vs Directional Run / Walk / Idle
         else if (isBallCarrier && speed > 0.35) {
           bio.action = 'fdribble';
-          const dribCadence = Math.max(0.88, Math.min(1.62, speed / 2.90));
+          const dribCadence = Math.max(0.84, Math.min(1.38, speed / 4.25));
           this.setAnimation('Anim_EA_DribbleRun', dribCadence, 0.10);
           targetPitch = 0.04 * Math.min(1.0, speed / 4.2);
         }
@@ -2155,7 +2155,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=10.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=11.0.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2164,7 +2164,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=10.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=11.0.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2173,7 +2173,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=10.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=11.0.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2508,7 +2508,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=10.0.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=10.0.0-release' : '/assets/characters/footy10.glb?v=10.0.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=11.0.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=11.0.0-release' : '/assets/characters/footy10.glb?v=11.0.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2669,7 +2669,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=10.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=10.0.0-release' : '/assets/characters/footy10.glb?v=10.0.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=11.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=11.0.0-release' : '/assets/characters/footy10.glb?v=11.0.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };

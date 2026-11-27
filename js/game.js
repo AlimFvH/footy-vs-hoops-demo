@@ -226,7 +226,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
                         const AUDIO_VERSION = '6.0.0-release';
-                        const AUDIO_REVISION = '10.0.0-studio';
+                        const AUDIO_REVISION = '11.0.0-clean';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -662,7 +662,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             if (!dest) return;
             this.nextNote = c.currentTime + 0.1;
             this.step = 0;
-            // Warm Modern Broadcast Sports Lounge Groove (Am9 -> Fmaj7 -> Cmaj7 -> G6 @ ~114 BPM)
+            // Warm Modern Broadcast Lounge Rhodes (Am9 -> Fmaj7 -> Cmaj7 -> G6 @ ~114 BPM, zero raw synth harshness!)
             const chords = [
                 [220.0, 261.63, 329.63, 392.0, 493.88],
                 [174.61, 220.0, 261.63, 329.63, 392.0],
@@ -670,7 +670,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                 [196.0, 246.94, 293.66, 329.63, 440.0],
             ];
             const bassNotes = [55.0, 43.65, 65.41, 49.0];
-            const tempo = 0.132; // ~113.6 BPM smooth 16th-note pulse
+            const tempo = 0.132;
             this.musicTimer = window.setInterval(() => {
                 const cx = this.ctx;
                 if (!cx || !this.musicGain || cx.state !== 'running')
@@ -681,75 +681,86 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const i = this.step % 16;
                     const t0 = this.nextNote;
 
-                    const note = (f, d, vol, type, slide) => {
+                    const warmTone = (f, d, vol, type, slide, lpCut) => {
                         const o = cx.createOscillator();
                         const g = cx.createGain();
                         o.type = type;
                         o.frequency.setValueAtTime(f, t0);
-                        if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, slide), t0 + d);
+                        if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(24, slide), t0 + d);
                         g.gain.setValueAtTime(0.0001, t0);
-                        g.gain.exponentialRampToValueAtTime(vol, t0 + 0.018);
+                        g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
                         g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
-                        o.connect(g);
+                        if (lpCut) {
+                            const fNode = cx.createBiquadFilter();
+                            fNode.type = 'lowpass';
+                            fNode.frequency.setValueAtTime(lpCut * 1.4, t0);
+                            fNode.frequency.exponentialRampToValueAtTime(Math.max(220, lpCut * 0.65), t0 + d);
+                            fNode.Q.value = 0.55;
+                            o.connect(fNode);
+                            fNode.connect(g);
+                        } else {
+                            o.connect(g);
+                        }
                         g.connect(dest);
                         o.start(t0);
                         o.stop(t0 + d + 0.04);
                     };
 
-                    // 1. Warm Round Sub Bass
+                    // 1. Deep Warm Sub Bass
                     if (i === 0 || i === 6 || i === 10) {
                         const root = bassNotes[bar];
-                        note(root * 1.25, tempo * (i === 0 ? 4.0 : 2.5), 0.42, 'sine');
+                        warmTone(root * 1.25, tempo * (i === 0 ? 4.0 : 2.4), 0.38, 'sine', null, 340);
                     }
 
-                    // 2. Crisp Subtle Pocket Kick & Rim Snare
+                    // 2. Soft Broadcast Pocket Kick & Rim Click
                     if (i === 0 || i === 8 || i === 10) {
-                        note(108, 0.085, 0.34, 'sine', 44);
+                        warmTone(104, 0.08, 0.32, 'sine', 46, 280);
                     }
                     if (i === 4 || i === 12) {
-                        note(195, 0.075, 0.14, 'triangle', 105);
+                        warmTone(185, 0.05, 0.10, 'sine', 96, 950);
                         const buf = this.pinkBuf || this.noiseBuf;
                         if (buf) {
                             const s = cx.createBufferSource();
                             s.buffer = buf;
                             const f = cx.createBiquadFilter();
                             f.type = 'bandpass';
-                            f.frequency.value = 2400;
+                            f.frequency.value = 1850;
                             f.Q.value = 1.1;
                             const g = cx.createGain();
-                            g.gain.setValueAtTime(0.11, t0);
-                            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+                            g.gain.setValueAtTime(0.085, t0);
+                            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.075);
                             s.connect(f);
                             f.connect(g);
                             g.connect(dest);
                             s.start(t0, Math.random());
-                            s.stop(t0 + 0.12);
+                            s.stop(t0 + 0.10);
                         }
                     }
 
-                    // 3. Soft Brushed Shaker (instead of harsh metallic high-hat)
+                    // 3. Soft Brushed Shaker (silky mid-high without harshness)
                     if ((this.pinkBuf || this.noiseBuf) && (i % 2 === 0)) {
                         const s = cx.createBufferSource();
                         s.buffer = this.pinkBuf || this.noiseBuf;
                         const f = cx.createBiquadFilter();
                         f.type = 'bandpass';
-                        f.frequency.value = (i % 4 === 2) ? 4600 : 3400;
-                        f.Q.value = 1.4;
+                        f.frequency.value = (i % 4 === 2) ? 3200 : 2400;
+                        f.Q.value = 1.2;
                         const g = cx.createGain();
-                        const hVol = (i % 4 === 2) ? 0.036 : 0.018;
+                        const hVol = (i % 4 === 2) ? 0.028 : 0.015;
                         g.gain.setValueAtTime(hVol, t0);
-                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.04);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.035);
                         s.connect(f);
                         f.connect(g);
                         g.connect(dest);
                         s.start(t0, Math.random());
-                        s.stop(t0 + 0.06);
+                        s.stop(t0 + 0.05);
                     }
 
-                    // 4. Warm Chord Pluck Pad on relaxed syncopated beats (non-fatiguing!)
+                    // 4. Warm Filtered Rhodes Electric Piano Chords (smooth chorus + mallet sine overtone)
                     if (i === 0 || i === 6 || i === 12) {
                         ch.slice(0, 4).forEach((freq, ci) => {
-                            note(freq, tempo * 3.8, 0.045 - ci * 0.005, 'triangle');
+                            warmTone(freq, tempo * 3.8, 0.036 - ci * 0.004, 'sine', null, 1800);
+                            warmTone(freq * 1.0028, tempo * 3.5, 0.020 - ci * 0.002, 'triangle', null, 1350);
                         });
                     }
 
@@ -4493,7 +4504,7 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             const prevPhase = b.dribblePhase;
             b.dribblePhase += speed * h * 0.95;
             const touch = speed > 1 ? 0.5 + 0.5 * Math.sin(b.dribblePhase * 3.1) : 0;
-            const off = o.radius + b.r + 0.12 + 0.35 * touch;
+            const off = o.radius + b.r + 0.04 + 0.26 * touch;
             const weave = speed > 1.2 ? Math.sin(b.dribblePhase * 2.1) * 0.14 : 0;
             const rx = o.fz;
             const rz = -o.fx;
