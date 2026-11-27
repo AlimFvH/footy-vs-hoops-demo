@@ -226,7 +226,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
                         };
                         const AUDIO_VERSION = '6.0.0-release';
-                        const AUDIO_REVISION = '9.0.0-studio';
+                        const AUDIO_REVISION = '10.0.0-studio';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -339,7 +339,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             if (!c || c.state !== 'running')
                 return;
             const now = c.currentTime;
-            const gap = { bounce: 0.06, bounce_footy: 0.07, dribble: 0.12, dribble_court: 0.12, dunk: 0.1, kick: 0.04, pass: 0.06, pass_hoops: 0.06, shot_hoops: 0.08, tackle: 0.08, steal_swoosh: 0.22, rim: 0.05, post: 0.05, step: 0.14, step_court: 0.14, tick: 0.05, click: 0.03 };
+            const gap = { bounce: 0.06, bounce_footy: 0.07, dribble: 0.12, dribble_court: 0.12, dunk: 0.1, kick: 0.04, pass: 0.06, pass_hoops: 0.06, shot_hoops: 0.08, tackle: 0.08, steal_swoosh: 0.22, squeak: 0.24, save: 0.14, rim: 0.05, post: 0.05, step: 0.14, step_court: 0.14, tick: 0.05, click: 0.03 };
             const g = gap[name];
             if (g !== undefined) {
                 if (now - ((_a = this.lastPlay[name]) !== null && _a !== void 0 ? _a : -9) < g)
@@ -385,19 +385,19 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     const jitter = isWhistle ? (0.99 + Math.random() * 0.02) : (0.96 + Math.random() * 0.08);
                     src.playbackRate.setValueAtTime(pitch * jitter, now);
 
-                    // Per-action broadcast RMS calibration tuned for v9.0 studio-mastered Foley WAVs
+                    // Per-action broadcast RMS calibration tuned for v10.0 studio-mastered Foley WAVs
                     const gainMap = {
                         whistle: 0.44, whistleStart: 0.44, whistleEnd: 0.46, whistleRestart: 0.42, buzzer: 0.56,
-                        step: 0.42, step_court: 0.42, squeak: 0.36, tackle: 0.88, swish: 0.96,
+                        step: 0.38, step_court: 0.36, squeak: 0.30, tackle: 0.88, swish: 0.96,
                         steal: 0.88, steal_swoosh: 0.62, save: 0.96,
                         dribble: 0.64, dribble_court: 0.88, bounce: 0.84, bounce_footy: 0.76,
                         pass: 0.84, pass_hoops: 0.80, kick: 1.00, shot: 1.00, shot_hoops: 0.90, dunk: 1.00,
                         rim: 0.84, board: 0.84, post: 0.90, crowd: 0.74,
                         goal: 0.90, score: 0.88, win: 0.88, celebration: 0.88
                     };
-                    // Gentle high-shelf rounding on referee whistles/squeaks while keeping leather/wood/rim impact crisp
+                    // Gentle high-shelf rounding on whistles/squeaks/swooshes while keeping leather/wood/rim impact crisp
                     const lpFreqMap = {
-                        whistle: 7600, whistleStart: 7600, whistleEnd: 7600, whistleRestart: 7600, buzzer: 7200, squeak: 8600
+                        whistle: 7200, whistleStart: 7200, whistleEnd: 7200, whistleRestart: 7200, buzzer: 7000, squeak: 6400, steal_swoosh: 5400
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.86);
@@ -2287,6 +2287,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
             celebrateT: 0,
             jumpT: 0,
             diveT: 0,
+            cutCooldown: 0,
             thinkT: Math.random() * 0.1,
             aiTimer: 0,
             aiTargetX: 0,
@@ -2540,6 +2541,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 a.jumpT = Math.max(0, a.jumpT - h);
                 a.celebrateT = Math.max(0, a.celebrateT - h);
                 a.diveT = Math.max(0, a.diveT - h);
+                a.cutCooldown = Math.max(0, (a.cutCooldown || 0) - h);
                 const sprinting = a.sprint && Math.hypot(a.mx, a.mz) > 0.2 && a.stamina > 2 && a.tackle.phase !== 'lunge';
                 if (sprinting) {
                     a.stamina = Math.max(0, a.stamina - P.staminaDrain * h);
@@ -2605,6 +2607,11 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                     while (d < -Math.PI)
                         d += Math.PI * 2;
                     if (Math.abs(d) > 0.8) {
+                        const curSp = Math.hypot(a.vx, a.vz);
+                        if (Math.abs(d) > 0.96 && curSp > 3.6 && (a.cutCooldown || 0) <= 0 && (a.human || (this.ball && (this.ball.owner === a || Math.hypot(a.x - this.ball.x, a.z - this.ball.z) < 6.5)))) {
+                            a.cutCooldown = 0.34;
+                            this.emit({ type: 'cut', id: a.id, speed: curSp, x: a.x, z: a.z });
+                        }
                         const turnDecel = Math.max(0.45, Math.cos(d * 0.5));
                         a.vx *= Math.pow(turnDecel, 14 * h);
                         a.vz *= Math.pow(turnDecel, 14 * h);
@@ -2633,7 +2640,7 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                 const p1 = Math.floor(prevPhase / Math.PI);
                 const p2 = Math.floor(a.runPhase / Math.PI);
                 if (p2 > p1) {
-                    this.emit({ type: 'step', id: a.id, speed: sp });
+                    this.emit({ type: 'step', id: a.id, speed: sp, x: a.x, foot: p2 & 1 });
                 }
             }
         }
@@ -2732,9 +2739,12 @@ define("sim/base", ["require", "exports", "sim/types", "sim/math"], function (re
                         this.humanShootRelease(a, c);
                     } else {
                         // Queue brief one-touch shot buffer so tapping right before collecting fires cleanly
-                        a.shootBufferT = 0.16;
-                        a.shootBufferCharge = Math.max(0.22, c);
-                        this.humanShootRelease(a, c);
+                        a.shootBufferT = 0.18;
+                        a.shootBufferCharge = Math.max(0.24, c);
+                        const dToBall = Math.hypot(a.x - this.ball.x, a.z - this.ball.z);
+                        if (dToBall >= 3.4) {
+                            this.humanShootRelease(a, c);
+                        }
                     }
                 }
             } else if (a.shootBufferT > 0 && this.ball.owner === a && a.stun < 0.2 && a.tackle.phase !== 'lunge') {
@@ -3228,7 +3238,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             let vx;
             let vz;
             let vy;
-            const rise = 1.1 + hd * 0.1;
+            const rise = 1.2 + hd * 0.13;
             const apex = Math.max(sy, ty) + rise;
             const g = exports.BB.GRAVITY;
             vy = Math.sqrt(2 * g * (apex - sy));
@@ -3509,6 +3519,57 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 a.shotT = 0;
             }
         }
+        beginLunge(a, power, aim) {
+            const b = this.ball;
+            // Contest/Block jump: leaping near a rising shooter or active airborne dunk
+            const shooter = b.owner || (this.shot && this.shot.age < 0.35 ? this.shot.shooter : null);
+            if (shooter && shooter.team !== a.team) {
+                const isRising = (shooter.shotT > 0.10) || (shooter.dunk && shooter.dunk.active && shooter.dunk.t < shooter.dunk.apexT);
+                const dShoot = (0, math_js_4.dist2)(a.x, a.z, shooter.x, shooter.z);
+                if (isRising && dShoot < 2.55) {
+                    const fx = shooter.x - a.x;
+                    const fz = shooter.z - a.z;
+                    const m = Math.hypot(fx, fz) || 1;
+                    a.fx = fx / m;
+                    a.fz = fz / m;
+                    a.jumpT = 0.52;
+                    a.tackle.phase = 'idle';
+                    a.tackle.cooldown = 0.48;
+                    a.stamina = Math.max(0, a.stamina - 6);
+                    this.emit({ type: 'tackleStart', id: a.id, power: 0, x: a.x, z: a.z });
+                    return true;
+                }
+            }
+            return super.beginLunge(a, power, aim);
+        }
+        checkBasketballBlocks() {
+            const b = this.ball;
+            if (b.owner || !this.shot || this.shot.scored || this.shot.age > 0.55)
+                return;
+            for (const d of this.agents) {
+                if (d.team === this.shot.team || d.pickupLock > 0 || d.stun > 0.25)
+                    continue;
+                const activeReach = (d.jumpT > 0) ? 3.25 : ((d.tackle && d.tackle.phase === 'lunge') ? 2.35 : 0);
+                if (activeReach <= 0)
+                    continue;
+                const dist = (0, math_js_4.dist2)(d.x, d.z, b.x, b.z);
+                if (dist > d.radius + b.r + 0.52 || b.y < 1.45 || b.y > activeReach)
+                    continue;
+                const hSpd = Math.max(5.5, Math.hypot(b.vx, b.vz));
+                const bx = d.fx || 0;
+                const bz = d.fz || 1;
+                b.vx = bx * hSpd * 0.72 - b.vx * 0.28 + this.rng.range(-1.8, 1.8);
+                b.vz = bz * hSpd * 0.72 - b.vz * 0.28 + this.rng.range(-1.8, 1.8);
+                b.vy = 2.6;
+                b.lastTouch = d;
+                d.pickupLock = 0.28;
+                this.shot = null;
+                if (this.shotReleaseState)
+                    this.shotReleaseState.cleared = true;
+                this.emit({ type: 'block', id: d.id, team: d.team, x: b.x, y: b.y, z: b.z });
+                return;
+            }
+        }
         simulateBall(h, live) {
             const b = this.ball;
             if (b.owner) {
@@ -3521,6 +3582,8 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             }
             else {
                 this.freeFlight(h);
+                if (live)
+                    this.checkBasketballBlocks();
                 if (this.shot)
                     this.shot.age += h;
                 if (this.shotReleaseState) {
@@ -3554,7 +3617,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
         dribble(h, o) {
             const b = this.ball;
             const speed = Math.hypot(o.vx, o.vz);
-            const rate = speed > 1 ? 7.2 : 5.2;
+            const rate = speed > 1 ? 7.4 : 5.2;
             const prev = b.dribblePhase;
             b.dribblePhase += rate * h;
             const phase = b.dribblePhase % Math.PI;
@@ -3562,8 +3625,21 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             const hy = Math.abs(Math.sin(b.dribblePhase));
             b.y = b.r + height * hy;
             if (o.dribbleSide === undefined) o.dribbleSide = 1;
-            if (o.mx < -0.18) o.dribbleSide = -1;
-            else if (o.mx > 0.18) o.dribbleSide = 1;
+            o._crossCd = Math.max(0, (o._crossCd || 0) - h);
+            // Smart character-local lateral crossover & shield-away-from-defender dribble hand switching
+            const latVel = o.vx * o.fz - o.vz * o.fx;
+            let wantSide = o.dribbleSide;
+            const nearDef = this.nearestOpponent(o, 2.15);
+            if (nearDef && o._crossCd <= 0) {
+                const oppLat = (nearDef.agent.x - o.x) * o.fz - (nearDef.agent.z - o.z) * o.fx;
+                wantSide = oppLat >= 0 ? -1 : 1;
+            } else if (Math.abs(latVel) > 0.75 && o._crossCd <= 0) {
+                wantSide = latVel < 0 ? -1 : 1;
+            }
+            if (wantSide !== o.dribbleSide) {
+                o.dribbleSide = wantSide;
+                o._crossCd = 0.28;
+            }
             const side = 0.42 * (o.dribbleSide || 1);
             const rx = o.fz;
             const rz = -o.fx;
@@ -3582,7 +3658,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             b.vy = 0;
             b.orbitAngle = undefined;
             if (Math.floor(prev / Math.PI) !== Math.floor(b.dribblePhase / Math.PI)) {
-                this.emit({ type: 'dribble', id: o.id, x: b.x, z: b.z });
+                this.emit({ type: 'dribble', id: o.id, x: b.x, z: b.z, side: o.dribbleSide });
             }
             void phase;
             b.spinX = 0;
@@ -3661,7 +3737,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
             if (Math.abs(b.z - hp.z) > 3.2 || Math.abs(b.x) > 3.2 || b.y > exports.BB.BOARD_TOP + 1 || b.y < exports.BB.RIM_H - 1.4)
                 return;
             const bz = hp.z + hp.dir * exports.BB.BOARD_OFFSET;
-            const board = (0, math_js_4.collideBox)(b, -exports.BB.BOARD_W, exports.BB.BOARD_BOTTOM, bz - exports.BB.BOARD_T, exports.BB.BOARD_W, exports.BB.BOARD_TOP, bz + exports.BB.BOARD_T, 0.58);
+            const board = (0, math_js_4.collideBox)(b, -exports.BB.BOARD_W, exports.BB.BOARD_BOTTOM, bz - exports.BB.BOARD_T, exports.BB.BOARD_W, exports.BB.BOARD_TOP, bz + exports.BB.BOARD_T, 0.64);
             if (board.hit && board.speed > 0.8) {
                 if (this.shot)
                     this.shot.touchedBoard = true;
@@ -3801,7 +3877,7 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 this.stats.threes[team]++;
             if (scorer === this.human)
                 this.stats.humanGoals++;
-            this.hoops[hoopIdx].net = 1;
+            this.hoops[hoopIdx].net = swish ? 2.4 : 1.35;
             this.lastScoreTeam = team;
             scorer.celebrateT = PARAMS.celebrate;
             this.phase = 'celebrate';
@@ -3891,7 +3967,13 @@ define("sim/basketball", ["require", "exports", "sim/base", "sim/math"], functio
                 if (tgt === owner) {
                     const d = (0, math_js_4.dist2)(a.x, a.z, owner.x, owner.z);
                     const t = a.tackle;
-                    if (d < 1.9 && t.phase === 'idle' && t.cooldown <= 0 && a.aiTimer <= 0 && a.stamina > 18 && a.stun <= 0) {
+                    const shooterRising = (owner.shootCharging || owner.shotT > 0.1 || (owner.dunk && owner.dunk.active));
+                    if (shooterRising && d < 2.45 && a.jumpT <= 0 && a.aiTimer <= 0 && a.stamina > 12 && a.stun <= 0) {
+                        if (this.rng.chance(Math.min(0.85, (this.ai.stealProb || 0.25) * 1.45))) {
+                            this.beginLunge(a, 0, { x: owner.x - a.x, z: owner.z - a.z });
+                        }
+                        a.aiTimer = 0.65;
+                    } else if (d < 1.9 && t.phase === 'idle' && t.cooldown <= 0 && a.aiTimer <= 0 && a.stamina > 18 && a.stun <= 0) {
                         if (this.rng.chance(this.ai.stealProb)) {
                             const power = this.rng.chance(0.25) ? this.rng.range(0.3, 0.8) : 0;
                             this.beginLunge(a, power, { x: owner.x - a.x, z: owner.z - a.z });
@@ -4240,19 +4322,21 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                     dz = dz * (1 - k) + (gz / am) * k;
                 }
             }
+            const isVolley = !owns && reach;
             const power = Math.max(0.25, charge);
-            const speed = (0, math_js_5.lerp)(14, 33, power) * this.boosts.shotPower;
+            const volleyMul = isVolley ? 1.07 : 1.0;
+            const speed = (0, math_js_5.lerp)(14, 33, power) * this.boosts.shotPower * volleyMul;
             // 3D Ball Elevation Dynamics:
-            // Tap Space = driven low/mid strike
-            // Hold Space = rising rocket aiming for crossbar / top corners
-            // Forward attack stick / direction = lofted chip / chip over keeper
+            // Close shots track driven/top-bin arc smoothly; long range shots add natural carry under the bar
+            const goalDist = Math.hypot(oppGoalZ - a.z, a.x);
+            const distLift = (0, math_js_5.clamp)((goalDist - 10) * 0.14, 0, 2.1);
             const forwardPush = (dz * att < -0.15) || (Math.hypot(a.mx, a.mz) > 0.3 && (a.mz * att < -0.15));
-            const loft = forwardPush ? 2.8 : 0;
-            const vy = (0, math_js_5.lerp)(2.8, 11.2, power) + loft;
-            if (this.kickBall(a, dx, dz, Math.min(speed, 36), vy, 'shot')) {
+            const loft = forwardPush ? 2.6 : 0;
+            const vy = (0, math_js_5.lerp)(2.7, 10.6, power) + loft + distLift;
+            if (this.kickBall(a, dx, dz, Math.min(speed, 36.5), vy, 'shot')) {
                 // Aerodynamic Magnus curl spin driven by cross-movement at strike release
                 const latCross = (a.mx || 0) * (-dz) + (a.mz || 0) * dx;
-                this.ball.curveSpin = (0, math_js_5.clamp)(latCross * 3.0 * power, -2.8, 2.8);
+                this.ball.curveSpin = (0, math_js_5.clamp)(latCross * 3.3 * power, -3.2, 3.2);
             }
         }
         humanPass(a) {
@@ -4406,12 +4490,16 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
         followOwner(h, o) {
             const b = this.ball;
             const speed = Math.hypot(o.vx, o.vz);
-            b.dribblePhase += speed * h * 0.9;
+            const prevPhase = b.dribblePhase;
+            b.dribblePhase += speed * h * 0.95;
             const touch = speed > 1 ? 0.5 + 0.5 * Math.sin(b.dribblePhase * 3.1) : 0;
             const off = o.radius + b.r + 0.12 + 0.35 * touch;
-            // Direct straight-line positioning to player feet — ZERO circular orbiting!
-            const targetX = o.x + o.fx * off;
-            const targetZ = o.z + o.fz * off;
+            const weave = speed > 1.2 ? Math.sin(b.dribblePhase * 2.1) * 0.14 : 0;
+            const rx = o.fz;
+            const rz = -o.fx;
+            // Direct straight-line positioning + natural left/right cleat push — ZERO circular orbiting!
+            const targetX = o.x + o.fx * off + rx * weave;
+            const targetZ = o.z + o.fz * off + rz * weave;
             const smoothK = 1.0 - Math.exp(-h * 32);
             b.x += (targetX - b.x) * smoothK;
             b.z += (targetZ - b.z) * smoothK;
@@ -4425,6 +4513,9 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             this.clampStatic();
             b.spinX = b.vz / b.r;
             b.spinZ = -b.vx / b.r;
+            if (speed > 2.9 && Math.floor(prevPhase * 0.98) !== Math.floor(b.dribblePhase * 0.98)) {
+                this.emit({ type: 'dribble', id: o.id, x: b.x, z: b.z });
+            }
         }
         clampStatic() {
             const b = this.ball;
@@ -4598,15 +4689,22 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 b.z = a.z + nz * min;
                 b.vx = a.vx + (rvx - 1.55 * vn * nx) * 0.82;
                 b.vz = a.vz + (rvz - 1.55 * vn * nz) * 0.82;
-                if (isKeeper && a.diveDir) {
-                    b.vx += a.diveDir * 2.8;
+                if (isKeeper) {
+                    const parrySide = Math.sign(b.x - a.x) || a.diveDir || (b.vx >= 0 ? 1 : -1);
+                    const impSp = Math.abs(vn);
+                    if (impSp > 11.5) {
+                        // Wide fingertip parry away from danger zone instead of bouncing straight to striker
+                        b.vx += parrySide * (2.6 + Math.min(3.5, impSp * 0.16));
+                    } else if (a.diveDir) {
+                        b.vx += a.diveDir * 2.8;
+                    }
                 }
                 b.lastTouch = a;
                 a.pickupLock = 0.12;
                 if (this.shotReleaseState)
                     this.shotReleaseState.cleared = true;
                 if (isKeeper)
-                    this.emit({ type: 'save', id: a.id, team: a.team, x: b.x, y: b.y, z: b.z });
+                    this.emit({ type: 'save', id: a.id, team: a.team, speed: Math.abs(vn), x: b.x, y: b.y, z: b.z });
                 else
                     this.emit({ type: 'bounce', speed: Math.abs(vn), x: b.x, y: b.y, z: b.z });
             }
@@ -4701,9 +4799,18 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
             }
         }
         runAI(h) {
+            const b = this.ball;
             for (const a of this.agents) {
                 if (a.human && !this.autoHuman)
                     continue;
+                // Wake goalkeeper reflexes promptly on fast incoming shots toward their goal
+                if (a.role === 'keeper' && b && !b.owner) {
+                    const ks = a.team === 0 ? 1 : -1;
+                    if (b.vz * ks > 5.0 && (exports.FB.L - b.z * ks) < 22) {
+                        const reactCap = this.difficulty === 'hard' ? 0.025 : (this.difficulty === 'normal' ? 0.045 : 0.085);
+                        if (a.thinkT > reactCap) a.thinkT = reactCap;
+                    }
+                }
                 a.thinkT -= h;
                 a.aiTimer = Math.max(0, a.aiTimer - h);
                 if (a.thinkT <= 0) {
@@ -4930,7 +5037,8 @@ define("sim/football", ["require", "exports", "sim/base", "sim/math"], function 
                 const t = Math.max(0, (lineZ - b.z) / b.vz);
                 const hash = Math.sin(Math.round(b.vx * 0.5) * 12.9898 + Math.round(b.vz * 0.5) * 78.233 + Math.round(b.x * 0.3)) * 43758.5453;
                 const bias = (hash - Math.floor(hash) - 0.5) * 2 * KEEPER_MISJUDGE[this.difficulty];
-                tx = (0, math_js_5.clamp)(b.x + b.vx * t + bias, -exports.FB.GW, exports.FB.GW);
+                const curveLead = (b.curveSpin || 0) * 0.28 * t;
+                tx = (0, math_js_5.clamp)(b.x + b.vx * t + curveLead + bias, -exports.FB.GW - 0.15, exports.FB.GW + 0.15);
                 const speed = Math.hypot(b.vx, b.vz);
                 const dX = tx - k.x;
                 const ballYAtLine = b.y + b.vy * t - 0.5 * exports.FB.GRAVITY * t * t;
@@ -13386,27 +13494,54 @@ define("core/game", ["require", "exports", "gfx/renderer", "render/matchview", "
                 case 'bounce':
                     a.play(mode === 'hoops' ? 'bounce' : 'bounce_footy', Math.min(1.15, (e.speed || 4) / 8), mode === 'hoops' ? 1.02 : 1.0, spatial);
                     break;
-                case 'dribble':
-                    a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', mode === 'hoops' ? 0.85 : 0.72, 1, spatial);
+                case 'dribble': {
+                    const sidePitch = (e.side && e.side < 0) ? 1.03 : 0.98;
+                    a.play(mode === 'hoops' ? 'dribble_court' : 'dribble', mode === 'hoops' ? 0.86 : 0.64, sidePitch, spatial);
                     break;
-                case 'step':
-                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.68, (e.speed || 5) / 9), mode === 'hoops' ? 1.04 : 0.98, spatial);
+                }
+                case 'step': {
+                    const stepPitch = e.foot ? 1.03 : 0.97;
+                    a.play(mode === 'hoops' ? 'step_court' : 'step', Math.min(0.68, (e.speed || 5) / 9), (mode === 'hoops' ? 1.04 : 0.98) * stepPitch, spatial);
+                    break;
+                }
+                case 'cut':
+                    if (mode === 'hoops')
+                        a.play('squeak', Math.min(0.85, 0.55 + ((e.speed || 4) / 14)), 0.96 + Math.random() * 0.08, spatial);
+                    else
+                        a.play('step', 0.48, 0.92, spatial);
+                    break;
+                case 'block':
+                    a.play('steal', 1.05, 0.92, spatial);
+                    if (typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(2.1, 0.95);
+                    if (typeof window !== 'undefined' && window.GameFeel)
+                        window.GameFeel.triggerHitStop(this, 0.032);
+                    if (mine(e.id))
+                        telegram_js_1.telegram.haptic('medium');
                     break;
                 case 'post':
                     a.play('post', Math.min(1.2, e.speed / 12), 1, spatial);
+                    if (e.speed > 6.5 && typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(2.0, 0.85);
                     if (typeof window !== 'undefined' && window.GameFeel)
                         window.GameFeel.triggerHitStop(this, 0.036);
                     telegram_js_1.telegram.haptic('medium');
                     break;
                 case 'rim':
                     a.play('rim', Math.min(1.2, e.speed / 8), 1, spatial);
+                    if (e.speed > 6.0 && typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(1.8, 0.75);
                     break;
                 case 'board':
                     a.play('board', Math.min(1.2, e.speed / 8), 1, spatial);
                     break;
-                case 'save':
-                    a.play('save', 0.96, 1, spatial);
+                case 'save': {
+                    const saveSp = e.speed || 9;
+                    a.play('save', Math.min(1.12, 0.84 + saveSp * 0.018), saveSp > 13 ? 1.04 : 0.98, spatial);
+                    if (saveSp > 10.5 && typeof a.triggerArenaSwell === 'function')
+                        a.triggerArenaSwell(2.2, 1.0);
                     break;
+                }
                 case 'tackleStart':
                     if (mine(e.id) || (e.dist === undefined || e.dist < 14)) {
                         if (mode === 'hoops')

@@ -230,7 +230,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=9.0.0-release', '/assets/characters/hoops23.glb?v=9.0.0-release', '/assets/characters/keeper1.glb?v=9.0.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=10.0.0-release', '/assets/characters/hoops23.glb?v=10.0.0-release', '/assets/characters/keeper1.glb?v=10.0.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -1296,22 +1296,32 @@
       const isKeeper = !!st.isKeeper;
       const diveDir = st.diveDir || 1;
       const speed = st.speed || 0;
+      const ballYaw = st.ballYaw || 0;
+      const charge = st.charge || 0;
 
-      // 1. Subtle expressive idle head scan (60fps GLB clips handle full body stance & FK foot grounding!)
+      // 1. Expressive idle head scan + soft gaze tracking toward ball
       if (action === 'idle') {
         const scan = Math.sin(t * 0.85);
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, (isKeeper ? 0.08 : 0.05) * scan);
+        const gazeYaw = Math.max(-0.28, Math.min(0.28, ballYaw * 0.42));
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, (isKeeper ? 0.06 : 0.04) * scan + gazeYaw);
+        if (isKeeper && Math.abs(ballYaw) > 0.05) {
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, Math.max(-0.14, Math.min(0.14, ballYaw * 0.18)));
+        }
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
 
-      // 2. Run / Walk / Football Dribble: clip drives authentic grounded stride & arms cleanly + agile turn sway
+      // 2. Run / Walk / Football Dribble: clip drives authentic grounded stride & arms cleanly + agile turn sway + ball gaze
       if (action === 'run' || action === 'walk' || action === 'fdribble') {
         const spK = Math.min(1.0, speed / 4.2);
         const turnSway = st.turnSway || 0;
         if (Math.abs(turnSway) > 0.005) {
-          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.45);
-          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.25);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.48);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.26);
+        }
+        const gazeYaw = Math.max(-0.24, Math.min(0.24, ballYaw * 0.34));
+        if (Math.abs(gazeYaw) > 0.01) {
+          _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, gazeYaw);
         }
         if (action === 'fdribble') {
           _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, 0.06 * spK); // glance lightly toward ball & pitch
@@ -1320,13 +1330,27 @@
         return;
       }
 
-      // 3. Basketball Dribble: 60fps Anim_2K_DribbleRun / Anim_2K_DribbleIdle drive full body & wrist snap natively!
+      // 3. Basketball Dribble: 60fps Anim_2K_DribbleRun / Idle drive full body & wrist snap + responsive crossover lean
       if (action === 'dribble') {
         const turnSway = st.turnSway || 0;
         if (Math.abs(turnSway) > 0.005) {
-          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.35);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.42);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.18);
         }
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, Math.sin(t * 1.4) * 0.04);
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, Math.sin(t * 1.4) * 0.04 + Math.max(-0.16, Math.min(0.16, ballYaw * 0.22)));
+        applySmoothPoseFilter(nodes, action, dt);
+        return;
+      }
+
+      // 3b. Live Shot / Kick Charge Coil Progression (tightens torsion smoothly as charge bar fills)
+      if ((action === 'charge' || action === 'gather') && charge > 0.02) {
+        if (action === 'charge') {
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, -0.18 * charge);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, -0.06 * charge);
+        } else {
+          _rotCharAxis(nodes, rig, b.Abdomen, 1, 0, 0, 0.10 * charge);
+          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -0.08 * charge);
+        }
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
@@ -1473,6 +1497,8 @@
         }
       } else if (lower === 'dunk' || lower === 'slamdunk' || lower === 'anim_2k_slamdunk') {
         targetClip = (name === 'Anim_Dunk_V1') ? 'Anim_Dunk_V1' : 'Anim_2K_SlamDunk';
+      } else if (lower === 'anim_2k_blockjump' || lower === 'blockjump' || lower === 'block') {
+        targetClip = 'Anim_2K_BlockJump';
       } else if (lower === 'steal' || lower === 'anim_2k_steal') {
         targetClip = (name === 'Anim_Steal_V1') ? 'Anim_Steal_V1' : 'Anim_2K_Steal';
       } else if (lower === 'fb_steal' || lower === 'anim_fb_steal') {
@@ -1593,7 +1619,7 @@
         this.matchView.sim.ball.owner === a
       );
 
-      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, isKeeper: !!this.isKeeper, diveDir: 1, dt: dt, speed: 0, runPhase: 0, clock: 0 });
+      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, isKeeper: !!this.isKeeper, diveDir: 1, dt: dt, speed: 0, runPhase: 0, clock: 0, ballYaw: 0, charge: 0 });
       bio.isHoops = isBasketballMode;
       bio.isKeeper = (a.role === 'keeper' || !!this.isKeeper);
       bio.dt = dt;
@@ -1602,18 +1628,30 @@
       bio.clock = (bio.clock || 0) + dt;
       bio.turnSway = Math.max(-0.24, Math.min(0.24, dy * 0.25));
       bio.action = 'idle';
+      bio.charge = 0;
+      const ballObj = this.matchView && this.matchView.sim && this.matchView.sim.ball;
+      if (ballObj && ballObj.owner !== a) {
+        let by = Math.atan2((ballObj.x || 0) - (a.x || 0), (ballObj.z || 0) - (a.z || 0)) - this.yaw;
+        while (by > Math.PI) by -= Math.PI * 2;
+        while (by < -Math.PI) by += Math.PI * 2;
+        bio.ballYaw = by;
+      } else {
+        bio.ballYaw = 0;
+      }
+
+      const stunLeft = a.stunT || a.stun || 0;
 
       // Track clean action entry edges for variant clip variety, guaranteed one-shot restart & natural follow-through linger
       const curActionTag = (isBasketballMode
-        ? (a.dunk && a.dunk.active ? 'dunk' : a.shotT > 0 ? 'shot' : a.kickT > 0 ? 'pass' : a.jumpT > 0 ? 'jump' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? 'steal' : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none')
-        : (a.role === 'keeper' && a.diveT > 0 ? 'dive' : a.role === 'keeper' && a.jumpT > 0 ? 'kjump' : a.shotT > 0 ? 'fshot' : a.kickT > 0 ? 'fkick' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) ? ((a.tackle.power || 0) > 0.15 ? 'slide' : 'fsteal') : a.celebrateT > 0 ? 'celeb' : a.stunT > 0 ? 'hit' : 'none'));
+        ? (a.dunk && a.dunk.active ? 'dunk' : a.shotT > 0 ? 'shot' : a.kickT > 0 ? 'pass' : a.jumpT > 0 ? 'blockjump' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge' || a.tackle.phase === 'charging')) ? 'steal' : a.celebrateT > 0 ? 'celeb' : stunLeft > 0.08 ? 'hit' : 'none')
+        : (a.role === 'keeper' && a.diveT > 0 ? 'dive' : a.role === 'keeper' && a.jumpT > 0 ? 'kjump' : a.shotT > 0 ? 'fshot' : a.kickT > 0 ? 'fkick' : (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge' || a.tackle.phase === 'charging')) ? ((a.tackle.power || 0) > 0.15 ? 'slide' : 'fsteal') : a.celebrateT > 0 ? 'celeb' : stunLeft > 0.08 ? 'hit' : 'none'));
       const enteringNewAction = (curActionTag !== 'none' && curActionTag !== this._lastActionTag);
       if (enteringNewAction) {
         this._activeVariantClip = this._cycleVariant(curActionTag, ({
           dunk: ['Anim_2K_SlamDunk', 'Anim_Dunk_V1'],
           shot: ['Anim_2K_JumpShot'],
           pass: ['Anim_Shot_V1'],
-          jump: ['Anim_2K_JumpShot'],
+          blockjump: ['Anim_2K_BlockJump'],
           steal: ['Anim_2K_Steal', 'Anim_Steal_V1'],
           fsteal: ['Anim_FB_Steal'],
           celeb: ['Anim_Celebration', 'Anim_Celeb_V1', 'Anim_Celeb_V2'],
@@ -1668,7 +1706,7 @@
           const cName = this._activeVariantClip || 'Anim_2K_SlamDunk';
           this.setAnimation(cName, syncRate(dk.dur || 0.66, 1.02, cName), 0.05, undefined, enteringNewAction);
         }
-        // 2. Jump Shot / Block Elevation & Release (Synced directly with ball release arc!)
+        // 2. Jump Shot Release (Synced directly with ball release arc!)
         else if (a.shotT > 0) {
           targetLift = 0.0;
           targetPitch = 0.0;
@@ -1676,17 +1714,19 @@
           const cName = this._activeVariantClip || 'Anim_2K_JumpShot';
           this.setAnimation(cName, syncRate(0.56, 1.04, cName), 0.04, wasCharging ? 0.145 : 0.085, enteringNewAction);
         }
+        // 2b. Defensive Block / Contest Leap (High Overhead Swat — NO fake shot release!)
         else if (a.jumpT > 0) {
-          const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.50));
-          targetLift = Math.sin(jp * Math.PI) * 0.08;
+          const jp = Math.min(1, Math.max(0, 1 - a.jumpT / 0.52));
+          targetLift = Math.sin(jp * Math.PI) * 0.10;
           targetPitch = 0.0;
-          bio.action = 'shot';
-          this.setAnimation('Anim_2K_JumpShot', syncRate(0.52, 1.08, 'Anim_2K_JumpShot'), 0.05, undefined, enteringNewAction);
+          bio.action = 'blockjump';
+          this.setAnimation('Anim_2K_BlockJump', syncRate(0.52, 1.06, 'Anim_2K_BlockJump'), 0.045, undefined, enteringNewAction);
         }
-        // 2b. Live Space-Hold Gather Pocket Anticipation
+        // 2c. Live Space-Hold Gather Pocket Anticipation
         else if (isChargingShot) {
           targetPitch = 0.04;
           bio.action = 'gather';
+          bio.charge = Math.min(1, a.shootCharge || 0);
           this.setAnimation('Anim_2K_ShotGather', 1.0, 0.08);
         }
         // 3. Passing in Basketball (Chest pass / push pass - NO KICKING!)
@@ -1696,19 +1736,19 @@
           this.setAnimation('Anim_Shot_V1', syncRate(0.38, 1.04, 'Anim_Shot_V1'), 0.045, 0.055, enteringNewAction);
         }
         // 4. Interception Lunge / Hand Steal
-        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
+        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge' || a.tackle.phase === 'charging')) {
           targetPitch = 0.05;
           bio.action = 'steal';
           const cName = this._activeVariantClip || 'Anim_2K_Steal';
           this.setAnimation(cName, syncRate(0.40, 1.04, cName), 0.045, 0.04, enteringNewAction);
         }
-        // 5. Smooth Follow-Through Linger right after releasing shot/dunk/pass/steal
-        else if (this._lingerTimer > 0 && (this._lingerTag === 'shot' || this._lingerTag === 'dunk' || this._lingerTag === 'pass' || this._lingerTag === 'steal')) {
+        // 5. Smooth Follow-Through Linger right after releasing shot/dunk/pass/steal/block
+        else if (this._lingerTimer > 0 && (this._lingerTag === 'shot' || this._lingerTag === 'blockjump' || this._lingerTag === 'dunk' || this._lingerTag === 'pass' || this._lingerTag === 'steal')) {
           bio.action = this._lingerTag;
           this.setAnimation(this._lingerClip || 'Anim_2K_JumpShot', 0.96, 0.09);
         }
         // 6. Recovery / Stumble
-        else if (a.stunT > 0) {
+        else if (stunLeft > 0.08) {
           bio.action = 'hit';
           this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.12, 0.08);
         }
@@ -1721,12 +1761,26 @@
         else if (isBallCarrier) {
           bio.action = 'dribble';
           const isLeftDrib = (a.dribbleSide || 1) < 0;
+          const dribPhase = (ballObj && typeof ballObj.dribblePhase === 'number') ? ballObj.dribblePhase : 0;
+          const clipDur = (this.model && this.model.getActiveClipDuration) ? (this.model.getActiveClipDuration() || 0.58) : 0.58;
           if (speed > 0.35) {
-            const sprintCadence = Math.max(0.88, Math.min(1.62, speed / 2.90));
+            const targetU = (((dribPhase + Math.PI * 0.5) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
+            const curU = ((this.model.playbackTime % clipDur) + clipDur) % clipDur / clipDur;
+            let errU = targetU - curU;
+            if (errU > 0.5) errU -= 1;
+            if (errU < -0.5) errU += 1;
+            const phaseMul = Math.max(0.84, Math.min(1.18, 1.0 + errU * 1.15));
+            const sprintCadence = Math.max(0.88, Math.min(1.62, speed / 2.90)) * phaseMul;
             this.setAnimation(isLeftDrib ? 'Anim_2K_DribbleRun_L' : 'Anim_2K_DribbleRun', sprintCadence, 0.09);
             targetPitch = 0.04;
           } else {
-            this.setAnimation(isLeftDrib ? 'Anim_2K_DribbleIdle_L' : 'Anim_2K_DribbleIdle', 1.0, 0.12);
+            const targetU = (((dribPhase + Math.PI * 0.5) % Math.PI) + Math.PI) % Math.PI / Math.PI;
+            const curU = ((this.model.playbackTime % clipDur) + clipDur) % clipDur / clipDur;
+            let errU = targetU - curU;
+            if (errU > 0.5) errU -= 1;
+            if (errU < -0.5) errU += 1;
+            const phaseMul = Math.max(0.84, Math.min(1.18, 1.0 + errU * 1.15));
+            this.setAnimation(isLeftDrib ? 'Anim_2K_DribbleIdle_L' : 'Anim_2K_DribbleIdle', phaseMul, 0.12);
             targetPitch = 0.02;
           }
         }
@@ -1781,6 +1835,7 @@
           targetPitch = 0.0;
           targetRoll = 0.0;
           bio.action = 'charge';
+          bio.charge = Math.min(1, a.shootCharge || 0);
           this.setAnimation('Anim_EA_StrikeCharge', 1.0, 0.085);
         }
         else if (a.kickT > 0) {
@@ -1791,7 +1846,7 @@
           this.setAnimation(cName, syncRate(0.40, 1.04, cName), 0.045, 0.085, enteringNewAction);
         }
         // 3. Football Turf Slide Tackle vs Standing Poke Steal
-        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge')) {
+        else if (a.tackle && (a.tackle.phase === 'lunge' || a.tackle.phase === 'charge' || a.tackle.phase === 'charging')) {
           targetLift = 0.0;
           targetPitch = 0.0;
           targetRoll = 0.0;
@@ -1806,7 +1861,7 @@
           this.setAnimation(this._lingerClip || 'Kick_Right', 0.96, 0.09);
         }
         // 5. Recovery / Stumble after tackle collision
-        else if (a.stunT > 0) {
+        else if (stunLeft > 0.08) {
           bio.action = 'hit';
           this.setAnimation(this._activeVariantClip || 'HitRecieve', 1.12, 0.08);
         }
@@ -2100,7 +2155,7 @@
         } else {
           // 3D GLB Mode (Scaled to prominent, heroic, easily readable stature on mobile screens)
           if (isKeeper) {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=9.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/keeper1.glb?v=10.0.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2109,7 +2164,7 @@
             });
             list.push(inst);
           } else if (charSport === 'footy') {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=9.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/footy10.glb?v=10.0.0-release', {
               scale: 2.15,
               skin: c.skin,
               isFooty: true,
@@ -2118,7 +2173,7 @@
             });
             list.push(inst);
           } else {
-            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=9.0.0-release', {
+            const inst = new GLBCharacterInstance(c, '/assets/characters/hoops23.glb?v=10.0.0-release', {
               scale: 2.22,
               skin: c.skin,
               isFooty: false,
@@ -2453,7 +2508,7 @@
       st.setSubject(charId || 'footy', kitId || 'footy_classic', Object.assign({ autoRotate: false, hideShadow: o.hideShadow !== false }, o));
       // Ensure GLB model & kit atlas image finishes uploading
       const loader = getLoader();
-      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=9.0.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=9.0.0-release' : '/assets/characters/footy10.glb?v=9.0.0-release');
+      const url = (charId === 'keeper') ? '/assets/characters/keeper1.glb?v=10.0.0-release' : (charId === 'hoops' ? '/assets/characters/hoops23.glb?v=10.0.0-release' : '/assets/characters/footy10.glb?v=10.0.0-release');
       if (loader && loader.loadGLB) {
         const master = await loader.loadGLB(url);
         const m = (master && master.clone) ? master.clone() : master;
@@ -2614,7 +2669,7 @@
 
         const isFooty = nextChar === 'footy';
         const isKeeper = nextChar === 'keeper';
-        const url = isKeeper ? '/assets/characters/keeper1.glb?v=9.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=9.0.0-release' : '/assets/characters/footy10.glb?v=9.0.0-release');
+        const url = isKeeper ? '/assets/characters/keeper1.glb?v=10.0.0-release' : (nextChar === 'hoops' ? '/assets/characters/hoops23.glb?v=10.0.0-release' : '/assets/characters/footy10.glb?v=10.0.0-release');
 
         // Apply texture immediately if mapped
         const fakeSkin = { id: nextKit };

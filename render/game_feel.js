@@ -194,6 +194,33 @@
         if (!rm) punchCamera(rig, 0, e.type === 'post' ? 1 : -1, e.type === 'post' ? 0.36 : 0.20, e.type === 'post' ? 1.5 : 0.8);
         break;
       }
+      case 'save': {
+        const sp = e.speed || 10;
+        if (sp > 9.5) {
+          emitTurfSpray(fx, e.x || 0, e.z || 0, -dx, -dz, 8, 4.4);
+          emitImpactRing(fx, e.x || 0, Math.max(0.4, e.y || 1.1), e.z || 0, 0x7fe0ff, 9.2, 18);
+          if (!rm) punchCamera(rig, dx, dz, 0.30, 1.3);
+        }
+        break;
+      }
+      case 'block': {
+        emitCourtDust(fx, e.x || 0, e.z || 0, 12, true);
+        emitImpactRing(fx, e.x || 0, Math.max(1.2, e.y || 2.2), e.z || 0, 0x38bdf8, 10.5, 20);
+        if (fx && typeof fx.burst === 'function') {
+          fx.burst(e.x || 0, Math.max(1.2, e.y || 2.2), e.z || 0, 16, 7.5, 0x7dd3fc, 0.36, 0.14, 8.0, true);
+        }
+        matchView._ballSquashT = 0.085;
+        if (!rm) punchCamera(rig, dx, dz, 0.44, 1.9);
+        break;
+      }
+      case 'cut': {
+        if (mode === 'hoops') {
+          emitCourtDust(fx, e.x || 0, e.z || 0, 5, false);
+        } else if ((e.speed || 0) > 4.2) {
+          emitTurfSpray(fx, e.x || 0, e.z || 0, dx, dz, 4, 3.2);
+        }
+        break;
+      }
       case 'tackleHit': {
         if (mode === 'footy') {
           emitTurfSpray(fx, e.x || 0, e.z || 0, dx, dz, e.stolen ? 16 : 9, 5.8);
@@ -233,15 +260,16 @@
         const hy = Math.abs(Math.sin(b.dribblePhase || 0));
         const isDunking = Boolean(owner.dunk && owner.dunk.active);
         const isShooting = (owner.shotT || 0) > 0;
-        const tether = isDunking ? 0.94 : (isShooting ? 0.85 : clamp((hy - 0.34) / 0.56, 0, 1));
+        const isGathering = Boolean(owner.shootCharging && (owner.shootCharge || 0) > 0.04);
+        const tether = isDunking ? 0.94 : ((isShooting || isGathering) ? 0.90 : clamp((hy - 0.34) / 0.56, 0, 1));
         if (tether > 0.01) {
-          vx = b.x + (sock.x - b.x) * (0.82 * tether);
-          vz = b.z + (sock.z - b.z) * (0.82 * tether);
-          const palmBallY = Math.max(br, sock.y - br * 0.86);
-          const targetY = isDunking ? palmBallY : (b.y + (palmBallY - b.y) * (0.76 * tether));
+          vx = b.x + (sock.x - b.x) * (0.86 * tether);
+          vz = b.z + (sock.z - b.z) * (0.86 * tether);
+          const palmBallY = Math.max(br, isGathering ? (sock.y + br * 0.28) : (sock.y - br * 0.86));
+          const targetY = (isDunking || isGathering) ? palmBallY : (b.y + (palmBallY - b.y) * (0.78 * tether));
           vy = Math.max(br, targetY);
         }
-        if (hy < 0.14 && !isDunking) {
+        if (hy < 0.14 && !isDunking && !isGathering) {
           matchView._ballSquashT = Math.max(matchView._ballSquashT || 0, 0.055);
         }
       }
