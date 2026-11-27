@@ -230,7 +230,7 @@
     if (typeof CharactersGLB !== "undefined" && !CharactersGLB.enabled) return;
     const loader = getLoader();
     if (!loader || !loader.loadGLB) return;
-    const urls = ['/assets/characters/footy10.glb?v=11.0.0-release', '/assets/characters/hoops23.glb?v=11.0.0-release', '/assets/characters/keeper1.glb?v=11.0.0-release'];
+    const urls = ['/assets/characters/footy10.glb?v=12.0.0-release', '/assets/characters/hoops23.glb?v=12.0.0-release', '/assets/characters/keeper1.glb?v=12.0.0-release'];
     urls.forEach(url => {
       if (!modelCache.has(url)) {
         modelCache.set(url, loader.loadGLB(url).catch(e => {
@@ -1311,15 +1311,20 @@
         return;
       }
 
-      // 2. Run / Walk / Football Dribble: clip drives authentic grounded stride & arms cleanly + agile turn sway + ball gaze
+      // 2. Run / Walk / Sprint / Football Dribble: clip drives authentic grounded stride & arms cleanly + agile turn sway, accel lean & ball gaze
       if (action === 'run' || action === 'walk' || action === 'fdribble') {
         const spK = Math.min(1.0, speed / 4.2);
         const turnSway = st.turnSway || 0;
         if (Math.abs(turnSway) > 0.005) {
-          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.48);
-          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.26);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.52);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.28);
         }
-        const gazeYaw = Math.max(-0.24, Math.min(0.24, ballYaw * 0.34));
+        const accelPitch = st.accelPitch || 0;
+        if (Math.abs(accelPitch) > 0.005) {
+          _rotCharAxis(nodes, rig, b.Abdomen, 1, 0, 0, accelPitch);
+          _rotCharAxis(nodes, rig, b.Head, 1, 0, 0, -accelPitch * 0.55);
+        }
+        const gazeYaw = Math.max(-0.26, Math.min(0.26, ballYaw * 0.36));
         if (Math.abs(gazeYaw) > 0.01) {
           _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, gazeYaw);
         }
@@ -1330,14 +1335,18 @@
         return;
       }
 
-      // 3. Basketball Dribble: 60fps Anim_2K_DribbleRun / Idle drive full body & wrist snap + responsive crossover lean
+      // 3. Basketball Dribble: 60fps Anim_2K_DribbleRun / Idle drive full body & wrist snap + responsive crossover & accel lean
       if (action === 'dribble') {
         const turnSway = st.turnSway || 0;
         if (Math.abs(turnSway) > 0.005) {
-          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.42);
-          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.18);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 1, 0, turnSway * 0.44);
+          _rotCharAxis(nodes, rig, b.Chest, 0, 0, 1, turnSway * 0.20);
         }
-        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, Math.sin(t * 1.4) * 0.04 + Math.max(-0.16, Math.min(0.16, ballYaw * 0.22)));
+        const accelPitch = st.accelPitch || 0;
+        if (Math.abs(accelPitch) > 0.005) {
+          _rotCharAxis(nodes, rig, b.Abdomen, 1, 0, 0, accelPitch * 0.8);
+        }
+        _rotCharAxis(nodes, rig, b.Head, 0, 1, 0, Math.sin(t * 1.4) * 0.04 + Math.max(-0.18, Math.min(0.18, ballYaw * 0.24)));
         applySmoothPoseFilter(nodes, action, dt);
         return;
       }
@@ -1449,9 +1458,13 @@
       const lower = String(name).toLowerCase();
       if (lower === 'idle' || lower === 'idle_neutral') {
         targetClip = 'Idle';
+      } else if (lower === 'anim_2k_defenseidle' || lower === 'defenseidle') {
+        targetClip = 'Anim_2K_DefenseIdle';
       } else if (lower === 'walk' || lower === 'jog') {
         targetClip = 'Walk';
-      } else if (lower === 'run' || lower === 'sprint' || lower === 'anim_ea_sprintdrive') {
+      } else if (lower === 'anim_ea_sprintdrive' || lower === 'sprintdrive') {
+        targetClip = 'Anim_EA_SprintDrive';
+      } else if (lower === 'run' || lower === 'sprint') {
         targetClip = 'Run';
       } else if (lower === 'anim_2k_dribblerun' || lower === 'dribblerun') {
         targetClip = 'Anim_2K_DribbleRun';
@@ -1530,15 +1543,17 @@
       }
     }
 
-    _pickLocomotionClip(vx, vz, speed) {
+    _pickLocomotionClip(vx, vz, speed, isDefendingNearBall = false) {
       if (speed <= 0.22) {
         this._locoIsRun = false;
-        return { clip: 'Idle', rate: 1.0 };
+        this._locoIsSprint = false;
+        return { clip: isDefendingNearBall ? 'Anim_2K_DefenseIdle' : 'Idle', rate: 1.0 };
       }
       // Smooth 0.30 m/s hysteresis band prevents Walk/Run flickering near boundary velocity
-      if (this._locoIsRun ? (speed < 1.48) : (speed <= 1.78)) {
+      if (this._locoIsRun ? (speed < 1.55) : (speed <= 1.85)) {
         this._locoIsRun = false;
-        return { clip: 'Walk', rate: Math.max(0.78, Math.min(1.38, speed / 1.24)) };
+        this._locoIsSprint = false;
+        return { clip: 'Walk', rate: Math.max(0.82, Math.min(1.38, speed / 1.48)) };
       }
       this._locoIsRun = true;
       const fwdX = Math.sin(this.yaw);
@@ -1546,11 +1561,25 @@
       const invS = 1 / (speed || 1);
       const dotF = (vx * fwdX + vz * fwdZ) * invS;
       const dotR = (vx * fwdZ - vz * fwdX) * invS;
-      const rate = Math.max(0.84, Math.min(1.42, speed / 4.25));
-      if (dotF < -0.52) return { clip: 'Run_Back', rate };
-      if (dotR > 0.72 && dotF < 0.48) return { clip: 'Run_Right', rate };
-      if (dotR < -0.72 && dotF < 0.48) return { clip: 'Run_Left', rate };
-      return { clip: 'Run', rate };
+      if (dotF < -0.52) {
+        this._locoIsSprint = false;
+        return { clip: 'Run_Back', rate: Math.max(0.86, Math.min(1.38, speed / 4.0)) };
+      }
+      if (dotR > 0.72 && dotF < 0.48) {
+        this._locoIsSprint = false;
+        return { clip: 'Run_Right', rate: Math.max(0.86, Math.min(1.36, speed / 3.8)) };
+      }
+      if (dotR < -0.72 && dotF < 0.48) {
+        this._locoIsSprint = false;
+        return { clip: 'Run_Left', rate: Math.max(0.86, Math.min(1.36, speed / 3.8)) };
+      }
+      // Dedicated SprintDrive mode with hysteretic threshold at ~4.6 m/s for crisp high-speed lean & stride
+      const enterSprint = dotF > 0.55 && (this._locoIsSprint ? speed >= 4.25 : speed >= 4.75);
+      this._locoIsSprint = enterSprint;
+      if (enterSprint) {
+        return { clip: 'Anim_EA_SprintDrive', rate: Math.max(0.92, Math.min(1.42, speed / 5.45)) };
+      }
+      return { clip: 'Run', rate: Math.max(0.84, Math.min(1.34, speed / 3.65)) };
     }
 
     _cycleVariant(tag, list) {
@@ -1593,10 +1622,15 @@
       }
       this.yaw += dy * Math.min(1, dt * 13.5);
 
-      // Clean turn banking only — pitch/bounce are authored cleanly inside the 60fps IK/FK GLB clips without floor penetration
-      const corneringLean = Math.max(-0.14, Math.min(0.14, -dy * Math.min(1.0, speed / 3.2)));
+      // Clean turn banking + dynamic acceleration lean (forward drive when accelerating, upright brake)
+      const prevSpeed = this._prevSpeed !== undefined ? this._prevSpeed : speed;
+      const rawAccel = dt > 0.002 ? (speed - prevSpeed) / dt : 0;
+      this._prevSpeed = speed;
+      this._smoothAccel = (this._smoothAccel || 0) + (Math.max(-14, Math.min(14, rawAccel)) - (this._smoothAccel || 0)) * Math.min(1, dt * 10.0);
+      const corneringLean = Math.max(-0.16, Math.min(0.16, -dy * Math.min(1.0, speed / 3.0)));
+      const accelTilt = Math.max(-0.07, Math.min(0.11, this._smoothAccel * 0.0085 + (speed > 4.6 ? 0.035 : 0)));
       let targetRoll = corneringLean;
-      let targetPitch = 0;
+      let targetPitch = accelTilt;
       let targetLift = 0;
 
       // Real-time athletic leg locomotion
@@ -1619,14 +1653,15 @@
         this.matchView.sim.ball.owner === a
       );
 
-      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, isKeeper: !!this.isKeeper, diveDir: 1, dt: dt, speed: 0, runPhase: 0, clock: 0, ballYaw: 0, charge: 0 });
+      const bio = this._bioState || (this._bioState = { action: 'idle', isHoops: isBasketballMode, isKeeper: !!this.isKeeper, diveDir: 1, dt: dt, speed: 0, runPhase: 0, clock: 0, ballYaw: 0, charge: 0, accelPitch: 0 });
       bio.isHoops = isBasketballMode;
       bio.isKeeper = (a.role === 'keeper' || !!this.isKeeper);
       bio.dt = dt;
       bio.speed = speed;
       bio.runPhase = this.runPhase || 0;
       bio.clock = (bio.clock || 0) + dt;
-      bio.turnSway = Math.max(-0.24, Math.min(0.24, dy * 0.25));
+      bio.turnSway = Math.max(-0.26, Math.min(0.26, dy * 0.28));
+      bio.accelPitch = Math.max(-0.10, Math.min(0.15, (this._smoothAccel || 0) * 0.011));
       bio.action = 'idle';
       bio.charge = 0;
       const ballObj = this.matchView && this.matchView.sim && this.matchView.sim.ball;
@@ -1786,9 +1821,10 @@
         }
         // 9. Directional Defense / Outfield Running / Walking / Idle
         else {
-          const loco = this._pickLocomotionClip(vx, vz, speed);
-          bio.action = loco.clip === 'Idle' ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
-          const locoBlend = loco.clip === 'Idle' ? 0.16 : 0.095;
+          const isDefendingNearBall = Boolean(ballObj && ballObj.owner && ballObj.owner !== a && ballObj.owner.team !== a.team && Math.hypot((ballObj.x || 0) - (a.x || 0), (ballObj.z || 0) - (a.z || 0)) < 6.5);
+          const loco = this._pickLocomotionClip(vx, vz, speed, isDefendingNearBall);
+          bio.action = (loco.clip === 'Idle' || loco.clip === 'Anim_2K_DefenseIdle') ? 'idle' : (loco.clip === 'Walk' ? 'walk' : 'run');
+          const locoBlend = bio.action === 'idle' ? 0.16 : 0.095;
           this.setAnimation(loco.clip, loco.rate, locoBlend);
         }
       }

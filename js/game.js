@@ -85,28 +85,28 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.master = this.ctx.createGain();
                     this.master.gain.value = this.muted ? 0 : 0.9;
 
-                    // Crystal Broadcast Mastering Bus: tight sub warmth + 3.8kHz presence crispness + clean limiter
+                    // Crystal Broadcast Mastering Bus: punchy low warmth + 4kHz presence clarity + gentle 14.5kHz silk air + transparent limiter
                     const lowWarmth = this.ctx.createBiquadFilter();
                     lowWarmth.type = 'lowshelf';
                     lowWarmth.frequency.value = 95;
-                    lowWarmth.gain.value = 1.6;
+                    lowWarmth.gain.value = 1.2;
 
                     const presenceEq = this.ctx.createBiquadFilter();
                     presenceEq.type = 'peaking';
                     presenceEq.frequency.value = 3800;
-                    presenceEq.Q.value = 0.85;
-                    presenceEq.gain.value = 2.0;
+                    presenceEq.Q.value = 0.80;
+                    presenceEq.gain.value = 1.8;
 
                     const airTame = this.ctx.createBiquadFilter();
                     airTame.type = 'highshelf';
-                    airTame.frequency.value = 13500;
-                    airTame.gain.value = -1.2;
+                    airTame.frequency.value = 14200;
+                    airTame.gain.value = -0.8;
 
                     const comp = this.ctx.createDynamicsCompressor();
-                    comp.threshold.value = -12;
-                    comp.knee.value = 10;
-                    comp.ratio.value = 3.5;
-                    comp.attack.value = 0.005;
+                    comp.threshold.value = -11;
+                    comp.knee.value = 11;
+                    comp.ratio.value = 3.2;
+                    comp.attack.value = 0.006;
                     comp.release.value = 0.14;
 
                     this.master.connect(lowWarmth);
@@ -119,25 +119,30 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     this.sfxGain.gain.value = this.sfxVol;
                     this.sfxGain.connect(this.master);
 
-                    // Tight Arena Early-Reflection Room Bus (clean space without smearing transients)
+                    // Diffused Smooth Arena Early-Reflection Bus (deterministic stereo hall IR with 7ms pre-delay — preserves crisp punch)
                     try {
-                        const irDur = 0.22;
-                        const irLen = Math.floor(this.ctx.sampleRate * irDur);
-                        const irBuf = this.ctx.createBuffer(2, irLen, this.ctx.sampleRate);
+                        const sr = this.ctx.sampleRate;
+                        const irDur = 0.28;
+                        const irLen = Math.floor(sr * irDur);
+                        const irBuf = this.ctx.createBuffer(2, irLen, sr);
+                        const preGap = Math.floor(sr * 0.007);
                         for (let ch = 0; ch < 2; ch++) {
                             const chData = irBuf.getChannelData(ch);
                             let lp = 0;
-                            for (let i = 0; i < irLen; i++) {
-                                const env = Math.pow(1 - i / irLen, 3.2);
-                                const raw = (Math.random() * 2 - 1) * env;
-                                lp = lp * 0.62 + raw * 0.38;
-                                chData[i] = lp * (i < 160 ? (i / 160) : 1);
+                            let seed = (ch === 0 ? 1337 : 7331) >>> 0;
+                            for (let i = preGap; i < irLen; i++) {
+                                seed = (seed * 1664525 + 1013904223) >>> 0;
+                                const rnd = (seed / 2147483648) - 1;
+                                const rel = (i - preGap) / Math.max(1, irLen - preGap);
+                                const env = Math.pow(1 - rel, 3.0) * Math.min(1, (i - preGap) / 140);
+                                lp = lp * 0.56 + rnd * env * 0.44;
+                                chData[i] = lp * 0.85;
                             }
                         }
                         const convolver = this.ctx.createConvolver();
                         convolver.buffer = irBuf;
                         this.sfxWet = this.ctx.createGain();
-                        this.sfxWet.gain.value = 0.11;
+                        this.sfxWet.gain.value = 0.12;
                         convolver.connect(this.sfxWet);
                         this.sfxWet.connect(this.sfxGain);
                         this.sfxReverbIn = convolver;
@@ -146,11 +151,11 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                     }
 
                     this.musicGain = this.ctx.createGain();
-                    this.musicGain.gain.value = this.musicVol * 0.45;
+                    this.musicGain.gain.value = this.musicVol * 0.52;
                     const musicLP = this.ctx.createBiquadFilter();
                     musicLP.type = 'lowpass';
-                    musicLP.frequency.value = 3400;
-                    musicLP.Q.value = 0.6;
+                    musicLP.frequency.value = 10800;
+                    musicLP.Q.value = 0.55;
                     this.musicBus = musicLP;
                     musicLP.connect(this.musicGain);
                     this.musicGain.connect(this.master);
@@ -223,10 +228,18 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                             whistleStart: ['assets/audio/referee_whistle.wav', 'assets/audio/variants/whistle_v1.wav'],
                             whistleEnd: ['assets/audio/whistle.wav', 'assets/audio/variants/whistle_v2.wav', 'assets/audio/variants/whistle_v3.wav'],
                             whistleRestart: ['assets/audio/variants/whistle_v1.wav', 'assets/audio/variants/whistle_v2.wav'],
-                            squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav']
+                            squeak: ['assets/audio/sneaker_squeak.wav', 'assets/audio/variants/squeak_v1.wav'],
+                            music_kick: ['assets/audio/music/music_kick.wav'],
+                            music_snare: ['assets/audio/music/music_snare.wav'],
+                            music_hat: ['assets/audio/music/music_hat.wav'],
+                            music_open_hat: ['assets/audio/music/music_open_hat.wav'],
+                            music_chord_0: ['assets/audio/music/music_chord_0.wav'],
+                            music_chord_1: ['assets/audio/music/music_chord_1.wav'],
+                            music_chord_2: ['assets/audio/music/music_chord_2.wav'],
+                            music_chord_3: ['assets/audio/music/music_chord_3.wav']
                         };
                         const AUDIO_VERSION = '6.0.0-release';
-                        const AUDIO_REVISION = '11.0.0-clean';
+                        const AUDIO_REVISION = '12.0.0-studio';
                         const decodedUrlPromises = new Map();
                         const loadDecoded = (url) => {
                             if (!decodedUrlPromises.has(url)) {
@@ -395,9 +408,9 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         rim: 0.84, board: 0.84, post: 0.90, crowd: 0.74,
                         goal: 0.90, score: 0.88, win: 0.88, celebration: 0.88
                     };
-                    // Gentle high-shelf rounding on whistles/squeaks/swooshes while keeping leather/wood/rim impact crisp
+                    // Transparent high-definition rounding on whistles/squeaks while keeping leather, nylon net, and rim wide open
                     const lpFreqMap = {
-                        whistle: 7200, whistleStart: 7200, whistleEnd: 7200, whistleRestart: 7200, buzzer: 7000, squeak: 6400, steal_swoosh: 5400
+                        whistle: 10600, whistleStart: 10600, whistleEnd: 10600, whistleRestart: 10600, buzzer: 10800, squeak: 9200, steal_swoosh: 8200
                     };
                     const sGain = c.createGain();
                     const gVal = v * (gainMap[name] !== undefined ? gainMap[name] : 0.86);
@@ -662,24 +675,37 @@ define("core/audio", ["require", "exports"], function (require, exports) {
             if (!dest) return;
             this.nextNote = c.currentTime + 0.1;
             this.step = 0;
-            // Warm Modern Broadcast Lounge Rhodes (Am9 -> Fmaj7 -> Cmaj7 -> G6 @ ~114 BPM, zero raw synth harshness!)
+            // Studio 4-Bar Neo-Soul / Stadium Groove (~114 BPM) using sample-accurate WAV Rhodes/Drums with swing & turnaround
+            const tempo = 0.132;
+            const trigStem = (key, when, gainVal, rate = 1.0) => {
+                const buf = this.audioSamples && this.audioSamples[key];
+                if (!buf) return false;
+                const src = c.createBufferSource();
+                src.buffer = buf;
+                src.playbackRate.setValueAtTime(rate, when);
+                const g = c.createGain();
+                g.gain.setValueAtTime(gainVal, when);
+                src.connect(g);
+                g.connect(dest);
+                src.start(when);
+                return true;
+            };
             const chords = [
                 [220.0, 261.63, 329.63, 392.0, 493.88],
                 [174.61, 220.0, 261.63, 329.63, 392.0],
-                [130.81, 164.81, 196.0, 246.94, 293.66],
+                [196.0, 246.94, 293.66, 329.63, 493.88],
                 [196.0, 246.94, 293.66, 329.63, 440.0],
             ];
             const bassNotes = [55.0, 43.65, 65.41, 49.0];
-            const tempo = 0.132;
             this.musicTimer = window.setInterval(() => {
                 const cx = this.ctx;
                 if (!cx || !this.musicGain || cx.state !== 'running')
                     return;
                 while (this.nextNote < cx.currentTime + 0.36) {
-                    const bar = Math.floor(this.step / 16) % chords.length;
-                    const ch = chords[bar];
+                    const bar = Math.floor(this.step / 16) % 4;
                     const i = this.step % 16;
-                    const t0 = this.nextNote;
+                    const swingOffset = (i % 2 === 1) ? 0.011 : 0;
+                    const t0 = this.nextNote + swingOffset;
 
                     const warmTone = (f, d, vol, type, slide, lpCut) => {
                         const o = cx.createOscillator();
@@ -693,8 +719,7 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         if (lpCut) {
                             const fNode = cx.createBiquadFilter();
                             fNode.type = 'lowpass';
-                            fNode.frequency.setValueAtTime(lpCut * 1.4, t0);
-                            fNode.frequency.exponentialRampToValueAtTime(Math.max(220, lpCut * 0.65), t0 + d);
+                            fNode.frequency.setValueAtTime(lpCut, t0);
                             fNode.Q.value = 0.55;
                             o.connect(fNode);
                             fNode.connect(g);
@@ -706,62 +731,43 @@ define("core/audio", ["require", "exports"], function (require, exports) {
                         o.stop(t0 + d + 0.04);
                     };
 
-                    // 1. Deep Warm Sub Bass
-                    if (i === 0 || i === 6 || i === 10) {
-                        const root = bassNotes[bar];
-                        warmTone(root * 1.25, tempo * (i === 0 ? 4.0 : 2.4), 0.38, 'sine', null, 340);
-                    }
-
-                    // 2. Soft Broadcast Pocket Kick & Rim Click
-                    if (i === 0 || i === 8 || i === 10) {
-                        warmTone(104, 0.08, 0.32, 'sine', 46, 280);
-                    }
-                    if (i === 4 || i === 12) {
-                        warmTone(185, 0.05, 0.10, 'sine', 96, 950);
-                        const buf = this.pinkBuf || this.noiseBuf;
-                        if (buf) {
-                            const s = cx.createBufferSource();
-                            s.buffer = buf;
-                            const f = cx.createBiquadFilter();
-                            f.type = 'bandpass';
-                            f.frequency.value = 1850;
-                            f.Q.value = 1.1;
-                            const g = cx.createGain();
-                            g.gain.setValueAtTime(0.085, t0);
-                            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.075);
-                            s.connect(f);
-                            f.connect(g);
-                            g.connect(dest);
-                            s.start(t0, Math.random());
-                            s.stop(t0 + 0.10);
+                    // 1. Studio Stereo Rhodes Mark I + Warm Sub Chord Hits (on beat 1 + syncopated "and" of 2)
+                    if (i === 0 || (i === 6 && bar % 2 === 0)) {
+                        const hitGain = i === 0 ? 0.34 : 0.19;
+                        if (!trigStem('music_chord_' + bar, t0, hitGain, 1.0)) {
+                            const ch = chords[bar];
+                            warmTone(bassNotes[bar], tempo * 4.0, 0.24, 'sine', null, 340);
+                            ch.slice(0, 4).forEach((freq, ci) => {
+                                warmTone(freq, tempo * 3.8, (0.032 - ci * 0.004) * (i === 0 ? 1 : 0.7), 'sine', null, 2400);
+                            });
                         }
                     }
 
-                    // 3. Soft Brushed Shaker (silky mid-high without harshness)
-                    if ((this.pinkBuf || this.noiseBuf) && (i % 2 === 0)) {
-                        const s = cx.createBufferSource();
-                        s.buffer = this.pinkBuf || this.noiseBuf;
-                        const f = cx.createBiquadFilter();
-                        f.type = 'bandpass';
-                        f.frequency.value = (i % 4 === 2) ? 3200 : 2400;
-                        f.Q.value = 1.2;
-                        const g = cx.createGain();
-                        const hVol = (i % 4 === 2) ? 0.028 : 0.015;
-                        g.gain.setValueAtTime(hVol, t0);
-                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.035);
-                        s.connect(f);
-                        f.connect(g);
-                        g.connect(dest);
-                        s.start(t0, Math.random());
-                        s.stop(t0 + 0.05);
+                    // 2. Studio Analog Kick Pattern (with bar-4 turnaround pickup)
+                    const isKick = (i === 0 || i === 10 || (bar % 2 === 1 && i === 7) || (bar === 3 && i === 14));
+                    if (isKick) {
+                        const kVol = (i === 0 || i === 10) ? 0.36 : 0.22;
+                        if (!trigStem('music_kick', t0, kVol)) {
+                            warmTone(104, 0.08, 0.26, 'sine', 46, 280);
+                        }
                     }
 
-                    // 4. Warm Filtered Rhodes Electric Piano Chords (smooth chorus + mallet sine overtone)
-                    if (i === 0 || i === 6 || i === 12) {
-                        ch.slice(0, 4).forEach((freq, ci) => {
-                            warmTone(freq, tempo * 3.8, 0.036 - ci * 0.004, 'sine', null, 1800);
-                            warmTone(freq * 1.0028, tempo * 3.5, 0.020 - ci * 0.002, 'triangle', null, 1350);
-                        });
+                    // 3. Studio Crisp Snare / Clap Pocket + Turnaround Ghost Fill
+                    const isSnare = (i === 4 || i === 12);
+                    const isGhostSnare = (bar === 3 && (i === 13 || i === 15)) || (bar === 1 && i === 15);
+                    if (isSnare || isGhostSnare) {
+                        const sVol = isSnare ? 0.26 : 0.09;
+                        if (!trigStem('music_snare', t0, sVol, isSnare ? 1.0 : 1.06)) {
+                            warmTone(185, 0.05, sVol * 0.35, 'sine', 96, 1200);
+                        }
+                    }
+
+                    // 4. Tight Hat Groove + Off-Beat Open Hat Lift
+                    if (i === 14 && bar < 3) {
+                        trigStem('music_open_hat', t0, 0.13);
+                    } else if (i % 2 === 0 || (i === 11 && bar % 2 === 0)) {
+                        const hVol = (i % 4 === 2) ? 0.14 : (i % 2 === 0 ? 0.085 : 0.055);
+                        trigStem('music_hat', t0, hVol, (i % 4 === 2) ? 1.0 : 1.06);
                     }
 
                     this.nextNote += tempo;
@@ -11242,38 +11248,43 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
     function getHudActionSvg(action, isHoops) {
         if (action === 'shoot') {
             if (isHoops) {
-                return '<svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                    '<circle cx="16" cy="11" r="6" stroke="#ffffff" stroke-width="2.1" fill="rgba(255,255,255,0.16)"/>' +
-                    '<path d="M10.5 11 H21.5 M16 5 V17" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>' +
-                    '<ellipse cx="16" cy="22" rx="9" ry="2.5" stroke="#fdba74" stroke-width="2.2"/>' +
-                    '<path d="M9.5 23.2 L12.2 29 H19.8 L22.5 23.2 M13.5 23.2 L14.6 29 M18.5 23.2 L17.4 29" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+                return '<svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<ellipse cx="18" cy="24.8" rx="11" ry="3.2" fill="rgba(124,45,18,0.45)" stroke="#fed7aa" stroke-width="2.2"/>' +
+                    '<path d="M9.6 26 L12.8 33 H23.2 L26.4 26 M14 26.2 L15.2 33 M22 26.2 L20.8 33 M11.5 29.5 H24.5" stroke="#fff7ed" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>' +
+                    '<circle cx="18" cy="12.2" r="8.2" fill="#f97316" stroke="#ffffff" stroke-width="2"/>' +
+                    '<path d="M12.2 6.8 A7 7 0 0 1 22.8 6.8" stroke="#fef08a" stroke-width="1.7" stroke-linecap="round"/>' +
+                    '<path d="M10.1 12.2 H25.9 M18 4.2 V20.2 M12.2 7.2 Q16 12.2 12.2 17.2 M23.8 7.2 Q20 12.2 23.8 17.2" stroke="#7c2d12" stroke-width="1.45" stroke-linecap="round"/>' +
+                    '<circle cx="15.2" cy="9.2" r="2.2" fill="rgba(255,255,255,0.45)"/>' +
                     '</svg>';
             }
-            return '<svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                '<path d="M4.5 25.5 L11.5 18.5 M3.5 19.5 L8.5 14.5 M11 27.5 L16 22.5" stroke="rgba(255,255,255,0.72)" stroke-width="2" stroke-linecap="round"/>' +
-                '<circle cx="20" cy="13" r="8.2" stroke="#ffffff" stroke-width="2.1" fill="rgba(255,255,255,0.16)"/>' +
-                '<polygon points="20,9.2 23.4,11.7 22.1,15.6 17.9,15.6 16.6,11.7" fill="#ffffff"/>' +
-                '<path d="M20 5 V9.2 M27.5 11 L23.4 11.7 M24.8 19.2 L22.1 15.6 M15.2 19.2 L17.9 15.6 M12.5 11 L16.6 11.7" stroke="#ffffff" stroke-width="1.35" stroke-linecap="round"/>' +
+            return '<svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M3.5 27.5 L12.5 20 M5 21 L11 16 M9.5 30 L17 23.8" stroke="#fde047" stroke-width="2.3" stroke-linecap="round"/>' +
+                '<circle cx="22.5" cy="14" r="9.4" fill="#f8fafc" stroke="#ffffff" stroke-width="1.8"/>' +
+                '<circle cx="22.5" cy="14" r="9.4" fill="rgba(249,115,22,0.14)"/>' +
+                '<polygon points="22.5,9.5 26.8,12.6 25.1,17.6 19.9,17.6 18.2,12.6" fill="#0f172a"/>' +
+                '<path d="M22.5 4.8 V9.5 M31.2 12.2 L26.8 12.6 M27.9 21.8 L25.1 17.6 M17.1 21.8 L19.9 17.6 M13.8 12.2 L18.2 12.6" stroke="#334155" stroke-width="1.5" stroke-linecap="round"/>' +
+                '<circle cx="19.2" cy="9.6" r="2.1" fill="rgba(255,255,255,0.85)"/>' +
                 '</svg>';
         }
         if (action === 'tackle') {
             if (isHoops) {
-                return '<svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                    '<circle cx="14" cy="14" r="6.2" stroke="#ffffff" stroke-width="2" fill="rgba(255,255,255,0.14)"/>' +
-                    '<path d="M8.5 14 H19.5 M14 8.5 V19.5" stroke="#ffffff" stroke-width="1.4"/>' +
-                    '<path d="M4.5 8.5 L8.5 12 M4.5 12 H8.5 M23.5 19.5 L19.5 16 M23.5 16 H19.5" stroke="#fecdd3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                return '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<circle cx="16" cy="16" r="7.2" fill="#fb7185" stroke="#ffffff" stroke-width="2"/>' +
+                    '<path d="M9.2 16 H22.8 M16 9.2 V22.8" stroke="#881337" stroke-width="1.4"/>' +
+                    '<path d="M3.5 9.5 L8.8 13.8 M4 14.5 H9.2 M28.5 22.5 L23.2 18.2 M28 17.5 H22.8" stroke="#fecdd3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+                    '<circle cx="13.8" cy="13.5" r="1.8" fill="rgba(255,255,255,0.65)"/>' +
                     '</svg>';
             }
-            return '<svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                '<path d="M4 21.5 H24" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>' +
-                '<path d="M5.5 16.5 L13.5 16.5 L21.5 9.5" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<path d="M16 9.5 H21.5 V15" stroke="#fecdd3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
-                '<circle cx="22.5" cy="19.5" r="2.5" fill="#ffffff"/>' +
+            return '<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M4 25.5 H28" stroke="rgba(254,205,211,0.6)" stroke-width="2.2" stroke-linecap="round"/>' +
+                '<path d="M4.5 19.5 L15.5 19.5 L24.5 10.5" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<path d="M18.2 9.8 L25.2 9.8 L25.2 16.8" stroke="#fda4af" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+                '<circle cx="24" cy="22" r="3.4" fill="#ffffff" stroke="#881337" stroke-width="1.3"/>' +
                 '</svg>';
         }
-        return '<svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-            '<path d="M6.5 8 L12.5 14 L6.5 20" stroke="rgba(255,255,255,0.7)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-            '<path d="M14 7 L21 14 L14 21" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+        return '<svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M18.5 3.5 L8.5 17.2 H15.8 L13.5 28.5 L24 14.5 H16.6 L18.5 3.5 Z" fill="#fef08a" stroke="#ffffff" stroke-width="1.7" stroke-linejoin="round"/>' +
+            '<path d="M4 11 H9.5 M3 16.5 H7.5 M5 22 H9.5" stroke="#bae6fd" stroke-width="2" stroke-linecap="round"/>' +
             '</svg>';
     }
     const STICK_R = 58;
@@ -11652,16 +11663,50 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
             this.youLbl.textContent = (0, index_js_1.t)('hud.you');
             this.cpuLbl.textContent = (0, index_js_1.t)('hud.cpu');
             this.hints.textContent = '';
+            this.khBtns = {};
             const k = (a) => { var _a; return (0, input_js_1.keyLabel)((_a = keys[a][0]) !== null && _a !== void 0 ? _a : ''); };
-            const items = [
-                ['WASD', ''],
-                [k('shoot'), steal ? (0, index_js_1.t)('hud.shootHoops') : (0, index_js_1.t)('hud.shoot')],
-                [k('tackle'), steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle')],
-                [k('sprint'), (0, index_js_1.t)('hud.sprint')],
-                [k('pause'), (0, index_js_1.t)('hud.pause')],
-            ];
-            for (const [key, lbl] of items)
-                this.hints.append((0, dom_js_1.h)('span', null, (0, dom_js_1.h)('kbd', null, key), lbl ? ` ${lbl}` : ''));
+            const makeDeckBtn = (action, cls, lblText, keyText) => {
+                const icoEl = (0, dom_js_1.h)('span', { class: 'kh-ico' });
+                icoEl.innerHTML = getHudActionSvg(action, steal);
+                const btn = (0, dom_js_1.h)('button', { class: `kh-btn ${cls}`, type: 'button', 'data-action': action },
+                    icoEl,
+                    (0, dom_js_1.h)('span', { class: 'kh-meta' },
+                        (0, dom_js_1.h)('span', { class: 'kh-lbl' }, lblText),
+                        (0, dom_js_1.h)('kbd', { class: 'kh-kbd' }, keyText)
+                    ),
+                    (0, dom_js_1.h)('i', { class: 'kh-meter' })
+                );
+                const down = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation();
+                    btn.classList.add('down');
+                    this.input.setTouchButton(action, true);
+                };
+                const up = (e) => {
+                    if (e && e.cancelable) e.preventDefault();
+                    btn.classList.remove('down');
+                    this.input.setTouchButton(action, false);
+                };
+                btn.addEventListener('pointerdown', down);
+                btn.addEventListener('pointerup', up);
+                btn.addEventListener('pointerleave', up);
+                btn.addEventListener('pointercancel', up);
+                this.khBtns[action] = btn;
+                return btn;
+            };
+            const moveChip = (0, dom_js_1.h)('span', { class: 'kh-chip' }, (0, dom_js_1.h)('kbd', null, 'WASD'));
+            const pauseChip = (0, dom_js_1.h)('button', {
+                class: 'kh-chip kh-pause',
+                type: 'button',
+                on: { click: (e) => { if (e) { e.preventDefault(); e.stopPropagation(); } this.onPause(); } }
+            }, (0, dom_js_1.h)('kbd', null, k('pause')), ' ' + (0, index_js_1.t)('hud.pause'));
+            this.hints.append(
+                moveChip,
+                makeDeckBtn('shoot', 'kh-shoot', steal ? (0, index_js_1.t)('hud.shootHoops') : (0, index_js_1.t)('hud.shoot'), k('shoot')),
+                makeDeckBtn('tackle', 'kh-tackle', steal ? (0, index_js_1.t)('hud.steal') : (0, index_js_1.t)('hud.tackle'), k('tackle')),
+                makeDeckBtn('sprint', 'kh-sprint', (0, index_js_1.t)('hud.sprint'), k('sprint')),
+                pauseChip
+            );
         }
         show(on) {
             this.root.hidden = !on;
@@ -11730,13 +11775,37 @@ define("ui/hud", ["require", "exports", "core/input", "i18n/index", "ui/dom", "d
                 this.powerFill.style.transform = `scaleX(${hu.shootCharge})`;
             this.btnShoot.style.setProperty('--p', charging ? String(hu.shootCharge) : '0');
             this.btnShoot.classList.toggle('charging', charging);
+            this.btnShoot.classList.toggle('down', this.input.isHeld('shoot'));
             const tk = hu.tackle;
             const cd = tk.cooldown > 0 ? tk.cooldown / Math.max(0.01, tk.cooldownMax) : 0;
             this.btnTackle.style.setProperty('--cd', String(cd));
             this.btnTackle.style.setProperty('--p', tk.phase === 'charging' ? String(tk.charge) : '0');
             this.btnTackle.classList.toggle('cooling', cd > 0 || tk.phase === 'recover');
             this.btnTackle.classList.toggle('charging', tk.phase === 'charging');
+            this.btnTackle.classList.toggle('down', this.input.isHeld('tackle'));
             this.btnSprint.classList.toggle('exhausted', st < 4);
+            this.btnSprint.classList.toggle('down', this.input.isHeld('sprint'));
+            if (this.khBtns) {
+                const khS = this.khBtns.shoot;
+                if (khS) {
+                    khS.style.setProperty('--p', charging ? String(hu.shootCharge) : '0');
+                    khS.classList.toggle('charging', charging);
+                    khS.classList.toggle('down', this.input.isHeld('shoot'));
+                }
+                const khT = this.khBtns.tackle;
+                if (khT) {
+                    khT.style.setProperty('--cd', String(cd));
+                    khT.style.setProperty('--p', tk.phase === 'charging' ? String(tk.charge) : '0');
+                    khT.classList.toggle('cooling', cd > 0 || tk.phase === 'recover');
+                    khT.classList.toggle('charging', tk.phase === 'charging');
+                    khT.classList.toggle('down', this.input.isHeld('tackle'));
+                }
+                const khSp = this.khBtns.sprint;
+                if (khSp) {
+                    khSp.classList.toggle('exhausted', st < 4);
+                    khSp.classList.toggle('down', this.input.isHeld('sprint'));
+                }
+            }
             if (project) {
                 const w = window.innerWidth;
                 const hh = window.innerHeight;

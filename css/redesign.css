@@ -10758,88 +10758,284 @@ button:active, .btn:active, .fvh-pill:active, .fvh-nav-item:active {
 }
 
 .stick-base {
-  background: rgba(10, 16, 30, 0.34) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-}
-.stick-base.active {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.18) !important;
-}
-.stick-knob {
-  width: 44px !important;
-  height: 44px !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
-}
-
-.tbtn {
-  background: rgba(10, 16, 30, 0.56) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.24) !important;
+  background: radial-gradient(circle at 50% 45%, rgba(15, 23, 42, 0.35) 0%, rgba(7, 11, 22, 0.72) 72%, rgba(2, 6, 16, 0.88) 100%) !important;
+  border: 2px solid rgba(148, 163, 184, 0.36) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55), inset 0 4px 12px rgba(0, 0, 0, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.22) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+}
+.stick-base.active {
+  border-color: rgba(56, 189, 248, 0.78) !important;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.38), inset 0 4px 12px rgba(0, 0, 0, 0.65) !important;
+}
+.stick-knob {
+  width: 48px !important;
+  height: 48px !important;
+  background: radial-gradient(circle at 34% 26%, #ffffff 0%, #7dd3fc 42%, #0284c7 82%, #0c4a6e 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 6px 0 #075985, 0 10px 20px rgba(0, 0, 0, 0.62), inset 0 3px 5px rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Tactile 3D Bevelled Sports Action Medallions (Touch HUD) */
+.tbtn {
+  overflow: visible !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: transform 0.08s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.08s ease, filter 0.12s ease !important;
 }
 .tbtn::before {
-  display: none !important;
+  display: block !important;
+  content: '' !important;
+  position: absolute !important;
+  inset: 3px 6px auto 6px !important;
+  height: 44% !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.12) 60%, rgba(255, 255, 255, 0) 100%) !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+.tbtn .ico {
+  position: relative !important;
+  z-index: 3 !important;
 }
 .tbtn .ico svg {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.55)) !important;
 }
 .tbtn .lbl {
-  font-size: 9.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.4px !important;
-  color: rgba(255, 255, 255, 0.92) !important;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+  position: relative !important;
+  z-index: 3 !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.65px !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85) !important;
+}
+.tbtn .ring {
+  inset: -4px !important;
+  border-radius: 50% !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
 }
 .btn-shoot {
-  width: 82px !important;
-  height: 82px !important;
-  background: rgba(15, 23, 42, 0.62) !important;
-  border: 2px solid rgba(251, 146, 60, 0.78) !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.42) !important;
+  width: 90px !important;
+  height: 90px !important;
+  right: 4px !important;
+  bottom: 8px !important;
+  background: radial-gradient(circle at 38% 24%, #fde047 0%, #fb923c 36%, #ea580c 72%, #9a3412 100%) !important;
+  border: 2.5px solid #ffedd5 !important;
+  box-shadow: 0 8px 0 #7c2d12, 0 14px 28px rgba(0, 0, 0, 0.66), 0 0 24px rgba(249, 115, 22, 0.45), inset 0 -4px 8px rgba(124, 45, 18, 0.55) !important;
 }
 .btn-shoot .ico svg {
+  width: 38px !important;
+  height: 38px !important;
+}
+.btn-shoot .lbl {
+  font-size: 11px !important;
+}
+.btn-shoot.charging {
+  transform: translateY(2px) scale(1.06) !important;
+  border-color: #fef08a !important;
+  box-shadow: 0 6px 0 #9a3412, 0 0 36px rgba(253, 224, 71, 0.92), inset 0 0 16px rgba(255, 255, 255, 0.55) !important;
+}
+.btn-tackle {
+  width: 76px !important;
+  height: 76px !important;
+  right: 6px !important;
+  bottom: 108px !important;
+  background: radial-gradient(circle at 38% 24%, #fda4af 0%, #fb7185 38%, #e11d48 74%, #881337 100%) !important;
+  border: 2px solid #ffe4e6 !important;
+  box-shadow: 0 7px 0 #680d29, 0 12px 24px rgba(0, 0, 0, 0.62), 0 0 20px rgba(244, 63, 94, 0.40), inset 0 -3px 7px rgba(104, 13, 41, 0.55) !important;
+}
+.btn-tackle .ico svg {
   width: 28px !important;
   height: 28px !important;
 }
-.btn-shoot .lbl {
-  font-size: 10.5px !important;
+.btn-tackle .lbl {
+  font-size: 8.8px !important;
+  letter-spacing: 0.2px !important;
 }
-.btn-tackle {
-  width: 66px !important;
-  height: 66px !important;
-  right: 8px !important;
-  bottom: 96px !important;
-  background: rgba(15, 23, 42, 0.60) !important;
-  border: 1.5px solid rgba(251, 113, 133, 0.68) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
-}
-.btn-tackle .ico svg {
-  width: 22px !important;
-  height: 22px !important;
+.btn-tackle.charging {
+  box-shadow: 0 7px 0 #680d29, 0 0 30px rgba(251, 113, 133, 0.9), inset 0 0 12px rgba(255, 255, 255, 0.45) !important;
 }
 .btn-sprint {
-  width: 60px !important;
-  height: 60px !important;
-  right: 92px !important;
-  bottom: 84px !important;
-  background: rgba(15, 23, 42, 0.60) !important;
-  border: 1.5px solid rgba(56, 189, 248, 0.68) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38) !important;
+  width: 66px !important;
+  height: 66px !important;
+  right: 102px !important;
+  bottom: 92px !important;
+  background: radial-gradient(circle at 38% 24%, #bae6fd 0%, #38bdf8 40%, #0284c7 76%, #075985 100%) !important;
+  border: 2px solid #e0f2fe !important;
+  box-shadow: 0 6px 0 #0c4a6e, 0 11px 22px rgba(0, 0, 0, 0.60), 0 0 20px rgba(56, 189, 248, 0.42), inset 0 -3px 7px rgba(7, 89, 133, 0.55) !important;
 }
 .btn-sprint .ico svg {
-  width: 20px !important;
-  height: 20px !important;
+  width: 26px !important;
+  height: 26px !important;
 }
 .tbtn.down,
 .tbtn:active {
-  transform: scale(0.92) !important;
-  background: rgba(255, 255, 255, 0.22) !important;
+  transform: translateY(5px) scale(0.95) !important;
+  filter: brightness(1.14) !important;
+}
+.btn-shoot.down,
+.btn-shoot:active {
+  box-shadow: 0 2px 0 #7c2d12, 0 5px 12px rgba(0, 0, 0, 0.65), 0 0 26px rgba(251, 146, 60, 0.7) !important;
+}
+.btn-tackle.down,
+.btn-tackle:active {
+  box-shadow: 0 2px 0 #680d29, 0 5px 12px rgba(0, 0, 0, 0.65), 0 0 22px rgba(244, 63, 94, 0.65) !important;
+}
+.btn-sprint.down,
+.btn-sprint:active {
+  box-shadow: 0 2px 0 #0c4a6e, 0 5px 12px rgba(0, 0, 0, 0.65), 0 0 22px rgba(56, 189, 248, 0.65) !important;
+}
+
+/* Tactile 3D Action Deck Bar (Desktop HUD: Shoot / Tackle / Sprint) */
+.key-hints {
+  pointer-events: auto !important;
+  bottom: calc(var(--sab, 0px) + 12px) !important;
+  padding: 6px 12px 10px !important;
+  gap: 10px !important;
+  align-items: center !important;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(7, 11, 22, 0.88) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+.kh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(51, 65, 85, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 3px 0 #020617, inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.kh-pause {
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.kh-pause:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #020617;
+}
+.kh-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px 6px 10px;
+  border-radius: 14px;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+  pointer-events: auto;
+  overflow: hidden;
+  user-select: none;
+  transition: transform 0.08s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.08s ease, filter 0.12s ease;
+}
+.kh-btn::before {
+  content: '';
+  position: absolute;
+  inset: 2px 4px auto 4px;
+  height: 46%;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.44) 0%, rgba(255, 255, 255, 0.06) 65%, transparent 100%);
+  pointer-events: none;
+}
+.kh-ico {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kh-ico svg {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+.kh-meta {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.kh-lbl {
+  font-size: 12px;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.kh-kbd {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+.kh-meter {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: calc(var(--p, 0) * 100%);
+  background: linear-gradient(90deg, #fef08a, #ffffff);
+  box-shadow: 0 0 8px #fde047;
+  pointer-events: none;
+}
+.kh-shoot {
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 60%, #c2410c 100%);
+  border: 1.5px solid #ffedd5;
+  box-shadow: 0 5px 0 #7c2d12, 0 8px 18px rgba(249, 115, 22, 0.42), inset 0 -2px 4px rgba(124, 45, 18, 0.45);
+}
+.kh-shoot.charging {
+  box-shadow: 0 5px 0 #7c2d12, 0 0 24px rgba(253, 224, 71, 0.85), inset 0 0 10px rgba(255, 255, 255, 0.38);
+  border-color: #fef08a;
+}
+.kh-tackle {
+  background: linear-gradient(180deg, #fb7185 0%, #e11d48 60%, #be123c 100%);
+  border: 1.5px solid #ffe4e6;
+  box-shadow: 0 5px 0 #680d29, 0 8px 18px rgba(244, 63, 94, 0.38), inset 0 -2px 4px rgba(104, 13, 41, 0.45);
+}
+.kh-tackle.cooling {
+  opacity: 0.62;
+  filter: saturate(0.7);
+}
+.kh-sprint {
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+  border: 1.5px solid #e0f2fe;
+  box-shadow: 0 5px 0 #0c4a6e, 0 8px 18px rgba(56, 189, 248, 0.38), inset 0 -2px 4px rgba(7, 89, 133, 0.45);
+}
+.kh-sprint.exhausted {
+  opacity: 0.45;
+  filter: grayscale(0.55);
+}
+.kh-btn.down,
+.kh-btn:active {
+  transform: translateY(4px);
+  filter: brightness(1.16);
+}
+.kh-shoot.down,
+.kh-shoot:active {
+  box-shadow: 0 1px 0 #7c2d12, 0 3px 8px rgba(249, 115, 22, 0.55);
+}
+.kh-tackle.down,
+.kh-tackle:active {
+  box-shadow: 0 1px 0 #680d29, 0 3px 8px rgba(244, 63, 94, 0.55);
+}
+.kh-sprint.down,
+.kh-sprint:active {
+  box-shadow: 0 1px 0 #0c4a6e, 0 3px 8px rgba(56, 189, 248, 0.55);
 }
 
 /* ==========================================================================

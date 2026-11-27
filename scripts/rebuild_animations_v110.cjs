@@ -376,17 +376,18 @@ function evaluateRetargetedPose(skel, mocap, dstOpts = {}) {
     const sArmLen = isL ? mocap.armLenL : mocap.armLenR;
 
     const handOverride = isL ? dstOpts.handL : dstOpts.handR;
-    const shPitch = handOverride ? clamp((handOverride.pos[1] + 0.1) * 0.4, -0.06, 0.22) : 0.04;
-    const shState = slerpChain(shIdx, chestIdx, chestState.wQ, chestState.wPos, qNorm(qMul(qChestWorld, qFromEulerXYZ(0, 0, sgn * shPitch))));
+    const shPitch = handOverride ? clamp((handOverride.pos[1] + 0.12) * 0.52, -0.08, 0.44) : 0.05;
+    const shFwd = handOverride ? clamp((handOverride.pos[2] - 0.10) * 0.28, -0.14, 0.22) : 0;
+    const shState = slerpChain(shIdx, chestIdx, chestState.wQ, chestState.wPos, qNorm(qMul(qChestWorld, qFromEulerXYZ(0, -sgn * shFwd, sgn * shPitch))));
 
     const uaRel = qRotateVec(qConj(restWorldQ[shIdx]), v3.sub(restWorldP[uaIdx], restWorldP[shIdx]));
     const shoulderPos = v3.add(shState.wPos, qRotateVec(shState.wQ, uaRel));
 
     let targetWrist, poleWorld;
     if (handOverride) {
-      const frame = qFromEulerXYZ(0, dstOpts.extraYaw || 0, 0);
+      const frame = dstOpts.armsInWorldYaw ? qFromEulerXYZ(0, dstOpts.extraYaw || 0, 0) : qChestWorld;
       targetWrist = v3.add(chestState.wPos, qRotateVec(frame, handOverride.pos));
-      poleWorld = qRotateVec(frame, handOverride.pole || [sgn * 0.35, -0.35, -0.82]);
+      poleWorld = qRotateVec(frame, handOverride.pole || [sgn * 0.36, -0.32, -0.82]);
     } else {
       const relVec = v3.scale(v3.sub(mocap.wp[sWri], mocap.wp[sArm]), dstArmLen / sArmLen);
       targetWrist = v3.add(shoulderPos, qRotateVec(extraYaw, relVec));
@@ -437,7 +438,14 @@ function evaluateRetargetedPose(skel, mocap, dstOpts = {}) {
     const hipWorld = v3.add(bodyWPosBase, qRotateVec(bodyRot, relHipRest));
 
     const relAnk = v3.scale(v3.sub(mocap.wp[sAnk], mocap.wp[sLeg]), dstLegLen / sLegLen);
-    const targetAnkle = v3.add(hipWorld, qRotateVec(extraYaw, relAnk));
+    if (dstOpts.strideScale && dstOpts.strideScale !== 1) relAnk[2] *= dstOpts.strideScale;
+    let targetAnkle = v3.add(hipWorld, qRotateVec(extraYaw, relAnk));
+    const toAnk = v3.sub(targetAnkle, hipWorld);
+    const maxRetargetLeg = (skel.upperLegLen + skel.lowerLegLen) * 0.946;
+    const retargetLen = v3.len(toAnk);
+    if (retargetLen > maxRetargetLeg) {
+      targetAnkle = v3.add(hipWorld, v3.scale(toAnk, maxRetargetLeg / retargetLen));
+    }
 
     const midLeg = v3.lerp(mocap.wp[sLeg], mocap.wp[sAnk], 0.5);
     const rawKneePole = v3.sub(mocap.wp[sKnee], midLeg);
@@ -565,8 +573,8 @@ function evaluateSplinePoseToChannels(skel, pSpec) {
     const handOffsetChest = handSpec ? handSpec.pos : [sgn * 0.24, -0.34, 0.14];
     const elbowPoleSpec = handSpec && handSpec.pole ? handSpec.pole : [sgn * 0.42, -0.34, -0.78];
 
-    const shLift = clamp((handOffsetChest[1] + 0.12) * 0.48, -0.08, 0.42);
-    const shFwd = clamp((handOffsetChest[2] - 0.10) * 0.28, -0.14, 0.20);
+    const shLift = clamp((handOffsetChest[1] + 0.14) * 0.58, -0.10, 0.54);
+    const shFwd = clamp((handOffsetChest[2] - 0.10) * 0.32, -0.16, 0.24);
     const shState = chainJoint(shIdx, chestIdx, chestState.wQ, chestState.wPos, qFromEulerXYZ(0, -sgn * shFwd, sgn * shLift));
 
     const uaRel = qRotateVec(qConj(restWorldQ[shIdx]), v3.sub(restWorldP[uaIdx], restWorldP[shIdx]));
@@ -693,113 +701,141 @@ function makeMotions(role, clonex) {
     };
   }
 
-  // A. LOCOMOTION & SPORT-NATIVE STANCES
-  motions.Idle = wrapSplineClip(2.20, true, (u) => {
+  // A. LOCOMOTION & SPORT-NATIVE STANCES (Pro Optical MoCap Legs + Sculpted Athletic Upper Body)
+  motions.Idle = wrapSplineClip(2.10, true, (u) => {
     const breath = Math.sin(u * Math.PI * 2);
+    const bounce = Math.sin(u * Math.PI * 4);
     const sway = Math.cos(u * Math.PI * 2);
     if (isKeeper) {
       return {
-        bodyY: -0.11 + 0.012 * breath,
-        spinePitch: 0.22 + 0.02 * breath,
-        headPitch: -0.08,
+        bodyY: -0.13 + 0.014 * bounce,
+        spinePitch: 0.24 + 0.02 * breath,
+        headPitch: -0.10,
         headYaw: 0.14 * sway,
         armsInWorldYaw: true,
-        footL: { pos: [0.24, 0.024, 0.08], pole: [0.30, 0.14, 1.0], yaw: 0.16 },
-        footR: { pos: [-0.24, 0.024, -0.02], pole: [-0.30, 0.14, 1.0], yaw: -0.14 },
-        handL: { pos: [0.30, -0.08 + 0.02 * breath, 0.30], pole: [0.54, -0.36, -0.56], curl: 0.24, wristPitch: -0.22 },
-        handR: { pos: [-0.30, -0.08 - 0.02 * breath, 0.30], pole: [-0.54, -0.36, -0.56], curl: 0.24, wristPitch: -0.22 },
+        footL: { pos: [0.26, 0.024, 0.09], pole: [0.34, 0.16, 1.0], yaw: 0.18 },
+        footR: { pos: [-0.26, 0.024, -0.04], pole: [-0.34, 0.16, 1.0], yaw: -0.16 },
+        handL: { pos: [0.34, -0.06 + 0.02 * bounce, 0.30], pole: [0.56, -0.34, -0.56], curl: 0.20, wristPitch: -0.24 },
+        handR: { pos: [-0.34, -0.06 - 0.02 * bounce, 0.30], pole: [-0.56, -0.34, -0.56], curl: 0.20, wristPitch: -0.24 },
       };
     }
     if (isHoops) {
       return {
-        bodyY: -0.075 + 0.014 * breath,
-        spinePitch: 0.12 + 0.018 * breath,
-        bodyRoll: 0.018 * sway,
-        headPitch: -0.04,
+        bodyY: -0.105 + 0.012 * bounce,
+        spinePitch: 0.16 + 0.016 * breath,
+        bodyRoll: 0.022 * sway,
+        chestYaw: -0.05 * sway,
+        headPitch: -0.06,
         headYaw: 0.09 * sway,
         armsInWorldYaw: false,
-        footL: { pos: [0.19, 0.024, 0.09], pole: [0.24, 0.14, 1.0], yaw: 0.14 },
-        footR: { pos: [-0.18, 0.024, -0.06], pole: [-0.24, 0.14, 1.0], yaw: -0.12 },
-        handL: { pos: [0.26, -0.24 + 0.018 * breath, 0.22], pole: [0.44, -0.28, -0.78], curl: 0.88, wristYaw: -0.22, wristRoll: 0.14 },
-        handR: { pos: [-0.26, -0.26 - 0.018 * breath, 0.21], pole: [-0.44, -0.28, -0.78], curl: 0.88, wristYaw: 0.22, wristRoll: -0.14 },
+        footL: { pos: [0.22, 0.024, 0.11], pole: [0.28, 0.16, 1.0], yaw: 0.16 },
+        footR: { pos: [-0.21, 0.024, -0.08], pole: [-0.28, 0.16, 1.0], yaw: -0.14 },
+        handL: { pos: [0.29, -0.19 + 0.015 * bounce, 0.23], pole: [0.46, -0.30, -0.74], curl: 0.68, wristYaw: -0.20, wristRoll: 0.12 },
+        handR: { pos: [-0.29, -0.21 - 0.015 * bounce, 0.21], pole: [-0.46, -0.30, -0.74], curl: 0.68, wristYaw: 0.20, wristRoll: -0.12 },
       };
     }
-    // Confident pro striker hero idle (athletic stance, naturally curled relaxed fingers, balanced hips)
+    // Confident pro striker ready stance (athletic half-squat, arms relaxed clear of torso/crest)
     return {
-      bodyY: -0.042 + 0.010 * breath,
-      spinePitch: 0.055 + 0.015 * breath,
+      bodyY: -0.068 + 0.010 * bounce,
+      spinePitch: 0.08 + 0.015 * breath,
       bodyRoll: 0.022 * sway,
-      chestYaw: -0.05 * sway,
-      headPitch: -0.03,
+      chestYaw: -0.04 * sway,
+      headPitch: -0.04,
       headYaw: 0.08 * sway,
       armsInWorldYaw: false,
-      footL: { pos: [0.175, 0.024, 0.08], pole: [0.22, 0.14, 1.0], yaw: 0.16 },
-      footR: { pos: [-0.165, 0.024, -0.06], pole: [-0.22, 0.14, 1.0], yaw: -0.12 },
-      handL: { pos: [0.255, -0.30 + 0.014 * breath, 0.13], pole: [0.44, -0.28, -0.82], curl: 0.94, wristYaw: -0.26, wristRoll: 0.16 },
-      handR: { pos: [-0.255, -0.31 - 0.014 * breath, 0.12], pole: [-0.44, -0.28, -0.82], curl: 0.94, wristYaw: 0.26, wristRoll: -0.16 },
+      footL: { pos: [0.195, 0.024, 0.09], pole: [0.25, 0.15, 1.0], yaw: 0.17 },
+      footR: { pos: [-0.185, 0.024, -0.07], pole: [-0.25, 0.15, 1.0], yaw: -0.14 },
+      handL: { pos: [0.305, -0.28 + 0.012 * bounce, 0.14], pole: [0.46, -0.28, -0.82], curl: 0.80, wristYaw: -0.22, wristRoll: 0.14 },
+      handR: { pos: [-0.305, -0.29 - 0.012 * bounce, 0.13], pole: [-0.46, -0.28, -0.82], curl: 0.80, wristYaw: 0.22, wristRoll: -0.14 },
     };
   });
 
-  // Athletic Locomotion Biomechanics Helper (Natural opposite arm pump, flexed knees, hip-chest counter-twist)
-  function athleticStrideSpec(u, opts = {}) {
-    const p = u * Math.PI * 2;
-    const stride = opts.stride || 0.36;
-    const liftH = opts.liftH || 0.28;
-    const armFwd = opts.armFwd !== undefined ? opts.armFwd : 0.30;
-    const armBack = opts.armBack !== undefined ? opts.armBack : -0.26;
-    const legSample = (ph, sgn) => {
-      const s = Math.sin(ph);
-      const c = Math.cos(ph);
-      const air = s > 0 ? Math.pow(s, 0.88) : 0;
-      const z = -stride * c + 0.03 * s;
-      const y = 0.024 + liftH * air;
-      const pitch = s > 0 ? (0.42 * s - 0.14 * c) : (-0.18 * (c > 0 ? c : 0));
-      return {
-        pos: [sgn * (opts.stanceX || 0.145), y, z],
-        pole: [sgn * 0.22, 0.16 + 0.14 * air, 1.0],
-        pitch,
-        yaw: sgn * 0.06,
-      };
-    };
-    const armSwingL = Math.cos(p);
-    const armSwingR = -Math.cos(p);
-    const bob = Math.cos(p * 2);
-    const armY = (sw) => -0.17 + 0.11 * sw;
-    const armZ = (sw) => (sw >= 0 ? armFwd * sw : (-armBack) * sw);
-    const spreadX = opts.armWidth || 0.27;
+  // Low NBA On-Ball Defensive Shuffle / Ready Stance (wide athletic base + active contesting hands)
+  motions.Anim_2K_DefenseIdle = wrapSplineClip(1.60, true, (u) => {
+    const shift = Math.sin(u * Math.PI * 2);
+    const bounce = Math.sin(u * Math.PI * 4);
     return {
-      bodyY: (opts.baseY !== undefined ? opts.baseY : -0.105) + (opts.bobAmt || 0.030) * bob,
-      spinePitch: opts.spinePitch !== undefined ? opts.spinePitch : 0.21,
-      hipsYaw: 0.12 * Math.cos(p),
-      chestYaw: -0.17 * Math.cos(p),
-      bodyRoll: (opts.rollAmt || 0.035) * Math.cos(p),
-      headPitch: opts.headPitch !== undefined ? opts.headPitch : -0.08,
-      headYaw: 0.06 * Math.cos(p),
+      bodyY: -0.22 + 0.016 * bounce,
+      bodyX: 0.04 * shift,
+      spinePitch: 0.26,
+      bodyRoll: -0.04 * shift,
+      chestYaw: 0.08 * shift,
+      headPitch: -0.12,
       armsInWorldYaw: false,
-      footL: legSample(p, 1),
-      footR: legSample(p + Math.PI, -1),
-      handL: opts.handL ? opts.handL(p, armSwingL) : {
-        pos: [spreadX, armY(armSwingL), armZ(armSwingL)],
+      footL: { pos: [0.28, 0.024, 0.12], pole: [0.36, 0.18, 1.0], yaw: 0.22 },
+      footR: { pos: [-0.28, 0.024, -0.08], pole: [-0.36, 0.18, 1.0], yaw: -0.20 },
+      handL: { pos: [0.46, 0.04 + 0.03 * shift, 0.24], pole: [0.52, -0.30, -0.64], curl: 0.24 },
+      handR: { pos: [-0.44, -0.06 - 0.03 * shift, 0.26], pole: [-0.52, -0.30, -0.64], curl: 0.28 },
+    };
+  });
+
+  // Optical MoCap Stride Helper (uses CloneX genuine foot-strike + ankle push-off & sculpted pro sports arms)
+  function evalMocapLocomotion(u, clipName, opts = {}) {
+    const m = clonex.sampleClipAt(clipName, u, [0, 1]);
+    const p = u * Math.PI * 2;
+    // Note: in CloneX walk/run forward, Left Ankle leads at u=0.25 (+sin), so Left Arm drives forward at u=0.75 (-sin)
+    const armSwL = -Math.sin(p);
+    const armSwR = Math.sin(p);
+    const fwdX = opts.armFwd || 0.28;
+    const backX = opts.armBack || 0.24;
+    const spread = opts.armWidth || 0.27;
+    const baseArmY = opts.armY !== undefined ? opts.armY : -0.15;
+    const liftArmY = opts.armLiftY || 0.12;
+    const armPos = (sgn, sw) => [
+      sgn * (spread - Math.max(0, sw) * 0.045),
+      baseArmY + (sw > 0 ? liftArmY * sw : 0.05 * (-sw)),
+      (sw >= 0 ? fwdX * sw : backX * sw) + (opts.armBiasZ || 0.03),
+    ];
+    return evaluateRetargetedPose(skelFromClonexCache, m, {
+      strideScale: opts.strideScale || 1.15,
+      bodyY: opts.bodyY || 0,
+      bodyPitch: opts.bodyPitch || 0,
+      spinePitch: opts.spinePitch !== undefined ? opts.spinePitch : 0.14,
+      headPitch: opts.headPitch !== undefined ? opts.headPitch : -0.08,
+      stabilizeHead: true,
+      preserveSprintFlight: opts.preserveFlight !== false,
+      armsInWorldYaw: false,
+      fingerCurl: opts.fingerCurl !== undefined ? opts.fingerCurl : 0.78,
+      handL: opts.handL ? opts.handL(p, armSwL) : {
+        pos: armPos(1, armSwL),
         pole: [0.38, -0.30, -0.82],
         curl: opts.fingerCurl !== undefined ? opts.fingerCurl : 0.78,
       },
-      handR: opts.handR ? opts.handR(p, armSwingR) : {
-        pos: [-spreadX, armY(armSwingR), armZ(armSwingR)],
+      handR: opts.handR ? opts.handR(p, armSwR) : {
+        pos: armPos(-1, armSwR),
         pole: [-0.38, -0.30, -0.82],
         curl: opts.fingerCurl !== undefined ? opts.fingerCurl : 0.78,
+      },
+    });
+  }
+
+  let skelFromClonexCache = null;
+  function makeHybridLocomotion(duration, clipName, opts = {}) {
+    return {
+      duration,
+      loop: true,
+      evaluate(skel, u) {
+        skelFromClonexCache = skel;
+        return evalMocapLocomotion(u, clipName, opts);
       },
     };
   }
 
-  motions.Walk = wrapSplineClip(0.88, true, (u) => athleticStrideSpec(u, {
-    stride: 0.24, liftH: 0.12, armFwd: 0.19, armBack: -0.16, armWidth: 0.25,
-    baseY: -0.055, bobAmt: 0.015, spinePitch: 0.06, rollAmt: 0.02, headPitch: -0.02, fingerCurl: 0.80,
-  }));
+  motions.Walk = makeHybridLocomotion(0.86, 'walk forward', {
+    strideScale: 1.06, armFwd: 0.16, armBack: 0.15, armWidth: 0.25, baseY: 0, armY: -0.24, armLiftY: 0.06, armBiasZ: 0.01,
+    spinePitch: 0.05, headPitch: -0.03, preserveFlight: false, fingerCurl: 0.72,
+  });
 
-  motions.Run = wrapSplineClip(0.62, true, (u) => athleticStrideSpec(u, {
-    stride: 0.37, liftH: 0.25, armFwd: 0.31, armBack: -0.27, armWidth: 0.27,
-    baseY: -0.105, bobAmt: 0.030, spinePitch: 0.20, rollAmt: 0.04, headPitch: -0.10, fingerCurl: 0.82,
-  }));
+  motions.Run = makeHybridLocomotion(0.60, 'run forward', {
+    strideScale: 1.28, bodyY: -0.02, bodyPitch: 0.03, armFwd: 0.22, armBack: 0.24, armWidth: 0.25, armY: -0.14, armLiftY: 0.18, armBiasZ: 0.02,
+    spinePitch: 0.16, headPitch: -0.08, fingerCurl: 0.80,
+  });
+
+  // High-Speed Explosive EA FC / NBA Sprint Drive (low aerodynamic lean, long ground stride, compact 90deg pumping arms)
+  motions.Anim_EA_SprintDrive = makeHybridLocomotion(0.49, 'run forward', {
+    strideScale: 1.54, bodyY: -0.045, bodyPitch: 0.08, armFwd: 0.26, armBack: 0.28, armWidth: 0.26, armY: -0.12, armLiftY: 0.22, armBiasZ: 0.02,
+    spinePitch: 0.26, headPitch: -0.14, fingerCurl: 0.86,
+  });
 
   motions.Run_Back = {
     duration: 0.58,
@@ -828,61 +864,86 @@ function makeMotions(role, clonex) {
     },
   };
 
-  // Smooth NBA Dribble Run (Real active waist-to-floor bounce pump + agile off-arm shield sweep)
-  function evalDribbleRun(skel, u, mirrorLeft) {
-    const s = mirrorLeft ? 1 : -1;
-    const bounceP = u * Math.PI * 4;
-    const pound = Math.cos(bounceP);
-    const snap = Math.sin(bounceP);
-    const spec = athleticStrideSpec(u, {
-      stride: 0.34, liftH: 0.24, baseY: -0.13, bobAmt: 0.026, spinePitch: 0.24, rollAmt: 0.035, headPitch: -0.10, stanceX: 0.16,
-      handL: mirrorLeft
-        ? () => ({ pos: [s * 0.33, -0.30 + 0.14 * pound, 0.23 + 0.03 * snap], pole: [s * 0.40, -0.22, -0.72], curl: 0.24, wristPitch: 0.34 + 0.56 * snap })
-        : (_p, sw) => ({ pos: [-s * 0.31, -0.15 + 0.08 * sw, 0.05 + 0.20 * sw], pole: [-s * 0.44, -0.32, -0.76], curl: 0.62 }),
-      handR: mirrorLeft
-        ? (_p, sw) => ({ pos: [-s * 0.31, -0.15 + 0.08 * sw, 0.05 + 0.20 * sw], pole: [-s * 0.44, -0.32, -0.76], curl: 0.62 })
-        : () => ({ pos: [s * 0.33, -0.30 + 0.14 * pound, 0.23 + 0.03 * snap], pole: [s * 0.40, -0.22, -0.72], curl: 0.24, wristPitch: 0.34 + 0.56 * snap }),
-    });
-    spec.hipsYaw = (spec.hipsYaw || 0) - s * 0.08;
-    spec.chestYaw = (spec.chestYaw || 0) - s * 0.08;
-    return spec;
-  }
-  motions.Anim_2K_DribbleRun = wrapSplineClip(0.62, true, (u) => evalDribbleRun(null, u, false));
-  motions.Anim_2K_DribbleRun_L = wrapSplineClip(0.62, true, (u) => evalDribbleRun(null, u, true));
-
-  function evalDribbleIdle(skel, u, mirrorLeft) {
-    const a = u * Math.PI * 2;
-    const pound = Math.cos(a);
-    const snap = Math.sin(a);
+  // Smooth NBA Dribble Run (MoCap lower-body athleticism + punchy asymmetrical palm-down dribble & shield off-arm)
+  function makeDribbleRun(mirrorLeft) {
     const s = mirrorLeft ? 1 : -1;
     return {
-      bodyY: -0.115 + 0.020 * pound,
-      spinePitch: 0.20,
-      spineYaw: -s * 0.12,
-      headPitch: -0.06,
-      armsInWorldYaw: false,
-      footL: { pos: [0.19, 0.024, 0.10], pole: [0.24, 0.14, 1.0], yaw: 0.14 },
-      footR: { pos: [-0.18, 0.024, -0.07], pole: [-0.24, 0.14, 1.0], yaw: -0.12 },
-      [mirrorLeft ? 'handL' : 'handR']: {
-        pos: [s * 0.34, -0.32 + 0.14 * pound, 0.22],
-        pole: [s * 0.40, -0.22, -0.72],
-        curl: 0.22,
-        wristPitch: 0.32 + 0.56 * snap,
-      },
-      [mirrorLeft ? 'handR' : 'handL']: {
-        pos: [-s * 0.30, -0.16, 0.16],
-        pole: [-s * 0.46, -0.32, -0.72],
-        curl: 0.48,
+      duration: 0.56,
+      loop: true,
+      evaluate(skel, u) {
+        const m = clonex.sampleClipAt('run forward', u, [0, 1]);
+        const bp = u * Math.PI * 4;
+        // Ballistic asymmetrical basketball pound: sharp push down, softer high-pocket hover at top
+        const rawWave = Math.cos(bp);
+        const pound = rawWave >= 0 ? Math.pow(rawWave, 0.72) : -Math.pow(-rawWave, 1.30);
+        const snap = Math.sin(bp);
+        const dribHand = {
+          pos: [s * 0.31, -0.25 + 0.15 * pound, 0.22 + 0.04 * snap],
+          pole: [s * 0.38, -0.20, -0.72],
+          curl: 0.20,
+          wristPitch: 0.36 + 0.62 * snap,
+        };
+        const shieldHand = (_p, sw) => ({
+          pos: [-s * 0.29, -0.07 + 0.05 * sw, 0.26 + 0.10 * sw],
+          pole: [-s * 0.48, -0.24, -0.46],
+          curl: 0.56,
+          wristYaw: s * 0.28,
+        });
+        const swOpp = mirrorLeft ? Math.sin(u * Math.PI * 2) : -Math.sin(u * Math.PI * 2);
+        return evaluateRetargetedPose(skel, m, {
+          strideScale: 1.18,
+          bodyY: -0.055,
+          bodyPitch: 0.05,
+          spinePitch: 0.22,
+          spineYaw: -s * 0.10,
+          headPitch: -0.10,
+          stabilizeHead: true,
+          armsInWorldYaw: false,
+          handL: mirrorLeft ? dribHand : shieldHand(0, swOpp),
+          handR: mirrorLeft ? shieldHand(0, swOpp) : dribHand,
+        });
       },
     };
   }
-  motions.Anim_2K_DribbleIdle = wrapSplineClip(0.76, true, (u) => evalDribbleIdle(null, u, false));
-  motions.Anim_2K_DribbleIdle_L = wrapSplineClip(0.76, true, (u) => evalDribbleIdle(null, u, true));
+  motions.Anim_2K_DribbleRun = makeDribbleRun(false);
+  motions.Anim_2K_DribbleRun_L = makeDribbleRun(true);
 
-  motions.Anim_EA_DribbleRun = wrapSplineClip(0.58, true, (u) => athleticStrideSpec(u, {
-    stride: 0.33, liftH: 0.24, armFwd: 0.26, armBack: -0.24, armWidth: 0.31,
-    baseY: -0.115, bobAmt: 0.028, spinePitch: 0.22, rollAmt: 0.045, headPitch: 0.05, fingerCurl: 0.80,
-  }));
+  function evalDribbleIdle(skel, u, mirrorLeft) {
+    const a = u * Math.PI * 2;
+    const rawWave = Math.cos(a);
+    const pound = rawWave >= 0 ? Math.pow(rawWave, 0.75) : -Math.pow(-rawWave, 1.28);
+    const snap = Math.sin(a);
+    const s = mirrorLeft ? 1 : -1;
+    return {
+      bodyY: -0.135 + 0.024 * pound,
+      spinePitch: 0.22,
+      spineYaw: -s * 0.14,
+      headPitch: -0.08,
+      armsInWorldYaw: false,
+      footL: { pos: [0.22, 0.024, 0.12], pole: [0.27, 0.16, 1.0], yaw: 0.16 },
+      footR: { pos: [-0.21, 0.024, -0.09], pole: [-0.27, 0.16, 1.0], yaw: -0.14 },
+      [mirrorLeft ? 'handL' : 'handR']: {
+        pos: [s * 0.32, -0.27 + 0.15 * pound, 0.23],
+        pole: [s * 0.38, -0.20, -0.72],
+        curl: 0.18,
+        wristPitch: 0.34 + 0.62 * snap,
+      },
+      [mirrorLeft ? 'handR' : 'handL']: {
+        pos: [-s * 0.28, -0.07, 0.25],
+        pole: [-s * 0.48, -0.24, -0.46],
+        curl: 0.48,
+        wristYaw: s * 0.26,
+      },
+    };
+  }
+  motions.Anim_2K_DribbleIdle = wrapSplineClip(0.70, true, (u) => evalDribbleIdle(null, u, false));
+  motions.Anim_2K_DribbleIdle_L = wrapSplineClip(0.70, true, (u) => evalDribbleIdle(null, u, true));
+
+  // Football Agile Dribble Run (quick rhythmic touches, low center of gravity, balanced shield arms)
+  motions.Anim_EA_DribbleRun = makeHybridLocomotion(0.50, 'run forward', {
+    strideScale: 1.02, bodyY: -0.04, bodyPitch: 0.04, armFwd: 0.26, armBack: 0.22, armWidth: 0.34, armY: -0.14, armLiftY: 0.10,
+    spinePitch: 0.20, headPitch: 0.05, fingerCurl: 0.76,
+  });
 
   // LIVE ANTICIPATION POSE WHILE HOLDING SPACE IN FOOTY (Coiled Striking Leg + Diagonal Sideways Balance Arm)
   motions.Anim_EA_StrikeCharge = wrapSplineClip(0.60, true, (u) => {
@@ -922,103 +983,104 @@ function makeMotions(role, clonex) {
     };
   });
 
-  // 1. EA FC EXPRESSIVE POWER STRIKE (Athletic Bent Plant Knee, Fluid Hip Whip, Soft Curved Follow-Through)
+  // 1. EA FC EXPRESSIVE POWER STRIKE (True Low Ball Impact Arc, Bent Plant Knee, Open Chest Whip)
   function strikeSpec(u, power) {
     const sc = power ? 1.0 : 0.88;
-    const bodyZ = catmullRomTrack([[0, -0.05], [0.20, -0.07], [0.36, 0.10], [0.56, 0.20], [0.80, 0.08], [1, 0]], u);
-    const bodyY = catmullRomTrack([[0, -0.08], [0.20, -0.175], [0.36, -0.145], [0.56, -0.09], [0.80, -0.09], [1, -0.045]], u);
-    const bodyPitch = catmullRomTrack([[0, 0.08], [0.20, 0.12], [0.36, 0.10], [0.56, -0.06], [0.82, 0.06], [1, 0.06]], u);
-    const bodyRoll = catmullRomTrack([[0, -0.06], [0.20, -0.28 * sc], [0.36, -0.24 * sc], [0.58, -0.16], [1, 0]], u);
-    const bodyYaw = catmullRomTrack([[0, -0.10], [0.20, -0.46 * sc], [0.36, 0.16], [0.56, 0.36 * sc], [0.80, 0.14], [1, 0]], u);
-    const chestYaw = catmullRomTrack([[0, -0.06], [0.20, -0.26], [0.38, 0.30], [0.64, 0.18], [1, 0]], u);
+    const bodyZ = catmullRomTrack([[0, -0.06], [0.20, -0.09], [0.38, 0.14], [0.58, 0.24], [0.80, 0.09], [1, 0]], u);
+    const bodyY = catmullRomTrack([[0, -0.08], [0.20, -0.19], [0.38, -0.17], [0.58, -0.09], [0.80, -0.095], [1, -0.055]], u);
+    const bodyPitch = catmullRomTrack([[0, 0.08], [0.20, 0.10], [0.38, 0.04], [0.58, -0.08], [0.82, 0.06], [1, 0.06]], u);
+    const bodyRoll = catmullRomTrack([[0, -0.08], [0.20, -0.36 * sc], [0.38, -0.34 * sc], [0.58, -0.18], [1, 0]], u);
+    const bodyYaw = catmullRomTrack([[0, -0.12], [0.20, -0.52 * sc], [0.38, 0.18], [0.58, 0.42 * sc], [0.82, 0.15], [1, 0]], u);
+    const chestYaw = catmullRomTrack([[0, -0.08], [0.20, -0.30], [0.40, 0.36], [0.64, 0.20], [1, 0]], u);
 
-    const lx = catmullRomTrack([[0, 0.17], [0.18, 0.26], [0.64, 0.23], [1, 0.17]], u);
-    const lz = catmullRomTrack([[0, 0.04], [0.18, 0.14], [0.64, 0.14], [1, 0.06]], u);
+    const lx = catmullRomTrack([[0, 0.18], [0.18, 0.29], [0.62, 0.25], [1, 0.18]], u);
+    const lz = catmullRomTrack([[0, 0.04], [0.18, 0.16], [0.62, 0.15], [1, 0.07]], u);
     const ly = catmullRomTrack([[0, 0.024], [0.18, 0.024], [0.60, 0.024], [0.74, 0.06], [0.88, 0.024], [1, 0.024]], u);
 
-    // Bent cock (20%) -> Driven instep impact (36%) -> Sweeping follow-through whip inside reach clamp (54%) -> Soft land
-    const rx = catmullRomTrack([[0, -0.16], [0.20, -0.19], [0.36, -0.02], [0.54, 0.18 * sc], [0.76, -0.08], [1, -0.16]], u);
-    const ry = catmullRomTrack([[0, 0.04], [0.20, 0.38 * sc], [0.36, 0.13], [0.54, 0.32 * sc], [0.76, 0.09], [1, 0.024]], u);
-    const rz = catmullRomTrack([[0, -0.06], [0.20, -0.48 * sc], [0.36, 0.48], [0.54, 0.64 * sc], [0.76, 0.12], [1, -0.04]], u);
-    const rPitch = catmullRomTrack([[0, 0.05], [0.20, 0.78], [0.36, 0.84], [0.54, 0.42], [1, 0]], u);
-    const rPoleY = catmullRomTrack([[0, 0.12], [0.20, -0.04], [0.36, 0.18], [0.54, 0.20], [1, 0.14]], u);
+    // Coiled backswing (20%) -> Driven low instep strike through ball (38%) -> Sweeping follow-through whip (56%)
+    const rx = catmullRomTrack([[0, -0.16], [0.20, -0.22], [0.38, -0.04], [0.56, 0.22 * sc], [0.78, -0.08], [1, -0.17]], u);
+    const ry = catmullRomTrack([[0, 0.04], [0.20, 0.46 * sc], [0.38, 0.10], [0.56, 0.38 * sc], [0.78, 0.10], [1, 0.024]], u);
+    const rz = catmullRomTrack([[0, -0.06], [0.20, -0.58 * sc], [0.38, 0.56], [0.56, 0.72 * sc], [0.78, 0.14], [1, -0.04]], u);
+    const rPitch = catmullRomTrack([[0, 0.06], [0.20, 0.88], [0.38, 0.64], [0.56, 0.30], [1, 0]], u);
+    const rPoleY = catmullRomTrack([[0, 0.12], [0.20, -0.08], [0.38, 0.18], [0.56, 0.22], [1, 0.14]], u);
 
     const handLPos = catmullRomTrack([
-      [0, [0.28, -0.22, 0.12]], [0.20, [0.38, -0.02, 0.20]], [0.36, [0.42, -0.02, 0.04]], [0.56, [0.42, -0.08, -0.16]], [1, [0.26, -0.28, 0.12]]
+      [0, [0.30, -0.20, 0.14]], [0.20, [0.44, 0.02, 0.04]], [0.38, [0.48, 0.00, -0.12]], [0.58, [0.44, -0.12, -0.24]], [1, [0.28, -0.22, 0.16]]
     ], u);
     const handRPos = catmullRomTrack([
-      [0, [-0.27, -0.24, 0.10]], [0.20, [-0.28, -0.20, -0.22]], [0.38, [-0.24, -0.12, 0.20]], [0.58, [-0.25, -0.10, 0.26]], [1, [-0.26, -0.28, 0.12]]
+      [0, [-0.28, -0.22, 0.12]], [0.20, [-0.28, -0.22, -0.26]], [0.38, [-0.25, -0.10, 0.24]], [0.58, [-0.24, -0.06, 0.30]], [1, [-0.28, -0.22, 0.16]]
     ], u);
 
     return {
       bodyZ, bodyY, bodyPitch, bodyRoll, bodyYaw, chestYaw,
-      chestRoll: bodyRoll * 0.20,
+      chestRoll: bodyRoll * 0.22,
       footBaseZ: bodyZ * 0.50,
       armsInWorldYaw: false,
       headPitch: -bodyPitch * 0.4 + 0.04,
-      headYaw: -bodyYaw * 0.72,
-      footL: { pos: [lx, ly, lz], pole: [0.26, 0.16, 1.0], yaw: 0.18 },
-      footR: { pos: [rx, ry, rz], pole: [-0.04, rPoleY, 0.96], pitch: rPitch, yaw: -0.06 },
-      handL: { pos: handLPos, pole: [0.40, -0.28, -0.82], curl: 0.78 },
-      handR: { pos: handRPos, pole: [-0.40, -0.28, -0.82], curl: 0.80 },
+      headYaw: -bodyYaw * 0.75,
+      footL: { pos: [lx, ly, lz], pole: [0.28, 0.16, 1.0], yaw: 0.20 },
+      footR: { pos: [rx, ry, rz], pole: [-0.04, rPoleY, 0.96], pitch: rPitch, yaw: -0.08 },
+      handL: { pos: handLPos, pole: [0.42, -0.26, -0.82], curl: 0.72 },
+      handR: { pos: handRPos, pole: [-0.42, -0.26, -0.82], curl: 0.76 },
     };
   }
   motions.Anim_EA_PowerStrike = wrapSplineClip(0.64, false, (u) => strikeSpec(u, true));
   motions.Anim_Kick_V1 = wrapSplineClip(0.62, false, (u) => strikeSpec(u, false));
 
-  // Crisp Football Open-Hip Inside-Foot Pass (Wide Balance Arms, ZERO Belly Clipping, Flexed Plant & Kick Knees)
+  // Crisp Football Open-Hip Inside-Foot Pass (Wide Balance Arms, Low Driven Cleat Sweep)
   function makeQuickKick(kickingRight) {
     const s = kickingRight ? -1 : 1;
     return wrapSplineClip(0.46, false, (u) => {
-      const z = catmullRomTrack([[0, -0.04], [0.20, -0.34], [0.42, 0.56], [0.70, 0.28], [1, -0.02]], u);
-      const y = catmullRomTrack([[0, 0.024], [0.20, 0.24], [0.42, 0.19], [0.70, 0.13], [1, 0.024]], u);
-      const sweepX = catmullRomTrack([[0, 0], [0.20, -0.05], [0.44, 0.14], [0.70, 0.06], [1, 0]], u);
-      const bodyZ = catmullRomTrack([[0, -0.04], [0.42, 0.14], [1, 0]], u);
-      const bodyRoll = catmullRomTrack([[0, 0], [0.22, s * 0.24], [0.46, s * 0.26], [1, 0]], u);
-      const bodyYaw = catmullRomTrack([[0, 0], [0.20, s * 0.28], [0.44, -s * 0.30], [1, 0]], u);
-      const armBalance = catmullRomTrack([[0, 0.10], [0.20, 0.18], [0.44, -0.14], [1, 0.10]], u);
-      const armCounter = catmullRomTrack([[0, -0.08], [0.20, -0.16], [0.44, 0.18], [1, 0.10]], u);
-      const plantPos = [-s * 0.23, 0.024, 0.12];
+      const z = catmullRomTrack([[0, -0.04], [0.20, -0.36], [0.42, 0.58], [0.70, 0.28], [1, -0.02]], u);
+      const y = catmullRomTrack([[0, 0.024], [0.20, 0.22], [0.42, 0.12], [0.70, 0.10], [1, 0.024]], u);
+      const sweepX = catmullRomTrack([[0, 0], [0.20, -0.06], [0.44, 0.16], [0.70, 0.06], [1, 0]], u);
+      const bodyZ = catmullRomTrack([[0, -0.04], [0.42, 0.15], [1, 0]], u);
+      const bodyRoll = catmullRomTrack([[0, 0], [0.22, s * 0.26], [0.46, s * 0.28], [1, 0]], u);
+      const bodyYaw = catmullRomTrack([[0, 0], [0.20, s * 0.30], [0.44, -s * 0.32], [1, 0]], u);
+      const armBalance = catmullRomTrack([[0, 0.12], [0.20, 0.20], [0.44, -0.16], [1, 0.12]], u);
+      const armCounter = catmullRomTrack([[0, -0.08], [0.20, -0.18], [0.44, 0.20], [1, 0.12]], u);
+      const plantPos = [-s * 0.24, 0.024, 0.13];
       const kickPos = [s * (0.14 - sweepX), y, z];
-      const kickPole = [s * -0.40, 0.20, 0.90];
+      const kickPole = [s * -0.44, 0.18, 0.90];
       return {
-        bodyZ, bodyY: -0.135, bodyRoll, bodyYaw, footBaseZ: bodyZ * 0.60, spinePitch: 0.14, armsInWorldYaw: false,
-        headYaw: -bodyYaw * 0.70,
-        footL: kickingRight ? { pos: plantPos, pole: [0.25, 0.14, 1.0], yaw: 0.16 } : { pos: kickPos, pole: kickPole, yaw: -0.72, pitch: 0.30 },
-        footR: kickingRight ? { pos: kickPos, pole: kickPole, yaw: 0.72, pitch: 0.30 } : { pos: plantPos, pole: [-0.25, 0.14, 1.0], yaw: -0.16 },
-        handL: { pos: kickingRight ? [0.40, -0.10, armBalance] : [0.31, -0.20, armCounter], pole: [0.44, -0.28, -0.82], curl: 0.74 },
-        handR: { pos: kickingRight ? [-0.31, -0.20, armCounter] : [-0.40, -0.10, armBalance], pole: [-0.44, -0.28, -0.82], curl: 0.74 },
+        bodyZ, bodyY: -0.15, bodyRoll, bodyYaw, footBaseZ: bodyZ * 0.60, spinePitch: 0.14, armsInWorldYaw: false,
+        headYaw: -bodyYaw * 0.72,
+        footL: kickingRight ? { pos: plantPos, pole: [0.26, 0.14, 1.0], yaw: 0.18 } : { pos: kickPos, pole: kickPole, yaw: -0.78, pitch: 0.26 },
+        footR: kickingRight ? { pos: kickPos, pole: kickPole, yaw: 0.78, pitch: 0.26 } : { pos: plantPos, pole: [-0.26, 0.14, 1.0], yaw: -0.18 },
+        handL: { pos: kickingRight ? [0.42, -0.08, armBalance] : [0.32, -0.18, armCounter], pole: [0.44, -0.28, -0.82], curl: 0.72 },
+        handR: { pos: kickingRight ? [-0.32, -0.18, armCounter] : [-0.42, -0.08, armBalance], pole: [-0.44, -0.28, -0.82], curl: 0.72 },
       };
     });
   }
   motions.Kick_Right = makeQuickKick(true);
   motions.Kick_Left = makeQuickKick(false);
 
-  // 2. TRUE FLUID TURF SLIDE TACKLE (Continuous Grass Glide + Braced Turf Hand + Crouched Pop-Up Recovery)
+  // 2. TRUE LOW TURF SLIDE TACKLE (Hip skims grass, braced hand plants on turf, lead boot skims turf line)
   function makeSlide(leadSide) {
     const s = leadSide === 'R' ? -1 : 1;
     return wrapSplineClip(0.66, false, (u) => {
-      const drop = catmullRomTrack([[0, 0], [0.16, 0.92], [0.38, 1.0], [0.58, 0.94], [0.80, 0.34], [1, 0]], u);
-      const sweep = catmullRomTrack([[0, 0], [0.16, 0.45], [0.38, 0.88], [0.58, 1.0], [0.82, 0.25], [1, 0]], u);
-      const slideSurge = catmullRomTrack([[0, -0.06], [0.16, 0.10], [0.38, 0.32], [0.58, 0.46], [0.84, 0.14], [1, 0]], u);
-      const leadAnkle = [s * 0.06, lerp(0.024, 0.12, sweep), lerp(0.06, 0.88, sweep)];
-      const trailAnkle = [-s * 0.32, lerp(0.024, 0.08, drop), lerp(-0.04, -0.12, drop)];
-      const armTrail = [-s * 0.40, lerp(-0.26, -0.38, drop), lerp(0.08, -0.16, drop)];
-      const armLead = [s * 0.40, lerp(-0.22, -0.02, sweep), lerp(0.10, 0.18, sweep)];
+      const drop = catmullRomTrack([[0, 0], [0.16, 0.94], [0.38, 1.0], [0.58, 0.94], [0.82, 0.34], [1, 0]], u);
+      const sweep = catmullRomTrack([[0, 0], [0.16, 0.50], [0.38, 0.92], [0.58, 1.0], [0.84, 0.25], [1, 0]], u);
+      const slideSurge = catmullRomTrack([[0, -0.06], [0.16, 0.12], [0.38, 0.36], [0.58, 0.50], [0.84, 0.14], [1, 0]], u);
+      const leadAnkle = [s * 0.08, lerp(0.024, 0.09, sweep), lerp(0.06, 0.92, sweep)];
+      const trailAnkle = [-s * 0.36, lerp(0.024, 0.06, drop), lerp(-0.04, -0.18, drop)];
+      // Trail palm plants downward onto turf (-0.42 Y relative to low leaned chest) while lead arm balances up
+      const armTrail = [-s * 0.44, lerp(-0.22, -0.44, drop), lerp(0.08, -0.22, drop)];
+      const armLead = [s * 0.40, lerp(-0.18, 0.04, sweep), lerp(0.10, 0.16, sweep)];
       return {
         bodyZ: slideSurge, footBaseZ: slideSurge,
-        bodyY: lerp(-0.06, -0.74, drop),
-        bodyPitch: lerp(0.08, -0.88, drop),
-        spinePitch: lerp(0.08, -0.08, drop),
-        bodyRoll: lerp(0, s * 0.34, drop),
-        bodyYaw: lerp(0, s * 0.28, drop),
-        floorOffsetY: lerp(0.0, -0.01, drop), feetInBodySpace: false, armsInWorldYaw: false,
-        headPitch: lerp(-0.04, 0.62, drop),
-        headYaw: -s * 0.24 * drop,
-        footL: leadSide === 'L' ? { pos: leadAnkle, pole: [0.14, 0.24, 0.94], pitch: -0.58 * sweep } : { pos: trailAnkle, pole: [0.52, 0.14, 0.80], roll: -0.26 },
-        footR: leadSide === 'R' ? { pos: leadAnkle, pole: [-0.14, 0.24, 0.94], pitch: -0.58 * sweep } : { pos: trailAnkle, pole: [-0.52, 0.14, 0.80], roll: 0.26 },
-        handL: { pos: leadSide === 'L' ? armLead : armTrail, pole: [0.46, -0.26, -0.80], curl: 0.32 },
-        handR: { pos: leadSide === 'R' ? armLead : armTrail, pole: [-0.46, -0.26, -0.80], curl: 0.32 },
+        bodyY: lerp(-0.08, -0.78, drop),
+        bodyPitch: lerp(0.10, -0.74, drop),
+        spinePitch: lerp(0.10, 0.06, drop),
+        bodyRoll: lerp(0, s * 0.44, drop),
+        bodyYaw: lerp(0, s * 0.34, drop),
+        groundSnap: false, feetInBodySpace: false, armsInWorldYaw: false,
+        headPitch: lerp(-0.04, 0.52, drop),
+        headYaw: -s * 0.28 * drop,
+        footL: leadSide === 'L' ? { pos: leadAnkle, pole: [0.14, 0.22, 0.94], pitch: -0.68 * sweep } : { pos: trailAnkle, pole: [0.56, 0.12, 0.80], roll: -0.28 },
+        footR: leadSide === 'R' ? { pos: leadAnkle, pole: [-0.14, 0.22, 0.94], pitch: -0.68 * sweep } : { pos: trailAnkle, pole: [-0.56, 0.12, 0.80], roll: 0.28 },
+        handL: { pos: leadSide === 'L' ? armLead : armTrail, pole: [0.46, -0.24, -0.82], curl: 0.22 },
+        handR: { pos: leadSide === 'R' ? armLead : armTrail, pole: [-0.46, -0.24, -0.82], curl: 0.22 },
       };
     });
   }
@@ -1064,26 +1126,26 @@ function makeMotions(role, clonex) {
     };
   });
 
-  // 4. NBA ONE-MOTION JUMPSHOT (Clean High Crown Overhead Release Above Head — ZERO Face Covering!)
+  // 4. NBA ONE-MOTION JUMPSHOT (Vertical L-Elbow Alignment, Long Sweep Legs & Clean Guide Hand)
   motions.Anim_2K_JumpShot = wrapSplineClip(0.64, false, (u) => {
     const air = catmullRomTrack([[0, 0], [0.16, 0], [0.44, 1.0], [0.76, 0], [1, 0]], u);
     const sway = catmullRomTrack([[0, 0], [0.18, 0], [0.48, 1.0], [0.78, 0.15], [1, 0]], u);
-    const squat = catmullRomTrack([[0, 0.08], [0.16, 0.26], [0.30, 0], [0.80, 0.20], [1, 0.07]], u);
-    const spinePitch = catmullRomTrack([[0, 0.14], [0.16, 0.18], [0.44, -0.14], [0.76, 0.06], [1, 0.08]], u);
+    const squat = catmullRomTrack([[0, 0.08], [0.16, 0.26], [0.30, 0], [0.80, 0.20], [1, 0.08]], u);
+    const spinePitch = catmullRomTrack([[0, 0.14], [0.16, 0.18], [0.44, -0.15], [0.76, 0.06], [1, 0.10]], u);
     const rhPos = catmullRomTrack([
-      [0, [-0.14, 0.12, 0.24]], [0.16, [-0.13, 0.36, 0.18]], [0.38, [-0.11, 0.67, 0.18]], [0.56, [-0.11, 0.68, 0.30]], [0.78, [-0.18, 0.12, 0.22]], [1, [-0.25, -0.24, 0.18]]
+      [0, [-0.15, 0.14, 0.22]], [0.16, [-0.14, 0.38, 0.19]], [0.36, [-0.14, 0.70, 0.27]], [0.58, [-0.16, 0.56, 0.34]], [0.80, [-0.24, 0.16, 0.24]], [1, [-0.28, -0.20, 0.20]]
     ], u);
-    const rhWrist = catmullRomTrack([[0, 0.20], [0.18, 0.45], [0.44, -1.32], [0.76, -0.90], [1, 0]], u);
+    const rhWrist = catmullRomTrack([[0, 0.20], [0.18, 0.48], [0.42, -1.42], [0.74, -1.18], [1, 0]], u);
     const lhPos = catmullRomTrack([
-      [0, [0.15, 0.12, 0.20]], [0.16, [0.15, 0.34, 0.18]], [0.36, [0.17, 0.50, 0.16]], [0.56, [0.29, 0.10, 0.16]], [0.78, [0.26, -0.14, 0.18]], [1, [0.25, -0.24, 0.18]]
+      [0, [0.18, 0.14, 0.22]], [0.16, [0.20, 0.34, 0.21]], [0.36, [0.22, 0.44, 0.23]], [0.60, [0.23, 0.40, 0.22]], [0.82, [0.26, -0.10, 0.20]], [1, [0.28, -0.20, 0.20]]
     ], u);
     return {
-      bodyY: lerp(-squat, -0.03, air), aerialLift: 0.50 * air, groundSnap: air < 0.05, armsInWorldYaw: true,
+      bodyY: lerp(-squat, -0.03, air), aerialLift: 0.52 * air, groundSnap: air < 0.05, armsInWorldYaw: true,
       spinePitch, headPitch: -spinePitch - 0.16 * air,
-      footL: { pos: [0.16, 0.024 + 0.16 * sway, lerp(0.06, 0.20, sway)], pole: [0.24, 0.24, 1.0], pitch: 0.36 * sway },
-      footR: { pos: [-0.16, 0.024 + 0.10 * sway, lerp(-0.04, 0.06, sway)], pole: [-0.24, 0.18, 1.0], pitch: 0.40 * sway },
-      handR: { pos: rhPos, pole: [-0.14, -0.10, 0.68], curl: lerp(0.42, 0.68, smootherstep(clamp((u - 0.34) / 0.22, 0, 1))), wristPitch: rhWrist, wristRoll: 0.08 },
-      handL: { pos: lhPos, pole: [0.38, -0.28, -0.45], curl: 0.48, wristYaw: -0.42, wristRoll: -0.16 },
+      footL: { pos: [0.18, 0.024 + 0.14 * sway, lerp(0.08, 0.24, sway)], pole: [0.22, 0.18, 1.0], pitch: 0.46 * sway },
+      footR: { pos: [-0.18, 0.024 + 0.09 * sway, lerp(-0.04, 0.10, sway)], pole: [-0.22, 0.15, 1.0], pitch: 0.48 * sway },
+      handR: { pos: rhPos, pole: [-0.14, -0.12, 0.72], curl: lerp(0.40, 0.74, smootherstep(clamp((u - 0.34) / 0.20, 0, 1))), wristPitch: rhWrist, wristRoll: 0.06 },
+      handL: { pos: lhPos, pole: [0.38, -0.28, -0.45], curl: 0.42, wristYaw: -0.36, wristRoll: -0.14 },
     };
   });
 
@@ -1114,36 +1176,36 @@ function makeMotions(role, clonex) {
     };
   });
 
-  // 5. ICONIC NBA SLAM DUNK (Natural Back-Downward Elbow Pole -> Explosive Rim Hammer, ZERO Chicken-Wing Flip!)
+  // 5. ICONIC NBA SLAM DUNK (Deep Cocked C-Curve Tomahawk -> Explosive Rim Hammer -> Sprung Landing)
   function dunkSpec(twoHand, u) {
     const air = catmullRomTrack([[0, 0], [0.14, 0], [0.42, 1.0], [0.78, 0], [1, 0]], u);
     const tuck = catmullRomTrack([[0, 0], [0.16, 0], [0.42, 1.0], [0.74, 0], [1, 0]], u);
-    const gather = catmullRomTrack([[0, 0.07], [0.13, 0.27], [0.26, 0.00], [0.80, 0.23], [1, 0.07]], u);
-    const bodyZ = catmullRomTrack([[0, -0.10], [0.14, -0.04], [0.48, 0.28], [0.78, 0.12], [1, 0]], u);
+    const gather = catmullRomTrack([[0, 0.08], [0.13, 0.28], [0.26, 0.00], [0.80, 0.25], [1, 0.09]], u);
+    const bodyZ = catmullRomTrack([[0, -0.10], [0.14, -0.04], [0.48, 0.32], [0.78, 0.14], [1, 0]], u);
     const rhPos = twoHand
-      ? catmullRomTrack([[0, [-0.15, -0.08, 0.24]], [0.14, [-0.14, 0.22, 0.18]], [0.32, [-0.14, 0.62, -0.12]], [0.48, [-0.12, 0.44, 0.36]], [0.66, [-0.14, 0.04, 0.34]], [1, [-0.22, -0.22, 0.20]]], u)
-      : catmullRomTrack([[0, [-0.18, -0.08, 0.24]], [0.14, [-0.20, 0.18, 0.18]], [0.32, [-0.18, 0.64, -0.10]], [0.48, [-0.10, 0.46, 0.38]], [0.66, [-0.16, 0.02, 0.32]], [1, [-0.22, -0.22, 0.20]]], u);
-    const rhWrist = catmullRomTrack([[0, 0], [0.32, 0.48], [0.50, -1.16], [1, 0]], u);
+      ? catmullRomTrack([[0, [-0.15, -0.08, 0.24]], [0.14, [-0.14, 0.24, 0.18]], [0.32, [-0.15, 0.66, -0.16]], [0.48, [-0.12, 0.48, 0.40]], [0.66, [-0.14, 0.04, 0.34]], [1, [-0.24, -0.20, 0.20]]], u)
+      : catmullRomTrack([[0, [-0.18, -0.08, 0.24]], [0.14, [-0.20, 0.20, 0.18]], [0.32, [-0.18, 0.68, -0.16]], [0.48, [-0.10, 0.50, 0.42]], [0.66, [-0.16, 0.02, 0.32]], [1, [-0.24, -0.20, 0.20]]], u);
+    const rhWrist = catmullRomTrack([[0, 0], [0.32, 0.52], [0.50, -1.24], [1, 0]], u);
     const lhPos = twoHand
       ? [-rhPos[0], rhPos[1], rhPos[2]]
-      : catmullRomTrack([[0, [0.20, -0.14, 0.20]], [0.18, [0.36, 0.04, 0.16]], [0.44, [0.40, -0.22, -0.12]], [0.74, [0.26, -0.16, 0.18]], [1, [0.22, -0.22, 0.20]]], u);
+      : catmullRomTrack([[0, [0.22, -0.12, 0.20]], [0.18, [0.42, 0.06, 0.14]], [0.44, [0.46, -0.24, -0.18]], [0.74, [0.28, -0.14, 0.20]], [1, [0.24, -0.20, 0.20]]], u);
 
     const footL = twoHand
-      ? { pos: [0.18, 0.024 + 0.36 * tuck, -0.02 - 0.28 * tuck], pole: [0.24, 0.26, 1.0], pitch: 0.58 * tuck }
-      : { pos: [0.17, 0.024 + 0.42 * tuck, 0.10 + 0.26 * tuck], pole: [0.24, 0.42, 1.0], pitch: 0.48 * tuck };
+      ? { pos: [0.19, 0.024 + 0.40 * tuck, -0.02 - 0.32 * tuck], pole: [0.24, 0.28, 1.0], pitch: 0.64 * tuck }
+      : { pos: [0.18, 0.024 + 0.46 * tuck, 0.10 + 0.28 * tuck], pole: [0.24, 0.44, 1.0], pitch: 0.52 * tuck };
     const footR = twoHand
-      ? { pos: [-0.18, 0.024 + 0.36 * tuck, -0.04 - 0.28 * tuck], pole: [-0.24, 0.26, 1.0], pitch: 0.58 * tuck }
-      : { pos: [-0.18, 0.024 + 0.32 * tuck, -0.08 - 0.34 * tuck], pole: [-0.24, 0.18, 1.0], pitch: 0.62 * tuck };
+      ? { pos: [-0.19, 0.024 + 0.40 * tuck, -0.04 - 0.32 * tuck], pole: [-0.24, 0.28, 1.0], pitch: 0.64 * tuck }
+      : { pos: [-0.19, 0.024 + 0.36 * tuck, -0.10 - 0.38 * tuck], pole: [-0.24, 0.18, 1.0], pitch: 0.68 * tuck };
 
     return {
       bodyZ, footBaseZ: bodyZ * 0.55,
-      bodyY: -gather, aerialLift: 0.52 * air, groundSnap: air < 0.04, armsInWorldYaw: true,
-      spinePitch: catmullRomTrack([[0, 0.12], [0.14, 0.22], [0.32, -0.26], [0.50, 0.18], [0.80, 0.16], [1, 0.08]], u),
-      chestYaw: twoHand ? 0 : catmullRomTrack([[0, 0], [0.32, -0.42], [0.50, 0.30], [1, 0]], u),
-      headPitch: -0.22 * air,
+      bodyY: -gather, aerialLift: 0.56 * air, groundSnap: air < 0.04, armsInWorldYaw: true,
+      spinePitch: catmullRomTrack([[0, 0.14], [0.14, 0.24], [0.32, -0.34], [0.50, 0.24], [0.80, 0.18], [1, 0.10]], u),
+      chestYaw: twoHand ? 0 : catmullRomTrack([[0, 0], [0.32, -0.46], [0.50, 0.34], [1, 0]], u),
+      headPitch: -0.24 * air,
       footL, footR,
-      handR: { pos: rhPos, pole: [-0.26, -0.20, -0.68], curl: 0.38, wristPitch: rhWrist },
-      handL: { pos: lhPos, pole: [0.26, -0.24, -0.68], curl: 0.34, wristPitch: twoHand ? rhWrist : 0 },
+      handR: { pos: rhPos, pole: [-0.26, -0.20, -0.68], curl: 0.34, wristPitch: rhWrist },
+      handL: { pos: lhPos, pole: [0.28, -0.24, -0.68], curl: 0.30, wristPitch: twoHand ? rhWrist : 0 },
     };
   }
   motions.Anim_2K_SlamDunk = wrapSplineClip(0.70, false, (u) => dunkSpec(false, u));
